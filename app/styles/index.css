@@ -1,0 +1,65 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'Berkeley';
+  src: url('/fonts/berkeley-mono-variable-2.woff2') format('woff2'),
+       url('/fonts/berkeley-mono-variable-2.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@layer base {
+  body {
+    font-family: 'Berkeley', monospace;
+  }
+}
+
+@layer components {
+  .home-link {
+    @apply cursor-pointer text-transparent bg-clip-text;
+  }
+
+  .home-link:hover {
+    box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.4);
+  }
+
+  a {
+    @apply text-green-800;
+  }
+
+  p {
+    @apply pl-4 pr-4 mx-auto leading-relaxed my-4 text-gray-500;
+  }
+
+  @media (min-width: 1024px) {
+    p {
+      @apply w-11/12;
+    }
+  }
+
+  .cg-wrap {
+    background-image: url('/img/chessOpenings/trb2.svg');
+  }
+
+  h1 {
+    @apply text-3xl lg:text-4xl leading-normal text-gray-dark p-4 border-b border-gray-500 w-full;
+  }
+
+  h2 {
+    @apply text-2xl lg:text-3xl text-red-clear p-4;
+  }
+
+  h6 {
+    @apply text-center;
+  }
+
+  hr {
+    @apply py-8;
+  }
+
+  blockquote {
+    @apply pl-1 border-l-4 border-gray-300 italic;
+  }
+}
