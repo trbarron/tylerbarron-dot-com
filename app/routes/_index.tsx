@@ -41,7 +41,7 @@ const links = [
     description: "Blotto style game-theory challenge"
   },
   {
-    to: "/CatTracker/Live",
+    to: "/CatTracker",
     title: "Cat Work Tracker",
     description: "Measuring Checo's work output"
   },
