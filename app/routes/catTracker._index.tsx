@@ -10,6 +10,8 @@ import ImageDisplay from "~/components/CatImage";
 interface BasicResponseData {
     work_time: string;
     is_present: boolean;
+    checo_time: string;
+    tuni_time: string;
     cat: string;
 }
 
@@ -25,7 +27,8 @@ export const loader = async () => {
         const basicResponse = await fetch(
             "https://nj3ho46btl.execute-api.us-west-2.amazonaws.com/checoStage/checoRestEndpoint"
         );
-        const basicData: BasicResponseData = await basicResponse.json();
+        const data = await basicResponse.json();
+        const basicData: BasicResponseData = JSON.parse(data.body);
 
         return json({ basicData });
     } catch (error) {
