@@ -16,8 +16,12 @@ import Article from "~/components/Article";
 import { Modal } from '~/components/Modal';
 
 const ChessgroundWrapper = React.lazy(() => import('~/components/ChessgroundWrapper'));
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl = process.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing Supabase environment variables');
+}
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
