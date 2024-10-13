@@ -4,7 +4,6 @@ import { useLoaderData } from '@remix-run/react';
 import { getMDXComponent } from 'mdx-bundler/client';
 import { useMemo } from 'react';
 import { processMdx } from '~/utils/mdx.server';
-import YouTubeEmbed from '~/components/YouTubeEmbed';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -33,7 +32,7 @@ export default function BlogPost() {
     <article className="prose lg:prose-xl mx-auto">
       <h1>{frontmatter.title}</h1>
       <p>Published on: {frontmatter.date}</p>
-      <Component components={{ YouTubeEmbed }} />
+      <Component />
     </article>
   );
 }
