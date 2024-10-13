@@ -1,5 +1,5 @@
 import React from 'react';
-import Chessground from 'chessground/src/index.ts';
+import { Chessground } from 'chessground';
 
 // Make sure to import the CSS somewhere in your app
 // import 'chessground/assets/chessground.base.css';
