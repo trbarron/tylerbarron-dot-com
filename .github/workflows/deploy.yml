@@ -5,6 +5,18 @@ on:
     branches:
       - master
   pull_request:
+  workflow_dispatch:
+    inputs:
+      run_lint:
+        description: 'Run ESLint check'
+        required: true
+        type: boolean
+        default: false
+      run_typecheck:
+        description: 'Run TypeScript check'
+        required: true
+        type: boolean
+        default: false
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -22,6 +34,7 @@ jobs:
   lint:
     name: ⬣ ESLint
     runs-on: ubuntu-latest
+    if: github.event.inputs.run_lint == 'true'
     steps:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v4
@@ -42,6 +55,7 @@ jobs:
   typecheck:
     name: ʦ TypeScript
     runs-on: ubuntu-latest
+    if: github.event.inputs.run_typecheck == 'true'
     steps:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v4
