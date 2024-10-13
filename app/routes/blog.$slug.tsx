@@ -1,7 +1,7 @@
 import { json } from '@remix-run/node';
 import type { LoaderFunction } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
-import { getMDXComponent } from 'mdx-bundler/client';
+import { getMDXComponent } from 'mdx-bundler/client/index.js';
 import { useMemo } from 'react';
 import { processMdx } from '~/utils/mdx.server';
 import fs from 'fs/promises';
