@@ -5,9 +5,9 @@ import type { LoaderFunction } from "@remix-run/node";
 import { ClientOnly } from "remix-utils/client-only";
 import { Chess, Square } from "chess.js";
 import { createClient } from '@supabase/supabase-js';
-import 'chessground/assets/chessground.base.css';
-import 'chessground/assets/chessground.brown.css';
-import 'chessground/assets/chessground.cburnett.css';
+// import 'chessground/assets/chessground.base.css';
+// import 'chessground/assets/chessground.brown.css';
+// import 'chessground/assets/chessground.cburnett.css';
 
 import { Navbar } from "~/components/Navbar";
 import Footer from "~/components/Footer";
