@@ -1,4 +1,4 @@
-import React, { useState, Suspense } from "react";
+import React, { useState, Suspense, useEffect } from "react";
 import { useNavigate } from "@remix-run/react";
 import { Chess } from 'chess.js';
 import { json } from "@remix-run/node";
@@ -20,126 +20,140 @@ import AWS from 'aws-sdk';
 
 // Define the type for the loader data
 type LoaderData = {
-    randomFEN: string;
-    evalScore: number;
+  randomFEN: string;
+  evalScore: number;
 };
 
 // Loader function (server-side)
 export const loader: LoaderFunction = async () => {
-    // Configure AWS
-    AWS.config.update({
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-        region: 'us-west-2',
-    });
+  // Configure AWS
+  AWS.config.update({
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    region: 'us-west-2',
+  });
 
-    const dynamoDb = new AWS.DynamoDB.DocumentClient();
-    const randomCgValue = Math.floor(Math.random() * 400).toString();
-    const params = {
-        TableName: "chesserGuesser",
-        KeyConditionExpression: "#cg = :cgValue",
-        ExpressionAttributeNames: { "#cg": "cg" },
-        ExpressionAttributeValues: { ":cgValue": randomCgValue }
-    };
+  const dynamoDb = new AWS.DynamoDB.DocumentClient();
+  const randomCgValue = Math.floor(Math.random() * 400).toString();
+  const params = {
+    TableName: "chesserGuesser",
+    KeyConditionExpression: "#cg = :cgValue",
+    ExpressionAttributeNames: { "#cg": "cg" },
+    ExpressionAttributeValues: { ":cgValue": randomCgValue }
+  };
 
-    try {
-        const data = await dynamoDb.query(params).promise();
-        if (!data.Items || data.Items.length === 0) {
-            throw new Error('No data returned');
-        }
-        return json({
-            randomFEN: data.Items[0].fen,
-            evalScore: data.Items[0].eval
-        });
-    } catch (error) {
-        console.error("Error fetching FEN from DynamoDB:", error);
-        return json({
-            randomFEN: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
-            evalScore: 0
-        });
+  try {
+    const data = await dynamoDb.query(params).promise();
+    if (!data.Items || data.Items.length === 0) {
+      throw new Error('No data returned');
     }
+    return json({
+      randomFEN: data.Items[0].fen,
+      evalScore: data.Items[0].eval
+    });
+  } catch (error) {
+    console.error("Error fetching FEN from DynamoDB:", error);
+    return json({
+      randomFEN: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+      evalScore: 0
+    });
+  }
 };
 
 // Client-side only Chessground component
 const ChessgroundWrapper = React.lazy(() => import('react-chessground'));
 
 export default function ChesserGuesserUnlimited() {
-    const { randomFEN, evalScore } = useLoaderData<LoaderData>();
-    const navigate = useNavigate();
+  const { randomFEN, evalScore } = useLoaderData<LoaderData>();
+  const navigate = useNavigate();
 
-    const [chess] = useState(new Chess(randomFEN));
-    const [fen, setFen] = useState(randomFEN);
-    const [boardOrientation, setBoardOrientation] = useState(getCurrentPlayer(randomFEN).toLowerCase());
-    const [sliderValue, setSliderValue] = useState(0);
-    const [currentTurn, setCurrentTurn] = useState(getCurrentPlayer(randomFEN));
-    const [streak, setStreak] = useState(0);
-    const [lastSlider, setLastSlider] = useState(0);
-    const [lastEval, setLastEval] = useState(0);
-    const [positiveMessage, setPositiveMessage] = useState(getPositiveMessage());
-    const [negativeMessage, setNegativeMessage] = useState(getNegativeMessage());
+  const [chess, setChess] = useState(new Chess(randomFEN));
+  const [fen, setFen] = useState(randomFEN);
+  const [boardOrientation, setBoardOrientation] = useState(getCurrentPlayer(randomFEN).toLowerCase());
+  const [sliderValue, setSliderValue] = useState(0);
+  const [currentTurn, setCurrentTurn] = useState(getCurrentPlayer(randomFEN));
+  const [streak, setStreak] = useState(0);
+  const [lastSlider, setLastSlider] = useState(0);
+  const [lastEval, setLastEval] = useState(0);
+  const [positiveMessage, setPositiveMessage] = useState(getPositiveMessage());
+  const [negativeMessage, setNegativeMessage] = useState(getNegativeMessage());
 
-    const handleSliderChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setSliderValue(Number(event.target.value));
-    };
+  useEffect(() => {
+    setChess(new Chess(randomFEN));
+    setFen(randomFEN);
+    setBoardOrientation(getCurrentPlayer(randomFEN).toLowerCase());
+    setCurrentTurn(getCurrentPlayer(randomFEN));
+  }, [randomFEN]);
 
-    function submitGuess() {
-        let difference = Math.abs(evalScore - sliderValue) / 100;
-        let correctSide = false;
-        if (evalScore > 0.2 && sliderValue > 0) {
-            correctSide = true;
-        } else if (evalScore < -0.2 && sliderValue < 0) {
-            correctSide = true;
-        } else if (evalScore < 0.2 && evalScore > -0.2 && sliderValue < 0.2 && sliderValue > -0.2) {
-            correctSide = true;
-        }
-        if (correctSide) {
-            setStreak(streak + 1);
-        } else {
-            setStreak(0);
-        }
-        setLastEval(evalScore / 100);
-        setLastSlider(sliderValue / 100);
+  const handleSliderChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSliderValue(Number(event.target.value));
+  };
 
-        return difference;
+  function submitGuess() {
+    let difference = Math.abs(evalScore - sliderValue) / 100;
+    let correctSide = false;
+    if (evalScore > 0.2 && sliderValue > 0) {
+      correctSide = true;
+    } else if (evalScore < -0.2 && sliderValue < 0) {
+      correctSide = true;
+    } else if (evalScore < 0.2 && evalScore > -0.2 && sliderValue < 0.2 && sliderValue > -0.2) {
+      correctSide = true;
     }
-
-    function flipBoard() {
-        setBoardOrientation(prev => prev === "white" ? "black" : "white");
+    if (correctSide) {
+      setStreak(streak + 1);
+    } else {
+      setStreak(0);
     }
+    setLastEval(evalScore / 100);
+    setLastSlider(sliderValue / 100);
 
-    function getPositiveMessage() {
-        const messages = [
-            "Keep it up!", "Nice!", "Good job!", "You're on a roll!",
-            "You're doing great!", "You're on fire!", "You're killing it!",
-            "You're unstoppable!", "You're a genius!", "You're a master!",
-            "You're a legend!", "You're a god!", "You're a beast!",
-            "You're a monster!", "Let's go!", "Correct!!"
-        ];
-        return messages[Math.floor(Math.random() * messages.length)] + " 👍";
-    }
+    // Reset the board after submitting the guess
+    resetBoard();
 
-    function getNegativeMessage() {
-        const messages = [
-            "Keep trying!", "Next time!", "Good effort!", "You'll get it!",
-            "You're close!", "You're almost there!", "You're getting warmer!",
-            "Close, but no cigar!", "Oomph! Next time!", "You're so close!",
-            "Maybe next time!"
-        ];
-        return messages[Math.floor(Math.random() * messages.length)] + " 😓";
-    }
+    return difference;
+  }
 
-    function getCurrentPlayer(fen: string) {
-        const parts = fen.split(' ');
-        const turnIndicator = parts[1];
-        return turnIndicator === 'w' ? 'White' : 'Black';
-    }
+  function resetBoard() {
+    submit(null, { method: "get", action: "." });
+  }
 
-    async function resetBoard() {
-        navigate(".", { replace: true });
-    }
+  function flipBoard() {
+    setBoardOrientation(prev => prev === "white" ? "black" : "white");
+  }
 
-    return (
-        <div className="bg-background bg-fixed min-h-screen">
+  function getPositiveMessage() {
+    const messages = [
+      "Keep it up!", "Nice!", "Good job!", "You're on a roll!",
+      "You're doing great!", "You're on fire!", "You're killing it!",
+      "You're unstoppable!", "You're a genius!", "You're a master!",
+      "You're a legend!", "You're a god!", "You're a beast!",
+      "You're a monster!", "Let's go!", "Correct!!"
+    ];
+    return messages[Math.floor(Math.random() * messages.length)] + " 👍";
+  }
+
+  function getNegativeMessage() {
+    const messages = [
+      "Keep trying!", "Next time!", "Good effort!", "You'll get it!",
+      "You're close!", "You're almost there!", "You're getting warmer!",
+      "Close, but no cigar!", "Oomph! Next time!", "You're so close!",
+      "Maybe next time!"
+    ];
+    return messages[Math.floor(Math.random() * messages.length)] + " 😓";
+  }
+
+  function getCurrentPlayer(fen: string) {
+    const parts = fen.split(' ');
+    const turnIndicator = parts[1];
+    return turnIndicator === 'w' ? 'White' : 'Black';
+  }
+
+  async function resetBoard() {
+    navigate(".", { replace: true });
+  }
+
+  return (
+    <div className="bg-background bg-fixed min-h-screen">
       <Navbar />
       <main className="flex-grow">
         <Article
@@ -149,23 +163,23 @@ export default function ChesserGuesserUnlimited() {
           <Subarticle>
             <div className="mx-auto grid gap-x-4 grid-rows-2 md:grid-rows-1 grid-cols-1 md:grid-cols-2 md:ml-iauto" style={{ gridTemplateColumns: "80% 20%", marginLeft: "-0.5rem", marginRight: "0.5rem" }}>
               <div className="w-100% col-span-2 md:col-span-1">
-                    <ClientOnly fallback={<div>Loading...</div>}>
-                            {() => (
-                                <Suspense fallback={<div>Loading chess board...</div>}>
-                                    <ChessgroundWrapper
-                                        fen={fen}
-                                        orientation={boardOrientation}
-                                        style={{
-                                            width: '100%',
-                                            height: '0',
-                                            paddingBottom: '100%',
-                                            position: 'relative'
-                                        }}
-                                    />
-                                </Suspense>
-                            )}
-                        </ClientOnly>
-                        <div className="gap-2 flex w-full mt-4 rounded">
+                <ClientOnly fallback={<div>Loading...</div>}>
+                  {() => (
+                    <Suspense fallback={<div>Loading chess board...</div>}>
+                      <ChessgroundWrapper
+                        fen={fen}
+                        orientation={boardOrientation}
+                        style={{
+                          width: '100%',
+                          height: '0',
+                          paddingBottom: '100%',
+                          position: 'relative'
+                        }}
+                      />
+                    </Suspense>
+                  )}
+                </ClientOnly>
+                <div className="gap-2 flex w-full mt-4 rounded">
                   <img src={blackKingImage} alt="Black King" className="w-12 h-12 flex-none" />
                   <input
                     type="range"

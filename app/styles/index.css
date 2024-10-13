@@ -51,6 +51,14 @@
     @apply text-2xl lg:text-3xl text-red-clear p-4;
   }
 
+  h3 {
+    @apply text-xl lg:text-2xl text-gray-dark ml-8 mt-4 p-2;
+  }
+
+  h4 {
+    @apply text-lg lg:text-xl text-gray-dark ml-8 mt-4 p-2;
+  }
+
   h6 {
     @apply text-center;
   }
@@ -60,6 +68,6 @@
   }
 
   blockquote {
-    @apply pl-1 border-l-4 border-gray-300 italic;
+    @apply border-l-4 border-gray-300 italic ml-8 pl-0;
   }
 }
