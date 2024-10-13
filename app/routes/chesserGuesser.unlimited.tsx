@@ -1,8 +1,7 @@
 import React, { useState, Suspense, useEffect } from "react";
-import { useNavigate } from "@remix-run/react";
+import { useNavigate , useLoaderData } from "@remix-run/react";
 import { Chess } from 'chess.js';
 import { json } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
 import type { LoaderFunction } from "@remix-run/node";
 import { ClientOnly } from "remix-utils/client-only";
 import 'react-chessground/dist/styles/chessground.css';
@@ -90,7 +89,7 @@ export default function ChesserGuesserUnlimited() {
   };
 
   function submitGuess() {
-    let difference = Math.abs(evalScore - sliderValue) / 100;
+    const difference = Math.abs(evalScore - sliderValue) / 100;
     let correctSide = false;
     if (evalScore > 0.2 && sliderValue > 0) {
       correctSide = true;

@@ -1,6 +1,5 @@
 import { SetStateAction, useState } from "react";
-import { Link } from "@remix-run/react";
-import { useLoaderData } from "@remix-run/react";
+import { Link , useLoaderData } from "@remix-run/react";
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 

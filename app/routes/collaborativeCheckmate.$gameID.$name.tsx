@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
-import { useParams, useNavigate } from "@remix-run/react";
+import {useNavigate , useLoaderData } from "@remix-run/react";
 import { json } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
 import type { LoaderFunction } from "@remix-run/node";
 import { ClientOnly } from "remix-utils/client-only";
 import { Chess, Square } from "chess.js";
@@ -44,7 +43,7 @@ export const loader: LoaderFunction = async ({ params }) => {
 
 export default function CollaborativeCheckmate() {
   const { gameID, name } = useLoaderData<LoaderData>();
-  const navigate = useNavigate();
+  useNavigate();
 
   const [chess, setChess] = useState(new Chess());
   const [fen, setFen] = useState(chess.fen());
@@ -56,7 +55,7 @@ export default function CollaborativeCheckmate() {
   const [showGameOverModal, setShowGameOverModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [suggestedMove, setSuggestedMove] = useState<{ from: string; to: string; fen: string } | null>(null);
+  const [_, setSuggestedMove] = useState<{ from: string; to: string; fen: string } | null>(null);
 
   const suggestedMoveRef = useRef<{ from: string; to: string; fen: string } | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
