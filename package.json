@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "remix vite:build",
+    "format": "prettier --write .",
     "dev": "remix dev --manual -c \"arc sandbox -e testing\"",
     "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
     "start": "remix-serve ./build/server/index.js",
@@ -48,6 +49,8 @@
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.6.0",
     "postcss": "^8.4.45",
+    "prettier": "^3.3.3",
+    "prettier-plugin-tailwindcss": "^0.6.8",
     "tailwindcss": "^3.4.11",
     "typescript": "^5.1.6",
     "vite": "^5.1.0",

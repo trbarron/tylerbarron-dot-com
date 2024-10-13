@@ -1,5 +1,5 @@
 import React from 'react';
-import { Chessground as NativeChessground } from 'chessground/src';
+import Chessground from 'chessground/src';
 
 // Make sure to import the CSS somewhere in your app
 // import 'chessground/assets/chessground.base.css';
@@ -19,7 +19,7 @@ const ChessgroundWrapper: React.FC<ChessgroundWrapperProps> = ({ fen, orientatio
 
   React.useEffect(() => {
     if (chessgroundRef.current) {
-      const chessground = NativeChessground(chessgroundRef.current, {
+      const chessground = Chessground(chessgroundRef.current, {
         fen: fen,
         orientation: orientation,
         movable: {
