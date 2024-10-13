@@ -16,6 +16,7 @@ export default {
       util: true,
     } 
   },
+  serverDependenciesToBundle: ['chessground'],
   routes: (defineRoutes) =>
     defineRoutes((route) => {
       if (process.env.NODE_ENV === "production") return;
