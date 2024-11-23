@@ -3,11 +3,10 @@ tb-website-remix
 
 @aws
 runtime nodejs18.x
-# concurrency 1
-# memory 1152
-# profile default
-# region us-west-1
-# timeout 30
+memory 1152
+region us-west-1
+timeout 30
+profile default
 
 @http
 /*
@@ -19,3 +18,4 @@ plugin-remix
   src plugin-remix.js
 
 @static
+fingerprint true
