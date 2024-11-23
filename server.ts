@@ -6,29 +6,26 @@ console.log('Environment:', process.env.NODE_ENV);
 console.log('Arc App URL:', process.env.ARC_APP_URL);
 console.log('Server Build Path:', build);
 
-try {
-  const requestHandler = createRequestHandler({
-    build,
-    mode: process.env.NODE_ENV,
-    getLoadContext(event) {
-      console.log('Request event:', JSON.stringify(event, null, 2));
-      return {};
-    },
-  });
-  
-  export async function handler(event, context) {
-    console.log('Lambda handler called with event:', JSON.stringify(event, null, 2));
-    console.log('Context:', JSON.stringify(context, null, 2));
-    try {
-      const response = await requestHandler(event, context);
-      console.log('Response:', JSON.stringify(response, null, 2));
-      return response;
-    } catch (error) {
-      console.error('Handler error:', error);
-      throw error;
-    }
+const requestHandler = createRequestHandler({
+  build,
+  mode: process.env.NODE_ENV,
+  getLoadContext(event) {
+    console.log('Request event:', JSON.stringify(event, null, 2));
+    return {};
+  },
+});
+
+async function handlerFn(event, context) {
+  console.log('Lambda handler called with event:', JSON.stringify(event, null, 2));
+  console.log('Context:', JSON.stringify(context, null, 2));
+  try {
+    const response = await requestHandler(event, context);
+    console.log('Response:', JSON.stringify(response, null, 2));
+    return response;
+  } catch (error) {
+    console.error('Handler error:', error);
+    throw error;
   }
-} catch (error) {
-  console.error('Server initialization error:', error);
-  throw error;
 }
+
+export const handler = handlerFn;
