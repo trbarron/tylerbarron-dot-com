@@ -4,7 +4,7 @@ tb-website-remix
 @aws
 runtime nodejs20.x
 memory 1152
-region us-west-1
+region us-west-2
 timeout 30
 profile default
 
@@ -15,7 +15,7 @@ profile default
 
 @plugins
 remix-vite
-  src plugin-vite.js
+  src plugin-vite.mjs
 
 @static
 fingerprint true
