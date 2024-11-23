@@ -4,16 +4,16 @@
   "sideEffects": false,
   "type": "module",
   "scripts": {
-    "build": "remix vite:build",
+    "build": "remix build",
     "format": "prettier --write .",
     "dev": "remix dev --manual -c \"arc sandbox -e testing\"",
     "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
-    "start": "remix-serve ./build/server/index.js",
+    "start": "remix-serve ./build/index.js",
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@architect/architect": "github:architect/architect",
-    "@architect/functions": "github:architect/functions",
+    "@architect/architect": "^11.1.0",
+    "@architect/functions": "^8.1.6",
     "@remix-run/architect": "^2.13.1",
     "@remix-run/css-bundle": "^2.13.1",
     "@remix-run/node": "^2.12.0",
