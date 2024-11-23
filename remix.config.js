@@ -13,6 +13,7 @@ export default {
       events: true,
       querystring: true,
       util: true,
+      punycode: true,
     } 
   },
   serverDependenciesToBundle: ['chessground'],
