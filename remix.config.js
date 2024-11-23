@@ -11,7 +11,6 @@ export default {
   browserNodeBuiltinsPolyfill: { 
     modules: { 
       events: true,
-      punycode: true,
       querystring: true,
       util: true,
     } 
@@ -21,7 +20,7 @@ export default {
     defineRoutes((route) => {
       if (process.env.NODE_ENV === "production") return;
 
-      console.log("⚠️  Test routes enabled.");
+      console.log("Test routes enabled.");
 
       const appDir = path.join(process.cwd(), "app");
     }),

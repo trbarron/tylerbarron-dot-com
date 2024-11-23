@@ -1,4 +1,7 @@
 import { Link } from '@remix-run/react';
+import email from "~/images/Global/email.svg";
+import git from "~/images/Global/git.svg";
+import linkedin from "~/images/Global/in.svg";
 
 export default function Footer() {
   return (
@@ -18,7 +21,7 @@ export default function Footer() {
                   className="bg-white shadow-lg h-8 w-8 md:h-10 md:w-10 flex items-center justify-center rounded-full outline-none focus:outline-none mr-2 p-2"
                   type="button">
                   <img
-                    src="/img/email.svg"
+                    src={email}
                     alt="email"
                     className="max-w-8 max-h-8"
                   />
@@ -28,7 +31,7 @@ export default function Footer() {
                   className="bg-white shadow-lg h-8 w-8 md:h-10 md:w-10 flex items-center justify-center rounded-full outline-none focus:outline-none mr-2 p-2"
                   type="button">
                   <img
-                    src="/img/git.svg"
+                    src={git}
                     alt="github"
                     className="max-w-8 max-h-8"
                   />
@@ -38,7 +41,7 @@ export default function Footer() {
                   className="bg-white shadow-lg h-8 w-8 md:h-10 md:w-10 flex items-center justify-center rounded-full outline-none focus:outline-none mr-2 p-2"
                   type="button">
                   <img
-                    src="/img/in.svg"
+                    src={linkedin}
                     alt="linkedin"
                     className="max-w-8 max-h-8"
                   />

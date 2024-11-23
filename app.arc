@@ -1,5 +1,5 @@
 @app
-grunge-stack-template
+tb-website-remix
 
 @aws
 runtime nodejs18.x
@@ -19,14 +19,3 @@ plugin-remix
   src plugin-remix.js
 
 @static
-
-@tables
-user
-  pk *String
-
-password
-  pk *String # userId
-
-note
-  pk *String  # userId
-  sk **String # noteId
