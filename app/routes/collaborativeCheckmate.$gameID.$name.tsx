@@ -1,301 +1,37 @@
-import React, { useEffect, useState, useCallback, useRef } from "react";
-import {useNavigate , useLoaderData } from "@remix-run/react";
+import React, { useState, useCallback } from "react";
+import { useLoaderData } from "@remix-run/react";
 import { json } from "@remix-run/node";
 import type { LoaderFunction } from "@remix-run/node";
 import { ClientOnly } from "remix-utils/client-only";
-import { Chess, Square } from "chess.js";
-import { createClient } from '@supabase/supabase-js';
-// import 'chessground/assets/chessground.base.css';
-// import 'chessground/assets/chessground.brown.css';
-// import 'chessground/assets/chessground.cburnett.css';
+import { Chess } from "chess.js";
 
 import { Navbar } from "~/components/Navbar";
 import Footer from "~/components/Footer";
 import { Subarticle } from "~/components/Subarticle";
 import Article from "~/components/Article";
-import { Modal } from '~/components/Modal';
 
 const ChessgroundWrapper = React.lazy(() => import('~/components/ChessgroundWrapper'));
-const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
-const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables');
-}
-
-const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false,
-    detectSessionInUrl: false
-  }
-});
-
-const TURN_TIMER = 10;
 
 type LoaderData = {
   gameID: string;
   name: string;
-  initialGameState: {
-    fen: string;
-    game_over: boolean;
-    last_move_from?: string;
-    last_move_to?: string;
-    w_one?: string;
-    w_two?: string;
-    b_one?: string;
-    b_two?: string;
-  };
 };
 
-// Server-side loader
-export const loader: LoaderFunction = async ({ request, params }) => {
-  const response = new Response();
-  
-  // Create server-side only Supabase client
-  const supabase = createServerClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_ANON_KEY!,
-    { request, response }
-  );
-
-  try {
-    const { data: gameData, error } = await supabase
-      .from('games')
-      .select('*')
-      .eq('game_id', params.gameID)
-      .single();
-
-    if (error) throw error;
-
-    return json({
-      gameID: params.gameID,
-      name: params.name,
-      initialGameState: gameData
-    });
-  } catch (error) {
-    console.error('Error loading game:', error);
-    throw new Response('Error loading game', { status: 500 });
-  }
-};
-
-// Server-side action for move submission
-export const action = async ({ request }) => {
-  const formData = await request.formData();
-  const gameID = formData.get('gameID');
-  const playerRole = formData.get('playerRole');
-  const suggestedFen = formData.get('suggestedFen');
-
-  const response = new Response();
-  const supabase = createServerClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_ANON_KEY!,
-    { request, response }
-  );
-
-  try {
-    await supabase
-      .from('move_selections')
-      .upsert({
-        game_id: gameID,
-        player_name: playerRole,
-        suggested_fen: suggestedFen
-      });
-
-    return json({ success: true });
-  } catch (error) {
-    return json({ error: 'Failed to submit move' }, { status: 500 });
-  }
+export const loader: LoaderFunction = async ({ params }) => {
+  return json({
+    gameID: params.gameID,
+    name: params.name
+  });
 };
 
 export default function CollaborativeCheckmate() {
-  const { gameID, name, initialGameState } = useLoaderData<LoaderData>();
-  const fetcher = useFetcher();
-  const navigate = useNavigate();
-
-  const [chess, setChess] = useState(new Chess(initialGameState.fen));
-  const [fen, setFen] = useState(initialGameState.fen);
-  const [lastMove, setLastMove] = useState<[string, string] | undefined>();
-  const [gameOver, setGameOver] = useState("");
-  const [timeRemaining, setTimeRemaining] = useState(TURN_TIMER);
-  const [playerRole, setPlayerRole] = useState<string | null>(null);
+  const { gameID, name } = useLoaderData<LoaderData>();
+  const [chess] = useState(new Chess());
   const [boardOrientation, setBoardOrientation] = useState("white");
-  const [showGameOverModal, setShowGameOverModal] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [_, setSuggestedMove] = useState<{ from: string; to: string; fen: string } | null>(null);
-
-  const suggestedMoveRef = useRef<{ from: string; to: string; fen: string } | null>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const remainingTimeRef = useRef(TURN_TIMER);
-
-  const updateGameState = useCallback((gameData: any) => {
-    const newChess = new Chess(gameData.fen);
-    setChess(newChess);
-    setFen(newChess.fen());
-    const isOver = gameData.game_over;
-    setGameOver(isOver ? determineGameOverReason(newChess) : "");
-    if (isOver) setShowGameOverModal(true);
-    if (gameData.last_move_from && gameData.last_move_to) {
-      setLastMove([gameData.last_move_from, gameData.last_move_to]);
-    }
-  }, []);
-
-  const determinePlayerRole = useCallback((gameData: any) => {
-    if (gameData.w_one === name) setPlayerRole('w_one');
-    else if (gameData.w_two === name) setPlayerRole('w_two');
-    else if (gameData.b_one === name) setPlayerRole('b_one');
-    else if (gameData.b_two === name) setPlayerRole('b_two');
-    else setPlayerRole(null);
-  }, [name]);
-
-  const fetchGameState = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const { data, error } = await supabase
-        .from('games')
-        .select('*')
-        .eq('game_id', gameID)
-        .single();
-
-      if (error) throw error;
-
-      updateGameState(data);
-      determinePlayerRole(data);
-    } catch (error) {
-      console.error('Error fetching game state:', error);
-      setError('Failed to load game state. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [gameID, updateGameState, determinePlayerRole]);
-
-  const handleGameUpdate = useCallback((payload: any) => {
-    updateGameState(payload.new);
-  }, [updateGameState]);
-
-  useEffect(() => {
-    const channel = supabase
-      .channel(`game:${gameID}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'games' }, handleGameUpdate)
-      .subscribe();
-
-    fetchGameState();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [gameID, fetchGameState, handleGameUpdate]);
-
-  const isPlayerTurn = useCallback(() => {
-    return ((playerRole === 'w_one' || playerRole === 'w_two') && chess.turn() === 'w') ||
-           ((playerRole === 'b_one' || playerRole === 'b_two') && chess.turn() === 'b');
-  }, [chess, playerRole]);
-
-  const submitMove = useCallback(async () => {
-    if (!isPlayerTurn()) return;
-    const currentSuggestedMove = suggestedMoveRef.current;
-    if (!currentSuggestedMove) return;
-
-    fetcher.submit(
-      {
-        gameID,
-        playerRole,
-        suggestedFen: currentSuggestedMove.fen
-      },
-      { method: 'post' }
-    );
-  }, [gameID, isPlayerTurn, playerRole, fetcher]);
-
-  useEffect(() => {
-    const shouldStartTimer = isPlayerTurn() && !gameOver;
-    if (shouldStartTimer) {
-      remainingTimeRef.current = TURN_TIMER;
-      setTimeRemaining(TURN_TIMER);
-
-      const startTime = new Date().getTime();
-
-      const updateTimer = () => {
-        const now = new Date().getTime();
-        const elapsed = Math.floor((now - startTime) / 1000);
-        const remaining = Math.max(0, TURN_TIMER - elapsed);
-        
-        remainingTimeRef.current = remaining;
-        setTimeRemaining(remaining);
-
-        if (remaining === 0) {
-          if (timerRef.current) clearInterval(timerRef.current);
-          submitMove();
-        }
-      };
-
-      timerRef.current = setInterval(updateTimer, 100);
-
-      return () => {
-        if (timerRef.current) clearInterval(timerRef.current);
-      };
-    }
-  }, [chess.turn(), gameOver, isPlayerTurn, submitMove]);
-
-  const onMove = useCallback((from: string, to: string) => {
-    if (isPlayerTurn() && !gameOver) {
-      const newChess = new Chess(chess.fen());
-      const move = newChess.move({ from, to, promotion: 'q' });
-      if (move) {
-        const newSuggestedMove = { from, to, fen: newChess.fen() };
-        setSuggestedMove(newSuggestedMove);
-        suggestedMoveRef.current = newSuggestedMove;
-      }
-    }
-  }, [chess, isPlayerTurn, gameOver]);
-
-  // const getLegalMoves = useCallback(() => {
-  //   if (timeRemaining <= 0 || !chess) return new Map();
-  //   const dests = new Map();
-  //   chess.SQUARES?.forEach(s => {
-  //     const ms = chess.moves({ square: s, verbose: true });
-  //     if (ms?.length) dests.set(s, ms.map(m => m.to));
-  //   });
-  //   return dests;
-
-  const getLegalMoves = useCallback(() => {
-    const moves: string[] = [];
-
-    const pieces = chess.board().flat().filter(piece => piece !== null);
-
-    pieces.forEach(piece => {
-      if (piece) {
-        const square = piece.square as Square;
-        const pieceMoves = chess.moves({ square, verbose: true });
-        moves.push(...pieceMoves.map(m => `${square}${m.to}`));
-      }
-    });
-    console.log(moves);
-
-    return moves;
-  }, [chess, timeRemaining]);
 
   const flipBoard = useCallback(() => {
     setBoardOrientation(prev => prev === "white" ? "black" : "white");
   }, []);
-
-  const determineGameOverReason = useCallback((chessInstance: Chess) => {
-    if (chessInstance.isCheckmate()) return "Checkmate";
-    if (chessInstance.isDraw()) return "Draw";
-    if (chessInstance.isStalemate()) return "Stalemate";
-    if (chessInstance.isThreefoldRepetition()) return "Threefold Repetition";
-    if (chessInstance.isInsufficientMaterial()) return "Insufficient Material";
-    return "Game Over";
-  }, []);
-
-  if (isLoading) {
-    return <div>Loading game...</div>;
-  }
-
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
 
   return (
     <div className="bg-background bg-fixed min-h-screen">
@@ -303,7 +39,7 @@ export default function CollaborativeCheckmate() {
       <main className="flex-grow">
         <Article
           title="Collaborative Checkmate"
-          subtitle={`Game ID: ${gameID} | Player: ${name} (Role: ${playerRole || 'Spectator'})`}
+          subtitle={`Game ID: ${gameID} | Player: ${name}`}
         >
           <Subarticle>
             <div className="mx-auto grid gap-x-4 grid-rows-2 md:grid-rows-1 grid-cols-1 md:grid-cols-2 md:ml-iauto" style={{ gridTemplateColumns: "80% 20%", marginLeft: "-0.5rem", marginRight: "0.5rem" }}>
@@ -312,22 +48,12 @@ export default function CollaborativeCheckmate() {
                   {() => (
                     <React.Suspense fallback={<div>Loading chess board...</div>}>
                       <ChessgroundWrapper
-                        fen={fen}
+                        fen={chess.fen()}
                         orientation={boardOrientation}
-                        turnColor={chess.turn()}
-                        lastMove={lastMove}
-                        onMove={onMove}
-                        movable={{
-                          free: false,
-                          color: isPlayerTurn() ? chess.turn() : 'none',
-                          dests: getLegalMoves(),
-                          // events: { after: onMove },
-                        }}
-                        check={chess.isCheck()}
-                        width="100%"
-                        height="0"
                         style={{
-                          paddingTop: '100%',
+                          width: '100%',
+                          height: '0',
+                          paddingBottom: '100%',
                           position: 'relative'
                         }}
                       />
@@ -343,11 +69,7 @@ export default function CollaborativeCheckmate() {
                   </div>
                   <div className="flex flex-col items-center justify-center px-4 pb-0 -mt-3 z-10 md:py-2 bg-gray text-gray-light text-xs md:text-xs h-full overflow-y-hidden">
                     <p>Current Team: {chess.turn() === 'w' ? 'White' : 'Black'}</p>
-                    <p>Your Role: {playerRole || 'Spectator'}</p>
-                    {isPlayerTurn() && !gameOver && (
-                      <p>Time Remaining: {timeRemaining} seconds</p>
-                    )}
-                    {gameOver && <p>Game Over: {gameOver}</p>}
+                    <p>Static chess board demo</p>
                   </div>
                 </div>
 
@@ -368,19 +90,13 @@ export default function CollaborativeCheckmate() {
           <Article title="About Collaborative Checkmate">
             <Subarticle subtitle="">
               <p>
-                Collaborative Checkmate is a 2v2 chess variant where teammates work together to outmaneuver their opponents. Each player has 10 seconds to make a move, after which the best move from the team is selected. Coordinate with your partner and outsmart your opponents!
+                A simple chess board demo. You can flip the board orientation using the button on the right.
               </p>
             </Subarticle>
           </Article>
         </div>
       </main>
       <Footer />
-      {showGameOverModal && (
-        <Modal onClose={() => setShowGameOverModal(false)}>
-          <div className="text-lg font-semibold text-gray-900">{gameOver}</div>
-          <p className="mt-2 text-base text-gray-600">The game has ended. Thank you for playing!</p>
-        </Modal>
-      )}
     </div>
   );
 }
