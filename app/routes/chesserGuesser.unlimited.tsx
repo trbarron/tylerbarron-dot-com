@@ -9,13 +9,24 @@ import { Navbar } from "~/components/Navbar";
 import Footer from "~/components/Footer";
 import Article from "~/components/Article";
 import { Subarticle } from "~/components/Subarticle";
+import { DynamoDB } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb';
 
 // Import images
 import whiteKingImage from '~/images/ChesserGuesser/whiteKing.png';
 import blackKingImage from '~/images/ChesserGuesser/blackKing.png';
 
-// AWS SDK import
-import AWS from 'aws-sdk';
+
+
+const client = new DynamoDB({
+    credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+    },
+    region: 'us-west-2'
+});
+
+const dynamoDb = DynamoDBDocument.from(client);
 
 // Define the type for the loader data
 type LoaderData = {
@@ -25,14 +36,6 @@ type LoaderData = {
 
 // Loader function (server-side)
 export const loader: LoaderFunction = async () => {
-  // Configure AWS
-  AWS.config.update({
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    region: 'us-west-2',
-  });
-
-  const dynamoDb = new AWS.DynamoDB.DocumentClient();
   const randomCgValue = Math.floor(Math.random() * 400).toString();
   const params = {
     TableName: "chesserGuesser",

@@ -1,14 +1,17 @@
 import { json, LoaderFunction } from "@remix-run/node";
-import AWS from 'aws-sdk';
+import { DynamoDB } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb';
 
-// Configure AWS
-AWS.config.update({
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    region: process.env.AWS_REGION,
+// Configure DynamoDB
+const client = new DynamoDB({
+    credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+    },
+    region: process.env.AWS_REGION
 });
 
-const dynamoDb = new AWS.DynamoDB.DocumentClient();
+const dynamoDb = DynamoDBDocument.from(client);
 
 type ScoresData = {
     userScore: string | null;
@@ -32,7 +35,7 @@ async function getScores(username: string): Promise<ScoresData> {
     };
 
     try {
-        const data = await dynamoDb.scan(params).promise();
+        const data = await dynamoDb.scan(params);
         const scores = data.Items?.map(item => ({
             userName: item.userData.split('#')[0],
             score: item.score,

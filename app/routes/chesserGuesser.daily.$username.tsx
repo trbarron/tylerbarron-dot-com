@@ -8,23 +8,24 @@ import Footer from "~/components/Footer";
 import Article from "~/components/Article";
 import { Subarticle } from "~/components/Subarticle";
 import { Modal } from '~/components/Modal';
+import { DynamoDB } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb';
 
 // Import images
 import whiteKingImage from '~/images/ChesserGuesser/whiteKing.png';
 import blackKingImage from '~/images/ChesserGuesser/blackKing.png';
 
-// AWS SDK import (server-side only)
-import AWS from 'aws-sdk';
 
 
-// Configure AWS (do this once, outside of the functions)
-AWS.config.update({
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    region: 'us-west-2',
+const client = new DynamoDB({
+    credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+    },
+    region: 'us-west-2'
 });
 
-const dynamoDb = new AWS.DynamoDB.DocumentClient();
+const dynamoDb = DynamoDBDocument.from(client);
 
 // Types
 type PuzzleData = {
