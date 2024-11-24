@@ -36,21 +36,85 @@ const TURN_TIMER = 10;
 type LoaderData = {
   gameID: string;
   name: string;
+  initialGameState: {
+    fen: string;
+    game_over: boolean;
+    last_move_from?: string;
+    last_move_to?: string;
+    w_one?: string;
+    w_two?: string;
+    b_one?: string;
+    b_two?: string;
+  };
 };
 
-export const loader: LoaderFunction = async ({ params }) => {
-  return json({
-    gameID: params.gameID,
-    name: params.name
-  });
+// Server-side loader
+export const loader: LoaderFunction = async ({ request, params }) => {
+  const response = new Response();
+  
+  // Create server-side only Supabase client
+  const supabase = createServerClient(
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_ANON_KEY!,
+    { request, response }
+  );
+
+  try {
+    const { data: gameData, error } = await supabase
+      .from('games')
+      .select('*')
+      .eq('game_id', params.gameID)
+      .single();
+
+    if (error) throw error;
+
+    return json({
+      gameID: params.gameID,
+      name: params.name,
+      initialGameState: gameData
+    });
+  } catch (error) {
+    console.error('Error loading game:', error);
+    throw new Response('Error loading game', { status: 500 });
+  }
+};
+
+// Server-side action for move submission
+export const action = async ({ request }) => {
+  const formData = await request.formData();
+  const gameID = formData.get('gameID');
+  const playerRole = formData.get('playerRole');
+  const suggestedFen = formData.get('suggestedFen');
+
+  const response = new Response();
+  const supabase = createServerClient(
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_ANON_KEY!,
+    { request, response }
+  );
+
+  try {
+    await supabase
+      .from('move_selections')
+      .upsert({
+        game_id: gameID,
+        player_name: playerRole,
+        suggested_fen: suggestedFen
+      });
+
+    return json({ success: true });
+  } catch (error) {
+    return json({ error: 'Failed to submit move' }, { status: 500 });
+  }
 };
 
 export default function CollaborativeCheckmate() {
-  const { gameID, name } = useLoaderData<LoaderData>();
-  useNavigate();
+  const { gameID, name, initialGameState } = useLoaderData<LoaderData>();
+  const fetcher = useFetcher();
+  const navigate = useNavigate();
 
-  const [chess, setChess] = useState(new Chess());
-  const [fen, setFen] = useState(chess.fen());
+  const [chess, setChess] = useState(new Chess(initialGameState.fen));
+  const [fen, setFen] = useState(initialGameState.fen);
   const [lastMove, setLastMove] = useState<[string, string] | undefined>();
   const [gameOver, setGameOver] = useState("");
   const [timeRemaining, setTimeRemaining] = useState(TURN_TIMER);
@@ -133,33 +197,16 @@ export default function CollaborativeCheckmate() {
     if (!isPlayerTurn()) return;
     const currentSuggestedMove = suggestedMoveRef.current;
     if (!currentSuggestedMove) return;
-  
-    try {
-      await supabase
-        .from('move_selections')
-        .upsert({
-          game_id: gameID,
-          player_name: playerRole,
-          suggested_fen: currentSuggestedMove.fen
-        });
-  
-      const { data, error: functionError } = await supabase.functions.invoke('evaluate-moves', {
-        body: { gameID }
-      });
-  
-      if (functionError) throw functionError;
-  
-      if (data.message !== 'Waiting for all players to submit moves') {
-        await fetchGameState();
-      }
-    } catch (error) {
-      console.error('Error submitting move or evaluating moves:', error);
-      setError('Failed to submit move or evaluate moves. Please try again.');
-    } finally {
-      setSuggestedMove(null);
-      suggestedMoveRef.current = null;
-    }
-  }, [gameID, isPlayerTurn, playerRole, fetchGameState]);
+
+    fetcher.submit(
+      {
+        gameID,
+        playerRole,
+        suggestedFen: currentSuggestedMove.fen
+      },
+      { method: 'post' }
+    );
+  }, [gameID, isPlayerTurn, playerRole, fetcher]);
 
   useEffect(() => {
     const shouldStartTimer = isPlayerTurn() && !gameOver;
