@@ -20,9 +20,13 @@ export default {
   routes: (defineRoutes) =>
     defineRoutes((route) => {
       if (process.env.NODE_ENV === "production") return;
-
       console.log("Test routes enabled.");
-
       const appDir = path.join(process.cwd(), "app");
     }),
+  future: {
+    unstable_dev: {
+      assetsBuildDirectory: "public/build",
+      bundleAssetNames: true
+    }
+  }
 };
