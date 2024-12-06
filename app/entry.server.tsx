@@ -59,8 +59,6 @@ function handleBotRequest(
           const body = new PassThrough();
           const stream = createReadableStreamFromReadable(body);
 
-          responseHeaders.set("Content-Type", "text/html");
-
           resolve(
             new Response(stream, {
               headers: responseHeaders,
@@ -108,8 +106,6 @@ function handleBrowserRequest(
           shellRendered = true;
           const body = new PassThrough();
           const stream = createReadableStreamFromReadable(body);
-
-          responseHeaders.set("Content-Type", "text/html");
 
           resolve(
             new Response(stream, {
