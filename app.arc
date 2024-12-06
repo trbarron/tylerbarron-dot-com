@@ -18,4 +18,4 @@ remix-vite
   src plugin-vite.mjs
 
 @static
-fingerprint true
+fingerprint false
