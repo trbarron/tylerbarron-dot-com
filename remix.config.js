@@ -4,7 +4,7 @@ import path from "node:path";
 export default {
   cacheDirectory: "./node_modules/.cache/remix",
   ignoredRouteFiles: ["**/.*", "**/*.test.{js,jsx,ts,tsx}"],
-  assetsBuildDirectory: "public/build",
+  assetsBuildDirectory: "/build",
   publicPath: "/build/",
   server: "server.ts",
   serverBuildPath: "server/index.mjs",
