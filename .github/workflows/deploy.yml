@@ -106,26 +106,33 @@ jobs:
       - name: 🏗 Build
         run: |
           npm run build
+          # Debug: List build output
+          echo "Build directory contents:"
+          ls -la public/build/
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
 
       - name: 🛠 Install Arc
-        run: npm i -g @architect/architect
-
-      - name: 🚀 Staging Deploy
-        if: github.ref == 'refs/heads/dev'
-        run: arc deploy --staging --prune
-        env:
-          CI: true
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          npm i -g @architect/architect
+          # Ensure server directory exists
+          mkdir -p server
+          # Copy build files to server directory
+          cp build/index.js server/index.js || echo "No server build found"
+          # Debug: List directories
+          echo "Server directory contents:"
+          ls -la server/
+          echo "Build directory contents:"
+          ls -la public/build/
 
       - name: 🚀 Production Deploy
         if: github.ref == 'refs/heads/master'
-        run: arc deploy --production --prune
+        run: |
+          # Debug: Show current directory structure
+          pwd
+          ls -la
+          arc deploy --production --prune --verbose
         env:
           CI: true
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
