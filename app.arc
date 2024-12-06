@@ -19,9 +19,3 @@ remix-vite
 
 @static
 fingerprint true
-prefs
-  types
-    application/javascript js mjs
-    text/css css
-    image/svg+xml svg
-    application/json json
