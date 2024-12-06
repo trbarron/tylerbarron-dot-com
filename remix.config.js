@@ -4,6 +4,7 @@ import path from "node:path";
 export default {
   cacheDirectory: "./node_modules/.cache/remix",
   ignoredRouteFiles: ["**/.*", "**/*.test.{js,jsx,ts,tsx}"],
+  assetsBuildDirectory: "public/build",
   publicPath: "/build/",
   server: "server.ts",
   serverBuildPath: "server/index.mjs",
@@ -25,7 +26,6 @@ export default {
     }),
   future: {
     unstable_dev: {
-      assetsBuildDirectory: "public/build",
       bundleAssetNames: true
     }
   }
