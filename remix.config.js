@@ -8,7 +8,7 @@ export default {
   cacheDirectory: "./node_modules/.cache/remix",
   ignoredRouteFiles: ["**/.*", "**/*.test.{js,jsx,ts,tsx}"],
   assetsBuildDirectory: "public/build",
-  publicPath: isProduction ? "/build/" : "/_static/build/",
+  publicPath: "/_static/build/",
   server: "./server.ts",
   serverBuildPath: "server/index.mjs",
   serverModuleFormat: "esm",
