@@ -7,7 +7,7 @@ import { processMdx } from '~/utils/mdx.server';
 
 
 export async function loader() {
-  if (process.env.NODE_ENV !== 'production') {
+  if (process.env.NODE_ENV === 'production') {
     const { S3Client, GetObjectCommand, ListObjectsV2Command } = await import('@aws-sdk/client-s3');
     const s3 = new S3Client({ region: process.env.AWS_REGION });
  
