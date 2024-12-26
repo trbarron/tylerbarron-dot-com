@@ -20,5 +20,13 @@ export default {
       punycode: true,
     } 
   },
-  serverDependenciesToBundle: ['chessground'],
+  serverDependenciesToBundle: [
+    'chessground',
+    '@aws-sdk/client-s3',
+    /^@aws-sdk\/.*/,
+    'mnemonist',
+    'mnemonist/lru-cache',
+    'obliterator/iterator',
+    'obliterator/foreach',
+  ],
 };

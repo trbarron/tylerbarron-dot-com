@@ -1,75 +1,64 @@
-import type { MetaFunction } from "@remix-run/node";
 import Footer from "~/components/Footer";
 import { json } from '@remix-run/node';
 import { Link, useLoaderData } from '@remix-run/react';
 import fs from 'fs/promises';
 import path from 'path';
 import { processMdx } from '~/utils/mdx.server';
-import { S3Client, GetObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
 
-const s3 = new S3Client({ region: process.env.AWS_REGION });
 
 export async function loader() {
   if (process.env.NODE_ENV === 'production') {
     const { S3Client, GetObjectCommand, ListObjectsV2Command } = await import('@aws-sdk/client-s3');
     const s3 = new S3Client({ region: process.env.AWS_REGION });
-
+ 
     try {
       const { Contents = [] } = await s3.send(new ListObjectsV2Command({
         Bucket: process.env.AWS_BUCKET_NAME,
         Prefix: 'posts/'
       }));
-
-     const posts = await Promise.all(
-       Contents.map(async (obj) => {
-         const { Body } = await s3.send(new GetObjectCommand({
-           Bucket: process.env.AWS_BUCKET_NAME,
-           Key: obj.Key
-         }));
-         
-         const source = await Body.transformToString();
-         const { frontmatter } = await processMdx(source);
-         
-         return {
-           slug: obj.Key.replace('posts/', '').replace('.mdx', ''),
-           title: frontmatter.title,
-           date: frontmatter.date,
-         };
-       })
-     );
-
-     return json({ posts: posts.sort((a, b) => new Date(b.date) - new Date(a.date)) });
-   } catch (error) {
-     console.error('S3 Error:', error);
-     return json({ posts: [] });
-   }
- } else {
-   try {
-     const postsPath = path.join(process.cwd(), '..', 'posts');
-     const files = await fs.readdir(postsPath);
-     const mdxFiles = files.filter(file => file.endsWith('.mdx'));
-     
-     const posts = await Promise.all(
-       mdxFiles.map(async (filename) => {
-         const filePath = path.join(postsPath, filename);
-         const source = await fs.readFile(filePath, 'utf-8');
-         const { frontmatter } = await processMdx(source);
-         
-         return {
-           slug: filename.replace('.mdx', ''),
-           title: frontmatter.title,
-           date: frontmatter.date,
-         };
-       })
-     );
-     
-     return json({ posts: posts.sort((a, b) => new Date(b.date) - new Date(a.date)) });
-   } catch (error) {
-     console.error('Filesystem Error:', error);
-     return json({ posts: [] });
-   }
+ 
+      const posts = await Promise.all(
+        Contents.map(async (obj) => {
+          const { Body } = await s3.send(new GetObjectCommand({
+            Bucket: process.env.AWS_BUCKET_NAME,
+            Key: obj.Key
+          }));
+          const source = await Body.transformToString();
+          const { frontmatter } = await processMdx(source);
+          return {
+            slug: obj.Key.replace('posts/', '').replace('.mdx', ''),
+            title: frontmatter.title,
+            date: frontmatter.date,
+          };
+        })
+      );
+      return json({ posts: posts.sort((a, b) => new Date(b.date) - new Date(a.date)) });
+    } catch (error) {
+      console.error('S3 Error:', error);
+      return json({ posts: [] });
+    }
+  } else {
+    const postsPath = path.join(process.cwd(), '..', 'posts');
+    try {
+      const files = await fs.readdir(postsPath);
+      const posts = await Promise.all(
+        files.filter(f => f.endsWith('.mdx')).map(async (filename) => {
+          const source = await fs.readFile(path.join(postsPath, filename), 'utf-8');
+          const { frontmatter } = await processMdx(source);
+          return {
+            slug: filename.replace('.mdx', ''),
+            title: frontmatter.title,
+            date: frontmatter.date,
+          };
+        })
+      );
+      return json({ posts: posts.sort((a, b) => new Date(b.date) - new Date(a.date)) });
+    } catch (error) {
+      console.error('Filesystem Error:', error);
+      return json({ posts: [] });
+    }
+  }
  }
-}
 
 const links = [
   {
