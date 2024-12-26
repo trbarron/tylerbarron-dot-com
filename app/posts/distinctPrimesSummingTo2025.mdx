@@ -1,0 +1,50 @@
+---
+title: Riddler∶ Finding Distinct Primes to Sum to 2025
+date: 2024-12-26
+---
+
+----
+
+> From Dean Ballard comes the perfect puzzle to usher in 2025:
+>
+> The number 2025 is not prime. As a matter of fact, it’s a perfect square: 2025 = 452.
+>
+> You cannot make 2025 by adding two distinct primes. To do so, you’d have to add an even prime and an odd prime. The only even prime is 2, but 2025 − 2 = 2023, which is not prime (it’s equal to 7∙172).
+> 
+> But you can make 2025 by adding three distinct primes. For example, 661 + 673 + 691 = 2025.
+> 
+> You can also make 2025 by adding four distinct primes: 2 + 659 + 673 + 691 = 2025.
+> 
+> What is the greatest number of distinct primes that add up to 2025?
+ 
+## Our Approach to Finding the Maximum
+
+To find the greatest possible number of distinct primes that sum to 2025, we developed an algorithmic approach:
+
+Start with finding all ways to sum to 1 using primes:
+
+- Check if 1 is prime
+- For each number from 1 down to 0, combine existing solutions
+- Add new solutions only if they contain no repeated primes
+
+
+Incrementally build up solutions for larger numbers
+
+Use the solutions from smaller numbers to construct solutions for larger ones
+Keep track of all valid combinations
+
+
+
+## Computational Challenges
+The problem quickly becomes computationally intensive due to its geometric growth. Even with several optimizations including:
+
+- Multiprocessing
+- Local database caching
+- Efficient prime number generation
+
+We were only able to compute solutions up to 500 on a medium-powered laptop.
+Connection to OEIS
+While we couldn't directly solve for 2025, our investigation led us to an interesting discovery. This problem is related to sequence A261153 in the Online Encyclopedia of Integer Sequences (OEIS), which defines a(n) as the maximum number of distinct primes whose sum is n.
+
+## Conclusion
+While we weren't able to definitively solve for 2025, this puzzle was fun and led to an interesting problem solving experience

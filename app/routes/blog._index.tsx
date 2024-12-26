@@ -1,31 +1,69 @@
 import { json } from '@remix-run/node';
-import { useLoaderData, Link } from '@remix-run/react';
+import { Link, useLoaderData } from '@remix-run/react';
 import fs from 'fs/promises';
 import path from 'path';
+import { processMdx } from '~/utils/mdx.server';
 
 export async function loader() {
-  const postsPath = path.join(process.cwd(), 'posts');
-  const files = await fs.readdir(postsPath);
-  const posts = files.map(filename => ({
-    slug: filename.replace('.mdx', ''),
-    title: filename.replace('.mdx', '').split('-').join(' ')
-  }));
-  return json({ posts });
+  // Get the directory path
+  const rootDir = path.dirname(process.cwd());
+  const postsPath = path.join(rootDir, 'app', 'posts');
+  
+  try {
+    // Read all files in the posts directory
+    const files = await fs.readdir(postsPath);
+    const mdxFiles = files.filter(file => file.endsWith('.mdx'));
+    
+    // Process each MDX file to get its frontmatter
+    const posts = await Promise.all(
+      mdxFiles.map(async (filename) => {
+        const filePath = path.join(postsPath, filename);
+        const source = await fs.readFile(filePath, 'utf-8');
+        const { frontmatter } = await processMdx(source);
+        
+        return {
+          slug: filename.replace('.mdx', ''),
+          title: frontmatter.title,
+          date: frontmatter.date,
+        };
+      })
+    );
+    
+    // Sort posts by date (most recent first)
+    posts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    
+    return json({ posts });
+  } catch (error) {
+    console.error('Error loading blog posts:', error);
+    return json({ posts: [] });
+  }
 }
 
-export default function BlogIndex() {
+export default function Blog() {
   const { posts } = useLoaderData<typeof loader>();
-
+  
   return (
-    <div>
-      <h1>Blog Posts</h1>
-      <ul>
+    <div className="max-w-4xl mx-auto p-4">
+      <h1 className="text-3xl mb-8">Blog Posts</h1>
+      <div className="space-y-6">
         {posts.map((post) => (
-          <li key={post.slug}>
-            <Link to={post.slug}>{post.title}</Link>
-          </li>
+          <div key={post.slug} className="border-b pb-4">
+            <Link 
+              to={post.slug} 
+              className="text-xl hover:underline"
+            >
+              {post.title}
+            </Link>
+            <div className="text-gray-600 mt-1">
+              {new Date(post.date).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })}
+            </div>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 }
