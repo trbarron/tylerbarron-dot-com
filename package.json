@@ -15,6 +15,7 @@
     "@architect/architect": "^11.1.0",
     "@architect/functions": "^8.1.6",
     "@aws-sdk/client-dynamodb": "^3.699.0",
+    "@aws-sdk/client-s3": "^3.717.0",
     "@aws-sdk/lib-dynamodb": "^3.699.0",
     "@remix-run/architect": "^2.13.1",
     "@remix-run/css-bundle": "^2.13.1",

@@ -9,20 +9,36 @@ import path from 'path';
 
 export const loader: LoaderFunction = async ({ params }) => {
   const { slug } = params;
-  const filePath = path.join(process.cwd(), '..', 'posts',  `${slug}.mdx`);
   
-  try {
-    const source = await fs.readFile(filePath, 'utf-8');
-    const { code, frontmatter } = await processMdx(source);
-    const images = {
-      validCombinations: '/images/validCombinations.png'
-    };
-    return json({ code, frontmatter, images });
-  } catch (error) {
-    console.error('Error in loader:', error);
-    throw new Response('Not Found', { status: 404 });
+  if (process.env.NODE_ENV === 'production') {
+    const { S3Client, GetObjectCommand } = await import('@aws-sdk/client-s3');
+    const s3 = new S3Client({ region: process.env.AWS_REGION });
+ 
+    try {
+      const { Body } = await s3.send(new GetObjectCommand({
+        Bucket: process.env.AWS_BUCKET_NAME,
+        Key: `posts/${slug}.mdx`
+      }));
+      
+      const source = await Body.transformToString();
+      const { code, frontmatter } = await processMdx(source);
+      return json({ code, frontmatter });
+    } catch (error) {
+      console.error('S3 Error:', error);
+      throw new Response('Not Found', { status: 404 });
+    }
+  } else {
+    const filePath = path.join(process.cwd(), '..', 'posts', `${slug}.mdx`);
+    try {
+      const source = await fs.readFile(filePath, 'utf-8');
+      const { code, frontmatter } = await processMdx(source);
+      return json({ code, frontmatter });
+    } catch (error) {
+      console.error('Filesystem Error:', error);
+      throw new Response('Not Found', { status: 404 });
+    }
   }
-};
+ };
 
 export default function BlogPost() {
   const { code, frontmatter } = useLoaderData();
