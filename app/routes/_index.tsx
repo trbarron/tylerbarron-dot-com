@@ -7,7 +7,7 @@ import { processMdx } from '~/utils/mdx.server';
 
 
 export async function loader() {
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV !== 'production') {
     const { S3Client, GetObjectCommand, ListObjectsV2Command } = await import('@aws-sdk/client-s3');
     const s3 = new S3Client({ region: process.env.AWS_REGION });
  
@@ -16,9 +16,12 @@ export async function loader() {
         Bucket: process.env.AWS_BUCKET_NAME,
         Prefix: 'posts/'
       }));
+
+      console.log('Bucket: ', process.env.AWS_BUCKET_NAME);
  
       const posts = await Promise.all(
         Contents.map(async (obj) => {
+          console.log('obj:', obj.Key);
           const { Body } = await s3.send(new GetObjectCommand({
             Bucket: process.env.AWS_BUCKET_NAME,
             Key: obj.Key
