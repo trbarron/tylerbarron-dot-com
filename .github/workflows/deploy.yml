@@ -117,7 +117,9 @@ jobs:
           VER=`npm --version`; echo "npm ver:    $VER"
 
       - name: 📥 Install deps
-        run: npm install
+        run: |
+          rm -rf node_modules
+          npm install
 
       - name: 🏗 Build
         run: |
