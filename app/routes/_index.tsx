@@ -17,11 +17,9 @@ export async function loader() {
         Prefix: 'posts/'
       }));
 
-      console.log('Bucket: ', process.env.AWS_BUCKET_NAME);
  
       const posts = await Promise.all(
         Contents.map(async (obj) => {
-          console.log('obj:', obj.Key);
           const { Body } = await s3.send(new GetObjectCommand({
             Bucket: process.env.AWS_BUCKET_NAME,
             Key: obj.Key
