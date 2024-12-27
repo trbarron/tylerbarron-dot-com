@@ -6,6 +6,8 @@ import { useMemo } from 'react';
 import { processMdx } from '~/utils/mdx.server';
 import fs from 'fs/promises';
 import path from 'path';
+import { Navbar } from "../components/Navbar";
+import Footer from "../components/Footer";
 
 export const loader: LoaderFunction = async ({ params }) => {
   const { slug } = params;
@@ -46,14 +48,8 @@ export default function BlogPost() {
 
   return (
     <div className="bg-background">
+      <Navbar />
       <div className="max-w-4xl mx-auto px-4 py-8 bg-white">
-        <Link 
-          to="/" 
-          className="mb-8 inline-block"
-        >
-          ← Back to posts
-        </Link>
-        
         <article className="max-w-4xl mx-auto">
           {/* Header section - outside of prose context */}
           <header className="mb-8">
@@ -110,25 +106,7 @@ export default function BlogPost() {
         </article>
         
         {/* Footer section */}
-        <footer className="mt-12 pt-6 border-t border-gray-200 dark:border-gray-800">
-          <div className="text-gray-600 dark:text-gray-400 text-sm">
-            {frontmatter.author && (
-              <p>Written by {frontmatter.author}</p>
-            )}
-            <p className="mt-2">
-              Have questions or feedback? Find me on{' '}
-              <a href="https://bsky.app/profile/tbarron.bsky.social" 
-                className="hover:underline">
-                Bluesky
-              </a>
-              {' '} or {' '}
-              <a href="https://x.com/BuildABarr" 
-                className="hover:underline">
-                X, the everything app
-              </a>
-            </p>
-          </div>
-        </footer>
+        <Footer />
       </div>
     </div>
   );
