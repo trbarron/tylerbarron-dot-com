@@ -115,9 +115,9 @@ jobs:
         run: |
           rm -rf node_modules
           npm cache clean --force
-          npm install esbuild --platform=linux --arch=arm64
           npm install
-
+          npm rebuild
+          
       - name: 🏗 Build
         run: |
           npm run build
