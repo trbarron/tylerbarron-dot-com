@@ -48,7 +48,7 @@ export default function BlogPost() {
     <div className="bg-background">
       <div className="max-w-4xl mx-auto px-4 py-8 bg-white">
         <Link 
-          to="/blog" 
+          to="/" 
           className="mb-8 inline-block"
         >
           ← Back to posts
