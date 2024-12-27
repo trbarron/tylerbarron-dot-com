@@ -115,7 +115,7 @@ jobs:
         run: |
           rm -rf node_modules
           npm cache clean --force
-          npm install
+          npm install --arch=arm64 --platform=linux
 
       - name: 🏗 Build
         run: |
