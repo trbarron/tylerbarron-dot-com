@@ -117,7 +117,7 @@ const Riddler = () => {
             
             <PhotoComponent photo={photos[3]} index={3} />
             
-            <p>We ended up finding all 1444 4x4 Barrons Squares, several hundred 8x8 and even a few 16x16 Barron Squares. <a href="https://fivethirtyeight.com/features/can-you-crack-this-squares-hidden-code/">This was featured as a Riddler Express for FiveThirtyEight.</a></p>
+            <p>We ended up finding all 122 4x4 Barrons Squares, several hundred 8x8 and even a few 16x16 Barron Squares. <a href="https://fivethirtyeight.com/features/can-you-crack-this-squares-hidden-code/">This was featured as a Riddler Express for FiveThirtyEight.</a></p>
 
             {/* Add more submitted problems here */}
           </Subarticle>
