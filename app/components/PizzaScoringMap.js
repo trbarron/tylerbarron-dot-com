@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import initSqlJs from 'sql.js';
 
 const PizzaLocationMap = () => {
   const [data, setData] = useState([]);
@@ -10,42 +9,10 @@ const PizzaLocationMap = () => {
     const loadData = async () => {
       try {
         setLoading(true);
-
-        console.log("Loading!");
-
-        // 1. Initialize sql.js correctly:
-        //    - Locate the sql-wasm.wasm file from your node_modules.
-        //    - It's usually in the 'dist' folder of sql.js after installation.
-        //    - If you place this file in your 'public' directory, you can use:
-        const SQL = await initSqlJs({
-          locateFile: (file) => `/${file}`,  // Assuming sql-wasm.wasm is in your public/ directory
-        });
-
-        // 2. Fetch the database file correctly:
-        const response = await fetch('https://externalwebsiteassets.s3.us-west-2.amazonaws.com/dominos_locations.db');
-        const buffer = await response.arrayBuffer();
-        const db = new SQL.Database(new Uint8Array(buffer));
-
-        // 3. Execute your SQL query:
-        const results = db.exec(`
-          SELECT name, latitude, longitude, rating, total_ratings, state, is_operational
-          FROM locations
-          WHERE is_operational = 1
-        `);
-
-        if (results.length > 0) {
-          const locations = results[0].values.map(row => ({
-            name: row[0],
-            latitude: row[1],
-            longitude: row[2],
-            rating: row[3],
-            total_ratings: row[4],
-            state: row[5]
-          }));
-
-          setData(locations);
-        }
-
+        // Fetch JSON instead of SQLite database
+        const response = await fetch('https://externalwebsiteassets.s3.us-west-2.amazonaws.com/dominos_locations.json');
+        const locations = await response.json();
+        setData(locations);
         setLoading(false);
       } catch (error) {
         console.error('Error loading data:', error);

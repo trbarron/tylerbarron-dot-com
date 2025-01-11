@@ -166,7 +166,7 @@ export default function ChecoLiveTracker() {
                                 {showDetails && (
     <div className="mt-8">
         {isDetailedLoading ? (
-            <h2 className="text-2xl font-bold text-gray-500">loading details</h2>
+            <h2 className="text-2xl text-gray-500">loading details</h2>
         ) : detailedData ? (
             <>
                 <p className="text-2xl mt-2">Last Week: {detailedData.last_week_work_time.toFixed(2)} hours</p>
