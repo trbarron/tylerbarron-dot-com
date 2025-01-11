@@ -18,6 +18,9 @@ export default {
       querystring: true,
       util: true,
       punycode: true,
+      fs: true,
+      crypto: true,
+      path: true
     } 
   },
   serverDependenciesToBundle: [
