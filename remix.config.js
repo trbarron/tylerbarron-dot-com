@@ -12,24 +12,32 @@ export default {
   server: "./server.ts",
   serverBuildPath: "server/index.mjs",
   serverModuleFormat: "esm",
-  browserNodeBuiltinsPolyfill: { 
-    modules: { 
+  browserNodeBuiltinsPolyfill: {
+    modules: {
+      crypto: true,
       events: true,
+      fs: true,
+      path: true,
+      punycode: true,
       querystring: true,
       util: true,
-      punycode: true,
-      fs: true,
-      crypto: true,
-      path: true
-    } 
+    },
   },
   serverDependenciesToBundle: [
-    'chessground',
-    '@aws-sdk/client-s3',
+    "chessground",
     /^@aws-sdk\/.*/,
     'mnemonist',
     'mnemonist/lru-cache',
     'obliterator/iterator',
     'obliterator/foreach',
   ],
+
+  // Future Flags (Enable all for now, but adjust as needed)
+  future: {
+    v3_fetcherPersist: true,
+    v3_lazyRouteDiscovery: true,
+    v3_relativeSplatPath: true,
+    v3_singleFetch: true,
+    v3_throwAbortReason: true,
+  },
 };
