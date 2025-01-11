@@ -12,7 +12,7 @@ export default {
   server: "./server.ts",
   serverBuildPath: "server/index.mjs",
   serverModuleFormat: "esm",
-  serverMinify: true,
+  // serverMinify: true,
   serverMode: isProduction ? "production" : "development",
   browserNodeBuiltinsPolyfill: {
     modules: {
@@ -27,9 +27,10 @@ export default {
   },
   serverDependenciesToBundle: [
     "chessground",
-    "@aws-sdk/client-dynamodb",
-    "@aws-sdk/client-s3",
-    "@aws-sdk/lib-dynamodb",
+    /^@aws-sdk\/.*/,
+    // "@aws-sdk/client-dynamodb",
+    // "@aws-sdk/client-s3",
+    // "@aws-sdk/lib-dynamodb",
     'mnemonist',
     'mnemonist/lru-cache',
     'obliterator/iterator',

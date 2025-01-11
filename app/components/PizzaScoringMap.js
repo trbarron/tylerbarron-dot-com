@@ -45,7 +45,7 @@ const PizzaLocationMap = () => {
 
   // Function to get color based on rating
   const getRatingColor = (rating) => {
-    const hue = (rating / 5) * 120; // 0 = red, 120 = green
+    const hue = (rating / 5) * 120;
     return `hsl(${hue}, 70%, 50%)`;
   };
 
