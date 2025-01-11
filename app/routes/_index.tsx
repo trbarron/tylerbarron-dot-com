@@ -107,6 +107,11 @@ const links = [
     title: "Set",
     description: "Using computer vision to play a board game"
   },
+  {
+    to: "/PizzaRating",
+    title: "National Pizza Ratings",
+    description: "Determining the best pizza in the Nation, uniquely"
+  },
   // {
   //   to: "/BoulderingTracker",
   //   title: "Bouldering Tracker",

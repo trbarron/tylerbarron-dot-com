@@ -7,10 +7,15 @@ import {
   Scripts,
   ScrollRestoration,
 } from "@remix-run/react";
-
+import { useLoaderData } from "@remix-run/react";
+import type { LoaderFunction } from "@remix-run/node";
 import styles from './styles/index.css';
 
-const gaTrackingId = process.env.GA_TRACKING_ID;
+export const loader: LoaderFunction = async () => {
+  return {
+    gaTrackingId: process.env.GA_TRACKING_ID,
+  };
+};
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: styles }
@@ -24,6 +29,9 @@ export const meta = () => {
 };
 
 export default function App() {
+
+  const { gaTrackingId } = useLoaderData<typeof loader>();
+
   return (
     <html lang="en">
       <head>
