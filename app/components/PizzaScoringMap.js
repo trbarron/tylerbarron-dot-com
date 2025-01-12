@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { geoAlbersUsa } from 'd3-geo';
+import { geoAlbersUsa, geoPath } from 'd3-geo';
+import { feature } from 'topojson-client';
 
 const PizzaLocationMap = () => {
   const [reviewData, setReviewData] = useState([]);
@@ -10,18 +11,29 @@ const PizzaLocationMap = () => {
   const [hoveredScore, setHoveredScore] = useState(null);
   const [showReviews, setShowReviews] = useState(true);
   const [showPizzaScore, setShowPizzaScore] = useState(true);
+  const [usStates, setUsStates] = useState(null);
   
-  // Set up projection
+  // Set up projection for continental US
   const width = 1200;
   const height = 800;
-  const projection = geoAlbersUsa().fitSize([width, height], {
-    type: "Feature",
-    properties: {},
-    geometry: {
-      type: "MultiPolygon",
-      coordinates: [[[[100, 40], [120, 40], [120, 50], [100, 50]]]]
-    }
-  });
+  const projection = geoAlbersUsa()
+    .scale(1400)
+    .translate([width / 2, height / 2]);
+
+  // Fetch US States data
+  useEffect(() => {
+    const fetchStates = async () => {
+      try {
+        const response = await fetch('https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json');
+        const topology = await response.json();
+        const statesGeo = feature(topology, topology.objects.states);
+        setUsStates(statesGeo);
+      } catch (error) {
+        console.error('Error loading US states:', error);
+      }
+    };
+    fetchStates();
+  }, []);
 
   // Fetch review data
   useEffect(() => {
@@ -67,11 +79,44 @@ const PizzaLocationMap = () => {
     return `hsl(${hue}, 70%, 50%)`;
   };
 
-  // Render pizza score heatmap
+  // Render US states (excluding Alaska and Hawaii)
+  const renderStates = () => {
+    if (!usStates) return null;
+    
+    const pathGenerator = geoPath().projection(projection);
+    
+    return (
+      <g className="states">
+        {usStates.features
+          .filter(feature => {
+            // Filter out Alaska (02) and Hawaii (15)
+            const id = feature.id;
+            return id !== "02" && id !== "15";
+          })
+          .map((feature, i) => (
+            <path
+              key={`state-${i}`}
+              d={pathGenerator(feature)}
+              fill="none"
+              stroke="#333"
+              strokeWidth="0.5"
+            />
+          ))}
+      </g>
+    );
+  };
+
+  // Render pizza score heatmap (continental US only)
   const renderPizzaScoreHeatmap = () => {
     if (!showPizzaScore || !scoreData.length) return null;
 
-    return scoreData.map((point, i) => {
+    return scoreData
+      .filter(point => {
+        // Rough bounds for continental US
+        return point.latitude > 24 && point.latitude < 50 && 
+               point.longitude > -125 && point.longitude < -66;
+      })
+      .map((point, i) => {
       const [x, y] = projection([point.longitude, point.latitude]) || [0, 0];
       if (!x || !y) return null;
 
@@ -91,11 +136,17 @@ const PizzaLocationMap = () => {
     });
   };
 
-  // Render review points
+  // Render review points (continental US only)
   const renderReviewPoints = () => {
     if (!showReviews || !reviewData.length) return null;
 
-    return reviewData.map((location, i) => {
+    return reviewData
+      .filter(location => {
+        // Rough bounds for continental US
+        return location.latitude > 24 && location.latitude < 50 && 
+               location.longitude > -125 && location.longitude < -66;
+      })
+      .map((location, i) => {
       const [x, y] = projection([location.longitude, location.latitude]) || [0, 0];
       if (!x || !y) return null;
       
@@ -124,22 +175,24 @@ const PizzaLocationMap = () => {
       return (
         <g>
           <rect
-            x={x + 20}
-            y={y - 35}
-            width="200"
-            height="80"
+            x={x + 10}
+            y={y - 50}
+            width="220"
+            height="90"
             fill="white"
-            stroke="black"
-            strokeWidth="0.5"
+            stroke="#333"
+            strokeWidth="1"
+            rx="4"
+            opacity="0.95"
           />
-          <text x={x + 20} y={y - 15} fontSize="24" fontWeight="bold">
+          <text x={x + 20} y={y - 25} fontSize="14" fontWeight="600" fill="#333">
             {hoveredLocation.name}
           </text>
-          <text x={x + 20} y={y + 7} fontSize="24">
-            Rating: {hoveredLocation.rating}
+          <text x={x + 20} y={y} fontSize="13" fill="#666">
+            Rating: {hoveredLocation.rating.toFixed(1)} ★
           </text>
-          <text x={x + 20} y={y + 29} fontSize="24">
-            Reviews: {hoveredLocation.total_ratings}
+          <text x={x + 20} y={y + 25} fontSize="13" fill="#666">
+            Reviews: {hoveredLocation.total_ratings.toLocaleString()}
           </text>
         </g>
       );
@@ -153,18 +206,20 @@ const PizzaLocationMap = () => {
         <g>
           <rect
             x={x + 10}
-            y={y - 15}
-            width="180"
-            height="60"
+            y={y - 40}
+            width="200"
+            height="70"
             fill="white"
-            stroke="black"
-            strokeWidth="0.5"
+            stroke="#333"
+            strokeWidth="1"
+            rx="4"
+            opacity="0.95"
           />
-          <text x={x + 15} y={y + 4} fontSize="24" fontWeight="bold">
+          <text x={x + 20} y={y - 15} fontSize="14" fontWeight="600" fill="#333">
             Pizza Score
           </text>
-          <text x={x + 15} y={y + 32} fontSize="24">
-            Score: {hoveredScore.pizza_score.toFixed(2)}
+          <text x={x + 20} y={y + 10} fontSize="13" fill="#666">
+            Score: {hoveredScore.pizza_score.toFixed(2)} / 5
           </text>
         </g>
       );
@@ -211,6 +266,7 @@ const PizzaLocationMap = () => {
             preserveAspectRatio="xMidYMid meet"
           >
             <rect width={width} height={height} fill="#f8f9fa" />
+            {renderStates()}
             {renderPizzaScoreHeatmap()}
             {renderReviewPoints()}
             {renderHoverInfo()}

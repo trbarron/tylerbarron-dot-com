@@ -110,7 +110,7 @@ const links = [
   {
     to: "/PizzaRating",
     title: "National Pizza Ratings",
-    description: "Determining the best pizza in the Nation, uniquely"
+    description: "Using Domino's to find the best pizza"
   },
   // {
   //   to: "/BoulderingTracker",
