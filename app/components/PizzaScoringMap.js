@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { geoAlbersUsa } from 'd3-geo';
 
-
 const PizzaLocationMap = () => {
   const [reviewData, setReviewData] = useState([]);
   const [scoreData, setScoreData] = useState([]);
@@ -13,8 +12,8 @@ const PizzaLocationMap = () => {
   const [showPizzaScore, setShowPizzaScore] = useState(true);
   
   // Set up projection
-  const width = 800;
-  const height = 600;
+  const width = 1200;
+  const height = 800;
   const projection = geoAlbersUsa().fitSize([width, height], {
     type: "Feature",
     properties: {},
@@ -125,21 +124,21 @@ const PizzaLocationMap = () => {
       return (
         <g>
           <rect
-            x={x + 10}
-            y={y - 25}
-            width="150"
-            height="60"
+            x={x + 20}
+            y={y - 35}
+            width="200"
+            height="80"
             fill="white"
             stroke="black"
             strokeWidth="0.5"
           />
-          <text x={x + 15} y={y - 10} fontSize="12" fontWeight="bold">
+          <text x={x + 20} y={y - 15} fontSize="24" fontWeight="bold">
             {hoveredLocation.name}
           </text>
-          <text x={x + 15} y={y + 5} fontSize="12">
+          <text x={x + 20} y={y + 7} fontSize="24">
             Rating: {hoveredLocation.rating}
           </text>
-          <text x={x + 15} y={y + 20} fontSize="12">
+          <text x={x + 20} y={y + 29} fontSize="24">
             Reviews: {hoveredLocation.total_ratings}
           </text>
         </g>
@@ -154,17 +153,17 @@ const PizzaLocationMap = () => {
         <g>
           <rect
             x={x + 10}
-            y={y - 25}
-            width="150"
-            height="40"
+            y={y - 15}
+            width="180"
+            height="60"
             fill="white"
             stroke="black"
             strokeWidth="0.5"
           />
-          <text x={x + 15} y={y - 10} fontSize="12" fontWeight="bold">
+          <text x={x + 15} y={y + 4} fontSize="24" fontWeight="bold">
             Pizza Score
           </text>
-          <text x={x + 15} y={y + 5} fontSize="12">
+          <text x={x + 15} y={y + 32} fontSize="24">
             Score: {hoveredScore.pizza_score.toFixed(2)}
           </text>
         </g>
@@ -181,12 +180,9 @@ const PizzaLocationMap = () => {
   }
 
   return (
-    <div className="w-full bg-white rounded-lg shadow">
-      <div className="p-6">
-        <h2 className="text-2xl font-bold mb-4">Pizza Location Ratings</h2>
-        
-        {/* Toggle Controls */}
-        <div className="flex gap-4">
+    <div className="w-full h-full bg-white rounded-lg shadow">
+      <div className="p-4">       
+        <div className="flex items-center gap-8 mb-4">
           <label className="flex items-center gap-2">
             <input
               type="checkbox"
@@ -196,8 +192,6 @@ const PizzaLocationMap = () => {
             />
             Show Raw Pizza Reviews
           </label>
-        </div>
-        <div className="flex gap-4 mb-4">
           <label className="flex items-center gap-2">
             <input
               type="checkbox"
@@ -205,37 +199,44 @@ const PizzaLocationMap = () => {
               onChange={(e) => setShowPizzaScore(e.target.checked)}
               className="form-checkbox"
             />
-            Show Pizza Scores
+            Show Calculated Pizza Scores
           </label>
         </div>
 
-        <div className="h-96 relative bg-gray-100 border rounded-lg">
+        <div className="h-2/4 max-h-[800px] relative bg-gray-100 border rounded-lg">
           <svg
             width="100%"
             height="100%"
-            viewBox="0 0 800 600"
+            viewBox={`0 0 ${width} ${height}`}
             preserveAspectRatio="xMidYMid meet"
           >
-            <rect width="800" height="600" fill="#f8f9fa" />
-
+            <rect width={width} height={height} fill="#f8f9fa" />
             {renderPizzaScoreHeatmap()}
             {renderReviewPoints()}
             {renderHoverInfo()}
           </svg>
         </div>
 
-        {/* Statistics */}
-        <div className="mt-4">
-          <h3 className="text-lg mb-2">Statistics</h3>
-          <div className="text-sm">
-            <div>Total Locations: {reviewData.length}</div>
-            <div>
-              Average Rating:{" "}
-              {(reviewData.reduce((sum, loc) => sum + loc.rating, 0) / reviewData.length).toFixed(2)}
+        <div className="mt-4 grid grid-rows-2 gap-6">
+          <div>
+            <div className="text-lg font-semibold mb-2">Background</div>
+            <div className="text-sm space-y-1">
+              <div>This maps shows the best pizza in America.</div>
+              <div>It uses the results from the opposite of Google Maps ratings from the Domino's locations - the higher the number, the better the pizza (because Dominos is poorly rated)</div>
             </div>
-            <div>
-              Total Reviews:{" "}
-              {reviewData.reduce((sum, loc) => sum + loc.total_ratings, 0).toLocaleString()}
+          </div>
+          <div>
+            <div className="text-lg font-semibold mb-2">Statistics</div>
+            <div className="text-sm space-y-1">
+              <div>Total Locations: {reviewData.length}</div>
+              <div>
+                Average Rating:{" "}
+                {(reviewData.reduce((sum, loc) => sum + loc.rating, 0) / reviewData.length).toFixed(2)}
+              </div>
+              <div>
+                Total Reviews:{" "}
+                {reviewData.reduce((sum, loc) => sum + loc.total_ratings, 0).toLocaleString()}
+              </div>
             </div>
           </div>
         </div>
