@@ -277,8 +277,13 @@ const PizzaLocationMap = () => {
           <div>
             <div className="text-lg font-semibold mb-2">Background</div>
             <div className="text-sm space-y-1">
-              <div>This maps shows the best pizza in America.</div>
-              <div>It uses the results from the opposite of Google Maps ratings from the Domino's locations - the higher the number, the better the pizza (because Dominos is poorly rated)</div>
+              <div>The Pizza Quality Index: Using Domino's as a Control Group</div>
+                <div>This map reveals America's best pizza regions through Domino's Pizza ratings.</div>
+                <div>The methodology builds on three key assumptions:</div>
+                <div>1. Domino's pizza is Domino's pizza. It is highly standardized nationwide, making it a reliable control variable</div>
+                <div>2. Pizza shop employees are constant enough that they impact the ratings in a standardized way</div>
+                <div>3. As a result of (1) and (2), the differentiating factor for the reviews is not the pizza, but rather the competitors in the area. The better the local pizza is, the worse Domino's will be rated</div>
+                <div>Our "Pizza Score" inverts Domino's Google Maps ratings: lower Domino's ratings suggest higher-quality local pizza alternatives. This creates a proxy measure for regional pizza excellence - areas where Domino's struggles are likely areas where local pizzerias thrive</div>
             </div>
           </div>
           <div>
