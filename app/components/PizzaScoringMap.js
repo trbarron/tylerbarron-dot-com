@@ -287,7 +287,7 @@ const PizzaLocationMap = () => {
           <div>
             <div className="text-lg font-semibold mb-2">Statistics</div>
             <div className="text-sm space-y-1">
-              <div>Total Locations: {reviewData.length}</div>
+              <div>Total Locations Sampled: {reviewData.length}</div>
               <div>
                 Average Rating:{" "}
                 {(reviewData.reduce((sum, loc) => sum + loc.rating, 0) / reviewData.length).toFixed(2)}
