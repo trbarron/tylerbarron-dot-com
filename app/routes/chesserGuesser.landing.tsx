@@ -19,7 +19,7 @@ export default function ChesserGuesserLandingPage() {
   };
 
   const handleSubmitUsername = () => {
-    navigate(`/ChesserGuesserDaily/${username}`);
+    navigate(`/ChesserGuesser/Daily/${username}`);
   };
 
   return (

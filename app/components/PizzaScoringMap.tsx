@@ -1,19 +1,49 @@
+import type { Feature, FeatureCollection, Geometry } from 'geojson';
 import React, { useState, useEffect } from 'react';
 import { geoAlbersUsa, geoPath } from 'd3-geo';
 import { feature } from 'topojson-client';
 
-const PizzaLocationMap = () => {
-  const [reviewData, setReviewData] = useState([]);
-  const [scoreData, setScoreData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [hoveredLocation, setHoveredLocation] = useState(null);
-  const [hoveredScore, setHoveredScore] = useState(null);
-  const [showReviews, setShowReviews] = useState(true);
-  const [showPizzaScore, setShowPizzaScore] = useState(true);
-  const [usStates, setUsStates] = useState(null);
+type LocationData = {
+  name: string;
+  latitude: number;
+  longitude: number;
+  rating: number;
+  total_ratings: number;
+}
 
-  // Set up projection for continental US
+type PizzaScoreData = {
+  latitude: number;
+  longitude: number;
+  pizza_score: number;
+}
+
+type TopoJSON = {
+  type: string;
+  objects: {
+    states: {
+      type: string;
+      geometries: Array<{
+        type: string;
+        coordinates: number[][][];
+        properties: Record<string, unknown>;
+      }>;
+    };
+  };
+  arcs: number[][][];
+}
+
+export default function PizzaLocationMap() {
+  const [reviewData, setReviewData] = useState<LocationData[]>([]);
+  const [scoreData, setScoreData] = useState<PizzaScoreData[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [hoveredLocation, setHoveredLocation] = useState<LocationData | null>(null);
+  const [hoveredScore, setHoveredScore] = useState<PizzaScoreData | null>(null);
+  const [showReviews, setShowReviews] = useState<boolean>(true);
+  const [showPizzaScore, setShowPizzaScore] = useState<boolean>(true);
+  const [usStates, setUsStates] = useState<FeatureCollection | null>(null);
+
+  // Constants
   const width = 1200;
   const height = 800;
   const projection = geoAlbersUsa()
@@ -25,7 +55,7 @@ const PizzaLocationMap = () => {
     const fetchStates = async () => {
       try {
         const response = await fetch('https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json');
-        const topology = await response.json();
+        const topology = await response.json() as TopoJSON;
         const statesGeo = feature(topology, topology.objects.states);
         setUsStates(statesGeo);
       } catch (error) {
@@ -43,7 +73,7 @@ const PizzaLocationMap = () => {
         const response = await fetch(
           'https://externalwebsiteassets.s3.us-west-2.amazonaws.com/dominos_locations.json'
         );
-        const locations = await response.json();
+        const locations = await response.json() as LocationData[];
         setReviewData(locations);
         setLoading(false);
       } catch (error) {
@@ -63,7 +93,7 @@ const PizzaLocationMap = () => {
         const response = await fetch(
           'https://externalwebsiteassets.s3.us-west-2.amazonaws.com/pizza_network.json'
         );
-        const scores = await response.json();
+        const scores = await response.json() as PizzaScoreData[];
         setScoreData(scores);
       } catch (error) {
         console.error('Error loading score data:', error);
@@ -74,7 +104,7 @@ const PizzaLocationMap = () => {
   }, []);
 
   // Calculate color based on rating
-  const getRatingColor = (rating) => {
+  const getRatingColor = (rating: number): string => {
     const hue = (rating / 5) * 120;
     return `hsl(${hue}, 70%, 50%)`;
   };
@@ -88,15 +118,15 @@ const PizzaLocationMap = () => {
     return (
       <g className="states">
         {usStates.features
-          .filter(feature => {
+          .filter((feature: Feature) => {
             // Filter out Alaska (02) and Hawaii (15)
-            const id = feature.id;
+            const id = feature.id as string;
             return id !== "02" && id !== "15";
           })
-          .map((feature, i) => (
+          .map((feature: Feature, i: number) => (
             <path
               key={`state-${i}`}
-              d={pathGenerator(feature)}
+              d={pathGenerator(feature) || undefined}
               fill="none"
               stroke="#333"
               strokeWidth="0.5"
@@ -117,8 +147,9 @@ const PizzaLocationMap = () => {
           point.longitude > -125 && point.longitude < -66;
       })
       .map((point, i) => {
-        const [x, y] = projection([point.longitude, point.latitude]) || [0, 0];
-        if (!x || !y) return null;
+        const projected = projection([point.longitude, point.latitude]);
+        if (!projected) return null;
+        const [x, y] = projected;
 
         return (
           <circle
@@ -147,8 +178,9 @@ const PizzaLocationMap = () => {
           location.longitude > -125 && location.longitude < -66;
       })
       .map((location, i) => {
-        const [x, y] = projection([location.longitude, location.latitude]) || [0, 0];
-        if (!x || !y) return null;
+        const projected = projection([location.longitude, location.latitude]);
+        if (!projected) return null;
+        const [x, y] = projected;
 
         return (
           <circle
@@ -169,29 +201,30 @@ const PizzaLocationMap = () => {
   // Render hover information
   const renderHoverInfo = () => {
     if (hoveredLocation && showReviews) {
-      const [x, y] = projection([hoveredLocation.longitude, hoveredLocation.latitude]) || [0, 0];
-      if (!x || !y) return null;
+      const projected = projection([hoveredLocation.longitude, hoveredLocation.latitude]);
+      if (!projected) return null;
+      const [x, y] = projected;
 
       return (
         <g>
           <rect
             x={x + 10}
             y={y - 50}
-            width="220"
-            height="90"
+            width={220}
+            height={90}
             fill="white"
             stroke="#333"
             strokeWidth="1"
-            rx="4"
-            opacity="0.95"
+            rx={4}
+            opacity={0.95}
           />
-          <text x={x + 20} y={y - 25} fontSize="14" fontWeight="600" fill="#333">
+          <text x={x + 20} y={y - 25} fontSize={14} fontWeight="600" fill="#333">
             {hoveredLocation.name}
           </text>
-          <text x={x + 20} y={y} fontSize="13" fill="#666">
+          <text x={x + 20} y={y} fontSize={13} fill="#666">
             Rating: {hoveredLocation.rating.toFixed(1)} ★
           </text>
-          <text x={x + 20} y={y + 25} fontSize="13" fill="#666">
+          <text x={x + 20} y={y + 25} fontSize={13} fill="#666">
             Reviews: {hoveredLocation.total_ratings.toLocaleString()}
           </text>
         </g>
@@ -199,31 +232,34 @@ const PizzaLocationMap = () => {
     }
 
     if (hoveredScore && showPizzaScore && !showReviews) {
-      const [x, y] = projection([hoveredScore.longitude, hoveredScore.latitude]) || [0, 0];
-      if (!x || !y) return null;
+      const projected = projection([hoveredScore.longitude, hoveredScore.latitude]);
+      if (!projected) return null;
+      const [x, y] = projected;
 
       return (
         <g>
           <rect
             x={x + 10}
             y={y - 40}
-            width="200"
-            height="70"
+            width={200}
+            height={70}
             fill="white"
             stroke="#333"
             strokeWidth="1"
-            rx="4"
-            opacity="0.95"
+            rx={4}
+            opacity={0.95}
           />
-          <text x={x + 20} y={y - 15} fontSize="14" fontWeight="600" fill="#333">
+          <text x={x + 20} y={y - 15} fontSize={14} fontWeight="600" fill="#333">
             Pizza Score
           </text>
-          <text x={x + 20} y={y + 10} fontSize="13" fill="#666">
+          <text x={x + 20} y={y + 10} fontSize={13} fill="#666">
             Score: {hoveredScore.pizza_score.toFixed(2)} / 5
           </text>
         </g>
       );
     }
+
+    return null;
   };
 
   if (loading) {
@@ -242,7 +278,7 @@ const PizzaLocationMap = () => {
             <input
               type="checkbox"
               checked={showReviews}
-              onChange={(e) => setShowReviews(e.target.checked)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setShowReviews(e.target.checked)}
               className="form-checkbox"
             />
             Show Raw Pizza Reviews
@@ -251,7 +287,7 @@ const PizzaLocationMap = () => {
             <input
               type="checkbox"
               checked={showPizzaScore}
-              onChange={(e) => setShowPizzaScore(e.target.checked)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setShowPizzaScore(e.target.checked)}
               className="form-checkbox"
             />
             Show Calculated Pizza Scores
@@ -303,6 +339,4 @@ const PizzaLocationMap = () => {
       </div>
     </div>
   );
-};
-
-export default PizzaLocationMap;
+}

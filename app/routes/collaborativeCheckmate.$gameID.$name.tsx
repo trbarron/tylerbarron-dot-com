@@ -10,7 +10,7 @@ import Footer from "~/components/Footer";
 import { Subarticle } from "~/components/Subarticle";
 import Article from "~/components/Article";
 
-const ChessgroundWrapper = React.lazy(() => import('~/components/ChessgroundWrapper'));
+const ChessgroundWrapper = React.lazy(() => import('~/components/Chessboard'));
 
 type LoaderData = {
   gameID: string;

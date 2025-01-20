@@ -19,13 +19,13 @@
     "@remix-run/node": "^2.12.0",
     "@remix-run/react": "^2.12.0",
     "@remix-run/serve": "^2.12.0",
-    "chess.js": "^1.0.0-beta.8",
+    "chess.js": "^1.0.0",
+    "chessground": "^9.1.1",
     "d3-geo": "^3.1.1",
     "isbot": "^4.1.0",
     "mdx-bundler": "^10.0.3",
     "mnemonist": "^0.39.8",
     "react": "^18.2.0",
-    "react-chessground": "^1.5.0",
     "react-dom": "^18.2.0",
     "recharts": "^2.12.7",
     "rehype-highlight": "^7.0.0",
@@ -36,6 +36,7 @@
     "yet-another-react-lightbox": "^3.21.5"
   },
   "devDependencies": {
+    "@architect/architect": "^11.1.0",
     "@remix-run/dev": "^2.12.0",
     "@tailwindcss/typography": "^0.5.15",
     "@types/react": "^18.2.20",

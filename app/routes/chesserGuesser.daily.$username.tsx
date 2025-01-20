@@ -2,7 +2,6 @@ import React, { useState, Suspense, useEffect } from "react";
 import { useLoaderData, useParams, useFetcher } from "@remix-run/react";
 import { json, LoaderFunction, ActionFunction } from "@remix-run/node";
 import { ClientOnly } from "remix-utils/client-only";
-import 'react-chessground/dist/styles/chessground.css';
 import { Navbar } from "~/components/Navbar";
 import Footer from "~/components/Footer";
 import Article from "~/components/Article";
@@ -113,8 +112,6 @@ export const action: ActionFunction = async ({ request, params }) => {
 
 
 
-// Client-side only Chessground component
-const ChessgroundWrapper = React.lazy(() => import('react-chessground'));
 
 export default function ChesserGuesserDaily() {
     const { puzzleData } = useLoaderData<LoaderData>();

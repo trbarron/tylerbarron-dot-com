@@ -26,11 +26,7 @@ export default {
     },
   },
   serverDependenciesToBundle: [
-    "chessground",
     /^@aws-sdk\/.*/,
-    // "@aws-sdk/client-dynamodb",
-    // "@aws-sdk/client-s3",
-    // "@aws-sdk/lib-dynamodb",
     'mnemonist',
     'mnemonist/lru-cache',
     'obliterator/iterator',
