@@ -158,11 +158,11 @@ jobs:
             --minify \
             --format=cjs \
             --tree-shaking=true \
-            --external:@aws-sdk/client-ssm \
-            --external:@aws-sdk/client-sns \
-            --external:@aws-sdk/client-apigatewaymanagementapi \
             --external:node:* \
             --external:crypto \
+            --external:'aws-sdk/*' \
+            --external:'@aws-sdk/*' \
+            --external:'@architect/functions' \
             --outfile=build/index.js
 
           cp build/index.js server/index.js
