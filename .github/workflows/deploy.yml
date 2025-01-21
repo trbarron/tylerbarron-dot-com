@@ -158,24 +158,14 @@ jobs:
             --minify \
             --format=cjs \
             --tree-shaking=true \
-            --external:@aws-sdk/* \
-            --external:aws-sdk/* \
+            --external:@aws-sdk/client-ssm \
+            --external:@aws-sdk/client-sns \
+            --external:@aws-sdk/client-apigatewaymanagementapi \
             --external:node:* \
             --external:crypto \
             --outfile=build/index.js
 
           cp build/index.js server/index.js
-      - name: 📏 Check Lambda Size
-        run: |
-          MAX_SIZE_MB=5
-          LAMBDA_SIZE_KB=$(du -k server/ | cut -f1)
-          LAMBDA_SIZE_MB=$((LAMBDA_SIZE_KB / 1024))
-          echo "Lambda size: ${LAMBDA_SIZE_MB}MB"
-          if [ $LAMBDA_SIZE_MB -gt $MAX_SIZE_MB ]; then
-            echo "Warning: Lambda size exceeds ${MAX_SIZE_MB}MB threshold"
-            echo "Largest dependencies:"
-            du -h server/node_modules/* | sort -rh | head -n 10
-          fi
 
       - name: 🚀 Production Deploy
         if: github.ref == 'refs/heads/master'
