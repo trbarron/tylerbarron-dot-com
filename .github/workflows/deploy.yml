@@ -160,8 +160,6 @@ jobs:
             --tree-shaking=true \
             --external:node:* \
             --external:crypto \
-            --external:'aws-sdk/*' \
-            --external:'@aws-sdk/*' \
             --external:'@architect/functions' \
             --outfile=build/index.js
 
