@@ -116,11 +116,6 @@ jobs:
           npm install
           npm rebuild
 
-      - name: 📦 Install Build Tools
-        run: |
-          npm install -g esbuild
-          npm install -g @architect/architect
-
       - name: 🏗 Build
         run: |
           npm run build
@@ -136,7 +131,7 @@ jobs:
           mkdir -p server
           
           # Copy build files
-          cp server/index.mjs server/index.js || echo "No server build found"
+          cp build/index.js server/index.js || echo "No server build found"
           
           # Create minimal package.json for server
           echo '{
