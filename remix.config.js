@@ -39,8 +39,7 @@ export default {
     'obliterator/iterator',
     'obliterator/foreach',
     'd3-geo/dist/d3-geo.min.js',
-    'topojson-client/dist/topojson-client.min.js',
-    /@aws-sdk\/.*/
+    'topojson-client/dist/topojson-client.min.js'
   ],
 
   serverConditions: ["worker", "import", "require", "production", "default"],
