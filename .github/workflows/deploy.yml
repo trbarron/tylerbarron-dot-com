@@ -128,31 +128,18 @@ jobs:
         run: |
           # Create server directory
           mkdir -p server
-          
-          # Copy build files
-          cp server/index.mjs server/index.js || echo "No server build found"
+          mkdir -p build
           
           # Create minimal package.json for server
           echo '{
             "type": "module",
+            "main": "index.mjs",
             "dependencies": {}
           }' > server/package.json
           
           # Install only production dependencies in server
           cd server
           npm i --omit=dev --no-package-lock
-          
-          if [ -d "node_modules" ]; then
-            echo "Cleaning up node_modules..."
-            find node_modules -type d -name "test" -exec rm -rf {} +
-            find node_modules -type d -name "tests" -exec rm -rf {} +
-            find node_modules -type d -name "docs" -exec rm -rf {} +
-            find node_modules -type f -name "*.md" -delete
-            find node_modules -type f -name "*.d.ts" -delete
-            find node_modules -type f -name "LICENSE*" -delete
-            find node_modules -type f -name "README*" -delete
-          fi
-          
           cd ..
           
           # Debug: Show directory structure
@@ -160,22 +147,22 @@ jobs:
           ls -la server/
           echo "Build directory contents:"
           ls -la public/build/
-        
+      
       - name: 📦 Optimize Server Bundle
         run: |
-          npx esbuild server/index.js \
+          npx esbuild server/index.mjs \
             --bundle \
             --platform=node \
             --target=node20 \
             --minify \
+            --format=esm \
             --tree-shaking=true \
             --external:@aws-sdk/* \
             --external:aws-sdk/* \
             --external:@architect/* \
-            --outfile=build/index.js
+            --outfile=build/index.mjs
 
-          cp build/index.js server/index.js
-
+          cp build/index.mjs server/index.mjs
       - name: 📏 Check Lambda Size
         run: |
           MAX_SIZE_MB=5
