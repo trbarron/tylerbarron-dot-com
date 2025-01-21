@@ -309,7 +309,7 @@ export default function PizzaLocationMap() {
           </svg>
         </div>
 
-        <div className="mt-4 grid grid-rows-2 gap-6">
+        <div className="mt-4 grid gap-6">
           <div>
             <div className="text-lg font-semibold mb-2">Background</div>
             <div className="text-sm space-y-1">

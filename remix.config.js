@@ -1,6 +1,5 @@
 import path from "node:path";
 
-
 const isProduction = process.env.NODE_ENV === "production";
 
 /** @type {import('@remix-run/dev').AppConfig} */
@@ -11,6 +10,7 @@ export default {
   publicPath: "/_static/build/",
   server: "./server.ts",
   serverBuildPath: "server/index.mjs",
+  serverMetafile: "server/metafile.json",
   serverModuleFormat: "esm",
   serverMinify: true,
   serverMode: isProduction ? "production" : "development",
@@ -34,7 +34,9 @@ export default {
     'topojson-client',
   ],
 
-  // Future Flags (Enable all for now, but adjust as needed)
+  serverMetafile: true,
+  serverAnalyzeCommonDependencies: true,
+
   future: {
     v3_fetcherPersist: true,
     v3_lazyRouteDiscovery: true,
