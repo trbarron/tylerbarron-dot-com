@@ -133,7 +133,9 @@ jobs:
           # Create minimal package.json for server
           echo '{
             "main": "index.js",
-            "dependencies": {}
+            "dependencies": {
+              "@architect/functions": "^5.0.0"
+            }
           }' > server/package.json
           
           # Install only production dependencies in server
@@ -158,7 +160,6 @@ jobs:
             --tree-shaking=true \
             --external:@aws-sdk/* \
             --external:aws-sdk/* \
-            --external:@architect/* \
             --external:node:* \
             --external:crypto \
             --outfile=build/index.js
