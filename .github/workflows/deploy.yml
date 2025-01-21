@@ -113,7 +113,8 @@ jobs:
         run: |
           rm -rf node_modules
           npm cache clean --force
-          npm install --production
+          npm install
+          npm install -D @remix-run/dev
           npm rebuild
 
       - name: 📦 Install Build Tools
@@ -123,7 +124,7 @@ jobs:
 
       - name: 🏗 Build
         run: |
-          npm run build
+          npx run build
           echo "Build directory contents:"
           ls -la public/build/
         env:
