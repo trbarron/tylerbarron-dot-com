@@ -114,6 +114,8 @@ jobs:
           rm -rf node_modules
           npm cache clean --force
           npm install
+          npm install -g @architect/architect
+          npm install -g esbuild
           npm rebuild
 
       - name: 🏗 Build
@@ -188,7 +190,7 @@ jobs:
       - name: 🚀 Production Deploy
         if: github.ref == 'refs/heads/master'
         run: |
-          arc deploy --production --prune --verbose
+          npx arc deploy --production --prune --verbose
         env:
           CI: true
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
