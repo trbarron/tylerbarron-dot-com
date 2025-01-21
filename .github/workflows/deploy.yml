@@ -172,8 +172,9 @@ jobs:
             --external:@aws-sdk/* \
             --external:aws-sdk/* \
             --external:@architect/* \
-            --outfile=server/index.optimized.js
-          mv server/index.optimized.js server/index.js
+            --outfile=build/index.js
+
+          cp build/index.js server/index.js
 
       - name: 📏 Check Lambda Size
         run: |
