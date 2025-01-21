@@ -141,13 +141,13 @@ jobs:
           npm i --omit=dev --no-package-lock
           
           # Remove unnecessary files from node_modules
-          find node_modules -type d -name "test" -exec rm -rf {} +
-          find node_modules -type d -name "tests" -exec rm -rf {} +
-          find node_modules -type d -name "docs" -exec rm -rf {} +
-          find node_modules -type f -name "*.md" -delete
-          find node_modules -type f -name "*.d.ts" -delete
-          find node_modules -type f -name "LICENSE*" -delete
-          find node_modules -type f -name "README*" -delete
+          # find node_modules -type d -name "test" -exec rm -rf {} +
+          # find node_modules -type d -name "tests" -exec rm -rf {} +
+          # find node_modules -type d -name "docs" -exec rm -rf {} +
+          # find node_modules -type f -name "*.md" -delete
+          # find node_modules -type f -name "*.d.ts" -delete
+          # find node_modules -type f -name "LICENSE*" -delete
+          # find node_modules -type f -name "README*" -delete
           
           cd ..
           
