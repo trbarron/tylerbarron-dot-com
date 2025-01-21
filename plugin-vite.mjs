@@ -3,7 +3,7 @@ import path from 'path';
 
 function copyDirectory(source, destination) {
   // Create destination directory if it doesn't exist
-  if (!fs.existsExists(destination)) {
+  if (!fs.existsSync(destination)) {
     fs.mkdirSync(destination, { recursive: true });
   }
 
