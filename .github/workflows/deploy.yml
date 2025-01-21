@@ -162,9 +162,9 @@ jobs:
             --external:@architect/* \
             --external:node:* \
             --external:crypto \
-            --outfile=build/index.mjs
+            --outfile=build/index.js
 
-          cp build/index.mjs server/index.mjs
+          cp build/index.js server/index.js
       - name: 📏 Check Lambda Size
         run: |
           MAX_SIZE_MB=5
