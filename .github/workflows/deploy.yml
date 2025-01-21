@@ -121,9 +121,6 @@ jobs:
           npm run build
           echo "Build directory contents:"
           ls -la public/build/
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
 
       - name: 🛠 Prepare Server
         run: |
@@ -131,7 +128,7 @@ jobs:
           mkdir -p server
           
           # Copy build files
-          cp build/index.js server/index.js || echo "No server build found"
+          cp server/index.mjs server/index.js || echo "No server build found"
           
           # Create minimal package.json for server
           echo '{
