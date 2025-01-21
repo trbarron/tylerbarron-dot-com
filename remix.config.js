@@ -14,6 +14,14 @@ export default {
   serverModuleFormat: "esm",
   serverMinify: true,
   serverMode: isProduction ? "production" : "development",
+  
+  serverMinifyOptions: {
+    dead_code: true,
+    global_defs: {
+      "@process.env.NODE_ENV": "'production'"
+    }
+  },
+  
   browserNodeBuiltinsPolyfill: {
     modules: {
       crypto: true,
@@ -25,16 +33,17 @@ export default {
       util: true,
     },
   },
+  
   serverDependenciesToBundle: [
-    'mnemonist',
     'mnemonist/lru-cache',
     'obliterator/iterator',
     'obliterator/foreach',
-    'd3-geo',
-    'topojson-client',
+    'd3-geo/dist/d3-geo.min.js',
+    'topojson-client/dist/topojson-client.min.js'
   ],
 
-  serverMetafile: true,
+  serverConditions: ["worker", "import", "require", "production", "default"],
+  
   serverAnalyzeCommonDependencies: true,
 
   future: {

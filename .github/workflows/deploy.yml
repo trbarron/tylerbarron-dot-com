@@ -32,20 +32,20 @@ defaults:
 
 jobs:
   upload:
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v3
-        
-        - name: Configure AWS
-          uses: aws-actions/configure-aws-credentials@v1
-          with:
-            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            aws-region: us-east-1
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Configure AWS
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
 
-        - name: Upload to S3
-          run: |
-            aws s3 sync posts/ s3://${{ secrets.AWS_BUCKET_NAME }}/posts/
+      - name: Upload to S3
+        run: |
+          aws s3 sync posts/ s3://${{ secrets.AWS_BUCKET_NAME }}/posts/
 
   lint:
     name: ⬣ ESLint
@@ -86,9 +86,7 @@ jobs:
         run: npm run typecheck --if-present
 
   deploy:
-    # needs: [lint, typecheck]
     runs-on: ubuntu-latest
-
     steps:
       - name: 🛑 Cancel Previous Runs
         uses: styfle/cancel-workflow-action@0.11.0
@@ -115,38 +113,84 @@ jobs:
         run: |
           rm -rf node_modules
           npm cache clean --force
-          npm install
+          npm install --production
           npm rebuild
-          
+
+      - name: 📦 Install Build Tools
+        run: |
+          npm install -g esbuild
+          npm install -g @architect/architect
+
       - name: 🏗 Build
         run: |
           npm run build
-          # Debug: List build output
           echo "Build directory contents:"
           ls -la public/build/
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
 
-      - name: 🛠 Install Arc
+      - name: 🛠 Prepare Server
         run: |
-          npm i -g @architect/architect
-          # Ensure server directory exists
+          # Create server directory
           mkdir -p server
-          # Copy build files to server directory
+          
+          # Copy build files
           cp build/index.js server/index.js || echo "No server build found"
-          # Debug: List directories
+          
+          # Create minimal package.json for server
+          echo '{
+            "type": "module",
+            "dependencies": {}
+          }' > server/package.json
+          
+          # Install only production dependencies in server
+          cd server
+          npm i --omit=dev --no-package-lock
+          
+          # Remove unnecessary files from node_modules
+          find node_modules -type d -name "test" -exec rm -rf {} +
+          find node_modules -type d -name "tests" -exec rm -rf {} +
+          find node_modules -type d -name "docs" -exec rm -rf {} +
+          find node_modules -type f -name "*.md" -delete
+          find node_modules -type f -name "*.d.ts" -delete
+          find node_modules -type f -name "LICENSE*" -delete
+          find node_modules -type f -name "README*" -delete
+          
+          cd ..
+          
+          # Debug: Show directory structure
           echo "Server directory contents:"
           ls -la server/
           echo "Build directory contents:"
           ls -la public/build/
 
+      - name: 📦 Optimize Server Bundle
+        run: |
+          npx esbuild server/index.js \
+            --bundle \
+            --platform=node \
+            --target=node18 \
+            --minify \
+            --tree-shaking=true \
+            --outfile=server/index.optimized.js
+          mv server/index.optimized.js server/index.js
+
+      - name: 📏 Check Lambda Size
+        run: |
+          MAX_SIZE_MB=5
+          LAMBDA_SIZE_KB=$(du -k server/ | cut -f1)
+          LAMBDA_SIZE_MB=$((LAMBDA_SIZE_KB / 1024))
+          echo "Lambda size: ${LAMBDA_SIZE_MB}MB"
+          if [ $LAMBDA_SIZE_MB -gt $MAX_SIZE_MB ]; then
+            echo "Warning: Lambda size exceeds ${MAX_SIZE_MB}MB threshold"
+            echo "Largest dependencies:"
+            du -h server/node_modules/* | sort -rh | head -n 10
+          fi
+
       - name: 🚀 Production Deploy
         if: github.ref == 'refs/heads/master'
         run: |
-          # Debug: Show current directory structure
-          pwd
-          ls -la
           arc deploy --production --prune --verbose
         env:
           CI: true
