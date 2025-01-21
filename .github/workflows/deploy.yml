@@ -58,7 +58,7 @@ jobs:
       - name: ⎔ Setup node
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
 
       - name: 📥 Install deps
         run: npm install
@@ -77,7 +77,7 @@ jobs:
       - name: ⎔ Setup node
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
 
       - name: 📥 Install deps
         run: npm install
@@ -97,7 +97,7 @@ jobs:
       - name: ⎔ Setup node
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
           architecture: x64
 
       - name: 👀 Env
@@ -114,7 +114,6 @@ jobs:
           rm -rf node_modules
           npm cache clean --force
           npm install
-          npm install -D @remix-run/dev
           npm rebuild
 
       - name: 📦 Install Build Tools
@@ -124,7 +123,7 @@ jobs:
 
       - name: 🏗 Build
         run: |
-          npx run build
+          npm run build
           echo "Build directory contents:"
           ls -la public/build/
         env:
@@ -171,7 +170,7 @@ jobs:
           npx esbuild server/index.js \
             --bundle \
             --platform=node \
-            --target=node18 \
+            --target=node20 \
             --minify \
             --tree-shaking=true \
             --outfile=server/index.optimized.js
