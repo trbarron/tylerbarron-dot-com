@@ -148,19 +148,21 @@ jobs:
           echo "Build directory contents:"
           ls -la public/build/
       
-      - name: 📦 Optimize Server Bundle
-        run: |
-          npx esbuild server/index.mjs \
-            --bundle \
-            --platform=node \
-            --target=node20 \
-            --minify \
-            --format=esm \
-            --tree-shaking=true \
-            --external:@aws-sdk/* \
-            --external:aws-sdk/* \
-            --external:@architect/* \
-            --outfile=build/index.mjs
+          - name: 📦 Optimize Server Bundle
+          run: |
+            npx esbuild server/index.mjs \
+              --bundle \
+              --platform=node \
+              --target=node20 \
+              --minify \
+              --format=esm \
+              --tree-shaking=true \
+              --external:@aws-sdk/* \
+              --external:aws-sdk/* \
+              --external:@architect/* \
+              --external:node:* \
+              --external:crypto \
+              --outfile=build/index.mjs
 
           cp build/index.mjs server/index.mjs
       - name: 📏 Check Lambda Size
