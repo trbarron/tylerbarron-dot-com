@@ -132,7 +132,7 @@ jobs:
           
           # Create minimal package.json for server
           echo '{
-            "main": "index.js",
+            "main": "index.mjs",
             "dependencies": {
               "@architect/functions": "^5.0.0"
             }
@@ -151,7 +151,7 @@ jobs:
       
       - name: 📦 Optimize Server Bundle
         run: |
-          npx esbuild server/index.js \
+          npx esbuild server/index.mjs \
             --bundle \
             --platform=node \
             --target=node20 \
