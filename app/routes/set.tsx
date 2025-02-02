@@ -3,10 +3,10 @@ import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 
 // Import components
-import { Navbar } from "../components/Navbar";
-import Footer from "../components/Footer";
-import { Subarticle } from "../components/Subarticle";
-import Article from "../components/Article";
+import { Navbar } from "../components/Navbar.js";
+import Footer from "../components/Footer.js";
+import { Subarticle } from "../components/Subarticle.js";
+import Article from "../components/Article.js";
 
 // Import assets
 import setBoard from "~/images/Set/setBoard.jpg";

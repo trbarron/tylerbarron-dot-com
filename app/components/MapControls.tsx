@@ -2,8 +2,6 @@ import React from 'react';
 
 const MapControls = ({
     showReviews,
-    showPizzaScore,
-    showPerfectRatings,
     setShowReviews,
     setShowPizzaScore,
     setShowPerfectRatings,

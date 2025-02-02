@@ -6,8 +6,8 @@ import { useMemo } from 'react';
 import { processMdx } from '~/utils/mdx.server';
 import fs from 'fs/promises';
 import path from 'path';
-import { Navbar } from "../components/Navbar";
-import Footer from "../components/Footer";
+import { Navbar } from "../components/Navbar.js";
+import Footer from "../components/Footer.js";
 
 export const loader: LoaderFunction = async ({ params }) => {
   const { slug } = params;

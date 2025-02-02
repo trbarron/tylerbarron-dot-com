@@ -1,7 +1,7 @@
 // Import components
-import { Navbar } from "../components/Navbar";
-import Footer from "../components/Footer";
-import Article from "../components/Article";
+import { Navbar } from "../components/Navbar.js";
+import Footer from "../components/Footer.js";
+import Article from "../components/Article.js";
 import PizzaScoringMap from "~/components/PizzaScoringMap";
 
 

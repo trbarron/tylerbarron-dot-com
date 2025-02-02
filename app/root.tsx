@@ -1,4 +1,4 @@
-import type { LinksFunction } from "@remix-run/node";
+import type { LinksFunction , LoaderFunction } from "@remix-run/node";
 import {
   Links,
   LiveReload,
@@ -6,9 +6,7 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-} from "@remix-run/react";
-import { useLoaderData } from "@remix-run/react";
-import type { LoaderFunction } from "@remix-run/node";
+ useLoaderData } from "@remix-run/react";
 import styles from './styles/index.css';
 
 export const loader: LoaderFunction = async () => {

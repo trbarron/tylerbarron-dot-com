@@ -1,9 +1,3 @@
-/**
- * This is intended to be a basic starting point for linting in your app.
- * It relies on recommended configs out of the box for simplicity, but you can
- * and should modify this configuration to best suit your team's needs.
- */
-
 /** @type {import('eslint').Linter.Config} */
 module.exports = {
   root: true,
@@ -23,6 +17,16 @@ module.exports = {
 
   // Base config
   extends: ["eslint:recommended"],
+  plugins: ["import", "n"],
+  rules: {
+    "import/no-commonjs": "error",
+    "import/first": "error",
+    "import/no-amd": "error",
+    "import/no-webpack-loader-syntax": "error",
+    "n/no-missing-import": "error",
+    "n/file-extension-in-import": ["error", "always"],
+    "n/exports-style": ["error", "module.exports"]
+  },
 
   overrides: [
     // React
@@ -80,5 +84,15 @@ module.exports = {
         node: true,
       },
     },
+
+    {
+      files: ["*.config.{js,cjs,mjs}", ".*rc.{js,cjs,mjs}"],
+      env: {
+        node: true,
+      },
+      rules: {
+        "import/no-commonjs": "off"
+      }
+    }
   ],
 };

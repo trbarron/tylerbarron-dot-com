@@ -2,7 +2,7 @@ import type { Feature, FeatureCollection, Geometry } from 'geojson';
 import React, { useState, useEffect } from 'react';
 import { geoAlbersUsa, geoPath } from 'd3-geo';
 import { feature } from 'topojson-client';
-import MapControls from './MapControls';
+import MapControls from './MapControls.js';
 
 type LocationData = {
   name: string;
@@ -284,8 +284,6 @@ export default function PizzaLocationMap() {
       <div className="p-4">
       <MapControls
   showReviews={showReviews}
-  showPizzaScore={showPizzaScore}
-  showPerfectRatings={showPerfectRatings}
   setShowReviews={setShowReviews}
   setShowPizzaScore={setShowPizzaScore}
   setShowPerfectRatings={setShowPerfectRatings}
