@@ -9,9 +9,9 @@ export default {
   assetsBuildDirectory: "public/build",
   publicPath: "/_static/build/",
   server: "./server.ts",
-  serverBuildPath: "server/index.js",
+  serverBuildPath: "server/index.mjs",
   serverMetafile: "server/metafile.json",
-  serverModuleFormat: "cjs",
+  serverModuleFormat: "esm",
   serverMinify: true,
   serverMode: isProduction ? "production" : "development",
   

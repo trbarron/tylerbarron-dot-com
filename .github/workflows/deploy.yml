@@ -161,9 +161,9 @@ jobs:
             --external:node:* \
             --external:crypto \
             --external:'@architect/functions' \
-            --outfile=build/index.js
+            --outfile=build/index.mjs
 
-          cp build/index.js server/index.js
+          cp build/index.mjs server/index.mjs
 
       - name: 🚀 Production Deploy
         if: github.ref == 'refs/heads/master'

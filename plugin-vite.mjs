@@ -43,7 +43,6 @@ export default {
         
         if (fs.existsSync(sourceDir)) {
           copyDirectory(sourceDir, destDir);
-          console.log('Static assets copied successfully');
         } else {
           console.error('Source directory does not exist:', sourceDir);
         }

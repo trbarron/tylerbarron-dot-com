@@ -13,7 +13,7 @@ import styles from './styles/index.css';
 
 export const loader: LoaderFunction = async () => {
   return {
-    gaTrackingId: process.env.GA_TRACKING_ID,
+    gaTrackingId: process.env.GA_TRACKING_ID || null,
   };
 };
 
@@ -29,7 +29,6 @@ export const meta = () => {
 };
 
 export default function App() {
-
   const { gaTrackingId } = useLoaderData<typeof loader>();
 
   return (
@@ -39,19 +38,23 @@ export default function App() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
-        <script async src={`https://www.googletagmanager.com/gtag/js?id=${gaTrackingId}`} />
-        <script
-          async
-          id="gtag-init"
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', '${gaTrackingId}');
-            `,
-          }}
-        />
+        {gaTrackingId && (
+          <>
+            <script async src={`https://www.googletagmanager.com/gtag/js?id=${gaTrackingId}`} />
+            <script
+              async
+              id="gtag-init"
+              dangerouslySetInnerHTML={{
+                __html: `
+                  window.dataLayer = window.dataLayer || [];
+                  function gtag(){dataLayer.push(arguments);}
+                  gtag('js', new Date());
+                  gtag('config', '${gaTrackingId}');
+                `,
+              }}
+            />
+          </>
+        )}
       </head>
       <body>
         <Outlet />

@@ -23,7 +23,6 @@ const ImageDisplay = () => {
         }
         const responseData = await response.json();
         const data = JSON.parse(responseData.body);
-        console.log(data);
         setImageData(data.image);
         setTimestamp(data.timestamp);
         setIsLoading(false);

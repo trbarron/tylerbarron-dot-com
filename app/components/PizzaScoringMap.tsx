@@ -2,6 +2,7 @@ import type { Feature, FeatureCollection, Geometry } from 'geojson';
 import React, { useState, useEffect } from 'react';
 import { geoAlbersUsa, geoPath } from 'd3-geo';
 import { feature } from 'topojson-client';
+import MapControls from './MapControls';
 
 type LocationData = {
   name: string;
@@ -39,9 +40,12 @@ export default function PizzaLocationMap() {
   const [error, setError] = useState<string | null>(null);
   const [hoveredLocation, setHoveredLocation] = useState<LocationData | null>(null);
   const [hoveredScore, setHoveredScore] = useState<PizzaScoreData | null>(null);
-  const [showReviews, setShowReviews] = useState<boolean>(true);
+  const [showReviews, setShowReviews] = useState<boolean>(false);
   const [showPizzaScore, setShowPizzaScore] = useState<boolean>(true);
+  const [showPerfectRatings, setShowPerfectRatings] = useState<boolean>(false);
   const [usStates, setUsStates] = useState<FeatureCollection | null>(null);
+  const [scoreFilter, setScoreFilter] = useState(0);
+
 
   // Constants
   const width = 1200;
@@ -138,13 +142,18 @@ export default function PizzaLocationMap() {
 
   // Render pizza score heatmap (continental US only)
   const renderPizzaScoreHeatmap = () => {
-    if (!showPizzaScore || !scoreData.length) return null;
-
+    if ((!showPizzaScore && !showPerfectRatings) || !scoreData.length) return null;
+  
     return scoreData
       .filter(point => {
         // Rough bounds for continental US
-        return point.latitude > 24 && point.latitude < 50 &&
+        const inContinentalUS = point.latitude > 24 && point.latitude < 50 &&
           point.longitude > -125 && point.longitude < -66;
+  
+        // Filter based on minimum score
+        const meetsScoreThreshold = Number(point.pizza_score) >= scoreFilter;
+  
+        return inContinentalUS && meetsScoreThreshold;
       })
       .map((point, i) => {
         const projected = projection([point.longitude, point.latitude]);
@@ -188,7 +197,7 @@ export default function PizzaLocationMap() {
             cx={x}
             cy={y}
             r={4}
-            fill={getRatingColor(location.rating)}
+            fill={showPerfectRatings ? '#00ff00' : getRatingColor(location.rating)}
             opacity={0.8}
             onMouseEnter={() => setHoveredLocation(location)}
             onMouseLeave={() => setHoveredLocation(null)}
@@ -231,7 +240,7 @@ export default function PizzaLocationMap() {
       );
     }
 
-    if (hoveredScore && showPizzaScore && !showReviews) {
+    if (hoveredScore && (showPizzaScore || showPerfectRatings) && !showReviews) {
       const projected = projection([hoveredScore.longitude, hoveredScore.latitude]);
       if (!projected) return null;
       const [x, y] = projected;
@@ -273,26 +282,16 @@ export default function PizzaLocationMap() {
   return (
     <div className="w-full h-full bg-white rounded-lg shadow">
       <div className="p-4">
-        <div className="flex items-center gap-8 mb-4">
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={showReviews}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setShowReviews(e.target.checked)}
-              className="form-checkbox"
-            />
-            Show Raw Pizza Reviews
-          </label>
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={showPizzaScore}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setShowPizzaScore(e.target.checked)}
-              className="form-checkbox"
-            />
-            Show Calculated Pizza Scores
-          </label>
-        </div>
+      <MapControls
+  showReviews={showReviews}
+  showPizzaScore={showPizzaScore}
+  showPerfectRatings={showPerfectRatings}
+  setShowReviews={setShowReviews}
+  setShowPizzaScore={setShowPizzaScore}
+  setShowPerfectRatings={setShowPerfectRatings}
+  scoreFilter={scoreFilter}
+  setScoreFilter={setScoreFilter}
+/>
 
         <div className="h-2/4 max-h-[800px] relative bg-gray-100 border rounded-lg">
           <svg
@@ -314,11 +313,11 @@ export default function PizzaLocationMap() {
             <div className="text-lg font-semibold mb-2">Background</div>
             <div className="text-sm space-y-1">
               <div>This map reveals America's best pizza regions through Domino's Pizza ratings.</div>
-              <div>The methodology builds on three key assumptions:</div>
+              <div>The methodology builds on three assumptions:</div>
               <div>1. Domino's pizza is Domino's pizza. It is highly standardized nationwide, making it a reliable control variable</div>
               <div>2. Pizza shop employees are constant enough that they impact the ratings in a standardized way</div>
-              <div className="pb-2">3. As a result of (1) and (2), the differentiating factor for the reviews is not the pizza, but rather the competitors in the area. The better the local pizza is, the worse Domino's will be rated</div>
-              <div>My "Pizza Score" inverts Domino's Google Maps ratings: lower Domino's ratings suggest higher-quality local pizza alternatives. This creates a proxy measure for regional pizza excellence - areas where Domino's struggles are likely areas where local pizzerias thrive</div>
+              <div className="pb-2">3. As a result of (1) and (2), the differentiating factor for the reviews is not the pizza but the competitors in the area. The better the local pizza is, the worse Domino's will be rated</div>
+              <div className="pb-2">My Pizza Score inverts Domino's Google Maps ratings: lower Domino's ratings suggest higher-quality local pizza alternatives. This creates a proxy measure for regional pizza - areas where Domino's struggles are areas where local pizzerias are best</div>
             </div>
             <div>
               <div className="text-lg font-semibold mb-2">Statistics</div>
