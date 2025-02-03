@@ -126,12 +126,12 @@ jobs:
 
       - name: 🛠 Prepare Server
         run: |
-          # Create server directory
           mkdir -p server
           mkdir -p build
           
           # Create minimal package.json for server
           echo '{
+            "type": "module",
             "main": "index.mjs",
             "dependencies": {
               "@architect/functions": "^5.0.0"
@@ -152,16 +152,16 @@ jobs:
       - name: 📦 Optimize Server Bundle
         run: |
           npx esbuild server/index.mjs \
-            --bundle \
-            --platform=node \
-            --target=node20 \
-            --minify \
-            --format=cjs \
-            --tree-shaking=true \
-            --external:node:* \
-            --external:crypto \
-            --external:'@architect/functions' \
-            --outfile=build/index.mjs
+          --bundle \
+          --platform=node \
+          --target=node20 \
+          --minify \
+          --format=esm \
+          --tree-shaking=true \
+          --external:node:* \
+          --external:crypto \
+          --external:'@architect/functions' \
+          --outfile=build/index.mjs
 
           cp build/index.mjs server/index.mjs
 
