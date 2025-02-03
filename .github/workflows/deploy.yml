@@ -152,23 +152,20 @@ jobs:
       - name: 📦 Optimize Server Bundle
         run: |
           npx esbuild server/index.mjs \
-          --bundle \
-          --platform=node \
-          --target=node20 \
-          --minify \
-          --format=esm \
-          --tree-shaking=true \
-          --external:@architect/functions \
-          --external:node:* \
-          --external:path \
-          --external:fs \
-          --external:util \
-          --external:stream \
-          --external:buffer \
-          --external:events \
-          --outfile=build/index.mjs
+            --bundle \
+            --platform=node \
+            --target=node20 \
+            --minify \
+            --format=esm \
+            --tree-shaking=true \
+            --conditions=import,default,production \
+            --external:@aws-sdk/* \
+            --external:@architect/functions \
+            --external:node:* \
+            --external:crypto \
+            --outfile=build/index.mjs
 
-          cp build/index.mjs server/index.mjs
+            cp build/index.mjs server/index.mjs
 
       - name: 🚀 Production Deploy
         if: github.ref == 'refs/heads/master'
