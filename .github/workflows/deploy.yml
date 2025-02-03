@@ -158,9 +158,16 @@ jobs:
           --minify \
           --format=esm \
           --tree-shaking=true \
-          --external:node:* \
+          --external:@architect/functions \
           --external:crypto \
-          --external:'@architect/functions' \
+          --external:node:* \
+          --external:node:crypto \
+          --external:path \
+          --external:fs \
+          --external:util \
+          --external:stream \
+          --external:buffer \
+          --external:events \
           --outfile=build/index.mjs
 
           cp build/index.mjs server/index.mjs

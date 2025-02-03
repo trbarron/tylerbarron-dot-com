@@ -24,7 +24,7 @@ export default {
   
   browserNodeBuiltinsPolyfill: {
     modules: {
-      crypto: "empty",
+      crypto: true,
       events: true,
       fs: true,
       path: true,
