@@ -152,20 +152,38 @@ jobs:
       - name: 📦 Optimize Server Bundle
         run: |
           npx esbuild server/index.mjs \
-            --bundle \
-            --platform=node \
-            --target=node20 \
-            --minify \
-            --format=esm \
-            --tree-shaking=true \
-            --conditions=import,default,production \
-            --external:@aws-sdk/* \
-            --external:@architect/functions \
-            --external:node:* \
-            --external:crypto \
-            --outfile=build/index.mjs
+          --bundle \
+          --platform=node \
+          --target=node20 \
+          --minify \
+          --format=esm \
+          --tree-shaking=true \
+          --conditions=import,default,production \
+          --external:@aws-sdk/* \
+          --external:@architect/functions \
+          --external:node:* \
+          --external:crypto \
+          --outfile=build/index.mjs
 
-            cp build/index.mjs server/index.mjs
+          # Debug: Check bundle content for crypto references
+          echo "Checking bundle for crypto references:"
+          grep -i "crypto" build/index.mjs || echo "No direct crypto references found"
+          
+          # Debug: Show bundle size and basic info
+          ls -lh build/index.mjs
+
+          cp build/index.mjs server/index.mjs
+
+      - name: 🔍 Debug Build Output
+        run: |
+          echo "Current directory structure:"
+          tree -L 3 || ls -R
+          
+          echo "\nRemix build config:"
+          cat remix.config.js
+          
+          echo "\nFinal server package.json:"
+          cat server/package.json
 
       - name: 🚀 Production Deploy
         if: github.ref == 'refs/heads/master'
