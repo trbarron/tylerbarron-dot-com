@@ -1,5 +1,5 @@
 /** @type {import('eslint').Linter.Config} */
-module.exports = {
+export default {
   root: true,
   parserOptions: {
     ecmaVersion: "latest",
@@ -17,16 +17,6 @@ module.exports = {
 
   // Base config
   extends: ["eslint:recommended"],
-  plugins: ["import", "n"],
-  rules: {
-    "import/no-commonjs": "error",
-    "import/first": "error",
-    "import/no-amd": "error",
-    "import/no-webpack-loader-syntax": "error",
-    "n/no-missing-import": "error",
-    "n/file-extension-in-import": ["error", "always"],
-    "n/exports-style": ["error", "module.exports"]
-  },
 
   overrides: [
     // React
@@ -84,15 +74,5 @@ module.exports = {
         node: true,
       },
     },
-
-    {
-      files: ["*.config.{js,cjs,mjs}", ".*rc.{js,cjs,mjs}"],
-      env: {
-        node: true,
-      },
-      rules: {
-        "import/no-commonjs": "off"
-      }
-    }
   ],
 };
