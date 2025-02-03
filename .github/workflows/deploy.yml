@@ -159,9 +159,7 @@ jobs:
           --format=esm \
           --tree-shaking=true \
           --external:@architect/functions \
-          --external:crypto \
           --external:node:* \
-          --external:node:crypto \
           --external:path \
           --external:fs \
           --external:util \
