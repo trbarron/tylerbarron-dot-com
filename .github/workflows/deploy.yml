@@ -148,7 +148,7 @@ jobs:
                   
       - name: 📦 Optimize Server Bundle
         run: |
-          npx esbuild server/index.mjs \
+          npx esbuild server/index.js \
             --bundle \
             --platform=node \
             --target=node20 \
