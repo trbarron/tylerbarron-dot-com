@@ -44,7 +44,18 @@ export default {
     'react',
     'react-dom',
     'react-router-dom',
-    'react-router'
+    'react-router',
+    'chessground',
+    'chess.js',
+    'lodash-es',
+    'mdx-bundler',
+    'recharts',
+    'rehype-highlight',
+    'rehype-img-size',
+    'remark-gfm',
+    'remix-utils',
+    'yet-another-react-lightbox'
+  ],
   ],
   serverConditions: ["worker", "import", "require", "production", "default"],
   
