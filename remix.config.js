@@ -40,9 +40,12 @@ export default {
     'obliterator/foreach',
     'd3-geo/dist/d3-geo.min.js',
     'topojson-client/dist/topojson-client.min.js',
-    '@remix-run/node'
+    '@remix-run/node',
+    'react',
+    'react-dom',
+    'react-router-dom',
+    'react-router'
   ],
-
   serverConditions: ["worker", "import", "require", "production", "default"],
   
   serverAnalyzeCommonDependencies: true,

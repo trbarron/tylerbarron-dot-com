@@ -164,14 +164,9 @@ jobs:
           --packages=external \
           --outfile=build/index.mjs
 
-          # Debug: Check bundle content for crypto references
-          echo "Checking bundle for crypto references:"
-          grep -i "crypto" build/index.mjs || echo "No direct crypto references found"
-          
-          # Debug: Show bundle size and basic info
-          ls -lh build/index.mjs
-
-          cp build/index.mjs server/index.mjs
+          # Debug: Check final bundle for React imports
+          echo "Checking final bundle dependencies:"
+          grep -i "from 'react'" build/index.mjs || echo "No React imports found"
 
       - name: 🔍 Debug Build Output
         run: |
