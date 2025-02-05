@@ -159,10 +159,9 @@ jobs:
           --format=esm \
           --tree-shaking=true \
           --conditions=import,default,production \
-          --external:@aws-sdk/* \
           --external:@architect/functions \
           --external:node:* \
-          --external:crypto \
+          --packages=external \
           --outfile=build/index.mjs
 
           # Debug: Check bundle content for crypto references

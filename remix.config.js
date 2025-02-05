@@ -39,7 +39,8 @@ export default {
     'obliterator/iterator',
     'obliterator/foreach',
     'd3-geo/dist/d3-geo.min.js',
-    'topojson-client/dist/topojson-client.min.js'
+    'topojson-client/dist/topojson-client.min.js',
+    '@remix-run/node'
   ],
 
   serverConditions: ["worker", "import", "require", "production", "default"],
