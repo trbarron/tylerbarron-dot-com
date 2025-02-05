@@ -134,7 +134,9 @@ jobs:
             "type": "module",
             "main": "index.mjs",
             "dependencies": {
-              "@architect/functions": "^5.0.0"
+              "@architect/functions": "^5.0.0",
+              "react": "^18.2.0",
+              "react-dom": "^18.2.0"          
             }
           }' > server/package.json
           
@@ -154,13 +156,15 @@ jobs:
             --external:node:* \
             --outfile=build/index.mjs
   
-            # Enhanced debug output
-            echo "Checking bundle contents:"
-            echo "Bundle size: $(ls -lh build/index.mjs | awk '{print $5}')"
-            echo "React imports check:"
-            grep -i "from 'react'" build/index.mjs || echo "No React imports found"
-            echo "Module type check:"
-            head -n 5 build/index.mjs
+          # Enhanced debug output
+          echo "Checking bundle contents:"
+          echo "Bundle size: $(ls -lh build/index.mjs | awk '{print $5}')"
+          echo "React imports check:"
+          grep -i "from 'react'" build/index.mjs || echo "No React imports found"
+          echo "Module type check:"
+          head -n 5 build/index.mjs
+
+          cp build/index.mjs server/index.mjs
           
       - name: 🔍 Debug Build Output
         run: |
