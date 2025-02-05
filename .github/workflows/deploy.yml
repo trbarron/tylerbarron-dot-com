@@ -154,8 +154,6 @@ jobs:
             --target=node20 \
             --format=esm \
             --external:@architect/functions \
-            --external:node:* \
-            --allow-node-builtins \
             --outfile=server/index.mjs
   
           # Enhanced debug output
