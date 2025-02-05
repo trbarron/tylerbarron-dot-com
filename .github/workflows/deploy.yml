@@ -154,6 +154,7 @@ jobs:
             --target=node20 \
             --format=esm \
             --external:@architect/functions \
+            --external:crypto \
             --outfile=build/index.js
 
           cp build/index.js server/index.js
