@@ -154,9 +154,9 @@ jobs:
             --target=node20 \
             --format=esm \
             --external:@architect/functions \
-            --outfile=build/index.mjs
+            --outfile=build/index.js
 
-          cp build/index.mjs server/index.mjs
+          cp build/index.js server/index.js
           
       - name: 🔍 Debug Build Output
         run: |
