@@ -56,7 +56,6 @@ export default {
     'remix-utils',
     'yet-another-react-lightbox'
   ],
-  ],
   serverConditions: ["worker", "import", "require", "production", "default"],
   
   serverAnalyzeCommonDependencies: true,
