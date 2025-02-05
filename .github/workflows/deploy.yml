@@ -135,6 +135,7 @@ jobs:
             "main": "index.mjs",
             "dependencies": {
               "@architect/functions": "^5.0.0",
+              "crypto": "^1.0.1",
               "react": "^18.2.0",
               "react-dom": "^18.2.0"          
             }
@@ -154,7 +155,8 @@ jobs:
             --format=esm \
             --external:@architect/functions \
             --external:node:* \
-            --outfile=build/index.mjs
+            --allow-node-builtins \
+            --outfile=server/index.mjs
   
           # Enhanced debug output
           echo "Checking bundle contents:"

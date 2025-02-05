@@ -24,7 +24,7 @@ export default {
   
   browserNodeBuiltinsPolyfill: {
     modules: {
-      crypto: false,
+      crypto: true,
       events: true,
       fs: true,
       path: true,
@@ -40,21 +40,7 @@ export default {
     'obliterator/foreach',
     'd3-geo/dist/d3-geo.min.js',
     'topojson-client/dist/topojson-client.min.js',
-    '@remix-run/node',
-    'react',
-    'react-dom',
-    'react-router-dom',
-    'react-router',
-    'chessground',
-    'chess.js',
-    'lodash-es',
-    'mdx-bundler',
-    'recharts',
-    'rehype-highlight',
-    'rehype-img-size',
-    'remark-gfm',
-    'remix-utils',
-    'yet-another-react-lightbox'
+    '@remix-run/architect',
   ],
   serverConditions: ["worker", "import", "require", "production", "default"],
   
