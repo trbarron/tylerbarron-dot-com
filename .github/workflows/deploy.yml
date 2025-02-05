@@ -155,20 +155,15 @@ jobs:
             --conditions=import,default,production \
             --external:@architect/functions \
             --external:node:* \
-            --external:fs \
-            --external:path \
-            --packages=include:react \
-            --packages=include:react-dom \
-            --packages=include:react-router \
-            --packages=include:react-router-dom \
+            --packages=bundle \
             --outfile=build/index.mjs
-
-          echo "Checking bundle contents:"
-          echo "Bundle size: $(ls -lh build/index.mjs | awk '{print $5}')"
-          echo "React imports check:"
-          grep -i "from 'react'" build/index.mjs || echo "No React imports found"
-          echo "Module type check:"
-          head -n 5 build/index.mjs
+  
+            echo "Checking bundle contents:"
+            echo "Bundle size: $(ls -lh build/index.mjs | awk '{print $5}')"
+            echo "React imports check:"
+            grep -i "from 'react'" build/index.mjs || echo "No React imports found"
+            echo "Module type check:"
+            head -n 5 build/index.mjs
           
       - name: 🔍 Debug Build Output
         run: |
