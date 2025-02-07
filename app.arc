@@ -8,6 +8,7 @@ memory 1152
 region us-west-2
 timeout 30
 architecture x86_64
+prune true
 
 @http
 /*
