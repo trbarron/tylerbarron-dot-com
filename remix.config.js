@@ -16,14 +16,13 @@ export default {
   serverMode: isProduction ? "production" : "development",
   browserNodeBuiltinsPolyfill: {
     modules: {
- 
+      crypto: true,
+      events: true,
+      fs: true,
+      path: true,
     },
   },
   serverDependenciesToBundle: [
-    'obliterator/iterator',
-    'obliterator/foreach',
-    'd3-geo/dist/d3-geo.min.js',
-    'topojson-client/dist/topojson-client.min.js'
   ],
 
   future: {
