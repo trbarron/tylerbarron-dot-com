@@ -156,7 +156,6 @@ jobs:
             --external:@architect/functions \
             --external:crypto \
             --external:node:crypto \
-            --external:@remix-run/node \
             --outfile=build/index.js
 
           cp build/index.js server/index.js
