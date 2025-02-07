@@ -53,19 +53,19 @@ export default function CatTrackerBlog() {
           subtitle="Measuring Checo's Work Ethic"
         >
           <Subarticle subtitle="">
-            <p>A familiar theme for me is having an idea and then later finding myself a bit too committed to the bit. That's what happened here with my cat, Checo.</p>
+            <p>A familiar theme for me is having a fun idea and then later finding myself a bit too committed to the bit. That's what happened here with my cat, Checo.</p>
             
             <p>It all started with a simple curiosity: just how much does Checo work next to me? He seemed to always be there, clocking in hours by sleeping in his circle next to my desk. With a free weekend, I decided to turn this into a project to track his effort.</p>
 
             <PhotoComponent photo={photos[0]} index={0} />
 
-            <p>To measure Checo's presence, I built a system using a Raspberry Pi W Zero 2 and a Pycam 3. The software stack includes using DynamoDB, MobileNet CNN, API Gateway, and Python in Lambda functions and on the RPi.</p>
+            <p>To measure Checo's presence, I built a system using a Raspberry Pi W Zero 2 and a Raspberry Pi AI Camera. The software stack includes using DynamoDB, a custom trained ONNX AI Model, API Gateway, and Python in Lambda functions and on the RPi.</p>
 
             <PhotoComponent photo={photos[1]} index={1} />
 
-            <p>The camera captures photos at regular intervals, which are then processed to determine if there's a cat in the image. After each picture is taken, the image is run through MobileNet, a convolutional neural net designed for image classification on low-powered devices. If a cat is found (with a confidence of 0.20 or higher), then it adds an entry to our database (DynamoDB).</p>
+            <p>The camera captures photos at ~40 second intervals, which are then processed to determine if there's a cat in the image via the custom AI model run on the edge. Based on the results it may add an entry to our database with details about which cat is in the image.</p>
 
-            <p>When a user visits the website, we use API Gateway to hit a Lambda that calculates the time worked based on the total database entries on that day and determines if he is currently working based on whether the most recent entry was added in the last 3 minutes.</p>
+            <p>When a user visits the website, we use API Gateway to hit a Lambda function to calculate the time worked and display that to the user.</p>
 
             <PhotoComponent photo={photos[2]} index={2} />
 
