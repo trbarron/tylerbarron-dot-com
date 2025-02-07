@@ -105,7 +105,7 @@ jobs:
         run: |
           rm -rf node_modules
           npm cache clean --force
-          npm ci --production=false
+          npm ci
           npm i -g @architect/architect
           
       - name: 🏗 Build
@@ -115,7 +115,7 @@ jobs:
       - name: 🧹 Clean dependencies
         run: |
           rm -rf node_modules
-          npm ci --production=true
+          npm ci --omit=dev
 
       - name: 🚀 Production Deploy
         if: github.ref == 'refs/heads/master'
