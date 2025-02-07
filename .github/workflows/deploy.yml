@@ -116,6 +116,7 @@ jobs:
         run: |
           rm -rf node_modules
           npm ci --omit=dev
+          npm prune --production
 
       - name: 🚀 Production Deploy
         if: github.ref == 'refs/heads/master'
