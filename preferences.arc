@@ -5,3 +5,4 @@ mime-types
   css text/css
   svg image/svg+xml
   json application/json
+handler build/index.handler

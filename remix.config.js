@@ -9,8 +9,8 @@ export default {
   assetsBuildDirectory: "public/build",
   publicPath: "/_static/build/",
   server: "./server.ts",
-  serverBuildPath: "build/index.js",
-  serverMetafile: "server/metafile.json",
+  serverBuildPath: "build/index.mjs",
+  serverMetafile: "build/metafile.json",
   serverModuleFormat: "esm",
   serverMinify: true,
   serverMode: isProduction ? "production" : "development",
@@ -39,8 +39,7 @@ export default {
     'obliterator/iterator',
     'obliterator/foreach',
     'd3-geo/dist/d3-geo.min.js',
-    'topojson-client/dist/topojson-client.min.js',
-    '@remix-run/node'
+    'topojson-client/dist/topojson-client.min.js'
   ],
   serverConditions: ["worker", "import", "require", "production", "default"],
   

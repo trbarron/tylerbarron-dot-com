@@ -12,7 +12,7 @@ architecture x86_64
 @http
 /*
   method any
-  src server
+  src build
 
 @plugins
 remix-vite
