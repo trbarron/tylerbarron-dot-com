@@ -2,13 +2,13 @@
 tb-website-remix
 
 @aws
-profile arc_deployer
+prune true
 runtime nodejs20.x
 memory 1152
 region us-west-2
 timeout 30
 architecture x86_64
-prune true
+layer-name production-dependencies
 
 @http
 /*

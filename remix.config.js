@@ -22,6 +22,10 @@ export default {
     },
   },
   serverDependenciesToBundle: [
+    'obliterator/iterator',
+    'obliterator/foreach',
+    'd3-geo/dist/d3-geo.min.js',
+    'topojson-client/dist/topojson-client.min.js'
   ],
 
   future: {
