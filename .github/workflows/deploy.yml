@@ -159,7 +159,7 @@ jobs:
             --external:crypto  \
             --external:node:crypto  \
             --metafile=build/meta.json \
-            --outfile=build/index.js
+            --outfile=build/index.js  \
             --verbose
           
           # Analyze the bundle
