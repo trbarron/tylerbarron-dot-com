@@ -27,12 +27,11 @@ export default {
   },
   serverDependenciesToBundle: [
     /^@aws-sdk\/.*/,
-    'mnemonist',
     'mnemonist/lru-cache',
     'obliterator/iterator',
     'obliterator/foreach',
-    'd3-geo',
-    'topojson-client',
+    'd3-geo/dist/d3-geo.min.js',
+    'topojson-client/dist/topojson-client.min.js'
   ],
 
   future: {
