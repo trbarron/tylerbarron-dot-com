@@ -111,8 +111,6 @@ jobs:
 
       - name: 📥 Install deps
         run: |
-          rm -rf node_modules
-          npm cache clean --force
           npm install
           npm install -g @architect/architect
           npm install -g esbuild
@@ -126,37 +124,16 @@ jobs:
 
       - name: 📦 Optimize Server Bundle
         run: |
-          # First create a debug build
           npx esbuild server/index.js \
             --bundle \
             --platform=node \
             --target=node20 \
             --format=esm \
             --external:@architect/functions \
-            --external:@remix-run/node \
-            --external:crypto  \
-            --external:node:crypto  \
-            --metafile=build/meta.json \
+            --external:@remix-run/architect \
+            --alias:node:crypto=crypto \
             --outfile=build/index.js
-          
-          # Check the generated code for crypto references
-          echo "=== Crypto References in Bundle ==="
-          grep -n "crypto" build/index.js || echo "No crypto references found in bundle"
-          
-          # Copy the analyzed bundle
-          cp build/index.js server/index.js
 
-      - name: 🧪 Test Bundle Locally
-        run: |
-          echo "=== Testing bundle imports ==="
-          node --experimental-vm-modules -e "
-            import('./build/index.js')
-              .then(() => console.log('Bundle loaded successfully'))
-              .catch(err => {
-                console.error('Bundle load failed:', err);
-                process.exit(1);
-              })
-          "
       - name: 🚀 Production Deploy
         if: github.ref == 'refs/heads/master'
         run: |
