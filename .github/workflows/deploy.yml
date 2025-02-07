@@ -131,7 +131,9 @@ jobs:
             --format=esm \
             --external:@architect/functions \
             --external:@remix-run/architect \
-            --alias:node:crypto=crypto \
+            --conditions=worker,import,require,production,default \
+            --main-fields=module,main \
+            --banner:js="import { createRequire } from 'module';const require = createRequire(import.meta.url);" \
             --outfile=build/index.js
 
       - name: 🚀 Production Deploy
