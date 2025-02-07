@@ -26,7 +26,6 @@ export default {
     },
   },
   serverDependenciesToBundle: [
-    /^@aws-sdk\/.*/,
     'mnemonist/lru-cache',
     'obliterator/iterator',
     'obliterator/foreach',
