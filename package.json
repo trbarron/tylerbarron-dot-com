@@ -10,8 +10,7 @@
     "dev": "remix dev --manual -c \"arc sandbox -e testing\"",
     "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
     "start": "remix-serve ./build/index.js",
-    "typecheck": "tsc",
-    "test:bundle": "node scripts/test-bundle.js"
+    "typecheck": "tsc"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.699.0",
@@ -26,14 +25,10 @@
     "d3-geo": "^3.1.1",
     "isbot": "^4.1.0",
     "lodash-es": "^4.17.21",
-    "mdx-bundler": "^10.0.3",
     "mnemonist": "^0.39.8",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "recharts": "^2.12.7",
-    "rehype-highlight": "^7.0.0",
-    "rehype-img-size": "^1.0.1",
-    "remark-gfm": "^4.0.0",
     "remix-utils": "^7.6.0",
     "topojson-client": "^3.1.0",
     "yet-another-react-lightbox": "^3.21.5"
@@ -61,7 +56,11 @@
     "tailwindcss": "^3.4.11",
     "typescript": "^5.1.6",
     "vite": "^5.1.0",
-    "vite-tsconfig-paths": "^4.2.1"
+    "vite-tsconfig-paths": "^4.2.1",
+    "rehype-highlight": "^7.0.0",
+    "rehype-img-size": "^1.0.1",
+    "remark-gfm": "^4.0.0",
+    "mdx-bundler": "^10.0.3"
   },
   "engines": {
     "node": ">=20.0.0"
