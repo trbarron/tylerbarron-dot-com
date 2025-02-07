@@ -21,8 +21,6 @@ export default {
       fs: true,
       path: true,
       punycode: true,
-      querystring: true,
-      util: true,
     },
   },
   serverDependenciesToBundle: [
