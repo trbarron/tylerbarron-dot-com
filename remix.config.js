@@ -16,10 +16,7 @@ export default {
   serverMode: isProduction ? "production" : "development",
   browserNodeBuiltinsPolyfill: {
     modules: {
-      crypto: true,
-      events: true,
-      fs: true,
-      path: true,
+ 
     },
   },
   serverDependenciesToBundle: [
