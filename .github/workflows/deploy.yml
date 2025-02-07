@@ -101,15 +101,6 @@ jobs:
           node-version: 20
           architecture: x64
 
-      - name: 👀 Env
-        run: |
-          echo "Event name: ${{ github.event_name }}"
-          echo "Git ref:    ${{ github.ref }}"
-          echo "GH actor:   ${{ github.actor }}"
-          echo "SHA:        ${{ github.sha }}"
-          VER=`node --version`; echo "Node ver:   $VER"
-          VER=`npm --version`; echo "npm ver:    $VER"
-
       - name: 📥 Install deps
         run: |
           rm -rf node_modules
@@ -120,25 +111,6 @@ jobs:
       - name: 🏗 Build
         run: |
           npm run build
-          # Debug: List build output
-          echo "Build directory contents:"
-          ls -la public/build/
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-
-      - name: 🛠 Install Arc
-        run: |
-          npm i -g @architect/architect
-          # Ensure server directory exists
-          mkdir -p server
-          # Copy build files to server directory
-          cp build/index.js server/index.js || echo "No server build found"
-          # Debug: List directories
-          echo "Server directory contents:"
-          ls -la server/
-          echo "Build directory contents:"
-          ls -la public/build/
 
       - name: 🚀 Production Deploy
         if: github.ref == 'refs/heads/master'
