@@ -106,6 +106,7 @@ jobs:
           rm -rf node_modules
           npm cache clean --force
           npm install
+          npm i -g @architect/architect
           npm rebuild
           
       - name: 🏗 Build
