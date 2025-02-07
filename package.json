@@ -10,7 +10,8 @@
     "dev": "remix dev --manual -c \"arc sandbox -e testing\"",
     "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
     "start": "remix-serve ./build/index.js",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "test:bundle": "node scripts/test-bundle.js"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.699.0",

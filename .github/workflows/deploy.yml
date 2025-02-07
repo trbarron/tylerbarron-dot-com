@@ -145,21 +145,49 @@ jobs:
           cd server
           npm i --omit=dev --no-package-lock
           cd ..
-                  
+
       - name: 📦 Optimize Server Bundle
         run: |
+          # First create a debug build
           npx esbuild server/index.js \
             --bundle \
             --platform=node \
             --target=node20 \
             --format=esm \
             --external:@architect/functions \
-            --external:crypto \
-            --external:node:crypto \
+            --external:@remix-run/node \
+            --external:crypto  \
+            --external:node:crypto  \
+            --metafile=build/meta.json \
             --outfile=build/index.js
-
+            --verbose
+          
+          # Analyze the bundle
+          echo "=== Bundle Analysis ===" 
+          npx esbuild --metafile=build/meta.json --analyze
+          
+          # Show what's in the bundle
+          echo "=== Bundle Contents ==="
+          node -e "console.log(JSON.parse(require('fs').readFileSync('build/meta.json')).inputs)"
+          
+          # Check the generated code for crypto references
+          echo "=== Crypto References in Bundle ==="
+          grep -n "crypto" build/index.js || echo "No crypto references found in bundle"
+          
+          # Copy the analyzed bundle
           cp build/index.js server/index.js
-         
+
+      - name: 🧪 Test Bundle Locally
+        run: |
+          echo "=== Testing bundle imports ==="
+          node --experimental-vm-modules -e "
+            import('./build/index.js')
+              .then(() => console.log('Bundle loaded successfully'))
+              .catch(err => {
+                console.error('Bundle load failed:', err);
+                process.exit(1);
+              })
+          "
       - name: 🚀 Production Deploy
         if: github.ref == 'refs/heads/master'
         run: |
