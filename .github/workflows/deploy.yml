@@ -124,28 +124,6 @@ jobs:
           echo "Build directory contents:"
           ls -la public/build/
 
-      - name: 🛠 Prepare Server
-        run: |
-          mkdir -p server
-          mkdir -p build
-          
-          # Create minimal package.json for server
-          echo '{
-            "type": "module",
-            "main": "index.mjs",
-            "dependencies": {
-              "@architect/functions": "^5.0.0",
-              "crypto": "^1.0.1",
-              "react": "^18.2.0",
-              "react-dom": "^18.2.0"          
-            }
-          }' > server/package.json
-          
-          # Install only production dependencies in server
-          cd server
-          npm i --omit=dev --no-package-lock
-          cd ..
-
       - name: 📦 Optimize Server Bundle
         run: |
           # First create a debug build
@@ -159,8 +137,7 @@ jobs:
             --external:crypto  \
             --external:node:crypto  \
             --metafile=build/meta.json \
-            --outfile=build/index.js  \
-            --verbose
+            --outfile=build/index.js
           
           # Analyze the bundle
           echo "=== Bundle Analysis ===" 
