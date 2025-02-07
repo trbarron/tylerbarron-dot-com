@@ -32,20 +32,20 @@ defaults:
 
 jobs:
   upload:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      
-      - name: Configure AWS
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v3
+        
+        - name: Configure AWS
+          uses: aws-actions/configure-aws-credentials@v1
+          with:
+            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            aws-region: us-east-1
 
-      - name: Upload to S3
-        run: |
-          aws s3 sync posts/ s3://${{ secrets.AWS_BUCKET_NAME }}/posts/
+        - name: Upload to S3
+          run: |
+            aws s3 sync posts/ s3://${{ secrets.AWS_BUCKET_NAME }}/posts/
 
   lint:
     name: ⬣ ESLint
@@ -87,6 +87,7 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: 🛑 Cancel Previous Runs
         uses: styfle/cancel-workflow-action@0.11.0
@@ -111,15 +112,37 @@ jobs:
 
       - name: 📥 Install deps
         run: |
+          rm -rf node_modules
+          npm cache clean --force
           npm install
-          npm install -g @architect/architect
-
+          npm rebuild
+          
       - name: 🏗 Build
-        run: npm run build
+        run: |
+          npm run build
+          # Debug: List build output
+          echo "Build directory contents:"
+          ls -la public/build/
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+
+      - name: 🛠 Install Arc
+        run: |
+          npm i -g @architect/architect
+          # Ensure server directory exists
+          mkdir -p server
+          # Copy build files to server directory
+          cp build/index.js server/index.js || echo "No server build found"
+          # Debug: List directories
+          echo "Server directory contents:"
+          ls -la server/
+          echo "Build directory contents:"
+          ls -la public/build/
 
       - name: 🚀 Production Deploy
         if: github.ref == 'refs/heads/master'
-        run: npx arc deploy --production --prune --verbose
+        run: arc deploy --production --prune --verbose
         env:
           CI: true
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}

@@ -1,5 +1,6 @@
 import path from "node:path";
 
+
 const isProduction = process.env.NODE_ENV === "production";
 
 /** @type {import('@remix-run/dev').AppConfig} */
@@ -9,22 +10,13 @@ export default {
   assetsBuildDirectory: "public/build",
   publicPath: "/_static/build/",
   server: "./server.ts",
-  serverBuildPath: "build/index.mjs",
-  serverMetafile: "build/metafile.json",
+  serverBuildPath: "server/index.mjs",
   serverModuleFormat: "esm",
   serverMinify: true,
   serverMode: isProduction ? "production" : "development",
-  
-  serverMinifyOptions: {
-    dead_code: true,
-    global_defs: {
-      "@process.env.NODE_ENV": "'production'"
-    }
-  },
-  
   browserNodeBuiltinsPolyfill: {
     modules: {
-      crypto: false,
+      crypto: true,
       events: true,
       fs: true,
       path: true,
@@ -33,17 +25,15 @@ export default {
       util: true,
     },
   },
-  
   serverDependenciesToBundle: [
+    /^@aws-sdk\/.*/,
+    'mnemonist',
     'mnemonist/lru-cache',
     'obliterator/iterator',
     'obliterator/foreach',
-    'd3-geo/dist/d3-geo.min.js',
-    'topojson-client/dist/topojson-client.min.js'
+    'd3-geo',
+    'topojson-client',
   ],
-  serverConditions: ["worker", "import", "require", "production", "default"],
-  
-  serverAnalyzeCommonDependencies: true,
 
   future: {
     v3_fetcherPersist: true,
