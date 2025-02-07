@@ -20,11 +20,9 @@ export default {
       events: true,
       fs: true,
       path: true,
-      punycode: true,
     },
   },
   serverDependenciesToBundle: [
-    'mnemonist/lru-cache',
     'obliterator/iterator',
     'obliterator/foreach',
     'd3-geo/dist/d3-geo.min.js',
