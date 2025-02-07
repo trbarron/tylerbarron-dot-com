@@ -139,14 +139,6 @@ jobs:
             --metafile=build/meta.json \
             --outfile=build/index.js
           
-          # Analyze the bundle
-          echo "=== Bundle Analysis ===" 
-          npx esbuild --metafile=build/meta.json --analyze
-          
-          # Show what's in the bundle
-          echo "=== Bundle Contents ==="
-          node -e "console.log(JSON.parse(require('fs').readFileSync('build/meta.json')).inputs)"
-          
           # Check the generated code for crypto references
           echo "=== Crypto References in Bundle ==="
           grep -n "crypto" build/index.js || echo "No crypto references found in bundle"
