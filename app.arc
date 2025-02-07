@@ -14,9 +14,5 @@ architecture x86_64
   method any
   src server
 
-@plugins
-remix-vite
-  src plugin-vite.mjs
-
 @static
 fingerprint false
