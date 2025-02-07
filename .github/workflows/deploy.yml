@@ -155,21 +155,12 @@ jobs:
             --format=esm \
             --external:@architect/functions \
             --external:crypto \
+            --external:node:crypto \
+            --external:@remix-run/node \
             --outfile=build/index.js
 
           cp build/index.js server/index.js
-          
-      - name: 🔍 Debug Build Output
-        run: |
-          echo "Current directory structure:"
-          tree -L 3 || ls -R
-          
-          echo "\nRemix build config:"
-          cat remix.config.js
-          
-          echo "\nFinal server package.json:"
-          cat server/package.json
-
+         
       - name: 🚀 Production Deploy
         if: github.ref == 'refs/heads/master'
         run: |
