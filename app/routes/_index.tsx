@@ -77,11 +77,11 @@ const links = [
     title: "Chesser Guesser",
     description: "Can you tell who is winning the chess game?"
   },
-  {
-    to: "/ChessOpenings",
-    title: "Chess Openings Practice",
-    description: "Tool to practice your chess openings"
-  },
+  // {
+  //   to: "/ChessOpenings",
+  //   title: "Chess Openings Practice",
+  //   description: "Tool to practice your chess openings"
+  // },
   // {
   //   to: "/RiddlerWarfare",
   //   title: "Riddler Warfare",

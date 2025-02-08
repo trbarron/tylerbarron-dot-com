@@ -27,27 +27,27 @@ export default function ChesserGuesserLandingPage() {
       <Navbar />
       <main className="flex-grow">
         <div className='flex flex-col items-center justify-center'>
-        <Subarticle subtitle="Optional Subtitle">
+        <Subarticle subtitle="">
             <div className="w-full max-w-md p-8 space-y-4 bg-white shadow-md rounded-lg">
-              <div>
+              {/* <div>
                 <h2 className="text-2xl font-semibold">Daily Game</h2>
                 <p className="text-gray-600">Challenge yourself with a new set of puzzles every day. Test your skills and see how you rank among other players.</p>
                 <button onClick={handlePlayDaily} className="mt-4 inline-block bg-gray text-offWhite font-bold py-2 px-4 rounded hover:bg-gray-dark w-full text-center">Play Daily</button>
-              </div>
-              <div className="pt-6" />
-              <hr className="pt-4 border-gray-300" />
+              </div> */}
+              {/* <div className="pt-6" /> */}
+              {/* <hr className="pt-4 border-gray-300" /> */}
               <div>
                 <h2 className="text-2xl font-semibold">Unlimited Game</h2>
-                <p className="text-gray-600">Enjoy endless puzzles at your own pace. A great way to practice and improve your chess evaluation skills without any pressure.</p>
+                <p className="text-gray-600">Enjoy endless puzzles at your own pace</p>
                 <Link to="/chesserGuesser/unlimited" className="mt-4 inline-block bg-gray-300 text-offBlack font-bold py-2 px-4 rounded hover:bg-gray-400 w-full text-center">Play Unlimited</Link>
               </div>
             </div>
           </Subarticle>
-          <Subarticle subtitle="Optional Subtitle">
+          <Subarticle subtitle="">
             <div className="w-full max-w-md p-8 space-y-4 bg-white shadow-md rounded-lg">
                 <div>
                 <h2 className="text-2xl font-semibold">Blog</h2>
-                <p className="text-gray-600">Recap post on how this was created, learnings and experiences in releasing it.</p>
+                <p className="text-gray-600">Recap post on how this was created, learnings and experiences in releasing it</p>
                 <Link to="/ChesserGuesser/Blog" className="mt-4 inline-block bg-gray-300 text-offBlack font-bold py-2 px-4 rounded hover:bg-gray-400 w-full text-center">Read</Link>
                 </div>
             </div>
