@@ -1,5 +1,5 @@
 import React, { useState, Suspense, useEffect } from "react";
-import { useNavigate, useLoaderData, Form } from "@remix-run/react";
+import { useNavigate, useLoaderData, Form, ScrollRestoration, useLocation } from "@remix-run/react";
 import { Chess } from 'chess.js';
 import { json } from "@remix-run/node";
 import { Navbar } from "~/components/Navbar";
@@ -97,7 +97,10 @@ export default function ChesserGuesserUnlimited() {
     setLastEval(loaderData.evalScore / 100);
     setLastSlider(sliderValue / 100);
 
-    navigate(".", { replace: true });
+    navigate(".", { 
+      replace: true,
+      state: { key: location.key } 
+    });
 
     return difference;
   }
@@ -132,6 +135,10 @@ export default function ChesserGuesserUnlimited() {
   return (
     <div className="bg-background bg-fixed min-h-screen">
       <Navbar />
+      <ScrollRestoration getKey={(location) => {
+        // Return consistent key for this route to maintain scroll
+        return location.pathname;
+      }} />
       <main className="flex-grow">
         <Article title="Chesser Guesser Unlimited" subtitle="">
             <div className="pb-6 mx-auto grid gap-x-4 grid-rows-2 md:grid-rows-1 grid-cols-1 md:grid-cols-2 md:ml-auto" style={{ gridTemplateColumns: "80% 20%", marginLeft: "-0.5rem", marginRight: "0.5rem" }}>
