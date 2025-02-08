@@ -215,10 +215,10 @@ export default function ChesserGuesserUnlimited() {
               subtitle=""
             >
               <p>
-                Challenge yourself to guess the computer's evaluation of chess positions. Your goal is to estimate the position's value as accurately as possible -- extending your streak if you correctly guess the player ahead.
+                Challenge yourself to guess the computer's evaluation of chess positions. Your goal is to estimate the position's value as accurately as possible -- extending your streak if you correctly guess the player ahead
               </p>
               <p>
-                Each correct guess extends your streak. See how long you can maintain it by matching or closely approximating the computer's precision. It's a test of your chess judgment against the engine's calculations. Keep your streak going and sharpen your evaluative skills!
+                Each correct guess extends your streak. See how long you can maintain it by matching or closely approximating the computer's precision
               </p>
             </Subarticle>
           </Article>
