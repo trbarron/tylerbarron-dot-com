@@ -6,8 +6,6 @@ import { Navbar } from "~/components/Navbar";
 import Footer from "~/components/Footer";
 import Article from "~/components/Article";
 import { Subarticle } from "~/components/Subarticle";
-import { DynamoDB } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb';
 
 // Import images
 import whiteKingImage from '~/images/ChesserGuesser/whiteKing.png';
@@ -25,26 +23,6 @@ export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: chessgroundCburnett }
 ];
 
-// Initialize DynamoDB client with error handling
-let dynamoDb: DynamoDBDocument;
-try {
-  if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
-    throw new Error('Missing AWS credentials');
-  }
-
-  const client = new DynamoDB({
-    credentials: {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    },
-    region: 'us-west-2'
-  });
-
-  dynamoDb = DynamoDBDocument.from(client);
-} catch (error) {
-  console.error("Error initializing DynamoDB:", error);
-}
-
 type LoaderData = {
   randomFEN: string;
   evalScore: number;
@@ -52,33 +30,17 @@ type LoaderData = {
 };
 
 export const loader: LoaderFunction = async () => {
-  if (!dynamoDb) {
-    return json({
-      randomFEN: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
-      evalScore: 0,
-      error: 'Database connection error'
-    });
-  }
-
-  const randomCgValue = Math.floor(Math.random() * 400).toString();
-  const params = {
-    TableName: "chesserGuesser",
-    KeyConditionExpression: "#cg = :cgValue",
-    ExpressionAttributeNames: { "#cg": "cg" },
-    ExpressionAttributeValues: { ":cgValue": randomCgValue }
-  };
-
   try {
-    const data = await dynamoDb.query(params);
-    if (!data.Items || data.Items.length === 0) {
-      throw new Error('No data returned');
-    }
+    const response = await fetch('https://f73vgbj1jk.execute-api.us-west-2.amazonaws.com/prod/chesserGuesser');
+    const data = await response.json();
+    const parsedBody = JSON.parse(data.body);
+    
     return json({
-      randomFEN: data.Items[0].fen,
-      evalScore: data.Items[0].eval
+      randomFEN: parsedBody.fen,
+      evalScore: parseInt(parsedBody.eval),
     });
   } catch (error) {
-    console.error("Error fetching FEN from DynamoDB:", error);
+    console.error("Error fetching position:", error);
     return json({
       randomFEN: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
       evalScore: 0,
@@ -116,11 +78,11 @@ export default function ChesserGuesserUnlimited() {
   function submitGuess() {
     const difference = Math.abs(loaderData.evalScore - sliderValue) / 100;
     let correctSide = false;
-    if (loaderData.evalScore > 0.2 && sliderValue > 0) {
+    if (loaderData.evalScore > 20 && sliderValue > 0) {
       correctSide = true;
-    } else if (loaderData.evalScore < -0.2 && sliderValue < 0) {
+    } else if (loaderData.evalScore < -20 && sliderValue < 0) {
       correctSide = true;
-    } else if (loaderData.evalScore < 0.2 && loaderData.evalScore > -0.2 && sliderValue < 0.2 && sliderValue > -0.2) {
+    } else if (loaderData.evalScore < 20 && loaderData.evalScore > -20 && sliderValue < 20 && sliderValue > -20) {
       correctSide = true;
     }
 
@@ -176,7 +138,8 @@ export default function ChesserGuesserUnlimited() {
               <div className="w-100% col-span-2 md:col-span-1">
                 <Chessboard
                   initialFen={fen}
-                  viewOnly={true}
+                  movable={false}
+                  allowDrawing={true}
                   orientation={boardOrientation}
                 />
 

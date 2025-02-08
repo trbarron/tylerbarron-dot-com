@@ -4,26 +4,12 @@ import { Chess } from 'chess.js';
 import type { Api } from 'chessground/api';
 import type { Config } from 'chessground/config';
 import type { Color } from 'chessground/types';
-// import type { LinksFunction } from '@remix-run/node';
-// import chessgroundBase from '../styles/chessground.base.css';
-// import chessgroundBrown from '../styles/chessground.brown.css';
-// import chessgroundCburnett from '../styles/chessground.cburnett.css';
-
-// export const links: LinksFunction = () => [
-//   { rel: 'stylesheet', href: chessgroundBase },
-//   { rel: 'stylesheet', href: chessgroundBrown },
-//   { rel: 'stylesheet', href: chessgroundCburnett }
-// ];
-
-// Generate chess squares (a1 through h8)
-const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-const RANKS = ['1', '2', '3', '4', '5', '6', '7', '8'];
-const SQUARES = FILES.flatMap(file => RANKS.map(rank => `${file}${rank}`));
 
 interface ChessboardProps {
   initialFen?: string;
   movable?: boolean;
   viewOnly?: boolean;
+  allowDrawing?: boolean;
   playableColor?: Color | 'both';
   orientation?: Color;
   onMove?: (from: string, to: string, fen: string) => void;
@@ -33,10 +19,16 @@ interface ChessboardProps {
   draggable?: boolean;
 }
 
+// Generate chess squares (a1 through h8)
+const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+const RANKS = ['1', '2', '3', '4', '5', '6', '7', '8'];
+const SQUARES = FILES.flatMap(file => RANKS.map(rank => `${file}${rank}`));
+
 export default function Chessboard({ 
   initialFen = 'start',
   movable = true,
   viewOnly = false,
+  allowDrawing = true,
   playableColor = 'both',
   orientation = 'white',
   onMove,
@@ -50,7 +42,7 @@ export default function Chessboard({
   const cgRef = useRef<Api>();
 
   const calcMovable = () => {
-    if (viewOnly || !movable) return { enabled: false };
+    if (viewOnly || !movable) return { enabled: false, free: false };
     
     const dests = new Map();
     SQUARES.forEach(s => {
@@ -71,7 +63,6 @@ export default function Chessboard({
       if (move) {
         const newFen = chess.fen();
         
-        // Update the board with new position
         cgRef.current?.set({
           fen: newFen,
           turnColor: chess.turn() === 'w' ? 'white' : 'black',
@@ -79,7 +70,6 @@ export default function Chessboard({
           lastMove: highlightMoves ? [orig, dest] : undefined
         });
 
-        // Notify parent component if callback provided
         onMove?.(orig, dest, newFen);
       }
     } catch (error) {
@@ -107,8 +97,11 @@ export default function Chessboard({
         check: highlightMoves
       },
       draggable: {
-        enabled: draggable && !viewOnly,
+        enabled: draggable && !viewOnly && movable,
         showGhost: true
+      },
+      drawable: {
+        enabled: allowDrawing,
       }
     };
 
@@ -120,7 +113,7 @@ export default function Chessboard({
         cgRef.current = undefined;
       }
     };
-  }, [chess, viewOnly, movable, playableColor, orientation, animated, animationDuration, highlightMoves, draggable]);
+  }, [chess, viewOnly, movable, allowDrawing, playableColor, orientation, animated, animationDuration, highlightMoves, draggable]);
 
   // Update board if initialFen changes
   useEffect(() => {
