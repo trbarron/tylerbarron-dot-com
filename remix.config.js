@@ -13,14 +13,6 @@ export default {
   serverModuleFormat: "esm",
   serverMinify: true,
   serverMode: isProduction ? "production" : "development",
-  browserNodeBuiltinsPolyfill: {
-    modules: {
-      crypto: true,
-      events: true,
-      fs: true,
-      path: true,
-    },
-  },
   serverDependenciesToBundle: [
     'obliterator/iterator',
     'obliterator/foreach',

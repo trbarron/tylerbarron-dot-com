@@ -9,31 +9,27 @@ export default defineConfig({
         v3_fetcherPersist: true,
         v3_relativeSplatPath: true,
         v3_throwAbortReason: true,
-      }
+      },
+      serverModuleFormat: "esm",
     }),
     tsconfigPaths(),
   ],
   build: {
     rollupOptions: {
-      onwarn(warning, warn) {
-        console.log('Build warning:', warning);
-        warn(warning);
-      },
-      output: {
-        manualChunks: {
-          'recharts-chunk': [
-            'recharts',
-            'd3-shape',
-            'd3-scale',
-            'd3-array',
-            'd3-interpolate'
-          ],
-        },
-      },
+      external: [
+        'recharts',
+        '@remix-run/node',
+        'react',
+        'react-dom',
+        'remix-utils/client-only'
+      ],
     },
   },
   optimizeDeps: {
-    include: ['recharts'],
+    exclude: ['recharts'],
   },
-  logLevel: 'info',
+  ssr: {
+    noExternal: true,
+    external: ['recharts']
+  },
 });
