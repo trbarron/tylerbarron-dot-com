@@ -15,6 +15,10 @@ export default defineConfig({
   ],
   build: {
     rollupOptions: {
+      onwarn(warning, warn) {
+        console.log('Build warning:', warning);
+        warn(warning);
+      },
       output: {
         manualChunks: {
           'recharts-chunk': [
@@ -31,4 +35,5 @@ export default defineConfig({
   optimizeDeps: {
     include: ['recharts'],
   },
+  logLevel: 'info',
 });
