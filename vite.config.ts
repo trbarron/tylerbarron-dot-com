@@ -13,4 +13,22 @@ export default defineConfig({
     }),
     tsconfigPaths(),
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'recharts-chunk': [
+            'recharts',
+            'd3-shape',
+            'd3-scale',
+            'd3-array',
+            'd3-interpolate'
+          ],
+        },
+      },
+    },
+  },
+  optimizeDeps: {
+    include: ['recharts'],
+  },
 });
