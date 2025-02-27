@@ -15,31 +15,35 @@ export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: chessgroundCburnett }
 ];
 
-export default function ChessGame2v2Test() {
-  // Game state
+// Define game phases as constants
+const GamePhase = {
+  SETUP: 'setup',
+  TEAM1_SELECTION: 'team1_selection',
+  TEAM1_COMPUTING: 'team1_computing',
+  TEAM2_SELECTION: 'team2_selection',
+  TEAM2_COMPUTING: 'team2_computing',
+  COOLDOWN: 'cooldown'
+} as const;
+
+// Type for the game phases
+type GamePhaseType = typeof GamePhase[keyof typeof GamePhase];
+
+export default function CollaborativeCheckmate() {
   const [chess, setChess] = useState(new Chess());
   const [fen, setFen] = useState('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
   const [orientation, setOrientation] = useState('white');
   const [selectedMove, setSelectedMove] = useState(null);
-  const [submittedMoves, setSubmittedMoves] = useState([]);
-  const [phase, setPhase] = useState('team2_selection'); // team1_selection, team1_computing, team2_selection, team2_computing
+  const [phase, setPhase] = useState<GamePhaseType>(GamePhase.SETUP);
   const [timeRemaining, setTimeRemaining] = useState(5);
   const [gameId, setGameId] = useState('test-game-' + Math.random().toString(36).substring(2, 9));
   const [playerTeam, setPlayerTeam] = useState(1);
   const [playerId, setPlayerId] = useState('player1');
-  const [playerSeats, setPlayerSeats] = useState({
-    "t1p1": null,
-    "t1p2": null,
-    "t2p1": null,
-    "t2p2": null
+  const [players, setPlayers] = useState({
+    t1p1: { id: null, ready: false },
+    t1p2: { id: null, ready: false },
+    t2p1: { id: null, ready: false },
+    t2p2: { id: null, ready: false }
   });
-  const [playerReady, setPlayerReady] = useState({
-    "t1p1": false,
-    "t1p2": false,
-    "t2p1": false,
-    "t2p2": false
-  });
-  const [teammateMoves, setTeammateMoves] = useState([]);
   const [gameLog, setGameLog] = useState([]);
   const [connected, setConnected] = useState(false);
   
@@ -48,20 +52,15 @@ export default function ChessGame2v2Test() {
   const timerRef = useRef(null);
   
   // Use refs to keep track of current state values for use in callbacks
-  const playerSeatsRef = useRef(playerSeats);
-  const playerReadyRef = useRef(playerReady);
+  const playersRef = useRef(players);
   const playerIdRef = useRef(playerId);
   const phaseRef = useRef(phase);
   const playerTeamRef = useRef(playerTeam);
   
   // Update refs when state changes
   useEffect(() => {
-    playerSeatsRef.current = playerSeats;
-  }, [playerSeats]);
-  
-  useEffect(() => {
-    playerReadyRef.current = playerReady;
-  }, [playerReady]);
+    playersRef.current = players;
+  }, [players]);
   
   useEffect(() => {
     playerIdRef.current = playerId;
@@ -75,11 +74,6 @@ export default function ChessGame2v2Test() {
     playerTeamRef.current = playerTeam;
   }, [playerTeam]);
 
-  // Check if it's player's team selection phase
-  const isPlayerSelectionPhase = () => {
-    return (phaseRef.current === 'team1_selection' && playerTeamRef.current === 1) || 
-           (phaseRef.current === 'team2_selection' && playerTeamRef.current === 2);
-  };
   
   // Connect to WebSocket
   const connectWebSocket = () => {
@@ -89,7 +83,6 @@ export default function ChessGame2v2Test() {
       
       socketRef.current.onopen = () => {
         setConnected(true);
-        console.log('Connected to server');
         setGameLog(prev => [...prev, { type: 'system', message: 'Connected to game server' }]);
       };
       
@@ -122,19 +115,16 @@ export default function ChessGame2v2Test() {
 
             case 'player_ready':
               // Update player's ready state
-              const currentPlayerSeats = playerSeatsRef.current;
-              const seatKey = Object.keys(currentPlayerSeats).find(key => 
-                currentPlayerSeats[key] === data.player_id
+              const currentPlayers = playersRef.current;
+              const seatKey = Object.keys(currentPlayers).find(key => 
+                currentPlayers[key].id === data.player_id
               );
-              
-              console.log(`Player ${data.player_id} is ready in seat ${seatKey}`);
-              console.log(`Current player seats: ${JSON.stringify(currentPlayerSeats)}`);
               
               if (seatKey) {
                 // Update the ready status for this seat
-                setPlayerReady(prev => ({
+                setPlayers(prev => ({
                   ...prev,
-                  [seatKey]: true
+                  [seatKey]: { ...prev[seatKey], ready: true }
                 }));
                 
                 // If this is the current player, add a note to the log
@@ -170,13 +160,21 @@ export default function ChessGame2v2Test() {
               break;
 
             case 'player_seats':
-              // Update player seats
               if (data.player_seats) {
-                setPlayerSeats(data.player_seats);
+                setPlayers(prev => {
+                  const updatedPlayers = {};
+                  for (const seat of Object.keys(prev)) {
+                    updatedPlayers[seat] = {
+                      id: data.player_seats[seat] || null,
+                      ready: prev[seat].ready
+                    };
+                  }
+                  return updatedPlayers;
+                });
                 
                 // Determine our team based on which seat we're in
-                for (const [seat, player] of Object.entries(data.player_seats)) {
-                  if (player === playerId) {
+                for (const [seat, playerId] of Object.entries(data.player_seats)) {
+                  if (playerId === playerIdRef.current) {
                     if (seat.startsWith('t1')) {
                       setPlayerTeam(1);
                     } else if (seat.startsWith('t2')) {
@@ -218,14 +216,14 @@ export default function ChessGame2v2Test() {
               
             case 'player_disconnected':
               // Update player status to not ready
-              const disconnectedSeatKey = Object.keys(playerSeats).find(key => 
-                playerSeats[key] === data.player_id
+              const disconnectedSeatKey = Object.keys(players).find(key => 
+                players[key].id === data.player_id
               );
               
               if (disconnectedSeatKey) {
-                setPlayerReady(prev => ({
+                setPlayers(prev => ({
                   ...prev,
-                  [disconnectedSeatKey]: false
+                  [disconnectedSeatKey]: { ...prev[disconnectedSeatKey], ready: false }
                 }));
               }
               
@@ -284,9 +282,9 @@ export default function ChessGame2v2Test() {
     
     // Check if player has already readied up - can't change seats if ready
     const currentSeat = getCurrentPlayerSeat();
-    const currentPlayerReady = playerReadyRef.current;
+    const currentPlayerReady = playersRef.current[currentSeat].ready;
     
-    if (currentSeat && currentPlayerReady[currentSeat]) {
+    if (currentSeat && currentPlayerReady) {
       setGameLog(prev => [...prev, { 
         type: 'error', 
         message: 'Cannot change seats after readying up' 
@@ -295,11 +293,11 @@ export default function ChessGame2v2Test() {
     }
     
     // Check if seat is already taken by someone else (can click on your own seat)
-    const currentPlayerSeats = playerSeatsRef.current;
-    if (currentPlayerSeats[seat] !== null && currentPlayerSeats[seat] !== playerIdRef.current) {
+    const currentPlayers = playersRef.current;
+    if (currentPlayers[seat].id !== null && currentPlayers[seat].id !== playerIdRef.current) {
       setGameLog(prev => [...prev, { 
         type: 'error', 
-        message: `Seat ${seat} is already taken by ${currentPlayerSeats[seat]}` 
+        message: `Seat ${seat} is already taken by ${currentPlayers[seat].id}` 
       }]);
       return;
     }
@@ -313,42 +311,6 @@ export default function ChessGame2v2Test() {
       
       console.log(`Requested to take seat ${seat}`);
       // The actual seat update will happen when we receive the player_seats message
-    }
-  };
-  
-  // Submit a move
-  const submitMove = () => {
-    if (!selectedMove) {
-      console.log('No move selected');
-      return;
-    }
-    
-    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-      // Send the move to the server
-      socketRef.current.send(JSON.stringify({
-        type: "submit_move",
-        move: {
-          from: selectedMove.from,
-          to: selectedMove.to,
-          piece: chess.get(selectedMove.from)?.type || 'p',
-          promotion: 'q'
-        }
-      }));
-      
-      // Update local state
-      setSubmittedMoves(prev => [...prev, selectedMove]);
-      console.log(`Submitted move: ${selectedMove.from} to ${selectedMove.to}`);
-      setGameLog(prev => [...prev, { 
-        type: 'move', 
-        message: `You submitted: ${selectedMove.from} to ${selectedMove.to}`,
-        player: 'You'
-      }]);
-    } else {
-      console.log('Cannot submit move: Not connected to server');
-      setGameLog(prev => [...prev, { 
-        type: 'error', 
-        message: 'Cannot submit move: Not connected' 
-      }]);
     }
   };
 
@@ -374,13 +336,9 @@ export default function ChessGame2v2Test() {
   
   // Find which seat the current player is in, if any
   const getCurrentPlayerSeat = () => {
-    const currentPlayerSeats = playerSeatsRef.current;
-    for (const [seat, player] of Object.entries(currentPlayerSeats)) {
-      if (player === playerIdRef.current) {
-        return seat;
-      }
-    }
-    return null;
+    return Object.entries(playersRef.current).find(
+      ([_, player]) => player.id === playerIdRef.current
+    )?.[0] || null;
   };
   
   // Cleanup on unmount
@@ -407,7 +365,7 @@ export default function ChessGame2v2Test() {
                 <Chessboard
                   initialFen={fen}
                   orientation={orientation}
-                  viewOnly={!((phase === 'team1_selection' && playerTeam === 1) || (phase === 'team2_selection' && playerTeam === 2))}
+                  viewOnly={!((phase === GamePhase.TEAM1_SELECTION && playerTeam === 1) || (phase === GamePhase.TEAM2_SELECTION && playerTeam === 2))}
                   onPieceDrop={(sourceSquare, targetSquare) => 
                     handleBoardClick(sourceSquare, targetSquare)
                   }
@@ -428,8 +386,8 @@ export default function ChessGame2v2Test() {
                         {connected ? ' Connected' : ' Disconnected'}
                       </span>
                     </p>
-                    <p><strong>Can Move:</strong> <span className={(phase === 'team1_selection' && playerTeam === 1) || (phase === 'team2_selection' && playerTeam === 2) ? 'text-green-600' : 'text-red-600'}>
-                      {(phase === 'team1_selection' && playerTeam === 1) || (phase === 'team2_selection' && playerTeam === 2) ? 'Yes' : 'No'}
+                    <p><strong>Can Move:</strong> <span className={(phase === GamePhase.TEAM1_SELECTION && playerTeam === 1) || (phase === GamePhase.TEAM2_SELECTION && playerTeam === 2) ? 'text-green-600' : 'text-red-600'}>
+                      {(phase === GamePhase.TEAM1_SELECTION && playerTeam === 1) || (phase === GamePhase.TEAM2_SELECTION && playerTeam === 2) ? 'Yes' : 'No'}
                     </span></p>
                   </div>
                 </div>
@@ -443,37 +401,37 @@ export default function ChessGame2v2Test() {
                     {/* Team 1 Player 1 */}
                     <div 
                       className={`flex items-center p-2 rounded ${
-                        playerSeats.t1p1 === playerId ? 'bg-blue-100' : ''
+                        players.t1p1.id === playerId ? 'bg-blue-100' : ''
                       } ${
-                        (playerSeats.t1p1 === null || playerSeats.t1p1 === playerId) && !playerReady.t1p1 ? 
+                        (players.t1p1.id === null || players.t1p1.id === playerId) && !players.t1p1.ready ? 
                           'border-2 border-dashed border-gray-300 cursor-pointer hover:bg-gray-100' : 
                           'border border-gray-200'
                       }`}
-                      onClick={() => ((playerSeats.t1p1 === null || playerSeats.t1p1 === playerId) && !playerReady.t1p1) && takeSeat('t1p1')}
+                      onClick={() => ((players.t1p1.id === null || players.t1p1.id === playerId) && !players.t1p1.ready) && takeSeat('t1p1')}
                     >
                       <div className={`w-6 h-6 rounded-full mr-2 ${
-                        playerReady.t1p1 ? 'bg-green-500' : 'bg-gray-200'
+                        players.t1p1.ready ? 'bg-green-500' : 'bg-gray-200'
                       }`}></div>
-                      <span>{playerSeats.t1p1 || 'Empty Seat'}</span>
-                      {playerSeats.t1p1 === playerId && <span className="ml-2 text-xs text-blue-600">(You)</span>}
+                      <span>{players.t1p1.id || 'Empty Seat'}</span>
+                      {players.t1p1.id === playerId && <span className="ml-2 text-xs text-blue-600">(You)</span>}
                     </div>
                     
                     {/* Team 1 Player 2 */}
                     <div 
                       className={`flex items-center p-2 rounded ${
-                        playerSeats.t1p2 === playerId ? 'bg-blue-100' : ''
+                        players.t1p2.id === playerId ? 'bg-blue-100' : ''
                       } ${
-                        (playerSeats.t1p2 === null || playerSeats.t1p2 === playerId) && !playerReady.t1p2 ? 
+                        (players.t1p2.id === null || players.t1p2.id === playerId) && !players.t1p2.ready ? 
                           'border-2 border-dashed border-gray-300 cursor-pointer hover:bg-gray-100' : 
                           'border border-gray-200'
                       }`}
-                      onClick={() => ((playerSeats.t1p2 === null || playerSeats.t1p2 === playerId) && !playerReady.t1p2) && takeSeat('t1p2')}
+                      onClick={() => ((players.t1p2.id === null || players.t1p2.id === playerId) && !players.t1p2.ready) && takeSeat('t1p2')}
                     >
                       <div className={`w-6 h-6 rounded-full mr-2 ${
-                        playerReady.t1p2 ? 'bg-green-500' : 'bg-gray-200'
+                        players.t1p2.ready ? 'bg-green-500' : 'bg-gray-200'
                       }`}></div>
-                      <span>{playerSeats.t1p2 || 'Empty Seat'}</span>
-                      {playerSeats.t1p2 === playerId && <span className="ml-2 text-xs text-blue-600">(You)</span>}
+                      <span>{players.t1p2.id || 'Empty Seat'}</span>
+                      {players.t1p2.id === playerId && <span className="ml-2 text-xs text-blue-600">(You)</span>}
                     </div>
                   </div>
                 </div>
@@ -484,37 +442,37 @@ export default function ChessGame2v2Test() {
                     {/* Team 2 Player 1 */}
                     <div 
                       className={`flex items-center p-2 rounded ${
-                        playerSeats.t2p1 === playerId ? 'bg-blue-100' : ''
+                        players.t2p1.id === playerId ? 'bg-blue-100' : ''
                       } ${
-                        (playerSeats.t2p1 === null || playerSeats.t2p1 === playerId) && !playerReady.t2p1 ? 
+                        (players.t2p1.id === null || players.t2p1.id === playerId) && !players.t2p1.ready ? 
                           'border-2 border-dashed border-gray-300 cursor-pointer hover:bg-gray-100' : 
                           'border border-gray-200'
                       }`}
-                      onClick={() => ((playerSeats.t2p1 === null || playerSeats.t2p1 === playerId) && !playerReady.t2p1) && takeSeat('t2p1')}
+                      onClick={() => ((players.t2p1.id === null || players.t2p1.id === playerId) && !players.t2p1.ready) && takeSeat('t2p1')}
                     >
                       <div className={`w-6 h-6 rounded-full mr-2 ${
-                        playerReady.t2p1 ? 'bg-green-500' : 'bg-gray-200'
+                        players.t2p1.ready ? 'bg-green-500' : 'bg-gray-200'
                       }`}></div>
-                      <span>{playerSeats.t2p1 || 'Empty Seat'}</span>
-                      {playerSeats.t2p1 === playerId && <span className="ml-2 text-xs text-blue-600">(You)</span>}
+                      <span>{players.t2p1.id || 'Empty Seat'}</span>
+                      {players.t2p1.id === playerId && <span className="ml-2 text-xs text-blue-600">(You)</span>}
                     </div>
                     
                     {/* Team 2 Player 2 */}
                     <div 
                       className={`flex items-center p-2 rounded ${
-                        playerSeats.t2p2 === playerId ? 'bg-blue-100' : ''
+                        players.t2p2.id === playerId ? 'bg-blue-100' : ''
                       } ${
-                        (playerSeats.t2p2 === null || playerSeats.t2p2 === playerId) && !playerReady.t2p2 ? 
+                        (players.t2p2.id === null || players.t2p2.id === playerId) && !players.t2p2.ready ? 
                           'border-2 border-dashed border-gray-300 cursor-pointer hover:bg-gray-100' : 
                           'border border-gray-200'
                       }`}
-                      onClick={() => ((playerSeats.t2p2 === null || playerSeats.t2p2 === playerId) && !playerReady.t2p2) && takeSeat('t2p2')}
+                      onClick={() => ((players.t2p2.id === null || players.t2p2.id === playerId) && !players.t2p2.ready) && takeSeat('t2p2')}
                     >
                       <div className={`w-6 h-6 rounded-full mr-2 ${
-                        playerReady.t2p2 ? 'bg-green-500' : 'bg-gray-200'
+                        players.t2p2.ready ? 'bg-green-500' : 'bg-gray-200'
                       }`}></div>
-                      <span>{playerSeats.t2p2 || 'Empty Seat'}</span>
-                      {playerSeats.t2p2 === playerId && <span className="ml-2 text-xs text-blue-600">(You)</span>}
+                      <span>{players.t2p2.id || 'Empty Seat'}</span>
+                      {players.t2p2.id === playerId && <span className="ml-2 text-xs text-blue-600">(You)</span>}
                     </div>
                   </div>
                 </div>
@@ -527,13 +485,13 @@ export default function ChessGame2v2Test() {
                   <div className="absolute w-full h-2 bg-gray-200 rounded-full"></div>
                   
                   {/* Phase Markers */}
-                  <div className={`relative z-10 h-6 w-6 rounded-full ${phase === 'team1_selection' ? 'bg-green-500' : 'bg-gray-300'} flex items-center justify-center text-xs text-white font-bold ml-0`}>•</div>
+                  <div className={`relative z-10 h-6 w-6 rounded-full ${phase === GamePhase.TEAM1_SELECTION ? 'bg-green-500' : 'bg-gray-300'} flex items-center justify-center text-xs text-white font-bold ml-0`}>•</div>
                   <div className="flex-grow h-2"></div>
                   
-                  <div className={`relative z-10 h-6 w-6 rounded-full ${phase === 'team1_computing' ? 'bg-blue-500' : 'bg-gray-300'} flex items-center justify-center text-xs text-white font-bold`}>•</div>
+                  <div className={`relative z-10 h-6 w-6 rounded-full ${phase === GamePhase.TEAM1_COMPUTING ? 'bg-blue-500' : 'bg-gray-300'} flex items-center justify-center text-xs text-white font-bold`}>•</div>
                   <div className="flex-grow h-2"></div>
                   
-                  <div className={`relative z-10 h-6 w-6 rounded-full ${phase === 'team2_computing' ? 'bg-blue-500' : 'bg-gray-300'} flex items-center justify-center text-xs text-white font-bold mr-0`}>•</div>
+                  <div className={`relative z-10 h-6 w-6 rounded-full ${phase === GamePhase.TEAM2_COMPUTING ? 'bg-blue-500' : 'bg-gray-300'} flex items-center justify-center text-xs text-white font-bold mr-0`}>•</div>
                   <div className="flex-grow h-2"></div>
                   
                   <div className={`relative z-10 h-6 w-6 rounded-full ${phase === 'team2_selection' ? 'bg-green-500' : 'bg-gray-300'} flex items-center justify-center text-xs text-white font-bold`}>•</div>
@@ -571,10 +529,17 @@ export default function ChessGame2v2Test() {
             <div className="md:col-span-1">
               {/* Game log */}
               <div className="bg-white shadow rounded-lg overflow-hidden mb-4">
-                <div className="border-b-2 border-green-500 p-2 font-bold">
+                <div className="border-b-2 border-green-500 p-2 font-bold bg-white">
                   Game Log
                 </div>
-                <div className="h-96 overflow-y-auto p-2">
+                <div 
+                  className="h-96 overflow-y-auto p-2 bg-gray-50" 
+                  ref={(el) => {
+                    if (el) {
+                      el.scrollTop = el.scrollHeight;
+                    }
+                  }}
+                >
                   {gameLog.map((entry, index) => (
                     <div key={index} className={`mb-1 p-1 rounded ${
                       entry.type === 'system' ? 'bg-gray-100' :
