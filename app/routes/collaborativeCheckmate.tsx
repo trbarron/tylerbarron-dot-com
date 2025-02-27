@@ -522,7 +522,7 @@ export default function ChessGame2v2Test() {
               
               {/* Game Phase Indicator */}
               <div className="bg-white shadow rounded-lg p-4 mb-4">
-                <h3 className="font-bold text-lg mx-auto mb-2">Game Phase</h3>
+                <h3 className="font-bold text-lg mb-2">Game Phase</h3>
                 <div className="relative h-12 flex items-center">
                   <div className="absolute w-full h-2 bg-gray-200 rounded-full"></div>
                   
