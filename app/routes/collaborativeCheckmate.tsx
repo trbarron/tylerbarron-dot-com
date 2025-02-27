@@ -22,7 +22,7 @@ export default function ChessGame2v2Test() {
   const [orientation, setOrientation] = useState('white');
   const [selectedMove, setSelectedMove] = useState(null);
   const [submittedMoves, setSubmittedMoves] = useState([]);
-  const [phase, setPhase] = useState('team1_selection'); // team1_selection, team1_computing, team2_selection, team2_computing
+  const [phase, setPhase] = useState('team2_selection'); // team1_selection, team1_computing, team2_selection, team2_computing
   const [timeRemaining, setTimeRemaining] = useState(5);
   const [gameId, setGameId] = useState('test-game-' + Math.random().toString(36).substring(2, 9));
   const [playerTeam, setPlayerTeam] = useState(1);
@@ -51,6 +51,8 @@ export default function ChessGame2v2Test() {
   const playerSeatsRef = useRef(playerSeats);
   const playerReadyRef = useRef(playerReady);
   const playerIdRef = useRef(playerId);
+  const phaseRef = useRef(phase);
+  const playerTeamRef = useRef(playerTeam);
   
   // Update refs when state changes
   useEffect(() => {
@@ -64,6 +66,20 @@ export default function ChessGame2v2Test() {
   useEffect(() => {
     playerIdRef.current = playerId;
   }, [playerId]);
+  
+  useEffect(() => {
+    phaseRef.current = phase;
+  }, [phase]);
+  
+  useEffect(() => {
+    playerTeamRef.current = playerTeam;
+  }, [playerTeam]);
+
+  // Check if it's player's team selection phase
+  const isPlayerSelectionPhase = () => {
+    return (phaseRef.current === 'team1_selection' && playerTeamRef.current === 1) || 
+           (phaseRef.current === 'team2_selection' && playerTeamRef.current === 2);
+  };
   
   // Connect to WebSocket
   const connectWebSocket = () => {
@@ -141,13 +157,16 @@ export default function ChessGame2v2Test() {
               }
               break;
               
-            case 'phase_change':
+            case 'game_state_set':
               setPhase(data.phase);
               setTimeRemaining(data.duration || 5);
               setGameLog(prev => [...prev, { 
                 type: 'phase', 
                 message: `Phase changed to ${data.phase} (${data.duration || 5} seconds)`
               }]);
+              chess.fen = data.fen;
+              setFen(data.fen);
+              setChess(new Chess(data.fen));
               break;
 
             case 'player_seats':
@@ -185,15 +204,11 @@ export default function ChessGame2v2Test() {
                 message: `Engine selected move: ${moveText} (by ${data.move.submitted_by})` 
               }]);
               
-              // Update the chess board with the selected move
-              const gameCopy = new Chess(fen);
-              gameCopy.move({
+              // Set the last move for animation purposes
+              setLastMove({
                 from: data.move.from,
-                to: data.move.to,
-                promotion: data.move.promotion || 'q'
+                to: data.move.to
               });
-              setFen(data.new_fen || gameCopy.fen());
-              setChess(gameCopy);
               
               // Reset selections for next turn
               setSubmittedMoves([]);
@@ -353,38 +368,9 @@ export default function ChessGame2v2Test() {
       }]);
     }
   };
-  
+   
   // Handle clicking on the board to select a move
-  const handleBoardClick = (sourceSquare, targetSquare) => {
-    // Ensure it's our turn
-    const currentTeam = phase === 'team1_selection' ? 1 : phase === 'team2_selection' ? 2 : null;
-    if (currentTeam !== playerTeam) {
-      console.log('Not your team\'s turn');
-      return;
-    }
-    
-    // Check if move is legal
-    const gameCopy = new Chess(fen);
-    try {
-      const move = gameCopy.move({
-        from: sourceSquare,
-        to: targetSquare,
-        promotion: 'q' // Always promote to queen for simplicity
-      });
-      
-      if (move) {
-        setSelectedMove({
-          from: sourceSquare,
-          to: targetSquare,
-          promotion: 'q'
-        });
-        gameCopy.undo(); // Don't actually make the move yet
-        console.log(`Selected move: ${sourceSquare} to ${targetSquare}`);
-      }
-    } catch (e) {
-      console.log('Invalid move');
-    }
-  };
+  const handleBoardClick = (sourceSquare, targetSquare) => {};
   
   // Find which seat the current player is in, if any
   const getCurrentPlayerSeat = () => {
@@ -413,21 +399,22 @@ export default function ChessGame2v2Test() {
     <div className="bg-background bg-fixed min-h-screen">
       <Navbar />
       <main className="flex-grow">
-        <Article title="2v2 Chess Game Test" subtitle="">
+        <Article title="Collaborative Checkmate" subtitle="">
           <div className="pb-6 mx-auto grid gap-6 grid-cols-1 md:grid-cols-3">
             {/* Chessboard */}
             <div className="md:col-span-2">
               <div className="mb-4">
                 <Chessboard
                   initialFen={fen}
-                  movable={true}
                   orientation={orientation}
+                  viewOnly={!((phase === 'team1_selection' && playerTeam === 1) || (phase === 'team2_selection' && playerTeam === 2))}
                   onPieceDrop={(sourceSquare, targetSquare) => 
                     handleBoardClick(sourceSquare, targetSquare)
                   }
+                  movable={false}
                 />
               </div>
-              
+                            
               {/* Game status */}
               <div className="bg-white shadow rounded-lg p-4 mb-4">
                 <div className="grid grid-cols-2 gap-4">
@@ -441,6 +428,9 @@ export default function ChessGame2v2Test() {
                         {connected ? ' Connected' : ' Disconnected'}
                       </span>
                     </p>
+                    <p><strong>Can Move:</strong> <span className={(phase === 'team1_selection' && playerTeam === 1) || (phase === 'team2_selection' && playerTeam === 2) ? 'text-green-600' : 'text-red-600'}>
+                      {(phase === 'team1_selection' && playerTeam === 1) || (phase === 'team2_selection' && playerTeam === 2) ? 'Yes' : 'No'}
+                    </span></p>
                   </div>
                 </div>
               </div>
@@ -532,7 +522,7 @@ export default function ChessGame2v2Test() {
               
               {/* Game Phase Indicator */}
               <div className="bg-white shadow rounded-lg p-4 mb-4">
-                <h3 className="font-bold text-lg mb-2">Game Phase</h3>
+                <h3 className="font-bold text-lg mx-auto mb-2">Game Phase</h3>
                 <div className="relative h-12 flex items-center">
                   <div className="absolute w-full h-2 bg-gray-200 rounded-full"></div>
                   
@@ -543,16 +533,16 @@ export default function ChessGame2v2Test() {
                   <div className={`relative z-10 h-6 w-6 rounded-full ${phase === 'team1_computing' ? 'bg-blue-500' : 'bg-gray-300'} flex items-center justify-center text-xs text-white font-bold`}>•</div>
                   <div className="flex-grow h-2"></div>
                   
-                  <div className={`relative z-10 h-6 w-6 rounded-full ${phase === 'team2_selection' ? 'bg-green-500' : 'bg-gray-300'} flex items-center justify-center text-xs text-white font-bold`}>•</div>
+                  <div className={`relative z-10 h-6 w-6 rounded-full ${phase === 'team2_computing' ? 'bg-blue-500' : 'bg-gray-300'} flex items-center justify-center text-xs text-white font-bold mr-0`}>•</div>
                   <div className="flex-grow h-2"></div>
                   
-                  <div className={`relative z-10 h-6 w-6 rounded-full ${phase === 'team2_computing' ? 'bg-blue-500' : 'bg-gray-300'} flex items-center justify-center text-xs text-white font-bold mr-0`}>•</div>
+                  <div className={`relative z-10 h-6 w-6 rounded-full ${phase === 'team2_selection' ? 'bg-green-500' : 'bg-gray-300'} flex items-center justify-center text-xs text-white font-bold`}>•</div>
                 </div>
                 <div className="flex justify-between text-xs mt-1">
                   <span>T1 Select</span>
                   <span>T1 Compute</span>
-                  <span>T2 Select</span>
                   <span>T2 Compute</span>
+                  <span>T2 Select</span>
                 </div>
               </div>
               
