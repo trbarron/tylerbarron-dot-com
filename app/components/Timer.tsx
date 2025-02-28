@@ -15,7 +15,7 @@ const Timer = memo(function Timer({ timeRemaining: initialTime }: TimerProps) {
       self.onmessage = (e) => {
         if (e.data.type === 'start') {
           clearInterval(timer);
-          let time = e.data.time;
+          let time = Math.max(0, e.data.time);
           self.postMessage(time);
           timer = setInterval(() => {
             time = Math.max(0, time - 0.1);
