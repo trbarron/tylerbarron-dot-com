@@ -28,6 +28,15 @@ const GamePhase = {
   COOLDOWN: 'cooldown'
 } as const;
 
+const GamePhaseNames = {
+  [GamePhase.SETUP]: 'Setup',
+  [GamePhase.TEAM1_SELECTION]: 'White Selection',
+  [GamePhase.TEAM1_COMPUTING]: 'White Computing',
+  [GamePhase.TEAM2_SELECTION]: 'Black Selection',
+  [GamePhase.TEAM2_COMPUTING]: 'Black Computing',
+  [GamePhase.COOLDOWN]: 'Cooldown'
+} as const;
+
 // Type for the game phases
 type GamePhaseType = typeof GamePhase[keyof typeof GamePhase];
 
@@ -41,7 +50,6 @@ export default function CollaborativeCheckmate() {
   const [chess, setChess] = useState(new Chess());
   const [fen, setFen] = useState('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
   const [orientation, setOrientation] = useState('white');
-  const [selectedMove, setSelectedMove] = useState(null);
   const [gamePhase, setGamePhase] = useState<GamePhaseType>(GamePhase.COOLDOWN);
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [timeRemainingKey, setTimeRemainingKey] = useState(null);
@@ -53,6 +61,8 @@ export default function CollaborativeCheckmate() {
     t2p2: { id: null, ready: false }
   });
   const [shapes, setShapes] = useState([{ orig: 'e0', dest: 'e0', brush: 'green' }]);
+  const [selectedMove, setSelectedMove] = useState(false);
+  const [lockedIn, setLockedIn] = useState(false);
   const [gameLog, setGameLog] = useState([]);
   const [connected, setConnected] = useState(false);
 
@@ -120,18 +130,21 @@ export default function CollaborativeCheckmate() {
       socketRef.current.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
+          console.log(`Received message: ${JSON.stringify(data)}`);
 
           // Handle different message types
           switch (data.type) {
             case 'connection_established':
               break;
+            
+              
 
-            case 'moves_submitted':
+            case 'move_submitted':
               // Update player's submitted state
               setGameLog(prev => [...prev, {
                 type: 'move',
                 message: `${data.player_id} submitted a move`,
-                player: data.player_id === playerId ? 'You' : 'Teammate'
+                player: ''
               }]);
               break;
 
@@ -175,7 +188,7 @@ export default function CollaborativeCheckmate() {
                 setGamePhase(data.game_phase);
                 setGameLog(prev => [...prev, {
                   type: 'phase',
-                  message: `Phase changed to ${data.game_phase}`
+                  message: `Phase: ${GamePhaseNames[data.game_phase]}`
                 }]);
               }
 
@@ -190,6 +203,20 @@ export default function CollaborativeCheckmate() {
                 setFen(data.fen);
                 setChess(new Chess(data.fen));
                 setShapes([{ orig: 'e0', dest: 'e0', brush: 'green' }]);
+                setSelectedMove(false);
+                setLockedIn(false);
+              }
+
+              if (data.last_move) {
+                // Parse the last move from "e2e4" to "e2" and "e4"
+                const move = data.last_move
+                const from = move.substring(0, 2)
+                const to = move.substring(2, 4)
+                setShapes([{
+                  orig: from,
+                  dest: to,
+                  brush: 'yellow'
+                }]);
               }
 
               // Handle player seat/ready status updates if present
@@ -255,7 +282,6 @@ export default function CollaborativeCheckmate() {
               // Reset selections for next turn
               setSubmittedMoves([]);
               setTeammateMoves([]);
-              setSelectedMove(null);
               break;
 
             case 'player_disconnected':
@@ -368,6 +394,7 @@ export default function CollaborativeCheckmate() {
         player_id: playerId
       }));
     }
+    setLockedIn(true);
   };
 
   // Find which seat the current player is in, if any
@@ -400,7 +427,7 @@ export default function CollaborativeCheckmate() {
                       initialFen={fen}
                       orientation={orientation}
                       viewOnly={!((gamePhase === GamePhase.TEAM1_SELECTION && playerTeam === 1) ||
-                        (gamePhase === GamePhase.TEAM2_SELECTION && playerTeam === 2))}
+                        (gamePhase === GamePhase.TEAM2_SELECTION && playerTeam === 2)) || lockedIn}
                       movable={{
                         free: false,
                         color: playerTeam === 1 ? 'white' : 'black'
@@ -421,11 +448,13 @@ export default function CollaborativeCheckmate() {
                             chess.load(fen);
                             setFen(fen);
                             setChess(new Chess(fen));
+                            setSelectedMove(true);
+
 
                             setShapes([{
                               orig: orig,
                               dest: dest,
-                              brush: 'yellow'
+                              brush: 'blue'
                             }]);
                           }
                         }
@@ -453,26 +482,26 @@ export default function CollaborativeCheckmate() {
                   <div className="absolute w-full h-2 bg-gray-200 rounded-full"></div>
 
                   {/* Phase Markers */}
-                  <div className={`relative z-10 h-6 w-6 rounded-full border-2 border-white ${gamePhase === GamePhase.TEAM1_SELECTION ? 'bg-green-500' : 'bg-gray-300'
+                  <div className={`relative z-10 h-6 w-6 rounded-full border-2 border-white ${gamePhase === GamePhase.TEAM1_SELECTION ? 'bg-gray-500' : 'bg-gray-300'
                     } flex items-center justify-center text-xs text-white font-bold ml-0`}>•</div>
                   <div className="flex-grow h-2"></div>
 
-                  <div className={`relative z-10 h-6 w-6 rounded-full border-2 border-white ${gamePhase === GamePhase.TEAM1_COMPUTING ? 'bg-blue-500' : 'bg-gray-300'
+                  <div className={`relative z-10 h-6 w-6 rounded-full border-2 border-white ${gamePhase === GamePhase.TEAM1_COMPUTING ? 'bg-gray-500' : 'bg-gray-300'
                     } flex items-center justify-center text-xs text-white font-bold`}>•</div>
                   <div className="flex-grow h-2"></div>
 
-                  <div className={`relative z-10 h-6 w-6 rounded-full border-2 border-black ${gamePhase === GamePhase.TEAM2_COMPUTING ? 'bg-blue-500' : 'bg-gray-300'
-                    } flex items-center justify-center text-xs text-black font-bold mr-0`}>•</div>
+                  <div className={`relative z-10 h-6 w-6 rounded-full border-2 border-white ${gamePhase === GamePhase.TEAM2_COMPUTING ? 'bg-gray-500' : 'bg-gray-300'
+                    } flex items-center justify-center text-xs text-white font-bold mr-0`}>•</div>
                   <div className="flex-grow h-2"></div>
 
-                  <div className={`relative z-10 h-6 w-6 rounded-full border-2 border-black ${gamePhase === GamePhase.TEAM2_SELECTION ? 'bg-green-500' : 'bg-gray-300'
-                    } flex items-center justify-center text-xs text-black font-bold`}>•</div>
+                  <div className={`relative z-10 h-6 w-6 rounded-full border-2 border-white ${gamePhase === GamePhase.TEAM2_SELECTION ? 'bg-gray-500' : 'bg-gray-300'
+                    } flex items-center justify-center text-xs text-white font-bold`}>•</div>
                 </div>
                 <div className="flex justify-between text-xs mt-1">
                   <span className="bg-white text-black px-2 py-1">Select</span>
                   <span className="bg-white text-black px-2 py-1">Compute</span>
-                  <span className="bg-black text-white px-2 py-1">Compute</span>
-                  <span className="bg-black text-white px-2 py-1">Select</span>
+                  <span className="bg-gray-700 text-white px-2 py-1">Compute</span>
+                  <span className="bg-gray-700 text-white px-2 py-1">Select</span>
                 </div>
               </div>
 
@@ -481,11 +510,11 @@ export default function CollaborativeCheckmate() {
                 <button
                   onClick={lockInMove}
                   className={`p-2 rounded font-bold transition-colors duration-200
-                    ${!connected || !selectedMove 
+                    ${!connected || !selectedMove || lockedIn
                       ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                       : 'bg-gray-500 hover:bg-gray-600 text-white'
                     }`}
-                  disabled={!connected || !selectedMove}
+                  disabled={!connected || !selectedMove || lockedIn}
                 >
                   Lock In Move
                 </button>
@@ -494,7 +523,7 @@ export default function CollaborativeCheckmate() {
               {/* Player Seats */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-white shadow rounded p-3 pt-0 mb-2">
-                  <h3 className="font-bold text-lg my-1">White</h3>
+                  <h3 className="font-bold text-gray-500 text-lg my-1">White</h3>
                   <div className="space-y-2">
                     {/* White Player 1 */}
                     <div
@@ -529,7 +558,7 @@ export default function CollaborativeCheckmate() {
                 </div>
 
                 <div className="bg-white shadow rounded p-3 pt-0 mb-2">
-                  <h3 className="font-bold text-lg my-1">Black</h3>
+                  <h3 className="font-bold text-gray-500 text-lg my-1">Black</h3>
                   <div className="space-y-2">
                     {/* Black Player 1 */}
                     <div
@@ -599,7 +628,7 @@ export default function CollaborativeCheckmate() {
                     <div key={index} className={`mb-1 p-1 rounded text-xs ${entry.type === 'system' ? 'bg-gray-100' :
                       entry.type === 'move' ? 'bg-blue-50' :
                         entry.type === 'engine' ? 'bg-yellow-50' :
-                          entry.type === 'phase' ? 'bg-green-50' :
+                          entry.type === 'phase' ? 'bg-white' :
                             entry.type === 'error' ? 'bg-red-50' : ''
                       }`}>
                       {entry.player && <span className="font-bold">{entry.player}: </span>}

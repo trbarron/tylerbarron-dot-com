@@ -50,7 +50,7 @@ const Timer = memo(function Timer({ timeRemaining: initialTime }: TimerProps) {
     <div className="w-full">
       <div className="relative h-4 bg-gray-200 rounded-full overflow-hidden">
         <div 
-          className="absolute h-full bg-blue-500 transition-all duration-100"
+          className="absolute h-full bg-gray-500 transition-all duration-100"
           style={{ width: `${progress}%` }}
         />
       </div>

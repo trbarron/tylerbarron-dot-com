@@ -17,7 +17,7 @@ export default function CollaborativeCheckmate() {
     }
 
     // Navigate to the game page using the provided game code and generated player ID
-    navigate(`/collaborativeCheckmate/${gameCode}/${playerId}`, {
+    navigate(`/collaborativeCheckmate/${gameCode.toLowerCase()}/${playerId}`, {
       state: { playerId }
     });
   };
