@@ -106,7 +106,7 @@ export default function CollaborativeCheckmate() {
   const connectWebSocket = () => {
     try {
       // Connect to the local FastAPI backend
-      socketRef.current = new WebSocket(`ws://collaborative-checkmate-server.fly.dev/ws/game/${gameId}/player/${playerId}`);
+      socketRef.current = new WebSocket(`wss://collaborative-checkmate-server.fly.dev/ws/game/${gameId}/player/${playerId}`);
 
       socketRef.current.onopen = () => {
         setConnected(true);
