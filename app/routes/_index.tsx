@@ -122,6 +122,11 @@ const links = [
   //   title: "Super Smash Bros. Melee Mods",
   //   description: "Collection of hardware and software mods"
   // }
+  {
+    to: "/collaborativeCheckmate",
+    title: "Collaborative Checkmate",
+    description: "Play chess with your friends"
+  }
 ];
 
 export default function Index() {

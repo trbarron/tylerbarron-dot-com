@@ -16,7 +16,28 @@ interface ChessboardProps {
   animated?: boolean;
   animationDuration?: number;
   highlightMoves?: boolean;
-  draggable?: boolean;
+  draggable?: boolean | {
+    enabled?: boolean;
+    showGhost?: boolean;
+  };
+  selectable?: {
+    enabled?: boolean;
+  };
+  events?: {
+    select?: (key: string) => void;
+    move?: (orig: string, dest: string, capturedPiece?: any) => void;
+    change?: () => void;
+  };
+  drawable?: {
+    enabled?: boolean;
+    visible?: boolean;
+    defaultSnapToValidMove?: boolean;
+    eraseOnClick?: boolean;
+    onChange?: (shapes: any[]) => void;
+    shapes?: any[];
+    autoShapes?: any[];
+  };
+  ref?: React.RefObject<any>;
 }
 
 // Generate chess squares (a1 through h8)
@@ -35,11 +56,18 @@ export default function Chessboard({
   animated = true,
   animationDuration = 200,
   highlightMoves = true,
-  draggable = true
+  draggable = true,
+  selectable = {},
+  events = {},
+  drawable = {},
+  ref: externalRef
 }: ChessboardProps) {
-  const ref = useRef<HTMLDivElement>(null);
+  const internalRef = useRef<HTMLDivElement>(null);
   const [chess] = useState(new Chess(initialFen));
   const cgRef = useRef<Api>();
+
+  // Use the external ref if provided, otherwise use internal
+  const ref = externalRef || internalRef;
 
   const calcMovable = () => {
     if (viewOnly || !movable) return { enabled: false, free: false };
@@ -84,9 +112,13 @@ export default function Chessboard({
       fen: chess.fen(),
       orientation,
       viewOnly,
-      movable: calcMovable(),
+      movable: typeof movable === 'boolean' ? { 
+        enabled: movable,
+        free: false 
+      } : movable,
       events: {
-        move: handleMove
+        move: handleMove,
+        ...events
       },
       animation: {
         enabled: animated,
@@ -96,16 +128,25 @@ export default function Chessboard({
         lastMove: highlightMoves,
         check: highlightMoves
       },
-      draggable: {
-        enabled: draggable && !viewOnly && movable,
+      draggable: typeof draggable === 'boolean' ? {
+        enabled: draggable && !viewOnly && !!movable,
         showGhost: true
+      } : {
+        ...draggable,
+        enabled: draggable.enabled && !viewOnly && !!movable
       },
-      drawable: {
+      drawable: drawable || {
         enabled: allowDrawing,
-      }
+      },
+      selectable: selectable
     };
 
     cgRef.current = Chessground(ref.current, config);
+
+    // If external ref provided, expose the chessground instance
+    if (externalRef) {
+      externalRef.current = cgRef.current;
+    }
 
     return () => {
       if (cgRef.current) {
@@ -113,7 +154,9 @@ export default function Chessboard({
         cgRef.current = undefined;
       }
     };
-  }, [chess, viewOnly, movable, allowDrawing, playableColor, orientation, animated, animationDuration, highlightMoves, draggable]);
+  }, [chess, viewOnly, movable, allowDrawing, playableColor, orientation, 
+      animated, animationDuration, highlightMoves, draggable, events, 
+      drawable, selectable]);
 
   // Update board if initialFen changes
   useEffect(() => {
