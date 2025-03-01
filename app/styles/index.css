@@ -4,8 +4,7 @@
 
 @font-face {
   font-family: 'Berkeley';
-  src: url('/fonts/berkeley-mono-variable-2.woff2') format('woff2'),
-       url('/fonts/berkeley-mono-variable-2.woff') format('woff');
+  src: url('/fonts/berkeley-mono-variable-2.woff2') format('woff2');
   font-weight: normal;
   font-style: normal;
 }
