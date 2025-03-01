@@ -167,11 +167,9 @@ export default function ChecoLiveTracker() {
                                             {basicData.is_present ? basicData.cat : 'None'}
                                         </span>
                                     </h3>
-                                    {basicData.is_present && (
-                                        <h3 className="text-2xl mt-2">
-                                            Time Today: {getTotalWorkTime()}
-                                        </h3>
-                                    )}
+                                    <h3 className="text-2xl mt-2">
+                                        Time Worked Today: {getTotalWorkTime()}
+                                    </h3>
                                 </div>
                                 <ImageDisplay />
 
