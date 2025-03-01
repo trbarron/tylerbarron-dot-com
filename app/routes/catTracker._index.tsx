@@ -30,7 +30,9 @@ export const loader = async () => {
             "https://nj3ho46btl.execute-api.us-west-2.amazonaws.com/checoStage/checoRestEndpoint"
         );
         const data = await basicResponse.json();
+        console.log('Raw API response:', data);
         const basicData: BasicResponseData = JSON.parse(data.body);
+        console.log('Parsed basicData:', basicData);
 
         return json({ basicData });
     } catch (error) {
@@ -124,49 +126,79 @@ export default function ChecoLiveTracker() {
         setShowDetails(!showDetails);
     };
 
-    const formatHour = (hour: number) => {
-        const ampm = hour >= 12 ? 'PM' : 'AM';
-        const hour12 = hour % 12 || 12;
-        return `${hour12}${ampm}`;
-    };
+    useEffect(() => {
+        const pollAPI = async () => {
+            try {
+                const response = await fetch(
+                    "https://nj3ho46btl.execute-api.us-west-2.amazonaws.com/checoStage/checoRestEndpoint"
+                );
+                const data = await response.json();
+            } catch (error) {
+                console.error("Error polling API:", error);
+            }
+        };
 
-  return (
-    <div className="bg-background bg-fixed min-h-screen flex flex-col">
-      <Navbar />
-      <main className="flex-grow">
-        <Article title="" subtitle="">
-          <div className="text-center">
-            <h2 className="text-3xl text-black">Cat Work Tracker</h2>
-            {basicData ? (
-              <>
-                <ImageDisplay />
+        const pollInterval = setInterval(pollAPI, 240000);
 
-                <button
-                  onClick={toggleDetails}
-                  className="bg-white text-gray-800 rounded border-b-2 border-green-500 hover:border-green-500 hover:bg-green-500 hover:text-white shadow-md py-2 px-6 inline-flex items-center"
-                >
-                  {showDetails ? "Hide Details" : "Show Details"}
-                </button>
+        return () => clearInterval(pollInterval);
+    }, []);
 
-                {showDetails && (
-                  <Suspense fallback={<div className="mt-8">Loading detailed stats...</div>}>
-                    <DetailedStats 
-                      data={detailedData} 
-                      isLoading={isDetailedLoading} 
-                    />
-                  </Suspense>
-                )}
-              </>
-            ) : (
-              <h2 className="text-4xl font-bold text-red-500">Error loading data</h2>
-            )}
-            <a href="/CatTracker/Blog" className="block mt-8 mb-20">
-              Learn more about the Cat Tracker project
-            </a>
-          </div>
-        </Article>
-      </main>
-      <Footer />
-    </div>
-  );
+    return (
+        <div className="bg-background bg-fixed min-h-screen flex flex-col">
+            <Navbar />
+            <main className="flex-grow">
+                <Article title="" subtitle="">
+                    <div className="text-center">
+                        <h2 className="text-3xl text-black">Cat Work Tracker</h2>
+                        {!basicData ? (
+                            <h2 className="text-4xl font-bold text-red-500">Error loading data</h2>
+                        ) : (
+                            <>
+                                <div className="my-4">
+                                    <h3 className="text-2xl">
+                                        Currently Working: {' '}
+                                        <span className={`px-2 py-1 rounded ${
+                                            basicData.is_present
+                                                ? basicData.cat === 'Tuni'
+                                                    ? 'bg-white text-black'
+                                                    : 'bg-black text-white'
+                                                : ''
+                                        }`}>
+                                            {basicData.is_present ? basicData.cat : 'None'}
+                                        </span>
+                                    </h3>
+                                    {basicData.is_present && (
+                                        <h3 className="text-2xl mt-2">
+                                            Time Today: {getTotalWorkTime()}
+                                        </h3>
+                                    )}
+                                </div>
+                                <ImageDisplay />
+
+                                <button
+                                    onClick={toggleDetails}
+                                    className="bg-white text-gray-800 rounded border-b-2 border-green-500 hover:border-green-500 hover:bg-green-500 hover:text-white shadow-md py-2 px-6 inline-flex items-center"
+                                >
+                                    {showDetails ? "Hide Details" : "Show Details"}
+                                </button>
+
+                                {showDetails && (
+                                    <Suspense fallback={<div className="mt-8">Loading detailed stats...</div>}>
+                                        <DetailedStats 
+                                            data={detailedData} 
+                                            isLoading={isDetailedLoading} 
+                                        />
+                                    </Suspense>
+                                )}
+                            </>
+                        )}
+                        <a href="/CatTracker/Blog" className="block mt-8 mb-20">
+                            Learn more about the Cat Tracker project
+                        </a>
+                    </div>
+                </Article>
+            </main>
+            <Footer />
+        </div>
+    );
 }
