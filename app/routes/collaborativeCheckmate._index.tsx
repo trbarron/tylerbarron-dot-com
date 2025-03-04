@@ -142,7 +142,7 @@ export default function CollaborativeCheckmate() {
         {/* Available Games Section */}
         <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-xl">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold text-center">Available Games</h2>
+            <h2 className="text-xl text-center">Available Games</h2>
             {isLoading && (
               <div className="inline-flex items-center">
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500 mr-2"></div>
