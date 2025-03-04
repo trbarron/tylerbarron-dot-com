@@ -119,8 +119,14 @@ export default function CollaborativeCheckmate() {
   // Connect to WebSocket
   const connectWebSocket = () => {
     try {
-      // Connect to the local FastAPI backend
-      socketRef.current = new WebSocket(`wss://collaborative-checkmate-server.fly.dev/ws/game/${gameId}/player/${playerId}`);
+      // Get isPrivate flag if it exists in navigation state
+      const location = window.location;
+      const isPrivate = location.state?.isPrivate || false;
+
+      // Construct WebSocket URL with isPrivate parameter
+      const wsUrl = `wss://collaborative-checkmate-server.fly.dev/ws/game/${gameId}/player/${playerId}${isPrivate ? '?is_private=true' : ''}`;
+
+      socketRef.current = new WebSocket(wsUrl);
 
       socketRef.current.onopen = () => {
         setConnected(true);
@@ -136,8 +142,8 @@ export default function CollaborativeCheckmate() {
           switch (data.type) {
             case 'connection_established':
               break;
-            
-              
+
+
 
             case 'move_submitted':
               // Update player's submitted state
@@ -474,8 +480,8 @@ export default function CollaborativeCheckmate() {
 
               {/* Game Phase Indicator */}
               <div className="bg-white shadow rounded p-4 mb-2">
-                <Timer 
-                  timeRemaining={timeRemaining} 
+                <Timer
+                  timeRemaining={timeRemaining}
                   key={timeRemainingKey}
                 />
                 <div className="relative h-12 flex items-center">
