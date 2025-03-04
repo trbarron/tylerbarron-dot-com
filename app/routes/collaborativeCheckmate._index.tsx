@@ -83,7 +83,7 @@ export default function CollaborativeCheckmate() {
       <Navbar />
       <div className="min-h-[calc(100vh-theme(spacing.64))] flex flex-col items-center justify-center bg-gray-100 p-4">
         <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-xl mb-8">
-          <h1 className="text-2xl font-bold mb-6 text-center">
+          <h1 className="text-2xl mb-6 text-center">
             Collaborative Checkmate
           </h1>
           
