@@ -193,6 +193,50 @@ export default function CollaborativeCheckmate() {
             </div>
           )}
         </div>
+
+        {/* Game Description Section */}
+        <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-xl">
+          <div className="flex justify-center items-center mb-6">
+            <h2 className="text-2xl font-semibold text-center">
+              ♟️ What is Collaborative Checkmate? ♟️
+            </h2>
+          </div>
+          
+          <p className="text-gray-800 mb-4">
+            A fast-paced 2v2 chess variant where teammates work together to outplay their opponents
+          </p>
+          
+          <div className="mb-6">
+            <h3 className="font-medium mb-2">How it works:</h3>
+            <ul className="space-y-2">
+              <li className="flex items-start">
+                <span className="text-gray-700 mr-2">•</span>
+                <span>Teams of two players compete against each other</span>
+              </li>
+              <li className="flex items-start">
+                <span className="text-gray-700 mr-2">•</span>
+                <span>Each teammate independently selects a move within 15 seconds</span>
+              </li>
+              <li className="flex items-start">
+                <span className="text-gray-700 mr-2">•</span>
+                <span>The chess engine automatically plays the stronger of the two suggested moves</span>
+              </li>
+              <li className="flex items-start">
+                <span className="text-gray-700 mr-2">•</span>
+                <span>This passes to the other team, which then has 15 seconds to select a response</span>
+              </li>
+            </ul>
+          </div>
+          
+          <p className="text-gray-800 mb-4">
+            It's a blend of individual chess skill and teamwork that rewards quick thinking and collaboration. 
+            Even when teammates have different skill levels, the format ensures your team always makes betterish moves
+          </p>
+          
+          <div className="mt-6 text-center">
+              Get your three closest friends and try it now!
+          </div>
+        </div>
       </div>
       <Footer />
     </>
