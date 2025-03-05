@@ -197,7 +197,7 @@ export default function CollaborativeCheckmate() {
         {/* Game Description Section */}
         <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-xl">
           <div className="flex justify-center items-center mb-6">
-            <h2 className="text-2xl font-semibold text-center">
+            <h2 className="text-2xl text-center">
               ♟️ What is Collaborative Checkmate? ♟️
             </h2>
           </div>
