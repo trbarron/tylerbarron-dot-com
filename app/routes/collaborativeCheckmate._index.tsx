@@ -209,21 +209,17 @@ export default function CollaborativeCheckmate() {
           <div className="mb-6">
             <h3 className="font-medium mb-2">How it works:</h3>
             <ul className="space-y-2">
-              <li className="flex items-start">
-                <span className="text-gray-700 mr-2">•</span>
-                <span>Teams of two players compete against each other</span>
+              <li className="text-gray-800">
+                Teams of two players compete against each other
               </li>
-              <li className="flex items-start">
-                <span className="text-gray-700 mr-2">•</span>
-                <span>Each teammate independently selects a move within 15 seconds</span>
+              <li className="text-gray-800">
+                Each teammate independently selects a move within 15 seconds
               </li>
-              <li className="flex items-start">
-                <span className="text-gray-700 mr-2">•</span>
-                <span>The chess engine automatically plays the stronger of the two suggested moves</span>
+              <li className="text-gray-800">
+                The chess engine automatically plays the stronger of the two suggested moves
               </li>
-              <li className="flex items-start">
-                <span className="text-gray-700 mr-2">•</span>
-                <span>This passes to the other team, which then has 15 seconds to select a response</span>
+              <li className="text-gray-800">
+                This passes to the other team, which then has 15 seconds to select a response
               </li>
             </ul>
           </div>
@@ -233,11 +229,10 @@ export default function CollaborativeCheckmate() {
             Even when teammates have different skill levels, the format ensures your team always makes betterish moves
           </p>
           
-          <div className="mt-6 text-center">
-              Get your three closest friends and try it now!
-          </div>
+          <p className="mt-6 text-center">
+            Get your three closest friends and try it now!
+          </p>
         </div>
-      </div>
       <Footer />
     </>
   );
