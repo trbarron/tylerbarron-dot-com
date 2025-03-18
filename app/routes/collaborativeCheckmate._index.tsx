@@ -232,7 +232,8 @@ export default function CollaborativeCheckmate() {
           <p className="mt-6 text-center">
             Get your three closest friends and try it now!
           </p>
-        </div>
+          </div>
+      </div>
       <Footer />
     </>
   );
