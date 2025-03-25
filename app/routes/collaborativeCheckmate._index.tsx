@@ -195,42 +195,38 @@ export default function CollaborativeCheckmate() {
         </div>
 
         {/* Game Description Section */}
-        <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-xl">
+        <div className="bg-white p-8 mt-8 rounded-lg shadow-md w-full max-w-xl">
           <div className="flex justify-center items-center mb-6">
             <h2 className="text-2xl text-center">
-              ♟️ What is Collaborative Checkmate? ♟️
+              What is Collaborative Checkmate?
             </h2>
           </div>
           
-          <p className="text-gray-800 mb-4">
+          <p className="text-gray-500 mb-4">
             A fast-paced 2v2 chess variant where teammates work together to outplay their opponents
           </p>
           
           <div className="mb-6">
-            <h3 className="font-medium mb-2">How it works:</h3>
+            <h3 className="mb-2">How it works:</h3>
             <ul className="space-y-2">
-              <li className="text-gray-800">
-                Teams of two players compete against each other
+              <li className="text-gray-500">
+              • Teams of two players compete against each other
               </li>
-              <li className="text-gray-800">
-                Each teammate independently selects a move within 15 seconds
+              <li className="text-gray-500">
+              • Each teammate independently selects a move within 15 seconds
               </li>
-              <li className="text-gray-800">
-                The chess engine automatically plays the stronger of the two suggested moves
+              <li className="text-gray-500">
+              • The chess engine automatically plays the stronger of the two suggested moves
               </li>
-              <li className="text-gray-800">
-                This passes to the other team, which then has 15 seconds to select a response
+              <li className="text-gray-500">
+              • This passes to the other team, which then has 15 seconds to select a response
               </li>
             </ul>
           </div>
           
-          <p className="text-gray-800 mb-4">
+          <p className="text-gray-500 mb-4">
             It's a blend of individual chess skill and teamwork that rewards quick thinking and collaboration. 
             Even when teammates have different skill levels, the format ensures your team always makes betterish moves
-          </p>
-          
-          <p className="mt-6 text-center">
-            Get your three closest friends and try it now!
           </p>
           </div>
       </div>
