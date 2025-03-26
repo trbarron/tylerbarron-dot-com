@@ -13,12 +13,15 @@ export const loader: LoaderFunction = async ({ params }) => {
   const { slug } = params;
   
   if (process.env.NODE_ENV === 'production') {
+    const region = process.env.AWS_REGION || 'us-west-2';
+    const bucketName = process.env.AWS_BUCKET_NAME || 'remix-website-writing-posts';
+    
     const { S3Client, GetObjectCommand } = await import('@aws-sdk/client-s3');
-    const s3 = new S3Client({ region: process.env.AWS_REGION });
+    const s3 = new S3Client({ region: region });
  
     try {
       const { Body } = await s3.send(new GetObjectCommand({
-        Bucket: process.env.AWS_BUCKET_NAME,
+        Bucket: bucketName,
         Key: `posts/${slug}.mdx`
       }));
       

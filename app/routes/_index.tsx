@@ -8,12 +8,16 @@ import { processMdx } from '~/utils/mdx.server';
 
 export async function loader() {
   if (process.env.NODE_ENV === 'production') {
-    const { S3Client, GetObjectCommand, ListObjectsV2Command } = await import('@aws-sdk/client-s3');
-    const s3 = new S3Client({ region: process.env.AWS_REGION });
  
+    const region = process.env.AWS_REGION || 'us-west-2';
+    const bucketName = process.env.AWS_BUCKET_NAME || 'remix-website-writing-posts';
+
+    const { S3Client, GetObjectCommand, ListObjectsV2Command } = await import('@aws-sdk/client-s3');
+    const s3 = new S3Client({ region: region });
+
     try {
       const { Contents = [] } = await s3.send(new ListObjectsV2Command({
-        Bucket: process.env.AWS_BUCKET_NAME,
+        Bucket: bucketName,
         Prefix: 'posts/'
       }));
 
@@ -21,7 +25,7 @@ export async function loader() {
       const posts = await Promise.all(
         Contents.map(async (obj) => {
           const { Body } = await s3.send(new GetObjectCommand({
-            Bucket: process.env.AWS_BUCKET_NAME,
+            Bucket: bucketName,
             Key: obj.Key
           }));
           const source = await Body.transformToString();
