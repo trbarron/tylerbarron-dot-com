@@ -71,15 +71,25 @@ const links = [
     title: "FiveThirtyEight's The Riddler",
     description: "Math puzzles and problems"
   },
-  // {
-  //   to: "/CamelUpCup",
-  //   title: "Camel Up Cup",
-  //   description: "\"Bring your own board game playing bot\" competition"
-  // },
+  {
+    to: "/CamelUpCup",
+    title: "Camel Up Cup",
+    description: "\"Bring your own board game playing bot\" competition"
+  },
   {
     to: "/chesserGuesser/landing",
     title: "Chesser Guesser",
     description: "Can you tell who is winning the chess game?"
+  },
+  {
+    to: "/collaborativeCheckmate",
+    title: "Collaborative Checkmate",
+    description: "Play chess with your friends"
+  },
+  {
+    to: "/PizzaRating",
+    title: "National Pizza Ratings",
+    description: "Using Domino's to find the best pizza"
   },
   // {
   //   to: "/ChessOpenings",
@@ -96,11 +106,7 @@ const links = [
     title: "Cat Work Tracker",
     description: "Measuring Checo's work output"
   },
-  {
-    to: "/GenerativeArt",
-    title: "Generative Art",
-    description: "Dive into plotters and generative art"
-  },
+
   {
     to: "https://trbarron.itch.io/spheroid-zero",
     title: "Spheroid Zero",
@@ -112,24 +118,19 @@ const links = [
     description: "Using computer vision to play a board game"
   },
   {
-    to: "/PizzaRating",
-    title: "National Pizza Ratings",
-    description: "Using Domino's to find the best pizza"
+    to: "/BoulderingTracker",
+    title: "Bouldering Tracker",
+    description: "Using computer vision to track climbing style"
   },
-  // {
-  //   to: "/BoulderingTracker",
-  //   title: "Bouldering Tracker",
-  //   description: "Using computer vision to track climbing style"
-  // },
-  // {
-  //   to: "/SSBM",
-  //   title: "Super Smash Bros. Melee Mods",
-  //   description: "Collection of hardware and software mods"
-  // }
   {
-    to: "/collaborativeCheckmate",
-    title: "Collaborative Checkmate",
-    description: "Play chess with your friends"
+    to: "/SSBM",
+    title: "Super Smash Bros. Melee Mods",
+    description: "Collection of hardware and software mods"
+  },
+  {
+    to: "/GenerativeArt",
+    title: "Generative Art",
+    description: "Dive into plotters and generative art"
   }
 ];
 
