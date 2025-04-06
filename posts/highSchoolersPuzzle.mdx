@@ -21,7 +21,7 @@ Beneath the scenes this is a graph-based problem. Each node represents a possibl
 
 By modeling it as such and using a greedy approach for finding a valid traversal that hits all nodes, we are able to find a path that includes all 35 combinations for the 7 student case. 
 
-<img src="/_static/images/compatabilityGraph7.jpg" alt="Compatability Graph" />
+<img src="/_static/images/compatabilityGraph7.jpg" alt="Compatability Graph 7" />
 
 <details>
     <summary>Click to expand the complete sequence of 35 trios</summary>
@@ -71,6 +71,8 @@ This complete sequence demonstrates that all 35 possible combinations of 3 stude
 We can confirm that 7 is the smallest possible class size, since the case with 6 students is impossible. With 6 students, there are 20 possible trios, but each trio can only be followed by exactly one other trio (the trio containing the remaining 3 students), creating a severe constraint that makes a complete sequence impossible.
 
 The graph analysis confirms this limitation - with 6 students, the compatibility graph has a very limited structure that cannot support a path visiting all nodes.
+
+<img src="/_static/images/compatabilityGraph6.jpg" alt="Compatability Graph 6" />
 
 ## Computational Challenges
 
