@@ -1,0 +1,26 @@
+---
+title: Can You See Between the Trees
+date: 2025-04-29
+---
+
+## The Problem
+
+> You are at the point (0, 0) on the coordinate plane. There is a tree at each point with nonnegative integer coordinates. The trees are very thin, so that they only obstruct trees that are directly behind them. For example, the tree at (2, 2) is not visible, as it is obscured by the tree at (1, 1).
+>
+> Consider the view between 0 and 45 degrees up from the x-axis. The next largest pair of adjacent gaps in this range are on either side of what angle up from the x-axis? (Excluding the gaps just above 0 degrees or just below 45 degrees.)
+
+## My Computational Approach
+
+I wrote a Python program to find visible trees and calculate the angular gaps between them. A tree is visible if its coordinates are coprime (their greatest common divisor is 1).
+
+For visualization, I generated this diagram using a distance limit of 100:
+
+![Tree Positions 100](/_static/images/tree_positions_100.png)
+
+And ran a full simulation with a distance limit of 1000 to determine all trees in our observation area:
+
+![Tree Distribution](/_static/images/tree_angle_differences.png)
+
+## The Answer
+
+My analysis revealed that the next largest pair of adjacent gaps in the 0° to 45° range (after excluding those at the boundaries) are found on either side of **18.5 degrees**.
