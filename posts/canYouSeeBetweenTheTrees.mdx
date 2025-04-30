@@ -1,26 +1,47 @@
 ---
 title: Finding Distinct Primes to Sum to 2025
-date: 2025-04-29
+date: 2024-12-26
 ---
 
 ## The Problem
 
-> You are at the point (0, 0) on the coordinate plane. There is a tree at each point with nonnegative integer coordinates. The trees are very thin, so that they only obstruct trees that are directly behind them. For example, the tree at (2, 2) is not visible, as it is obscured by the tree at (1, 1).
+> From Dean Ballard comes the perfect puzzle to usher in 2025:
 >
-> Consider the view between 0 and 45 degrees up from the x-axis. The next largest pair of adjacent gaps in this range are on either side of what angle up from the x-axis? (Excluding the gaps just above 0 degrees or just below 45 degrees.)
+> The number 2025 is not prime. As a matter of fact, it’s a perfect square: 2025 = 452.
+>
+> You cannot make 2025 by adding two distinct primes. To do so, you’d have to add an even prime and an odd prime. The only even prime is 2, but 2025 − 2 = 2023, which is not prime (it’s equal to 7∙172).
+> 
+> But you can make 2025 by adding three distinct primes. For example, 661 + 673 + 691 = 2025.
+> 
+> You can also make 2025 by adding four distinct primes: 2 + 659 + 673 + 691 = 2025.
+> 
+> What is the greatest number of distinct primes that add up to 2025?
+ 
+## My Approach to Finding the Maximum
 
-## My Computational Approach
+To find the greatest possible number of distinct primes that sum to `n`, we developed an algorithmic approach:
 
-I wrote a Python program to find visible trees and calculate the angular gaps between them. A tree is visible if its coordinates are coprime (their greatest common divisor is 1).
+* Check if `n` is prime. If so, add it to the list of valid methods
+* Take `1` and `n-1` and add each combination of their valid methods to `n`'s valids methods if there are no repeated values
+* Repeat for `2` and `n-2`, `3` and `n-3`, etc, until you reach `n/2`
 
-For visualization, I generated this diagram using a distance limit of 100:
+This method uses the solutions from smaller numbers to determine the paths to get to larger numbers. 
 
-![Tree Positions 100](/_static/images/tree_positions_100.png)
+While comprehensive, it also expands geometrically. Here we can see how the number of valid paths to each value grows over time:
 
-And ran a full simulation with a distance limit of 1000 to determine all trees in our observation area:
+<img src="/_static/images/validCombinations.png" alt="Description" />
 
-![Tree Distribution](/_static/images/tree_angle_differences.png)
 
-## The Answer
+## Computational Challenges
+The problem quickly becomes computationally intensive due to its geometric growth. Even with several optimizations including:
 
-My analysis revealed that the next largest pair of adjacent gaps in the 0° to 45° range (after excluding those at the boundaries) are found on either side of **18.5 degrees**.
+- Multiprocessing
+- Local database caching
+- Efficient prime number generation
+
+This helped us compute solutions up to 400 on a laptop after several days of computation. I suspect there must be a more efficient way, although I could not come up with it.
+
+I have made the code used for this available [here](https://github.com/trbarron/Unique-Prime-Sum-Path-Finder) in case others would like to view or improve it. [The spreadsheet of number of valid methods is available here](https://docs.google.com/spreadsheets/d/1_QrcI_K1r5osBb4caZIT6Vi0lLLsR3kq2serejIUpbY/edit?usp=sharing)
+
+## Conclusion
+While we couldn't directly solve for 2025, my investigation led us to [sequence A261153 in the OEIS](https://oeis.org/A261153) which appears to be very similar. Overall, this puzzle was fun and led to an interesting problem solving experience and I am interested to see how others may have optimized their solutions
