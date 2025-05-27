@@ -14,7 +14,7 @@ export default function Footer() {
                 <a href="https://www.tylerbarron.com/" className="text-offBlack text-md">made by Tyler Barron</a>
               </div>
               <div className="text-sm pb-4 text-offBlack">
-                V4.2.6
+                V4.2.7
               </div>
               <div className="mt-0 flex items-center justify-center">
                 <a href="mailto: trbbarron@gmail.com"

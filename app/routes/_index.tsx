@@ -131,6 +131,11 @@ const links = [
     to: "/GenerativeArt",
     title: "Generative Art",
     description: "Dive into plotters and generative art"
+  },
+  {
+    to: "https://chromewebstore.google.com/detail/youtube-speed-sense/efgmcojhefjjdpdnnmclekblhpaiaedo",
+    title: "YouTube Speed Sense",
+    description: "Adjusts YouTube video playback speed based on content categories"
   }
 ];
 
