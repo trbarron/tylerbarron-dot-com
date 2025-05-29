@@ -5,45 +5,42 @@ import linkedin from "~/images/Global/in.svg";
 
 export default function Footer() {
   return (
-    <footer className="relative bg-offWhite pb-12 pt-8">
+    <footer className="bg-white border-t-4 border-black py-8">
       <div className="container mx-auto px-4">
         <div className="flex flex-wrap items-center justify-center">
           <div className="w-full px-4 mx-auto text-center">
-            <div className="text-sm text-gray-600">
-              <div className="text-sm">
-                <a href="https://www.tylerbarron.com/" className="text-offBlack text-md">made by Tyler Barron</a>
+            <div className="text-black font-neo">
+              <div className="text-sm pb-4 text-black font-neo font-semibold tracking-wide">
+                V4.3.0
               </div>
-              <div className="text-sm pb-4 text-offBlack">
-                V4.2.7
-              </div>
-              <div className="mt-0 flex items-center justify-center">
+              <div className="mt-0 flex items-center justify-center space-x-4">
                 <a href="mailto: trbbarron@gmail.com"
-                  className="bg-white shadow-lg h-8 w-8 md:h-10 md:w-10 flex items-center justify-center rounded-full outline-none focus:outline-none mr-2 p-2"
+                  className="bg-white border-2 border-black h-12 w-12 flex items-center justify-center hover:bg-accent transition-all duration-100"
                   type="button">
                   <img
                     src={email}
-                    alt="email"
-                    className="max-w-8 max-h-8"
+                    alt="EMAIL"
+                    className="w-6 h-6"
                   />
                 </a>
 
                 <a href="https://github.com/trbarron"
-                  className="bg-white shadow-lg h-8 w-8 md:h-10 md:w-10 flex items-center justify-center rounded-full outline-none focus:outline-none mr-2 p-2"
+                  className="bg-white border-2 border-black h-12 w-12 flex items-center justify-center hover:bg-accent transition-all duration-100"
                   type="button">
                   <img
                     src={git}
-                    alt="github"
-                    className="max-w-8 max-h-8"
+                    alt="GITHUB"
+                    className="w-6 h-6"
                   />
                 </a>
 
-                <a href="https://www.linkedin.com/in/tyler-barron-61972855/"
-                  className="bg-white shadow-lg h-8 w-8 md:h-10 md:w-10 flex items-center justify-center rounded-full outline-none focus:outline-none mr-2 p-2"
+                <a href="https://linkedin.com/in/tylerbarron"
+                  className="bg-white border-2 border-black h-12 w-12 flex items-center justify-center hover:bg-accent transition-all duration-100"
                   type="button">
                   <img
                     src={linkedin}
-                    alt="linkedin"
-                    className="max-w-8 max-h-8"
+                    alt="LINKEDIN"
+                    className="w-6 h-6"
                   />
                 </a>
               </div>

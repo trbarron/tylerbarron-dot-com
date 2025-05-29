@@ -11,30 +11,89 @@
 
 @layer base {
   body {
-    font-family: 'Berkeley', monospace;
+    font-family: 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Helvetica', 'Arial', sans-serif;
+    background-color: #ffffff;
+    color: #000000;
+    line-height: 1.3;
+    font-weight: 500;
+    font-size: 16px;
+  }
+  
+  * {
+    border-color: #000000;
+  }
+
+  /* Blue-green text selection */
+  ::selection {
+    background-color: #018076;
+    color: #ffffff;
+  }
+
+  ::-moz-selection {
+    background-color: #018076;
+    color: #ffffff;
   }
 }
 
 @layer components {
   .home-link {
-    @apply cursor-pointer text-transparent bg-clip-text;
+    @apply cursor-pointer text-black bg-white border-2 border-black px-2 py-1 inline-block;
+    transition: all 0.1s ease;
   }
 
   .home-link:hover {
-    box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.4);
+    @apply bg-black text-white;
   }
 
+  /* Simple link styles - no padding/margin changes on hover */
   a {
-    @apply text-green-800;
+    color: #000000;
+    text-decoration: none;
+    transition: color 0.1s ease;
+    font-weight: 600;
+  }
+
+  /* Ensure no-underline class removes all underline styling */
+  a.no-underline,
+  .no-underline,
+  .no-underline a,
+  [class*="no-underline"] {
+    border-bottom: none !important;
+    text-decoration: none !important;
+  }
+
+  a.no-underline:hover,
+  .no-underline:hover,
+  .no-underline a:hover,
+  [class*="no-underline"]:hover {
+    border-bottom: none !important;
+    text-decoration: none !important;
+  }
+
+  /* Only apply border-bottom to text links that aren't block elements or no-underline */
+  a:not(.block):not([class*="block"]):not(.no-underline):not([class*="no-underline"]) {
+    border-bottom: 3px solid #000000;
+    padding-bottom: 2px;
+  }
+
+  a:not(.block):not([class*="block"]):not(.no-underline):not([class*="no-underline"]):hover {
+    background-color: #000000;
+    color: #ffffff;
+    border-bottom: 3px solid #000000;
   }
 
   p {
-    @apply pl-4 pr-4 mx-auto leading-relaxed my-4 text-gray-500;
+    @apply pl-4 pr-4 mx-auto leading-relaxed my-6 text-black;
+    font-family: 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Helvetica', 'Arial', sans-serif;
+    font-weight: 500;
+    font-size: 17px;
+    line-height: 1.5;
   }
 
   @media (min-width: 1024px) {
     p {
       @apply w-11/12;
+      font-size: 18px;
     }
   }
 
@@ -43,30 +102,254 @@
   }
 
   h1 {
-    @apply text-3xl lg:text-4xl leading-normal text-gray-dark p-4 border-b border-gray-500 w-full;
+    font-family: 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Helvetica', 'Arial', sans-serif;
+    @apply text-4xl lg:text-6xl leading-none text-black p-6 border-b-4 border-black w-full;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
   }
 
   h2 {
-    @apply text-2xl lg:text-3xl text-red-clear p-4;
+    font-family: 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Helvetica', 'Arial', sans-serif;
+    @apply text-3xl lg:text-5xl text-black p-4;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+    line-height: 1.1;
   }
 
   h3 {
-    @apply text-xl lg:text-2xl text-gray-dark ml-8 mt-4 p-2;
+    font-family: 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Helvetica', 'Arial', sans-serif;
+    @apply text-2xl lg:text-4xl text-black ml-8 mt-6 p-2;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
   }
 
   h4 {
-    @apply text-lg lg:text-xl text-gray-dark ml-8 mt-4 p-2;
+    font-family: 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Helvetica', 'Arial', sans-serif;
+    @apply text-xl lg:text-3xl text-black ml-8 mt-4 p-2;
+    font-weight: 700;
+    text-transform: uppercase;
   }
 
   h6 {
     @apply text-center;
+    font-family: 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Helvetica', 'Arial', sans-serif;
+    font-weight: 600;
   }
 
   hr {
-    @apply py-8;
+    @apply py-8 border-black border-4;
   }
 
   blockquote {
-    @apply border-l-4 border-gray-300 italic ml-8 pl-0;
+    @apply border-l-8 border-black bg-gray-100 ml-8 pl-6 py-4;
+    font-family: 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Helvetica', 'Arial', sans-serif;
+    font-weight: 600;
+    font-style: normal;
+    font-size: 20px;
+    line-height: 1.4;
+  }
+
+  /* Utilitarian button styles */
+  button {
+    @apply bg-white text-black border-4 border-black px-6 py-3;
+    font-family: 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Helvetica', 'Arial', sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: all 0.1s ease;
+    font-size: 16px;
+  }
+
+  button:hover {
+    @apply bg-black text-white;
+  }
+
+  button:disabled {
+    @apply bg-gray-200 text-gray-500 border-gray-300 cursor-not-allowed;
+  }
+
+  /* Footer social links - override button styling */
+  footer a[type="button"]:hover {
+    background-color: #00605E !important;
+    color: inherit !important;
+  }
+
+  /* Input styles */
+  input, textarea, select {
+    @apply bg-white text-black border-2 border-black px-3 py-2;
+    font-family: 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Helvetica', 'Arial', sans-serif;
+    font-weight: 500;
+  }
+
+  input:focus, textarea:focus, select:focus {
+    @apply outline-none ring-0 border-black bg-gray-100;
+  }
+
+  /* Range slider styles */
+  input[type="range"] {
+    @apply bg-transparent border-0 p-0;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 8px;
+    background: #000000;
+    outline: none;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    background: #000000;
+    border: 3px solid #ffffff;
+    cursor: pointer;
+    border-radius: 0;
+  }
+
+  input[type="range"]::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    background: #000000;
+    border: 3px solid #ffffff;
+    cursor: pointer;
+    border-radius: 0;
+  }
+
+  /* Radio button styles */
+  input[type="radio"] {
+    @apply border-2 border-black bg-white;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    margin: 0;
+    padding: 0;
+    position: relative;
+    cursor: pointer;
+  }
+
+  input[type="radio"]:checked {
+    background-color: #000000;
+    border-color: #000000;
+  }
+
+  input[type="radio"]:checked::after {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #ffffff;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  /* Checkbox styles */
+  input[type="checkbox"] {
+    @apply border-2 border-black bg-white;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    padding: 0;
+    position: relative;
+    cursor: pointer;
+    border-radius: 0;
+  }
+
+  input[type="checkbox"]:checked {
+    background-color: #000000;
+    border-color: #000000;
+  }
+
+  input[type="checkbox"]:checked::after {
+    content: '✓';
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: bold;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    line-height: 1;
+  }
+
+  /* Table styles */
+  table {
+    @apply border-collapse border-4 border-black w-full bg-white;
+    font-family: 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Helvetica', 'Arial', sans-serif;
+    font-weight: 500;
+  }
+
+  th, td {
+    @apply border-2 border-black px-4 py-2 text-left;
+  }
+
+  th {
+    @apply bg-black text-white;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* Code styles - keep monospace for code */
+  code {
+    @apply bg-gray-100 text-black px-2 py-1 border-2 border-black;
+    font-family: 'JetBrains Mono', 'SF Mono', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
+    font-weight: 500;
+  }
+
+  pre {
+    @apply bg-gray-100 text-black p-4 border-4 border-black overflow-x-auto;
+    font-family: 'JetBrains Mono', 'SF Mono', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
+    font-weight: 500;
+  }
+
+  /* Image styles - show in full color by default */
+  img {
+    transition: all 0.2s ease;
+  }
+
+  /* Exception for icons that should stay black/white */
+  .icon-bw, 
+  footer img,
+  nav img {
+    filter: none !important;
+  }
+
+  /* Ensure text visibility in all hover states */
+  .hover\:bg-black:hover {
+    color: #ffffff !important;
+  }
+
+  .hover\:bg-black:hover * {
+    color: #ffffff !important;
+  }
+
+  /* Blue-green accent utilities */
+  .accent-border {
+    border-color: #00605E;
+  }
+
+  .accent-bg {
+    background-color: #00605E;
+  }
+
+  .accent-text {
+    color: #00605E;
+  }
+
+  .hover\:accent-bg:hover {
+    background-color: #00605E;
+  }
+
+  .hover\:accent-text:hover {
+    color: #00605E;
   }
 }

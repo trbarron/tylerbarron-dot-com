@@ -2,18 +2,18 @@ import { Link } from '@remix-run/react';
 
 export function Navbar() {
   return (
-    <nav className="relative shadow-lg bg-offWhite flex flex-wrap items-center justify-between px-2 py-6 navbar-expand-lg">
+    <nav className="bg-white border-b-4 border-black flex flex-wrap items-center justify-between px-4 py-6">
       <Link 
         to="/"
-        className="container px-4 mx-auto flex flex-wrap items-center justify-between"
+        className="container px-4 mx-auto flex flex-wrap items-center justify-between hover:bg-accent hover:text-white transition-all duration-100 group no-underline hover:no-underline"
       >
-        <div className="w-full relative flex justify-between lg:w-auto lg:static lg:block lg:justify-start font-body">
-          <div className="leading-relaxed whitespace-no-wrap">
-            <div className="text-3xl text-offBlack">
-              Barron Wasteland
+        <div className="w-full relative flex justify-between lg:w-auto lg:static lg:block lg:justify-start font-neo">
+          <div className="leading-tight whitespace-no-wrap">
+            <div className="text-4xl text-black font-extrabold group-hover:text-white transition-colors duration-100 tracking-tighter">
+              BARRON WASTELAND
             </div>
-            <div className="text-md text-gray-400">
-              Food for thought // Ideas for eating
+            <div className="text-lg text-black group-hover:text-white transition-colors duration-100 font-semibold tracking-wide">
+              FOOD FOR THOUGHT // IDEAS FOR EATING
             </div>
           </div>
         </div>

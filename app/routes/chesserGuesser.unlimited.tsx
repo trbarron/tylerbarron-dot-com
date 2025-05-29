@@ -158,19 +158,19 @@ export default function ChesserGuesserUnlimited() {
                     max="400"
                     value={sliderValue}
                     onChange={handleSliderChange}
-                    className="range flex-auto cursor-pointer appearance-none bg-gradient-to-r to-gray-300 from-gray-700 h-2 my-auto rounded-lg"
+                    className="range flex-auto cursor-pointer appearance-none bg-black h-2 my-auto rounded-lg"
                   />
                   <img src={whiteKingImage} alt="White King" className="w-12 h-12 flex-none" />
                 </div>
 
                 <button
-                  className={`w-full rounded border-b-2 border-green-500 hover:border-green-600 hover:text-white shadow-md py-2 px-6 inline-flex flex-col items-center justify-center ${sliderValue === 0 ? 'bg-gray-500 text-black ' : sliderValue > 0 ? 'bg-white  text-black ' : 'bg-black text-white '}`}
+                  className="w-full bg-white text-black border-4 border-black px-6 py-3 font-extrabold uppercase tracking-wide hover:bg-black hover:text-white transition-all duration-100"
                   onClick={submitGuess}
                 >
-                  <span className={`text-xs ${sliderValue === 0 ? 'bg-gray-500 text-black ' : sliderValue > 0 ? 'bg-white  text-black ' : 'bg-black text-white '}`}>
+                  <span className="text-sm">
                     Submit
                   </span>
-                  <span className={`text-xs ${sliderValue === 0 ? 'bg-gray-500 text-black ' : sliderValue > 0 ? 'bg-white  text-black ' : 'bg-black text-white '}`}>
+                  <span className="text-sm">
                     {(sliderValue / 100).toFixed(2)}
                   </span>
                 </button>

@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import Lightbox from "yet-another-react-lightbox";
-import "yet-another-react-lightbox/styles.css";
 
-import { Navbar}  from '../components/Navbar.js';
-import Footer from '../components/Footer.js';
-import { Subarticle } from '../components/Subarticle.js';
-import Article from '../components/Article.js';
+import { Navbar } from '~/components/Navbar';
+import Footer from '~/components/Footer';
+import { Subarticle } from '~/components/Subarticle';
+import Article from '~/components/Article';
+import CustomLightbox from '~/components/CustomLightbox';
+import LightboxPhoto from '~/components/LightboxPhoto';
 
 import chessBoard from '~/images/ChesserGuesser/screenshot.png';
 import fen from '~/images/ChesserGuesser/fen.png';
@@ -19,17 +19,10 @@ export default function ChessBlog() {
     { src: fen, alt: "FEN Notation Example", caption: "How FEN Notation is used to represent a chess position" },
   ];
 
-  const openLightbox = (index) => {
+  const openLightbox = (index: number) => {
     setPhotoIndex(index);
     setOpen(true);
   };
-
-  const PhotoComponent = ({ photo, index }) => (
-    <div onClick={() => openLightbox(index)} style={{cursor: 'pointer', margin: '20px 0'}}>
-      <img src={photo.src} alt={photo.alt} style={{maxWidth: '100%', height: 'auto'}} />
-      {photo.caption && <p style={{fontStyle: 'italic', marginTop: '10px'}}>{photo.caption}</p>}
-    </div>
-  );
 
   return (
     <div className="bg-background bg-fixed min-h-screen flex flex-col">
@@ -42,14 +35,14 @@ export default function ChessBlog() {
           <Subarticle subtitle="The Why">
             <p>Inspired by GeoGuessr, Chesser Guesser challenges players to estimate the computer's evaluation of chess positions. Players try to estimate the value of specific chess positions as accurately as possible, matching or closely approximating the engine's evaluation to extend their streak. The goal is to sharpen your evaluative skills by understanding why certain positions are deemed advantageous or disadvantageous by the computer.</p>
 
-            <PhotoComponent photo={photos[0]} index={0} />
+            <LightboxPhoto photo={photos[0]} index={0} onClick={openLightbox} />
           </Subarticle>
         </Article>
         <Article title="" subtitle="">
           <Subarticle subtitle="The Analysis">
             <p>The game integrates with the <a href='https://lichess.org/@/lichess/blog/thousands-of-stockfish-analysers/WN-gLzAA'>Lichess Cloud Analysis</a> to fetch position evaluations at scale, giving access to all the positions and their evaluations without me having to do any work. Having this resource made the tough part of this project incredibly easy.</p>
             
-            <PhotoComponent photo={photos[1]} index={1} />
+            <LightboxPhoto photo={photos[1]} index={1} onClick={openLightbox} />
 
             <p>Chesser Guesser uses Python connected to several Amazon DynamoDB instances for data storage. Lichess gives us a huge number of analyzed positions – we get to parse those down and only insert the interesting ones for our game. The criteria used was: </p>
             <p className='pl-8'>- The evaluation is not above 400 centipawns (a centipawn is a unit of advantage, with 100 ~= 1 pawn's advantage) in either direction or between -50 and 50 centipawns</p>
@@ -73,11 +66,12 @@ export default function ChessBlog() {
         </Article>
       </main>
       <Footer />
-      <Lightbox
+      <CustomLightbox
         open={open}
         close={() => setOpen(false)}
-        slides={photos}
-        index={photoIndex}
+        photos={photos}
+        currentIndex={photoIndex}
+        setCurrentIndex={setPhotoIndex}
       />
     </div>
   );

@@ -1,10 +1,14 @@
 import Footer from "~/components/Footer";
-import { json } from '@remix-run/node';
 import { Link, useLoaderData } from '@remix-run/react';
 import fs from 'fs/promises';
 import path from 'path';
 import { processMdx } from '~/utils/mdx.server';
 
+interface Post {
+  slug: string;
+  title: string;
+  date: string;
+}
 
 export async function loader() {
   if (process.env.NODE_ENV === 'production') {
@@ -24,10 +28,12 @@ export async function loader() {
  
       const posts = await Promise.all(
         Contents.map(async (obj) => {
+          if (!obj.Key) return null;
           const { Body } = await s3.send(new GetObjectCommand({
             Bucket: bucketName,
             Key: obj.Key
           }));
+          if (!Body) return null;
           const source = await Body.transformToString();
           const { frontmatter } = await processMdx(source);
           return {
@@ -37,10 +43,11 @@ export async function loader() {
           };
         })
       );
-      return json({ posts: posts.sort((a, b) => new Date(b.date) - new Date(a.date)) });
+      const validPosts = posts.filter((post): post is Post => post !== null);
+      return Response.json({ posts: validPosts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) });
     } catch (error) {
       console.error('S3 Error:', error);
-      return json({ posts: [] });
+      return Response.json({ posts: [] });
     }
   } else {
     const postsPath = path.join(process.cwd(), '..', 'posts');
@@ -57,10 +64,10 @@ export async function loader() {
           };
         })
       );
-      return json({ posts: posts.sort((a, b) => new Date(b.date) - new Date(a.date)) });
+      return Response.json({ posts: posts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) });
     } catch (error) {
       console.error('Filesystem Error:', error);
-      return json({ posts: [] });
+      return Response.json({ posts: [] });
     }
   }
  }
@@ -144,48 +151,52 @@ export default function Index() {
   const { posts } = useLoaderData<typeof loader>();
 
   return (
-    <main className="h-screen bg-offWhite relative font-body">
-      <section className="w-full h-1/5 top-0 z-10 flex items-center justify-center">
-        <div>
-          <div className="text-3xl text-center md:text-left xl:text-4xl text-offBlack">
-            Barron Wasteland
+    <main className="min-h-screen bg-white relative font-neo">
+      <section className="w-full py-16 top-0 z-10 flex items-center justify-center border-b-4 border-black">
+        <div className="text-center">
+          <div className="text-5xl md:text-6xl xl:text-7xl text-black font-neo font-extrabold tracking-tighter">
+            BARRON WASTELAND
           </div>
-          <div className="text-gray-400 lg:text-lg xl:text-2xl">
-            Food for thought // Ideas for eating
+          <div className="text-black text-xl xl:text-2xl font-neo font-semibold mt-2 tracking-wide">
+            FOOD FOR THOUGHT // IDEAS FOR EATING
           </div>
         </div>
       </section>
 
-      <section className="w-full flex items-center justify-center bg-white pt-8 pb-12">
-        <div className="flex flex-col items-center w-full">
-          <h2 className="ml-4 text-offBlack">Projects</h2>
-          <ul className="mx-auto pl-6 pr-4 h-5/6 text-xl leading-normal lg:leading-relaxed md:text-2xl lg:text-2xl text-transparent bg-clip-text bg-text-bg" style={{ width: "fit-content", height: "fit-content" }}>
+      <section className="w-full flex items-center justify-center bg-white py-12">
+        <div className="flex flex-col items-center w-full max-w-4xl">
+          <h2 className="text-black text-4xl font-neo font-extrabold mb-8 border-b-2 border-accent pb-2 tracking-tight">PROJECTS</h2>
+          <ul className="w-full space-y-4 px-8">
             {links.map(({ to, title, description }) => (
-              <li key={to}>
-                <Link to={to} className="py-1 home-link">{title}</Link>
-                <div className="ml-6 text-sm text-gray-600 pb-2">{description}</div>
+              <li key={to} className="border-2 border-black bg-white hover:bg-accent transition-all duration-100 group">
+                <Link to={to} className="block p-4 no-underline hover:no-underline">
+                  <div className="font-neo font-bold text-lg text-black group-hover:text-white transition-colors duration-100 tracking-wide">{title.toUpperCase()}</div>
+                  <div className="font-neo text-sm mt-1 opacity-75 text-black group-hover:text-white group-hover:opacity-100 transition-colors duration-100 font-medium">{description}</div>
+                </Link>
               </li>
             ))}
           </ul>
 
-          <h2 className="ml-4 text-offBlack">Writing</h2>
-          <ul className="mx-auto pl-6 pr-4 h-5/6 text-xl leading-normal lg:leading-relaxed md:text-2xl lg:text-2xl text-transparent bg-clip-text bg-text-bg" style={{ width: "fit-content", height: "fit-content" }}>
-            {posts.map((post) => (
-              <li key={post.slug}>
-                <Link to={`/blog/${post.slug}`} className="py-1 home-link">{post.title}</Link>
-                <div className="ml-6 text-sm text-gray-600 pb-2">
-                  {new Date(post.date).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  })}
-                </div>
+          <h2 className="text-black text-4xl font-neo font-extrabold mb-8 mt-16 border-b-2 border-accent pb-2 tracking-tight">WRITING</h2>
+          <ul className="w-full space-y-4 px-8">
+            {posts.map((post: Post) => (
+              <li key={post.slug} className="border-2 border-black bg-white hover:bg-accent transition-all duration-100 group">
+                <Link to={`/blog/${post.slug}`} className="block p-4 no-underline hover:no-underline">
+                  <div className="font-neo font-bold text-lg text-black group-hover:text-white transition-colors duration-100 tracking-wide">{post.title.toUpperCase()}</div>
+                  <div className="font-neo text-sm mt-1 opacity-75 text-black group-hover:text-white group-hover:opacity-100 transition-colors duration-100 font-medium">
+                    {new Date(post.date).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    }).toUpperCase()}
+                  </div>
+                </Link>
               </li>
             ))}
           </ul>
         </div>
       </section>
-      <div className="sm:h-auto lg:hidden w-screen">
+      <div className="border-t-4 border-black">
         <Footer />
       </div>
     </main>

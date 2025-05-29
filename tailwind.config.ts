@@ -7,7 +7,10 @@ export default {
   ],
   theme: {
     fontFamily: {
-      berkeley: ['Berkeley', 'system-ui']
+      mono: ['JetBrains Mono', 'SF Mono', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', 'monospace'],
+      system: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+      neo: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Helvetica', 'Arial', 'sans-serif'],
+      berkeley: ['JetBrains Mono', 'SF Mono', 'Monaco', 'monospace']
     },
     extend: {
       spacing: {
@@ -15,8 +18,8 @@ export default {
         iauto: "0",
       },
       backgroundImage: {
-        'background': 'radial-gradient(circle at bottom left, #F2F0E5, #FFFFFF, #9CA3AF)',
-        'text-bg': 'radial-gradient(circle at bottom left, #4385BE, #24837B, #4385BE)',
+        'background': 'linear-gradient(0deg, #000000, #000000)',
+        'text-bg': 'linear-gradient(90deg, #000000, #000000, #000000)',
       },
       maxHeight: {
         '0': '0',
@@ -33,25 +36,56 @@ export default {
         'full': '100%',
       },
       colors: {
+        // White, black, and blue-green system
+        primary: {
+          DEFAULT: '#000000',
+          light: '#333333',
+          dark: '#000000',
+        },
+        secondary: {
+          DEFAULT: '#ffffff', // White background
+          light: '#ffffff',
+          dark: '#f5f5f5',
+        },
+        accent: {
+          DEFAULT: '#00605E', // Updated to match CSS
+          light: '#008B87',
+          dark: '#004643',
+        },
+        // Legacy color mappings for compatibility
         red: {
-          light: '#059669',
-          DEFAULT: '#059669',
-          dark: '#059669',
-          clear: "#018786DD",
+          light: '#000000',
+          DEFAULT: '#000000',
+          dark: '#000000',
+          clear: "#000000",
         },
         offWhite: {
-          DEFAULT: '#F2F0E5'
+          DEFAULT: '#ffffff' // Changed back to white
         },
         offBlack: {
-          DEFAULT: '#1C1B1A'
+          DEFAULT: '#000000'
         },
         gray: {
-          light: '#f2f2f2',
-          DEFAULT: '#2E3532',
-          dark: '#171717',
-          clear: "#171717DD",
+          50: '#ffffff',
+          100: '#f5f5f5',
+          200: '#e5e5e5',
+          300: '#d4d4d4',
+          400: '#a3a3a3',
+          500: '#737373',
+          600: '#525252',
+          700: '#404040',
+          800: '#262626',
+          900: '#171717',
+          light: '#f5f5f5',
+          DEFAULT: '#737373',
+          dark: '#000000',
+          clear: "#000000",
         },
       },
+      fontWeight: {
+        'extra-black': '950',
+        'ultra-bold': '800',
+      }
     }
   },
   plugins: [typography],

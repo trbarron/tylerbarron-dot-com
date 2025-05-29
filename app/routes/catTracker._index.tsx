@@ -175,7 +175,7 @@ export default function ChecoLiveTracker() {
 
                                 <button
                                     onClick={toggleDetails}
-                                    className="bg-white text-gray-800 rounded border-b-2 border-green-500 hover:border-green-500 hover:bg-green-500 hover:text-white shadow-md py-2 px-6 inline-flex items-center"
+                                    className="bg-white text-black border-4 border-black px-6 py-3 font-extrabold uppercase tracking-wide hover:bg-black hover:text-white transition-all duration-100"
                                 >
                                     {showDetails ? "Hide Details" : "Show Details"}
                                 </button>

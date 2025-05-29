@@ -132,7 +132,7 @@ export default function CollaborativeCheckmate() {
 
             <button
               type="submit"
-              className="w-full bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+              className="w-full bg-white text-black border-4 border-black px-6 py-3 font-extrabold uppercase tracking-wide hover:bg-black hover:text-white transition-all duration-100"
             >
               Create/Join Game
             </button>
@@ -179,7 +179,7 @@ export default function CollaborativeCheckmate() {
                       </p>
                     </div>
                     <button 
-                      className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
+                      className="bg-white text-black border-2 border-black px-3 py-1 font-extrabold uppercase tracking-wide hover:bg-black hover:text-white transition-all duration-100"
                       onClick={(e) => {
                         e.stopPropagation();
                         joinGame(game.game_id);
