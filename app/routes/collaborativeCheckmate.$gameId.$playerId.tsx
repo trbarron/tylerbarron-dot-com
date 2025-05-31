@@ -143,8 +143,6 @@ export default function CollaborativeCheckmate() {
             case 'connection_established':
               break;
 
-
-
             case 'move_submitted':
               // Update player's submitted state
               setGameLog(prev => [...prev, {
@@ -307,6 +305,36 @@ export default function CollaborativeCheckmate() {
                 type: 'system',
                 message: `${data.player_id} disconnected`
               }]);
+              break;
+
+            case 'game_over':
+              // Handle game over messages (checkmate, stalemate, etc.)
+              setGameLog(prev => [...prev, {
+                type: 'game_over',
+                message: data.message || `Game Over! ${data.result}`
+              }]);
+
+              // Add additional game details if available
+              if (data.total_moves) {
+                setGameLog(prev => [...prev, {
+                  type: 'system',
+                  message: `Total moves: ${data.total_moves}`
+                }]);
+              }
+
+              if (data.team_coordination) {
+                setGameLog(prev => [...prev, {
+                  type: 'system',
+                  message: `Team coordination - Team 1: ${data.team_coordination.team1_same_moves}, Team 2: ${data.team_coordination.team2_same_moves}`
+                }]);
+              }
+
+              // Update the chess position to the final position
+              if (data.final_position) {
+                chess.load(data.final_position);
+                setFen(data.final_position);
+                setChess(new Chess(data.final_position));
+              }
               break;
 
             default:
@@ -635,7 +663,8 @@ export default function CollaborativeCheckmate() {
                       entry.type === 'move' ? 'bg-blue-50' :
                         entry.type === 'engine' ? 'bg-yellow-50' :
                           entry.type === 'phase' ? 'bg-white' :
-                            entry.type === 'error' ? 'bg-red-50' : ''
+                            entry.type === 'error' ? 'bg-red-50' :
+                              entry.type === 'game_over' ? 'bg-purple-50' : ''
                       }`}>
                       {entry.player && <span className="font-bold">{entry.player}: </span>}
                       {entry.message}
