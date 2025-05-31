@@ -1,4 +1,4 @@
-import type { LinksFunction , LoaderFunction } from "@remix-run/node";
+import type { LinksFunction, LoaderFunction } from "@remix-run/node";
 import {
   Links,
   LiveReload,
@@ -6,7 +6,8 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
- useLoaderData } from "@remix-run/react";
+  useLoaderData
+} from "@remix-run/react";
 import styles from './styles/index.css';
 
 export const loader: LoaderFunction = async () => {
@@ -16,13 +17,16 @@ export const loader: LoaderFunction = async () => {
 };
 
 export const links: LinksFunction = () => [
-  { rel: "stylesheet", href: styles }
+  { rel: "stylesheet", href: styles },
+  { rel: "icon", href: "/favicon.ico" },
+  { rel: "icon", type: "image/png", sizes: "32x32", href: "/favicon.ico" },
+  { rel: "icon", type: "image/png", sizes: "16x16", href: "/favicon.ico" },
+  { rel: "apple-touch-icon", sizes: "180x180", href: "/favicon.ico" }
 ];
 
 export const meta = () => {
   return [
-    { title: "Barron Wasteland" },
-    { rel: "icon", href: "/favicon.ico" },
+    { title: "Barron Wasteland" }
   ];
 };
 
