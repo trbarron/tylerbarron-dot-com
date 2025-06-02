@@ -196,8 +196,10 @@ export default function CollaborativeCheckmate() {
                   [seatKey]: { ...prev[seatKey], ready: true }
                 }));
 
-                // If this is the current player, add a note to the log
+                // Store our own state when we become ready
                 if (data.player_id === playerIdRef.current) {
+                  setLastKnownSeat(seatKey);
+                  setLastKnownReadyState(true);
                   setGameLog(prev => [...prev, {
                     type: 'system',
                     message: `You are now ready. You cannot change seats until the game ends.`
@@ -274,6 +276,10 @@ export default function CollaborativeCheckmate() {
                 // Update player team based on their seat
                 for (const [seat, info] of Object.entries(seatUpdates)) {
                   if (info.id === playerIdRef.current) {
+                    // Store our seat information when we take a seat
+                    setLastKnownSeat(seat);
+                    setLastKnownReadyState(info.ready || false);
+                    
                     if (seat.startsWith('t1')) {
                       setPlayerTeam(1);
                       setOrientation('white');
@@ -503,23 +509,41 @@ export default function CollaborativeCheckmate() {
   // Helper function to attempt to restore player state after reconnection
   const attemptStateRestoration = () => {
     if (lastKnownSeat && socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-      // Try to take the same seat
-      socketRef.current.send(JSON.stringify({
-        type: "take_seat",
-        seat: lastKnownSeat
-      }));
+      setGameLog(prev => [...prev, {
+        type: 'system',
+        message: `Attempting to restore seat: ${lastKnownSeat} (ready: ${lastKnownReadyState})`
+      }]);
 
-      // If they were ready before, try to ready up again after a short delay
-      if (lastKnownReadyState) {
-        setTimeout(() => {
-          if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-            socketRef.current.send(JSON.stringify({
-              type: "ready",
-              player_id: playerId
-            }));
+      // Wait a moment for the server to be ready, then try to take the same seat
+      setTimeout(() => {
+        if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+          socketRef.current.send(JSON.stringify({
+            type: "take_seat",
+            seat: lastKnownSeat
+          }));
+
+          // If they were ready before, try to ready up again after the seat is taken
+          if (lastKnownReadyState) {
+            setTimeout(() => {
+              if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+                socketRef.current.send(JSON.stringify({
+                  type: "ready",
+                  player_id: playerId
+                }));
+                setGameLog(prev => [...prev, {
+                  type: 'system',
+                  message: `Attempting to restore ready state...`
+                }]);
+              }
+            }, 1000); // Wait 1 second for seat to be confirmed
           }
-        }, 500);
-      }
+        }
+      }, 500); // Wait 500ms for server to be ready
+    } else if (lastKnownSeat) {
+      setGameLog(prev => [...prev, {
+        type: 'system',
+        message: `Cannot restore state - connection not ready`
+      }]);
     }
   };
 
