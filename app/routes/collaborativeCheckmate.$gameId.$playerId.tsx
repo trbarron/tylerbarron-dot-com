@@ -66,9 +66,21 @@ export default function CollaborativeCheckmate() {
   const [gameLog, setGameLog] = useState([]);
   const [connected, setConnected] = useState(false);
 
+  // Connection handling state
+  const [reconnecting, setReconnecting] = useState(false);
+  const [reconnectAttempts, setReconnectAttempts] = useState(0);
+  const [lastKnownSeat, setLastKnownSeat] = useState(null);
+  const [lastKnownReadyState, setLastKnownReadyState] = useState(false);
+
   // WebSocket reference
   const socketRef = useRef(null);
   const timerRef = useRef(null);
+  const reconnectTimeoutRef = useRef(null);
+
+  // Connection constants
+  const MAX_RECONNECT_ATTEMPTS = 10;
+  const INITIAL_RECONNECT_DELAY = 1000; // 1 second
+  const MAX_RECONNECT_DELAY = 30000; // 30 seconds
 
   // Use refs to keep track of current state values for use in callbacks
   const playersRef = useRef(players);
@@ -113,11 +125,14 @@ export default function CollaborativeCheckmate() {
       if (socketRef.current) {
         socketRef.current.close();
       }
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+      }
     };
   }, []); // Empty dependency array means this runs once on mount
 
   // Connect to WebSocket
-  const connectWebSocket = () => {
+  const connectWebSocket = (reconnection = false) => {
     try {
       // Get isPrivate flag if it exists in navigation state
       const location = window.location;
@@ -130,7 +145,22 @@ export default function CollaborativeCheckmate() {
 
       socketRef.current.onopen = () => {
         setConnected(true);
-        setGameLog(prev => [...prev, { type: 'system', message: 'Connected to game server' }]);
+        setReconnecting(false);
+        setReconnectAttempts(0);
+        
+        if (reconnection) {
+          setGameLog(prev => [...prev, { 
+            type: 'system', 
+            message: 'Successfully reconnected to game server' 
+          }]);
+          // Try to restore previous state
+          attemptStateRestoration();
+        } else {
+          setGameLog(prev => [...prev, { 
+            type: 'system', 
+            message: 'Connected to game server' 
+          }]);
+        }
       };
 
       socketRef.current.onmessage = (event) => {
@@ -347,18 +377,35 @@ export default function CollaborativeCheckmate() {
 
       socketRef.current.onclose = (event) => {
         setConnected(false);
-        setGameLog(prev => [...prev, {
-          type: 'system',
-          message: 'Disconnected from game server'
-        }]);
+        
+        // Store current state before attempting reconnection
+        storePlayerState();
+        
+        // Only attempt reconnection if this wasn't an intentional close
+        if (event.code !== 1000 && !reconnecting) {
+          setReconnecting(true);
+          setGameLog(prev => [...prev, {
+            type: 'system',
+            message: 'Connection lost. Attempting to reconnect...'
+          }]);
+          attemptReconnect();
+        } else if (!reconnecting) {
+          setGameLog(prev => [...prev, {
+            type: 'system',
+            message: 'Disconnected from game server'
+          }]);
+        }
       };
 
       socketRef.current.onerror = (error) => {
-        console.log(`WebSocket error: ${error.message}`);
-        setGameLog(prev => [...prev, {
-          type: 'error',
-          message: 'Connection error'
-        }]);
+        console.log(`WebSocket error: ${error.message || 'Unknown error'}`);
+        
+        if (!reconnecting) {
+          setGameLog(prev => [...prev, {
+            type: 'error',
+            message: 'Connection error occurred'
+          }]);
+        }
       };
     } catch (e) {
       console.log(`Error connecting to WebSocket: ${e.message}`);
@@ -436,6 +483,68 @@ export default function CollaborativeCheckmate() {
     return Object.entries(playersRef.current).find(
       ([_, player]) => player.id === playerIdRef.current
     )?.[0] || null;
+  };
+
+  // Helper function to calculate reconnect delay with exponential backoff
+  const getReconnectDelay = (attempts) => {
+    const delay = Math.min(INITIAL_RECONNECT_DELAY * Math.pow(2, attempts), MAX_RECONNECT_DELAY);
+    return delay + Math.random() * 1000; // Add jitter
+  };
+
+  // Helper function to store current player state before disconnection
+  const storePlayerState = () => {
+    const currentSeat = getCurrentPlayerSeat();
+    if (currentSeat) {
+      setLastKnownSeat(currentSeat);
+      setLastKnownReadyState(playersRef.current[currentSeat]?.ready || false);
+    }
+  };
+
+  // Helper function to attempt to restore player state after reconnection
+  const attemptStateRestoration = () => {
+    if (lastKnownSeat && socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+      // Try to take the same seat
+      socketRef.current.send(JSON.stringify({
+        type: "take_seat",
+        seat: lastKnownSeat
+      }));
+
+      // If they were ready before, try to ready up again after a short delay
+      if (lastKnownReadyState) {
+        setTimeout(() => {
+          if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+            socketRef.current.send(JSON.stringify({
+              type: "ready",
+              player_id: playerId
+            }));
+          }
+        }, 500);
+      }
+    }
+  };
+
+  // Reconnection function
+  const attemptReconnect = () => {
+    if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+      setGameLog(prev => [...prev, {
+        type: 'error',
+        message: `Failed to reconnect after ${MAX_RECONNECT_ATTEMPTS} attempts. Please refresh the page.`
+      }]);
+      setReconnecting(false);
+      return;
+    }
+
+    const delay = getReconnectDelay(reconnectAttempts);
+    setReconnectAttempts(prev => prev + 1);
+    
+    setGameLog(prev => [...prev, {
+      type: 'system',
+      message: `Attempting to reconnect... (${reconnectAttempts + 1}/${MAX_RECONNECT_ATTEMPTS})`
+    }]);
+
+    reconnectTimeoutRef.current = setTimeout(() => {
+      connectWebSocket(true); // Pass true to indicate this is a reconnection
+    }, delay);
   };
 
   return (
@@ -647,8 +756,19 @@ export default function CollaborativeCheckmate() {
             <div className="md:col-span-1">
               {/* Game log */}
               <div className="bg-white shadow rounded overflow-hidden mb-4">
-                <div className="border-b-2 border-green-500 p-2 font-bold bg-white">
-                  Game Log
+                <div className="border-b-2 border-green-500 p-2 font-bold bg-white flex justify-between items-center">
+                  <span>Game Log</span>
+                  {reconnecting && (
+                    <span className="text-xs text-orange-600 font-normal flex items-center">
+                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-orange-500 mr-1"></div>
+                      Reconnecting...
+                    </span>
+                  )}
+                  {!connected && !reconnecting && (
+                    <span className="text-xs text-red-600 font-normal">
+                      Disconnected
+                    </span>
+                  )}
                 </div>
                 <div
                   className="h-96 overflow-y-auto p-2 bg-gray-50"
@@ -664,7 +784,8 @@ export default function CollaborativeCheckmate() {
                         entry.type === 'engine' ? 'bg-yellow-50' :
                           entry.type === 'phase' ? 'bg-white' :
                             entry.type === 'error' ? 'bg-red-50' :
-                              entry.type === 'game_over' ? 'bg-purple-50' : ''
+                              entry.type === 'game_over' ? 'bg-purple-50' :
+                                entry.type === 'reconnecting' ? 'bg-orange-50' : ''
                       }`}>
                       {entry.player && <span className="font-bold">{entry.player}: </span>}
                       {entry.message}
