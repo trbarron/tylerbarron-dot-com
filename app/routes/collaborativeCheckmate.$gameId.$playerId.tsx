@@ -71,11 +71,13 @@ export default function CollaborativeCheckmate() {
   const [reconnectAttempts, setReconnectAttempts] = useState(0);
   const [lastKnownSeat, setLastKnownSeat] = useState(null);
   const [lastKnownReadyState, setLastKnownReadyState] = useState(false);
+  const [hasReceivedInitialState, setHasReceivedInitialState] = useState(false);
 
   // WebSocket reference
   const socketRef = useRef(null);
   const timerRef = useRef(null);
   const reconnectTimeoutRef = useRef(null);
+  const isReconnectionRef = useRef(false); // Track if current connection is a reconnection
 
   // Connection constants
   const MAX_RECONNECT_ATTEMPTS = 10;
@@ -134,6 +136,8 @@ export default function CollaborativeCheckmate() {
   // Connect to WebSocket
   const connectWebSocket = (reconnection = false) => {
     try {
+      isReconnectionRef.current = reconnection;
+      
       // Get isPrivate flag if it exists in navigation state
       const location = window.location;
       const isPrivate = location.state?.isPrivate || false;
@@ -147,14 +151,14 @@ export default function CollaborativeCheckmate() {
         setConnected(true);
         setReconnecting(false);
         setReconnectAttempts(0);
+        setHasReceivedInitialState(false); // Reset this flag on new connection
         
-        if (reconnection) {
+        if (isReconnectionRef.current) {
           setGameLog(prev => [...prev, { 
             type: 'system', 
-            message: 'Successfully reconnected to game server' 
+            message: 'Successfully reconnected to game server. Waiting for game state...' 
           }]);
-          // Try to restore previous state
-          attemptStateRestoration();
+          // Don't call attemptStateRestoration immediately - wait for game state update
         } else {
           setGameLog(prev => [...prev, { 
             type: 'system', 
@@ -295,6 +299,23 @@ export default function CollaborativeCheckmate() {
                   type: 'system',
                   message: `Player seats updated`
                 }]);
+              }
+
+              // Check if this is the first state update after reconnection
+              if (!hasReceivedInitialState && isReconnectionRef.current) {
+                setHasReceivedInitialState(true);
+                isReconnectionRef.current = false; // Clear reconnection flag once we've restored state
+                setGameLog(prev => [...prev, {
+                  type: 'system',
+                  message: 'Received game state. Checking seat assignment...'
+                }]);
+                
+                // Small delay to ensure state updates are processed
+                setTimeout(() => {
+                  attemptStateRestoration();
+                }, 100);
+              } else if (!hasReceivedInitialState) {
+                setHasReceivedInitialState(true);
               }
               break;
 
@@ -506,12 +527,47 @@ export default function CollaborativeCheckmate() {
     }
   };
 
+  // Helper function to find which seat the current player is currently in based on server state
+  const findCurrentPlayerSeat = () => {
+    const currentPlayers = playersRef.current;
+    return Object.entries(currentPlayers).find(
+      ([_, player]) => player.id === playerIdRef.current
+    )?.[0] || null;
+  };
+
   // Helper function to attempt to restore player state after reconnection
   const attemptStateRestoration = () => {
+    // First, check if we're already in a seat according to current game state
+    const currentSeat = findCurrentPlayerSeat();
+    
+    if (currentSeat) {
+      // We're already in a seat, just update our local state
+      setLastKnownSeat(currentSeat);
+      const isReady = playersRef.current[currentSeat as keyof typeof playersRef.current]?.ready || false;
+      setLastKnownReadyState(isReady);
+      
+      // Update team assignment based on current seat
+      if (currentSeat.startsWith('t1')) {
+        setPlayerTeam(1);
+        setOrientation('white');
+      } else if (currentSeat.startsWith('t2')) {
+        setPlayerTeam(2);
+        setOrientation('black');
+      }
+      
+      setGameLog(prev => [...prev, {
+        type: 'system',
+        message: `Found existing seat: ${currentSeat} (ready: ${isReady})`
+      }]);
+      
+      return; // No need to try to take a seat
+    }
+    
+    // If we're not in any seat but have a last known seat, try to retake it
     if (lastKnownSeat && socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
       setGameLog(prev => [...prev, {
         type: 'system',
-        message: `Attempting to restore seat: ${lastKnownSeat} (ready: ${lastKnownReadyState})`
+        message: `No current seat found. Attempting to restore seat: ${lastKnownSeat} (ready: ${lastKnownReadyState})`
       }]);
 
       // Wait a moment for the server to be ready, then try to take the same seat
@@ -539,7 +595,12 @@ export default function CollaborativeCheckmate() {
           }
         }
       }, 500); // Wait 500ms for server to be ready
-    } else if (lastKnownSeat) {
+    } else if (!lastKnownSeat) {
+      setGameLog(prev => [...prev, {
+        type: 'system',
+        message: `No seat to restore - starting fresh`
+      }]);
+    } else {
       setGameLog(prev => [...prev, {
         type: 'system',
         message: `Cannot restore state - connection not ready`
