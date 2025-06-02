@@ -7,7 +7,7 @@ import Article from "~/components/Article";
 import chessgroundBase from '../styles/chessground.base.css';
 import chessgroundBrown from '../styles/chessground.brown.css';
 import chessgroundCburnett from '../styles/chessground.cburnett.css';
-import type { LinksFunction, LoaderFunction } from '@remix-run/node';
+import type { LinksFunction, LoaderFunctionArgs } from '@remix-run/node';
 import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import Timer from "~/components/Timer";
@@ -40,7 +40,30 @@ const GamePhaseNames = {
 // Type for the game phases
 type GamePhaseType = typeof GamePhase[keyof typeof GamePhase];
 
-export const loader: LoaderFunction = async ({ params }) => {
+// Type for game log entries
+type GameLogEntry = {
+  type: 'system' | 'move' | 'engine' | 'phase' | 'error' | 'game_over' | 'reconnecting';
+  message: string;
+  player?: string;
+};
+
+// Type for player seats
+type SeatKey = 't1p1' | 't1p2' | 't2p1' | 't2p2';
+
+// Type for players state
+type PlayersState = {
+  [K in SeatKey]: {
+    id: string | null;
+    ready: boolean;
+  };
+} & {
+  [key: string]: {
+    id: string | null;
+    ready: boolean;
+  };
+};
+
+export const loader = async ({ params }: { params: { gameId?: string; playerId?: string } }) => {
   const { gameId, playerId } = params;
   return json({ gameId, playerId });
 }
@@ -49,12 +72,12 @@ export default function CollaborativeCheckmate() {
   const { gameId, playerId } = useLoaderData<typeof loader>();
   const [chess, setChess] = useState(new Chess());
   const [fen, setFen] = useState('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
-  const [orientation, setOrientation] = useState('white');
+  const [orientation, setOrientation] = useState<'white' | 'black'>('white');
   const [gamePhase, setGamePhase] = useState<GamePhaseType>(GamePhase.COOLDOWN);
   const [timeRemaining, setTimeRemaining] = useState(0);
-  const [timeRemainingKey, setTimeRemainingKey] = useState(null);
-  const [playerTeam, setPlayerTeam] = useState(null);
-  const [players, setPlayers] = useState({
+  const [timeRemainingKey, setTimeRemainingKey] = useState<string | null>(null);
+  const [playerTeam, setPlayerTeam] = useState<number | null>(null);
+  const [players, setPlayers] = useState<PlayersState>({
     t1p1: { id: null, ready: false },
     t1p2: { id: null, ready: false },
     t2p1: { id: null, ready: false },
@@ -63,20 +86,25 @@ export default function CollaborativeCheckmate() {
   const [shapes, setShapes] = useState([{ orig: 'e0', dest: 'e0', brush: 'green' }]);
   const [selectedMove, setSelectedMove] = useState(false);
   const [lockedIn, setLockedIn] = useState(false);
-  const [gameLog, setGameLog] = useState([]);
+  const [gameLog, setGameLog] = useState<GameLogEntry[]>([]);
   const [connected, setConnected] = useState(false);
+
+  // Add missing state variables
+  const [lastMove, setLastMove] = useState<{from: string, to: string} | null>(null);
+  const [submittedMoves, setSubmittedMoves] = useState<any[]>([]);
+  const [teammateMoves, setTeammateMoves] = useState<any[]>([]);
 
   // Connection handling state
   const [reconnecting, setReconnecting] = useState(false);
   const [reconnectAttempts, setReconnectAttempts] = useState(0);
-  const [lastKnownSeat, setLastKnownSeat] = useState(null);
+  const [lastKnownSeat, setLastKnownSeat] = useState<SeatKey | null>(null);
   const [lastKnownReadyState, setLastKnownReadyState] = useState(false);
   const [hasReceivedInitialState, setHasReceivedInitialState] = useState(false);
 
   // WebSocket reference
-  const socketRef = useRef(null);
-  const timerRef = useRef(null);
-  const reconnectTimeoutRef = useRef(null);
+  const socketRef = useRef<WebSocket | null>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isReconnectionRef = useRef(false); // Track if current connection is a reconnection
 
   // Connection constants
@@ -202,7 +230,7 @@ export default function CollaborativeCheckmate() {
 
                 // Store our own state when we become ready
                 if (data.player_id === playerIdRef.current) {
-                  setLastKnownSeat(seatKey);
+                  setLastKnownSeat(seatKey as SeatKey);
                   setLastKnownReadyState(true);
                   setGameLog(prev => [...prev, {
                     type: 'system',
@@ -228,7 +256,7 @@ export default function CollaborativeCheckmate() {
                 setGamePhase(data.game_phase);
                 setGameLog(prev => [...prev, {
                   type: 'phase',
-                  message: `Phase: ${GamePhaseNames[data.game_phase]}`
+                  message: `Phase: ${GamePhaseNames[data.game_phase as GamePhaseType]}`
                 }]);
               }
 
@@ -260,8 +288,8 @@ export default function CollaborativeCheckmate() {
               }
 
               // Handle player seat/ready status updates if present
-              const seatUpdates = {};
-              ['t1p1', 't1p2', 't2p1', 't2p2'].forEach(seat => {
+              const seatUpdates: Partial<PlayersState> = {};
+              (['t1p1', 't1p2', 't2p1', 't2p2'] as SeatKey[]).forEach(seat => {
                 if (data[`${seat}_seat`] !== undefined || data[`${seat}_ready`] !== undefined) {
                   const seatId = data[`${seat}_seat`];
                   seatUpdates[seat] = {
@@ -279,10 +307,10 @@ export default function CollaborativeCheckmate() {
 
                 // Update player team based on their seat
                 for (const [seat, info] of Object.entries(seatUpdates)) {
-                  if (info.id === playerIdRef.current) {
+                  if (info && typeof info === 'object' && 'id' in info && info.id === playerIdRef.current) {
                     // Store our seat information when we take a seat
-                    setLastKnownSeat(seat);
-                    setLastKnownReadyState(info.ready || false);
+                    setLastKnownSeat(seat as SeatKey);
+                    setLastKnownReadyState((info as any).ready || false);
                     
                     if (seat.startsWith('t1')) {
                       setPlayerTeam(1);
@@ -304,15 +332,18 @@ export default function CollaborativeCheckmate() {
               // Check if this is the first state update after reconnection
               if (!hasReceivedInitialState && isReconnectionRef.current) {
                 setHasReceivedInitialState(true);
-                isReconnectionRef.current = false; // Clear reconnection flag once we've restored state
                 setGameLog(prev => [...prev, {
                   type: 'system',
                   message: 'Received game state. Checking seat assignment...'
                 }]);
                 
-                // Small delay to ensure state updates are processed
+                // Immediately attempt state restoration, then clear reconnection flag
                 setTimeout(() => {
                   attemptStateRestoration();
+                  // Clear the reconnection flag after restoration is complete
+                  setTimeout(() => {
+                    isReconnectionRef.current = false;
+                  }, 200);
                 }, 100);
               } else if (!hasReceivedInitialState) {
                 setHasReceivedInitialState(true);
@@ -398,7 +429,7 @@ export default function CollaborativeCheckmate() {
               console.log(`Unknown message type: ${data.type}`);
           }
         } catch (e) {
-          console.log(`Error parsing message: ${e.message}`);
+          console.log(`Error parsing message: ${e instanceof Error ? e.message : 'Unknown error'}`);
         }
       };
 
@@ -424,8 +455,8 @@ export default function CollaborativeCheckmate() {
         }
       };
 
-      socketRef.current.onerror = (error) => {
-        console.log(`WebSocket error: ${error.message || 'Unknown error'}`);
+      socketRef.current.onerror = (error: Event) => {
+        console.log(`WebSocket error: Unknown error`);
         
         if (!reconnecting) {
           setGameLog(prev => [...prev, {
@@ -435,7 +466,7 @@ export default function CollaborativeCheckmate() {
         }
       };
     } catch (e) {
-      console.log(`Error connecting to WebSocket: ${e.message}`);
+      console.log(`Error connecting to WebSocket: ${e instanceof Error ? e.message : 'Unknown error'}`);
     }
   };
 
@@ -522,7 +553,7 @@ export default function CollaborativeCheckmate() {
   const storePlayerState = () => {
     const currentSeat = getCurrentPlayerSeat();
     if (currentSeat) {
-      setLastKnownSeat(currentSeat);
+      setLastKnownSeat(currentSeat as SeatKey);
       setLastKnownReadyState(playersRef.current[currentSeat]?.ready || false);
     }
   };
@@ -542,7 +573,7 @@ export default function CollaborativeCheckmate() {
     
     if (currentSeat) {
       // We're already in a seat, just update our local state
-      setLastKnownSeat(currentSeat);
+      setLastKnownSeat(currentSeat as SeatKey);
       const isReady = playersRef.current[currentSeat as keyof typeof playersRef.current]?.ready || false;
       setLastKnownReadyState(isReady);
       
