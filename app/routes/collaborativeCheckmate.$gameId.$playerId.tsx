@@ -7,27 +7,17 @@ import Article from "~/components/Article";
 import chessgroundBase from '../styles/chessground.base.css';
 import chessgroundBrown from '../styles/chessground.brown.css';
 import chessgroundCburnett from '../styles/chessground.cburnett.css';
-import type { LinksFunction, LoaderFunctionArgs } from '@remix-run/node';
-import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import Timer from "~/components/Timer";
+import { GamePhase, type GamePhaseType, type SeatKey } from "~/types/generated";
 
-export const links: LinksFunction = () => [
+export const links = () => [
   { rel: 'stylesheet', href: chessgroundBase },
   { rel: 'stylesheet', href: chessgroundBrown },
   { rel: 'stylesheet', href: chessgroundCburnett }
 ];
 
-// Define game phases as constants
-const GamePhase = {
-  SETUP: 'setup',
-  TEAM1_SELECTION: 'team1_selection',
-  TEAM1_COMPUTING: 'team1_computing',
-  TEAM2_SELECTION: 'team2_selection',
-  TEAM2_COMPUTING: 'team2_computing',
-  COOLDOWN: 'cooldown'
-} as const;
-
+// Define game phase names locally
 const GamePhaseNames = {
   [GamePhase.SETUP]: 'Setup',
   [GamePhase.TEAM1_SELECTION]: 'White Selection',
@@ -37,9 +27,6 @@ const GamePhaseNames = {
   [GamePhase.COOLDOWN]: 'Cooldown'
 } as const;
 
-// Type for the game phases
-type GamePhaseType = typeof GamePhase[keyof typeof GamePhase];
-
 // Type for game log entries
 type GameLogEntry = {
   type: 'system' | 'move' | 'engine' | 'phase' | 'error' | 'game_over' | 'reconnecting';
@@ -47,17 +34,9 @@ type GameLogEntry = {
   player?: string;
 };
 
-// Type for player seats
-type SeatKey = 't1p1' | 't1p2' | 't2p1' | 't2p2';
-
 // Type for players state
 type PlayersState = {
   [K in SeatKey]: {
-    id: string | null;
-    ready: boolean;
-  };
-} & {
-  [key: string]: {
     id: string | null;
     ready: boolean;
   };
@@ -65,7 +44,7 @@ type PlayersState = {
 
 export const loader = async ({ params }: { params: { gameId?: string; playerId?: string } }) => {
   const { gameId, playerId } = params;
-  return json({ gameId, playerId });
+  return Response.json({ gameId, playerId });
 }
 
 export default function CollaborativeCheckmate() {
@@ -101,16 +80,25 @@ export default function CollaborativeCheckmate() {
   const [lastKnownReadyState, setLastKnownReadyState] = useState(false);
   const [hasReceivedInitialState, setHasReceivedInitialState] = useState(false);
 
+  // Heartbeat state
+  const [connectionId, setConnectionId] = useState<string>('');
+  const [lastHeartbeatSent, setLastHeartbeatSent] = useState<number>(0);
+  const [lastHeartbeatReceived, setLastHeartbeatReceived] = useState<number>(0);
+
   // WebSocket reference
   const socketRef = useRef<WebSocket | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const heartbeatIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const heartbeatTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isReconnectionRef = useRef(false); // Track if current connection is a reconnection
 
   // Connection constants
   const MAX_RECONNECT_ATTEMPTS = 10;
   const INITIAL_RECONNECT_DELAY = 1000; // 1 second
   const MAX_RECONNECT_DELAY = 30000; // 30 seconds
+  const HEARTBEAT_INTERVAL = 30000; // 30 seconds
+  const HEARTBEAT_TIMEOUT = 60000; // 60 seconds
 
   // Use refs to keep track of current state values for use in callbacks
   const playersRef = useRef(players);
@@ -158,6 +146,12 @@ export default function CollaborativeCheckmate() {
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
       }
+      if (heartbeatIntervalRef.current) {
+        clearInterval(heartbeatIntervalRef.current);
+      }
+      if (heartbeatTimeoutRef.current) {
+        clearTimeout(heartbeatTimeoutRef.current);
+      }
     };
   }, []); // Empty dependency array means this runs once on mount
 
@@ -166,12 +160,12 @@ export default function CollaborativeCheckmate() {
     try {
       isReconnectionRef.current = reconnection;
       
-      // Get isPrivate flag if it exists in navigation state
-      const location = window.location;
-      const isPrivate = location.state?.isPrivate || false;
-
-      // Construct WebSocket URL with isPrivate parameter
-      const wsUrl = `wss://collaborative-checkmate-server.fly.dev/ws/game/${gameId}/player/${playerId}${isPrivate ? '?is_private=true' : ''}`;
+      // Generate new connection ID for this connection
+      const newConnectionId = generateConnectionId();
+      setConnectionId(newConnectionId);
+      
+      // Construct WebSocket URL
+      const wsUrl = `wss://collaborative-checkmate-server.fly.dev/ws/game/${gameId}/player/${playerId}`;
 
       socketRef.current = new WebSocket(wsUrl);
 
@@ -180,6 +174,9 @@ export default function CollaborativeCheckmate() {
         setReconnecting(false);
         setReconnectAttempts(0);
         setHasReceivedInitialState(false); // Reset this flag on new connection
+        
+        // Start heartbeat mechanism with the new connection ID
+        startHeartbeat(newConnectionId);
         
         if (isReconnectionRef.current) {
           setGameLog(prev => [...prev, { 
@@ -205,6 +202,22 @@ export default function CollaborativeCheckmate() {
             case 'connection_established':
               break;
 
+            case 'heartbeat_response':
+              // Handle heartbeat response
+              const responseTime = Date.now();
+              setLastHeartbeatReceived(responseTime);
+              
+              // Clear heartbeat timeout since we received a response
+              if (heartbeatTimeoutRef.current) {
+                clearTimeout(heartbeatTimeoutRef.current);
+                heartbeatTimeoutRef.current = null;
+              }
+              
+              // Calculate round-trip time for debugging
+              const roundTripTime = responseTime - lastHeartbeatSent;
+              console.log(`Heartbeat RTT: ${roundTripTime}ms`);
+              break;
+
             case 'move_submitted':
               // Update player's submitted state
               setGameLog(prev => [...prev, {
@@ -218,14 +231,14 @@ export default function CollaborativeCheckmate() {
               // Update player's ready state
               const currentPlayers = playersRef.current;
               const seatKey = Object.keys(currentPlayers).find(key =>
-                currentPlayers[key].id === data.player_id
+                currentPlayers[key as SeatKey].id === data.player_id
               );
 
               if (seatKey) {
                 // Update the ready status for this seat
                 setPlayers(prev => ({
                   ...prev,
-                  [seatKey]: { ...prev[seatKey], ready: true }
+                  [seatKey]: { ...prev[seatKey as SeatKey], ready: true }
                 }));
 
                 // Store our own state when we become ready
@@ -300,10 +313,15 @@ export default function CollaborativeCheckmate() {
               });
 
               if (Object.keys(seatUpdates).length > 0) {
-                setPlayers(prev => ({
-                  ...prev,
-                  ...seatUpdates
-                }));
+                setPlayers(prev => {
+                  const newPlayers = { ...prev };
+                  Object.entries(seatUpdates).forEach(([seat, info]) => {
+                    if (info) {
+                      newPlayers[seat as SeatKey] = info;
+                    }
+                  });
+                  return newPlayers;
+                });
 
                 // Update player team based on their seat
                 for (const [seat, info] of Object.entries(seatUpdates)) {
@@ -379,13 +397,13 @@ export default function CollaborativeCheckmate() {
             case 'player_disconnected':
               // Update player status to not ready
               const disconnectedSeatKey = Object.keys(players).find(key =>
-                players[key].id === data.player_id
+                players[key as SeatKey].id === data.player_id
               );
 
               if (disconnectedSeatKey) {
                 setPlayers(prev => ({
                   ...prev,
-                  [disconnectedSeatKey]: { ...prev[disconnectedSeatKey], ready: false }
+                  [disconnectedSeatKey]: { ...prev[disconnectedSeatKey as SeatKey], ready: false }
                 }));
               }
 
@@ -436,6 +454,9 @@ export default function CollaborativeCheckmate() {
       socketRef.current.onclose = (event) => {
         setConnected(false);
         
+        // Stop heartbeat mechanism
+        stopHeartbeat();
+        
         // Store current state before attempting reconnection
         storePlayerState();
         
@@ -471,7 +492,7 @@ export default function CollaborativeCheckmate() {
   };
 
   // Take a specific seat
-  const takeSeat = (seat) => {
+  const takeSeat = (seat: SeatKey) => {
     if (!connected) {
       setGameLog(prev => [...prev, {
         type: 'error',
@@ -537,14 +558,14 @@ export default function CollaborativeCheckmate() {
   };
 
   // Find which seat the current player is in, if any
-  const getCurrentPlayerSeat = () => {
+  const getCurrentPlayerSeat = (): SeatKey | null => {
     return Object.entries(playersRef.current).find(
       ([_, player]) => player.id === playerIdRef.current
-    )?.[0] || null;
+    )?.[0] as SeatKey || null;
   };
 
   // Helper function to calculate reconnect delay with exponential backoff
-  const getReconnectDelay = (attempts) => {
+  const getReconnectDelay = (attempts: number) => {
     const delay = Math.min(INITIAL_RECONNECT_DELAY * Math.pow(2, attempts), MAX_RECONNECT_DELAY);
     return delay + Math.random() * 1000; // Add jitter
   };
@@ -553,28 +574,20 @@ export default function CollaborativeCheckmate() {
   const storePlayerState = () => {
     const currentSeat = getCurrentPlayerSeat();
     if (currentSeat) {
-      setLastKnownSeat(currentSeat as SeatKey);
+      setLastKnownSeat(currentSeat);
       setLastKnownReadyState(playersRef.current[currentSeat]?.ready || false);
     }
-  };
-
-  // Helper function to find which seat the current player is currently in based on server state
-  const findCurrentPlayerSeat = () => {
-    const currentPlayers = playersRef.current;
-    return Object.entries(currentPlayers).find(
-      ([_, player]) => player.id === playerIdRef.current
-    )?.[0] || null;
   };
 
   // Helper function to attempt to restore player state after reconnection
   const attemptStateRestoration = () => {
     // First, check if we're already in a seat according to current game state
-    const currentSeat = findCurrentPlayerSeat();
+    const currentSeat = getCurrentPlayerSeat();
     
     if (currentSeat) {
       // We're already in a seat, just update our local state
-      setLastKnownSeat(currentSeat as SeatKey);
-      const isReady = playersRef.current[currentSeat as keyof typeof playersRef.current]?.ready || false;
+      setLastKnownSeat(currentSeat);
+      const isReady = playersRef.current[currentSeat]?.ready || false;
       setLastKnownReadyState(isReady);
       
       // Update team assignment based on current seat
@@ -663,6 +676,70 @@ export default function CollaborativeCheckmate() {
     }, delay);
   };
 
+  // Generate unique connection ID
+  const generateConnectionId = () => {
+    return `conn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  };
+
+  // Send heartbeat to server
+  const sendHeartbeat = (connectionId: string) => {
+    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+      const timestamp = Date.now();
+      setLastHeartbeatSent(timestamp);
+      
+      socketRef.current.send(JSON.stringify({
+        type: "heartbeat",
+        timestamp: timestamp,
+        connectionId: connectionId
+      }));
+
+      // Set timeout for heartbeat response
+      if (heartbeatTimeoutRef.current) {
+        clearTimeout(heartbeatTimeoutRef.current);
+      }
+      
+      heartbeatTimeoutRef.current = setTimeout(() => {
+        setGameLog(prev => [...prev, {
+          type: 'error',
+          message: 'Heartbeat timeout - connection may be lost'
+        }]);
+        
+        // Trigger reconnection on heartbeat timeout
+        if (socketRef.current) {
+          socketRef.current.close();
+        }
+      }, HEARTBEAT_TIMEOUT);
+    }
+  };
+
+  // Start heartbeat interval
+  const startHeartbeat = (connectionId: string) => {
+    // Clear any existing heartbeat interval
+    if (heartbeatIntervalRef.current) {
+      clearInterval(heartbeatIntervalRef.current);
+    }
+    
+    // Send initial heartbeat
+    sendHeartbeat(connectionId);
+    
+    // Set up regular heartbeat interval
+    heartbeatIntervalRef.current = setInterval(() => {
+      sendHeartbeat(connectionId);
+    }, HEARTBEAT_INTERVAL);
+  };
+
+  // Stop heartbeat
+  const stopHeartbeat = () => {
+    if (heartbeatIntervalRef.current) {
+      clearInterval(heartbeatIntervalRef.current);
+      heartbeatIntervalRef.current = null;
+    }
+    if (heartbeatTimeoutRef.current) {
+      clearTimeout(heartbeatTimeoutRef.current);
+      heartbeatTimeoutRef.current = null;
+    }
+  };
+
   return (
     <div className="bg-background bg-fixed min-h-screen">
       <Navbar />
@@ -687,10 +764,8 @@ export default function CollaborativeCheckmate() {
                       orientation={orientation}
                       viewOnly={!((gamePhase === GamePhase.TEAM1_SELECTION && playerTeam === 1) ||
                         (gamePhase === GamePhase.TEAM2_SELECTION && playerTeam === 2)) || lockedIn}
-                      movable={{
-                        free: false,
-                        color: playerTeam === 1 ? 'white' : 'black'
-                      }}
+                      movable={!!playerTeam && ((gamePhase === GamePhase.TEAM1_SELECTION && playerTeam === 1) ||
+                        (gamePhase === GamePhase.TEAM2_SELECTION && playerTeam === 2)) && !lockedIn}
                       events={{
                         move: (orig, dest) => {
                           // Instead of making the move, draw an arrow and send to server
@@ -857,11 +932,11 @@ export default function CollaborativeCheckmate() {
                 <button
                   onClick={readyUp}
                   className={`p-2 rounded font-bold transition-colors duration-200
-                    ${!connected || (players.t1p1.id != playerId && players.t1p2.id != playerId && players.t2p1.id != playerId && players.t2p2.id != playerId) || (getCurrentPlayerSeat() && players[getCurrentPlayerSeat()].ready)
+                    ${!connected || (players.t1p1.id != playerId && players.t1p2.id != playerId && players.t2p1.id != playerId && players.t2p2.id != playerId) || (getCurrentPlayerSeat() !== null && players[getCurrentPlayerSeat()!].ready)
                       ? 'bg-purple-300 text-purple-100 cursor-not-allowed'
                       : 'bg-purple-500 hover:bg-purple-600 text-white'
                     }`}
-                  disabled={!connected || (players.t1p1.id != playerId && players.t1p2.id != playerId && players.t2p1.id != playerId && players.t2p2.id != playerId) || (getCurrentPlayerSeat() && players[getCurrentPlayerSeat()].ready)}
+                  disabled={!connected || (players.t1p1.id != playerId && players.t1p2.id != playerId && players.t2p1.id != playerId && players.t2p2.id != playerId) || (getCurrentPlayerSeat() !== null && players[getCurrentPlayerSeat()!].ready)}
                 >
                   Ready Up
                 </button>
