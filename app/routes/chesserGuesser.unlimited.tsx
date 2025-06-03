@@ -1,7 +1,6 @@
 import React, { useState, Suspense, useEffect } from "react";
 import { useNavigate, useLoaderData, Form, ScrollRestoration, useLocation } from "@remix-run/react";
 import { Chess } from 'chess.js';
-import { json } from "@remix-run/node";
 import { Navbar } from "~/components/Navbar";
 import Footer from "~/components/Footer";
 import Article from "~/components/Article";
@@ -11,13 +10,12 @@ import { Subarticle } from "~/components/Subarticle";
 import whiteKingImage from '~/images/ChesserGuesser/whiteKing.png';
 import blackKingImage from '~/images/ChesserGuesser/blackKing.png';
 
-import type { LinksFunction, LoaderFunction } from '@remix-run/node';
 import Chessboard from '~/components/Chessboard';
 import chessgroundBase from '../styles/chessground.base.css';
 import chessgroundBrown from '../styles/chessground.brown.css';
 import chessgroundCburnett from '../styles/chessground.cburnett.css';
 
-export const links: LinksFunction = () => [
+export const links = () => [
   { rel: 'stylesheet', href: chessgroundBase },
   { rel: 'stylesheet', href: chessgroundBrown },
   { rel: 'stylesheet', href: chessgroundCburnett }
@@ -29,19 +27,19 @@ type LoaderData = {
   error?: string;
 };
 
-export const loader: LoaderFunction = async () => {
+export const loader = async () => {
   try {
     const response = await fetch('https://f73vgbj1jk.execute-api.us-west-2.amazonaws.com/prod/chesserGuesser');
     const data = await response.json();
     const parsedBody = JSON.parse(data.body);
     
-    return json({
+    return Response.json({
       randomFEN: parsedBody.fen,
       evalScore: parseInt(parsedBody.eval),
     });
   } catch (error) {
     console.error("Error fetching position:", error);
-    return json({
+    return Response.json({
       randomFEN: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
       evalScore: 0,
       error: 'Failed to fetch position'
@@ -55,7 +53,7 @@ export default function ChesserGuesserUnlimited() {
 
   const [chess, setChess] = useState(new Chess(loaderData.randomFEN));
   const [fen, setFen] = useState(loaderData.randomFEN);
-  const [boardOrientation, setBoardOrientation] = useState(getCurrentPlayer(loaderData.randomFEN).toLowerCase());
+  const [boardOrientation, setBoardOrientation] = useState<"white" | "black">(getCurrentPlayer(loaderData.randomFEN).toLowerCase() as "white" | "black");
   const [sliderValue, setSliderValue] = useState(0);
   const [currentTurn, setCurrentTurn] = useState(getCurrentPlayer(loaderData.randomFEN));
   const [streak, setStreak] = useState(0);
@@ -67,7 +65,7 @@ export default function ChesserGuesserUnlimited() {
   useEffect(() => {
     setChess(new Chess(loaderData.randomFEN));
     setFen(loaderData.randomFEN);
-    setBoardOrientation(getCurrentPlayer(loaderData.randomFEN).toLowerCase());
+    setBoardOrientation(getCurrentPlayer(loaderData.randomFEN).toLowerCase() as "white" | "black");
     setCurrentTurn(getCurrentPlayer(loaderData.randomFEN));
   }, [loaderData.randomFEN]);
 
@@ -98,8 +96,7 @@ export default function ChesserGuesserUnlimited() {
     setLastSlider(sliderValue / 100);
 
     navigate(".", { 
-      replace: true,
-      state: { key: location.key } 
+      replace: true
     });
 
     return difference;
@@ -164,7 +161,7 @@ export default function ChesserGuesserUnlimited() {
                 </div>
 
                 <button
-                  className="w-full bg-white text-black border-4 border-black px-6 py-3 font-extrabold uppercase tracking-wide hover:bg-black hover:text-white transition-all duration-100"
+                  className="w-full bg-white text-black border-4 border-black px-6 py-3 font-extrabold uppercase tracking-wide hover:bg-black hover:text-white transition-all duration-100 flex flex-col items-center"
                   onClick={submitGuess}
                 >
                   <span className="text-sm">
@@ -210,6 +207,7 @@ export default function ChesserGuesserUnlimited() {
         <div className="visible ">
           <Article
             title="About Chesser Guesser"
+            subtitle=""
           >
             <Subarticle
               subtitle=""
