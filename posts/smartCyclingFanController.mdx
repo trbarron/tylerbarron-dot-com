@@ -1,0 +1,32 @@
+---
+title: Smart Cycling Fan Controller
+date: 2025-07-01
+type: project
+subtitle: Tying heart rate to fan speed
+---
+
+## The Problem
+
+Indoor cycling can be uncomfortable without the right setup, especially if you are prone to motion sickness like I am. One big aspect of this is having good cooling -- and none are cooler than the $300+ [Wahoo KICKR Headwind](https://www.wahoofitness.com/devices/indoor-cycling/accessories/kickr-headwind-buy). What if I could have the same features for significantly lower cost?
+
+<iframe width="640" height="480" src="https://www.youtube.com/embed/7VHxvltq_zs" title="Smart Cycling Fan Controller Demo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
+## My Approach
+
+I decided to build a heart rate-responsive fan controller using a Raspberry Pi and some off-the-shelf components. The concept was simple: monitor heart rate in real-time and adjust fan speed accordingly.
+
+I discovered the [Colmi R02 smart ring](https://tahnok.github.io/colmi_r02_client/colmi_r02_client.html) through an open-source project that reverse-engineered its Bluetooth protocol. These rings are surprisingly accurate and incredibly affordable. The open-source client made it easy to integrate with my Raspberry Pi Zero 2 W.
+
+For the fan control, I used a servo motor to physically adjust the speed controller of a standard AC fan. The gears and mounting brackets were 3D printed, which gave me an excuse to set up my new printer and get it working.
+
+The system also includes a 4-digit LED display to show the current heart rate in real-time and a [High Velocity Fan](https://www.amazon.com/Lasko-Ventilating-Exhausting-Construction-U15617/dp/B077BMBR5B/ref=sr_1_1_pp?crid=WE1SKL040LOD&dib=eyJ2IjoiMSJ9.YPIYf3KtoCPZdhbV1V8akA6O1dA3JwMrxvu23b2LtkHbQGbCEi19tSkQokSwhffwM3el2UYEVGzf5p3RMsXRmrUn53lGNeoEjUiURFD2NethBEFagpkDR8Efzp5U5vzBh_c7Ia5ndm-Wk4ady7etFDADAKw37F53O8r1Ip-8kooZmRGEVWkm3JvUX47vttn0rRiaqJX3_veDfNN-RIEkTx1fecV68TEqXQ8pqdoR4VGJtD3Ibv-tOoPw5Jw9tNp3HJI_J4d3EnySDmzg0zNkSgKvmtSnSffGQAgqN7IfRDc.oI1bWYEuWVG4KvQL-Th12XYVBREzgSp4-mUPHbVxQ6k&dib_tag=se&keywords=lasko+fan&qid=1751505517&sprefix=lasko+fan%2Caps%2C143&sr=8-1&ufe=app_do%3Aamzn1.fos.9fe8cbfa-bf43-43d1-a707-3f4e65a4b666) to actually power.
+
+## The Result
+
+The system continuously monitors your heart rate via Bluetooth from the smart ring. As your heart rate increases during your workout, the servo motor gradually turns the fan speed controller, providing more cooling when you need it most.
+
+The fan speed ramps up smoothly as your heart rate climbs, creating a natural cooling response that matches your effort level.
+
+The project was a fun combination of heart rate monitoring, servo control, and real-time display -- mixing software with hardware to get a cool result.
+
+You can check out the full project on [GitHub](https://github.com/trbarron/smart-cycling-fan-controller/tree/main) if you're interested 

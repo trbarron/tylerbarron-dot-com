@@ -4,7 +4,7 @@ import { Subarticle } from "../components/Subarticle.js";
 import Article from "../components/Article.js";
 
 const BoulderingTracker = () => {
-  const VideoComponent = ({ src, caption }) => (
+  const VideoComponent = ({ src, caption }: { src: string; caption?: string }) => (
     <div style={{margin: '20px 0', textAlign: 'center'}}>
       <div className="video-container" style={{position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', maxWidth: '100%', margin: '0 auto'}}>
         <iframe 

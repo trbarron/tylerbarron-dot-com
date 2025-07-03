@@ -8,6 +8,8 @@ interface Post {
   slug: string;
   title: string;
   date: string;
+  type?: string;
+  subtitle?: string;
 }
 
 export async function loader() {
@@ -40,10 +42,12 @@ export async function loader() {
             slug: obj.Key.replace('posts/', '').replace('.mdx', ''),
             title: frontmatter.title,
             date: frontmatter.date,
+            type: frontmatter.type,
+            subtitle: frontmatter.subtitle,
           };
         })
       );
-      const validPosts = posts.filter((post): post is Post => post !== null);
+      const validPosts = posts.filter((post): post is NonNullable<typeof post> => post !== null);
       return Response.json({ posts: validPosts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) });
     } catch (error) {
       console.error('S3 Error:', error);
@@ -61,6 +65,8 @@ export async function loader() {
             slug: filename.replace('.mdx', ''),
             title: frontmatter.title,
             date: frontmatter.date,
+            type: frontmatter.type,
+            subtitle: frontmatter.subtitle,
           };
         })
       );
@@ -142,13 +148,26 @@ const links = [
   {
     to: "https://chromewebstore.google.com/detail/youtube-speed-sense/efgmcojhefjjdpdnnmclekblhpaiaedo",
     title: "YouTube Speed Sense",
-    description: "Adjusts YouTube video playback speed based on content categories"
+    description: "Adjust video playback speed based on categories"
   }
 ];
 
 export default function Index() {
 
   const { posts } = useLoaderData<typeof loader>();
+
+  // Add project posts to the main projects list
+  const projectPosts = posts.filter((post: Post) => post.type === 'project').map((post: Post) => ({
+    to: `/blog/${post.slug}`,
+    title: post.title,
+    description: post.subtitle || `${new Date(post.date).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })}`
+  }));
+
+  const allProjects = [...links, ...projectPosts];
 
   return (
     <main className="min-h-screen bg-white relative font-neo">
@@ -166,23 +185,30 @@ export default function Index() {
       <section className="w-full flex items-center justify-center bg-white py-12">
         <div className="flex flex-col items-center w-full max-w-4xl">
           <h2 className="text-black text-4xl font-neo font-extrabold mb-8 border-b-2 border-accent pb-2 tracking-tight">PROJECTS</h2>
-          <ul className="w-full space-y-4 px-8">
-            {links.map(({ to, title, description }) => (
-              <li key={to} className="border-2 border-black bg-white hover:bg-accent transition-all duration-100 group">
-                <Link to={to} className="block p-4 no-underline hover:no-underline">
-                  <div className="font-neo font-bold text-lg text-black group-hover:text-white transition-colors duration-100 tracking-wide">{title.toUpperCase()}</div>
-                  <div className="font-neo text-sm mt-1 opacity-75 text-black group-hover:text-white group-hover:opacity-100 transition-colors duration-100 font-medium">{description}</div>
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <div className="w-full px-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+              {allProjects.map(({ to, title, description }) => (
+                <div key={to} className="border-2 border-black bg-white hover:bg-accent transition-all duration-100 group">
+                  <Link to={to} className="block p-4 no-underline hover:no-underline h-full">
+                    <div className="font-neo font-bold text-lg text-black group-hover:text-white transition-colors duration-100 tracking-wide">{title.toUpperCase()}</div>
+                    <div className="font-neo text-sm mt-1 opacity-75 text-black group-hover:text-white group-hover:opacity-100 transition-colors duration-100 font-medium">{description}</div>
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </div>
 
           <h2 className="text-black text-4xl font-neo font-extrabold mb-8 mt-16 border-b-2 border-accent pb-2 tracking-tight">WRITING</h2>
           <ul className="w-full space-y-4 px-8">
-            {posts.map((post: Post) => (
+            {posts.filter((post: Post) => post.type !== 'project').map((post: Post) => (
               <li key={post.slug} className="border-2 border-black bg-white hover:bg-accent transition-all duration-100 group">
                 <Link to={`/blog/${post.slug}`} className="block p-4 no-underline hover:no-underline">
                   <div className="font-neo font-bold text-lg text-black group-hover:text-white transition-colors duration-100 tracking-wide">{post.title.toUpperCase()}</div>
+                  {post.subtitle && (
+                    <div className="font-neo text-base mt-1 text-black group-hover:text-white opacity-80 group-hover:opacity-100 transition-colors duration-100 font-medium">
+                      {post.subtitle}
+                    </div>
+                  )}
                   <div className="font-neo text-sm mt-1 opacity-75 text-black group-hover:text-white group-hover:opacity-100 transition-colors duration-100 font-medium">
                     {new Date(post.date).toLocaleDateString('en-US', {
                       year: 'numeric',
