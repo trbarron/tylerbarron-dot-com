@@ -18,10 +18,7 @@ export const loader: LoaderFunction = async () => {
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: styles },
-  { rel: "icon", href: "/favicon.ico" },
-  { rel: "icon", type: "image/png", sizes: "32x32", href: "/favicon.ico" },
-  { rel: "icon", type: "image/png", sizes: "16x16", href: "/favicon.ico" },
-  { rel: "apple-touch-icon", sizes: "180x180", href: "/favicon.ico" }
+  { rel: "icon", href: "/favicon.ico", type: "image/x-icon" }
 ];
 
 export const meta = () => {
