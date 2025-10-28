@@ -80,15 +80,16 @@ export default function BlogPost() {
                           prose-a:transition-all prose-a:duration-100
                           hover:prose-a:bg-accent hover:prose-a:text-white hover:prose-a:border-accent
                           hover:prose-a:px-1 hover:prose-a:-mx-1
-                          prose-li:font-neo prose-li:text-black prose-li:font-medium
-                          prose-ul:font-neo prose-ul:text-black
-                          prose-ol:font-neo prose-ol:text-black
+                          prose-li:font-neo prose-li:text-black prose-li:font-medium prose-li:text-lg prose-li:my-1
+                          prose-ul:font-neo prose-ul:text-black prose-ul:ml-6 prose-ul:my-4 prose-ul:list-disc prose-ul:pl-2
+                          prose-ol:font-neo prose-ol:text-black prose-ol:ml-6 prose-ol:my-4 prose-ol:list-decimal prose-ol:pl-2
                           prose-code:bg-gray-100 prose-code:text-black prose-code:border prose-code:border-black prose-code:font-mono
                           prose-code:before:content-none prose-code:after:content-none
                           prose-code:px-1 prose-code:py-0.5
                           prose-pre:bg-gray-100 prose-pre:text-black prose-pre:border-2 prose-pre:border-black prose-pre:font-mono
                           prose-blockquote:border-l-4 prose-blockquote:border-accent prose-blockquote:bg-gray-100 prose-blockquote:font-neo
                           prose-blockquote:pl-4 prose-blockquote:py-2 prose-blockquote:font-semibold prose-blockquote:text-lg prose-blockquote:not-italic
+                          prose-blockquote:before:content-none prose-blockquote:after:content-none
                           prose-img:border-2 prose-img:border-black prose-img:transition-all
                           prose-table:border-2 prose-table:border-black prose-table:font-neo prose-table:bg-white prose-table:font-medium
                           prose-th:bg-black prose-th:text-white prose-th:border prose-th:border-black prose-th:font-bold prose-th:uppercase
