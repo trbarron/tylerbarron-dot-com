@@ -208,8 +208,6 @@ export default function ChesserGuesserUnlimited() {
           <Subarticle subtitle="Overview">
             <p>Inspired by GeoGuessr, Chesser Guesser challenges players to estimate the computer's evaluation of chess positions. Players try to estimate the value of specific chess positions as accurately as possible, matching or closely approximating the engine's evaluation to extend their streak. The goal is to sharpen your evaluative skills by understanding why certain positions are deemed advantageous or disadvantageous by the computer.</p>
           </Subarticle>
-        </Article>
-        <Article title="" subtitle="">
           <Subarticle subtitle="The Analysis">
             <p>The game integrates with the <a href='https://lichess.org/@/lichess/blog/thousands-of-stockfish-analysers/WN-gLzAA'>Lichess Cloud Analysis</a> to fetch position evaluations at scale, giving access to all the positions and their evaluations without me having to do any work. Having this resource made the tough part of this project incredibly easy.</p>
 
@@ -223,8 +221,6 @@ export default function ChesserGuesserUnlimited() {
             <p>For the chess board I used the open source <a href='https://github.com/lichess-org/chessground/tree/master'>Chessground</a>. I've used it before and gotta say, its the best. Again, thank you to Lichess for providing these resources! </p>
             <p>Sliders and such were able to be reused from another, now defunct project. I made a few improvements to help with it on mobile (75+% of users are mobile users) which is always great.</p>
           </Subarticle>
-        </Article>
-        <Article title="" subtitle="">
           <Subarticle subtitle="Reception">
             <p>This was released on the afternoon of March 17th 2024. It did really well on /r/chess, getting 40+k views, 50+ comments and a 95+% upvote rate. This spurred me to rush to implement Google Analytics where I could see the global engagement. Over one thousand people have since played, including a few titled players.</p>
             <p>Overall I would consider this experiment a success, hosting a lot of traffic and some fun conversations.</p>
