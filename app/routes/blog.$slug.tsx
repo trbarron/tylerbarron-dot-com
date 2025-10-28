@@ -1,4 +1,4 @@
-import { useLoaderData, Link } from '@remix-run/react';
+import { useLoaderData, Link } from 'react-router';
 import { getMDXComponent } from 'mdx-bundler/client/index.js';
 import { useMemo } from 'react';
 import { processMdx } from '~/utils/mdx.server';

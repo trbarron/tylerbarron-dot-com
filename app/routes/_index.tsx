@@ -1,5 +1,5 @@
 import Footer from "~/components/Footer";
-import { Link, useLoaderData } from '@remix-run/react';
+import { Link, useLoaderData } from 'react-router';
 import fs from 'fs/promises';
 import path from 'path';
 import { processMdx } from '~/utils/mdx.server';

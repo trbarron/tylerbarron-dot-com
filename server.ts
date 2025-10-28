@@ -1,8 +1,8 @@
-import { createRequestHandler } from "@remix-run/architect";
-import * as build from "@remix-run/dev/server-build";
+import { createRequestHandler } from "@ballatech/react-router7-preset-aws";
 
 const requestHandler = createRequestHandler({
-  build,
+  // @ts-expect-error - React Router build types
+  build: () => import("./build/server/index.js"),
   mode: process.env.NODE_ENV,
   getLoadContext(event) {
     return {};

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useLoaderData } from "@remix-run/react";
+import { Link, useLoaderData } from "react-router";
 
 import { Navbar } from "~/components/Navbar";
 import Footer from "~/components/Footer";

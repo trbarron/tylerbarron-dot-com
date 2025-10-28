@@ -1,27 +1,20 @@
-import { vitePlugin as remix } from "@remix-run/dev";
+import { reactRouter } from "@react-router/dev/vite";
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
   plugins: [
-    remix({
-      future: {
-        v3_fetcherPersist: true,
-        v3_relativeSplatPath: true,
-        v3_throwAbortReason: true,
-      },
-      serverModuleFormat: "esm",
-    }),
+    reactRouter(),
     tsconfigPaths(),
   ],
   build: {
     rollupOptions: {
       external: [
         'recharts',
-        '@remix-run/node',
+        '@react-router/node',
         'react',
         'react-dom',
-        'remix-utils/client-only'
+        'react-router-utils/client-only'
       ],
     },
   },

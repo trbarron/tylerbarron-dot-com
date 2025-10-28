@@ -1,20 +1,19 @@
-import type { LinksFunction, LoaderFunction } from "@remix-run/node";
+import type { LinksFunction, LoaderFunctionArgs } from "react-router";
 import {
   Links,
-  LiveReload,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
   useLoaderData
-} from "@remix-run/react";
+} from "react-router";
 import styles from './styles/index.css';
 
-export const loader: LoaderFunction = async () => {
+export async function loader() {
   return {
     gaTrackingId: process.env.GA_TRACKING_ID || null,
   };
-};
+}
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: styles },
@@ -59,7 +58,6 @@ export default function App() {
         <Outlet />
         <ScrollRestoration />
         <Scripts />
-        <LiveReload />
       </body>
     </html>
   );

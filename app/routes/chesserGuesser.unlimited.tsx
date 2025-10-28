@@ -1,5 +1,5 @@
 import React, { useState, Suspense, useEffect } from "react";
-import { useNavigate, useLoaderData, Form, ScrollRestoration, useLocation } from "@remix-run/react";
+import { useNavigate, useLoaderData, Form, ScrollRestoration, useLocation } from "react-router";
 import { Chess } from 'chess.js';
 import { Navbar } from "~/components/Navbar";
 import Footer from "~/components/Footer";

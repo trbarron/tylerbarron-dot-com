@@ -7,7 +7,7 @@ import Article from "~/components/Article";
 import chessgroundBase from '../styles/chessground.base.css';
 import chessgroundBrown from '../styles/chessground.brown.css';
 import chessgroundCburnett from '../styles/chessground.cburnett.css';
-import { useLoaderData } from "@remix-run/react";
+import { useLoaderData } from "react-router";
 import Timer from "~/components/Timer";
 import { GamePhase, type GamePhaseType, type SeatKey } from "~/types/generated";
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useLoaderData, json } from "@remix-run/react";
+import { useLoaderData, json } from "react-router";
 import { Suspense, lazy } from 'react';
 
 import { Navbar } from "~/components/Navbar";

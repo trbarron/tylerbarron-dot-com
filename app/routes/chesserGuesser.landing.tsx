@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from '@remix-run/react';
+import { useNavigate, Link } from 'react-router';
 import { Navbar } from '~/components/Navbar';
 import Footer from "~/components/Footer";
 import { Subarticle } from '~/components/Subarticle';
