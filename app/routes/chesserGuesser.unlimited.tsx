@@ -11,9 +11,9 @@ import whiteKingImage from '~/images/ChesserGuesser/whiteKing.png';
 import blackKingImage from '~/images/ChesserGuesser/blackKing.png';
 
 import Chessboard from '~/components/Chessboard';
-import chessgroundBase from '../styles/chessground.base.css';
-import chessgroundBrown from '../styles/chessground.brown.css';
-import chessgroundCburnett from '../styles/chessground.cburnett.css';
+import chessgroundBase from '../styles/chessground.base.css?url';
+import chessgroundBrown from '../styles/chessground.brown.css?url';
+import chessgroundCburnett from '../styles/chessground.cburnett.css?url';
 
 export const links = () => [
   { rel: 'stylesheet', href: chessgroundBase },

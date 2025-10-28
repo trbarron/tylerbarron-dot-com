@@ -7,8 +7,8 @@
 import { PassThrough } from "node:stream";
 
 import type { AppLoadContext, EntryContext } from "react-router";
-import { createReadableStreamFromReadable } from "@react-router/node";
 import { ServerRouter } from "react-router";
+import { Readable } from "node:stream";
 import { isbot } from "isbot";
 import { renderToPipeableStream } from "react-dom/server";
 
@@ -51,13 +51,12 @@ function handleBotRequest(
       <ServerRouter
         context={remixContext}
         url={request.url}
-        abortDelay={ABORT_DELAY}
       />,
       {
         onAllReady() {
           shellRendered = true;
           const body = new PassThrough();
-          const stream = createReadableStreamFromReadable(body);
+          const stream = Readable.toWeb(body) as ReadableStream;
 
           responseHeaders.set("Content-Type", "text/html");
 
@@ -101,13 +100,12 @@ function handleBrowserRequest(
       <ServerRouter
         context={remixContext}
         url={request.url}
-        abortDelay={ABORT_DELAY}
       />,
       {
         onShellReady() {
           shellRendered = true;
           const body = new PassThrough();
-          const stream = createReadableStreamFromReadable(body);
+          const stream = Readable.toWeb(body) as ReadableStream;
 
           responseHeaders.set("Content-Type", "text/html");
 

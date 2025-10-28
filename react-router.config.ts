@@ -11,18 +11,14 @@ export default {
   serverModuleFormat: "esm",
   ssr: true,
   
+  // React Router 7 automatically discovers routes in app/routes/
+  // No need to explicitly define routes
+  
   // Server bundle configuration
   serverBundles: ({ branch }) => {
     return branch.some((route) => route.id === "root") ? "root" : branch[0]?.id || "default";
   },
 
-  future: {
-    // React Router 7 is already v3, so these flags are defaults
-    v3_fetcherPersist: true,
-    v3_relativeSplatPath: true,
-    v3_throwAbortReason: true,
-    v3_singleFetch: true,
-    v3_lazyRouteDiscovery: true,
-  },
+  // React Router 7 already includes all v3 features by default
 } satisfies Config;
 

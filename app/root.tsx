@@ -7,7 +7,7 @@ import {
   ScrollRestoration,
   useLoaderData
 } from "react-router";
-import styles from './styles/index.css';
+import stylesHref from './styles/index.css?url';
 
 export async function loader() {
   return {
@@ -16,7 +16,7 @@ export async function loader() {
 }
 
 export const links: LinksFunction = () => [
-  { rel: "stylesheet", href: styles },
+  { rel: "stylesheet", href: stylesHref },
   { rel: "icon", href: "/favicon.ico", type: "image/x-icon" }
 ];
 

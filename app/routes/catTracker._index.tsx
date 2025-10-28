@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useLoaderData, json } from "react-router";
+import { useLoaderData } from "react-router";
 import { Suspense, lazy } from 'react';
 
 import { Navbar } from "~/components/Navbar";
@@ -34,10 +34,10 @@ export const loader = async () => {
         const basicData: BasicResponseData = JSON.parse(data.body);
         console.log('Parsed basicData:', basicData);
 
-        return json({ basicData });
+        return Response.json({ basicData });
     } catch (error) {
         console.error("Error fetching data:", error);
-        return json({ error: "Failed to load data" }, { status: 500 });
+        return Response.json({ error: "Failed to load data" }, { status: 500 });
     }
 };
 

@@ -14,7 +14,7 @@ export default defineConfig({
         '@react-router/node',
         'react',
         'react-dom',
-        'react-router-utils/client-only'
+        'remix-utils/client-only'
       ],
     },
   },
@@ -22,7 +22,6 @@ export default defineConfig({
     exclude: ['recharts'],
   },
   ssr: {
-    noExternal: true,
-    external: ['recharts']
+    external: ['recharts'],
   },
 });
