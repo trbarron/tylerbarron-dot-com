@@ -1,7 +1,6 @@
 ---
 title: Data-Driven Armageddon Chess Bidding
 date: 2025-10-27
-subtitle: Using large-scale game analysis to bid smarter
 ---
 
 ## The Problem
@@ -22,6 +21,8 @@ The analyzer processes PGN files with evaluation data and outputs metrics for ea
 - Average centipawn loss (ACPL) during middlegame
 - Inaccuracies, mistakes, and blunders
 - Time control and rating information
+
+> I only analyze the midgame since openings are often rote and endgames can often inflate the ACPL since it can often include a lot of moves with marginal impact
 
 Games are categorized by time controls and rating buckets (200-point intervals).
 
@@ -47,6 +48,6 @@ Games are categorized by time controls and rating buckets (200-point intervals).
 
 ## What's Next
 
-The data provides clear insights into how time pressure affects play quality, but there's more work to be done. I'm developing a recursive framework similar to [SimonM's approach](https://simonm.substack.com/p/armageddon-chess-a-bidders-guide), with an additional step that maps time controls to expected ACPL loss for improved accuracy.
+The data provides insights into how time pressure affects play quality, but there's more work to be done. I'm hoping to have a recursive framework similar to [SimonM's approach](https://simonm.substack.com/p/armageddon-chess-a-bidders-guide), with an additional step that maps time controls to expected ACPL loss for improved accuracy.
 
 [Check out the full analysis on GitHub](https://github.com/trbarron/Chess-Bidding-Analysis) if you want to explore the data yourself or contribute to the project.
