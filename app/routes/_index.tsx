@@ -90,7 +90,7 @@ const links = [
     description: "\"Bring your own board game playing bot\" competition"
   },
   {
-    to: "/chesserGuesser/landing",
+    to: "/chesserGuesser/unlimited",
     title: "Chesser Guesser",
     description: "Can you tell who is winning the chess game?"
   },
@@ -117,7 +117,7 @@ const links = [
   {
     to: "/CatTracker",
     title: "Cat Work Tracker",
-    description: "Measuring Checo's work output"
+    description: "Measuring the cat's time in the office"
   },
 
   {

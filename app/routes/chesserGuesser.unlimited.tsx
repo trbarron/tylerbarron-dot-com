@@ -137,7 +137,7 @@ export default function ChesserGuesserUnlimited() {
         return location.pathname;
       }} />
       <main className="flex-grow">
-        <Article title="Chesser Guesser Unlimited" subtitle="">
+        <Article title="Chesser Guesser" subtitle="">
             <div className="pb-6 mx-auto grid gap-x-4 grid-rows-2 md:grid-rows-1 grid-cols-1 md:grid-cols-2 md:ml-auto" style={{ gridTemplateColumns: "80% 20%", marginLeft: "-0.5rem", marginRight: "0.5rem" }}>
               <div className="w-100% col-span-2 md:col-span-1">
                 <Chessboard
@@ -204,23 +204,28 @@ export default function ChesserGuesserUnlimited() {
               </div>
             </div>
         </Article>
-        <div className="visible ">
-          <Article
-            title="About Chesser Guesser"
-            subtitle=""
-          >
-            <Subarticle
-              subtitle=""
-            >
-              <p>
-                Challenge yourself to guess the computer's evaluation of chess positions. Your goal is to estimate the position's value as accurately as possible -- extending your streak if you correctly guess the player ahead
-              </p>
-              <p>
-                Each correct guess extends your streak. See how long you can maintain it by matching or closely approximating the computer's precision
-              </p>
-            </Subarticle>
-          </Article>
-        </div>
+        <Article title="About Chesser Guesser" subtitle="">
+          <Subarticle subtitle="Overview">
+            <p>Inspired by GeoGuessr, Chesser Guesser challenges players to estimate the computer's evaluation of chess positions. Players try to estimate the value of specific chess positions as accurately as possible, matching or closely approximating the engine's evaluation to extend their streak. The goal is to sharpen your evaluative skills by understanding why certain positions are deemed advantageous or disadvantageous by the computer.</p>
+          </Subarticle>
+          <Subarticle subtitle="The Analysis">
+            <p>The game integrates with the <a href='https://lichess.org/@/lichess/blog/thousands-of-stockfish-analysers/WN-gLzAA'>Lichess Cloud Analysis</a> to fetch position evaluations at scale, giving access to all the positions and their evaluations without me having to do any work. Having this resource made the tough part of this project incredibly easy.</p>
+
+            <p>Chesser Guesser uses Python connected to several Amazon DynamoDB instances for data storage. Lichess gives us a huge number of analyzed positions – we get to parse those down and only insert the interesting ones for our game. The criteria used was: </p>
+            <p className='pl-8'>- The evaluation is not above 400 centipawns (a centipawn is a unit of advantage, with 100 ~= 1 pawn's advantage) in either direction or between -50 and 50 centipawns</p>
+            <p className='pl-8'>- The same number of entries must be given for both the black and white side</p>
+            <p className='pl-8'>- There are less than 5 pawns on any rank, to remove most analysis being on openings</p>
+            <p>A total of 400 evaluations were added, although thousands meet the criteria and there are over a million with saved analysis</p>
+          </Subarticle>
+          <Subarticle subtitle="The UI">
+            <p>For the chess board I used the open source <a href='https://github.com/lichess-org/chessground/tree/master'>Chessground</a>. I've used it before and gotta say, its the best. Again, thank you to Lichess for providing these resources! </p>
+            <p>Sliders and such were able to be reused from another, now defunct project. I made a few improvements to help with it on mobile (75+% of users are mobile users) which is always great.</p>
+          </Subarticle>
+          <Subarticle subtitle="Reception">
+            <p>This was released on the afternoon of March 17th 2024. It did really well on /r/chess, getting 40+k views, 50+ comments and a 95+% upvote rate. This spurred me to rush to implement Google Analytics where I could see the global engagement. Over one thousand people have since played, including a few titled players.</p>
+            <p>Overall I would consider this experiment a success, hosting a lot of traffic and some fun conversations.</p>
+          </Subarticle>
+        </Article>
       </main>
       <Footer />
     </div>

@@ -16,8 +16,7 @@ export async function loader() {
 }
 
 export const links: LinksFunction = () => [
-  { rel: "stylesheet", href: stylesHref },
-  { rel: "icon", href: "/favicon.ico", type: "image/x-icon" }
+  { rel: "stylesheet", href: styles }
 ];
 
 export const meta = () => {
