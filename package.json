@@ -6,9 +6,10 @@
   "scripts": {
     "analyze": "NODE_ENV=production webpack --config webpack.config.js --profile --json > stats.json && webpack-bundle-analyzer stats.json",
     "build": "react-router build",
+    "build:arc": "npm run build && mkdir -p public && cp -r build/client/* public/ && mkdir -p server && npx esbuild server.ts --platform=node --target=node20 --format=esm --bundle --outfile=server/index.mjs '--external:@aws-sdk/*' --external:aws-sdk '--external:@react-router/*' '--external:@ballatech/*' --external:react --external:react-dom '--external:./build/*' --packages=external && cp -r build server/",
     "format": "prettier --write .",
     "dev": "react-router dev",
-    "dev:arc": "arc sandbox -e testing",
+    "dev:arc": "npm run build:arc && arc sandbox -e testing",
     "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
     "start": "react-router-serve ./build/server/index.js",
     "typecheck": "tsc"

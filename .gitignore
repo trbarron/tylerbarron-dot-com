@@ -4,5 +4,7 @@ node_modules
 /build
 .env
 /public/build
+/public/assets
+/public/static.json
 /server/*
 !/server/package.json

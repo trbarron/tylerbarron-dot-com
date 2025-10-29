@@ -15,7 +15,7 @@ architecture x86_64
   src server
 
 @static
-fingerprint false
+fingerprint true
 
 @env
 production
