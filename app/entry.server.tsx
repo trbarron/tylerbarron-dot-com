@@ -4,11 +4,10 @@
  * For more information, see https://remix.run/file-conventions/entry.server
  */
 
-import { PassThrough } from "node:stream";
+import { PassThrough, Readable } from "node:stream";
 
-import type { AppLoadContext, EntryContext } from "@remix-run/node";
-import { createReadableStreamFromReadable } from "@remix-run/node";
-import { RemixServer } from "@remix-run/react";
+import type { AppLoadContext, EntryContext } from "react-router";
+import { ServerRouter } from "react-router";
 import { isbot } from "isbot";
 import { renderToPipeableStream } from "react-dom/server";
 
@@ -48,16 +47,15 @@ function handleBotRequest(
   return new Promise((resolve, reject) => {
     let shellRendered = false;
     const { pipe, abort } = renderToPipeableStream(
-      <RemixServer
+      <ServerRouter
         context={remixContext}
         url={request.url}
-        abortDelay={ABORT_DELAY}
       />,
       {
         onAllReady() {
           shellRendered = true;
           const body = new PassThrough();
-          const stream = createReadableStreamFromReadable(body);
+          const stream = Readable.toWeb(body) as ReadableStream;
 
           responseHeaders.set("Content-Type", "text/html");
 
@@ -98,16 +96,15 @@ function handleBrowserRequest(
   return new Promise((resolve, reject) => {
     let shellRendered = false;
     const { pipe, abort } = renderToPipeableStream(
-      <RemixServer
+      <ServerRouter
         context={remixContext}
         url={request.url}
-        abortDelay={ABORT_DELAY}
       />,
       {
         onShellReady() {
           shellRendered = true;
           const body = new PassThrough();
-          const stream = createReadableStreamFromReadable(body);
+          const stream = Readable.toWeb(body) as ReadableStream;
 
           responseHeaders.set("Content-Type", "text/html");
 

@@ -1,5 +1,5 @@
-import type { Feature, FeatureCollection, Geometry } from 'geojson';
-import React, { useState, useEffect } from 'react';
+import type { Feature, FeatureCollection } from 'geojson';
+import { useState, useEffect } from 'react';
 import { geoAlbersUsa, geoPath } from 'd3-geo';
 import { feature } from 'topojson-client';
 import MapControls from './MapControls.js';
@@ -310,12 +310,12 @@ export default function PizzaLocationMap() {
           <div>
             <div className="text-lg font-semibold mb-2">Background</div>
             <div className="text-sm space-y-1">
-              <div>This map reveals America's best pizza regions through Domino's Pizza ratings.</div>
+              <div>This map reveals America&apos;s best pizza regions through Domino&apos;s Pizza ratings.</div>
               <div>The methodology builds on three assumptions:</div>
-              <div>1. Domino's pizza is Domino's pizza. It is highly standardized nationwide, making it a reliable control variable</div>
+              <div>1. Domino&apos;s pizza is Domino&apos;s pizza. It is highly standardized nationwide, making it a reliable control variable</div>
               <div>2. Pizza shop employees are constant enough that they impact the ratings in a standardized way</div>
-              <div className="pb-2">3. As a result of (1) and (2), the differentiating factor for the reviews is not the pizza but the competitors in the area. The better the local pizza is, the worse Domino's will be rated</div>
-              <div className="pb-2">My Pizza Score inverts Domino's Google Maps ratings: lower Domino's ratings suggest higher-quality local pizza alternatives. This creates a proxy measure for regional pizza - areas where Domino's struggles are areas where local pizzerias are best</div>
+              <div className="pb-2">3. As a result of (1) and (2), the differentiating factor for the reviews is not the pizza but the competitors in the area. The better the local pizza is, the worse Domino&apos;s will be rated</div>
+              <div className="pb-2">My Pizza Score inverts Domino&apos;s Google Maps ratings: lower Domino&apos;s ratings suggest higher-quality local pizza alternatives. This creates a proxy measure for regional pizza - areas where Domino&apos;s struggles are areas where local pizzerias are best</div>
             </div>
             <div>
               <div className="text-lg font-semibold mb-2">Statistics</div>

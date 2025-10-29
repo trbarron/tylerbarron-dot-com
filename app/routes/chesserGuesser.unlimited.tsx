@@ -1,5 +1,5 @@
-import React, { useState, Suspense, useEffect } from "react";
-import { useNavigate, useLoaderData, Form, ScrollRestoration, useLocation } from "@remix-run/react";
+import { useState, useEffect } from "react";
+import { useNavigate, useLoaderData, ScrollRestoration } from "react-router";
 import { Chess } from 'chess.js';
 import { Navbar } from "~/components/Navbar";
 import Footer from "~/components/Footer";
@@ -11,9 +11,9 @@ import whiteKingImage from '~/images/ChesserGuesser/whiteKing.png';
 import blackKingImage from '~/images/ChesserGuesser/blackKing.png';
 
 import Chessboard from '~/components/Chessboard';
-import chessgroundBase from '../styles/chessground.base.css';
-import chessgroundBrown from '../styles/chessground.brown.css';
-import chessgroundCburnett from '../styles/chessground.cburnett.css';
+import chessgroundBase from '../styles/chessground.base.css?url';
+import chessgroundBrown from '../styles/chessground.brown.css?url';
+import chessgroundCburnett from '../styles/chessground.cburnett.css?url';
 
 export const links = () => [
   { rel: 'stylesheet', href: chessgroundBase },
@@ -51,7 +51,7 @@ export default function ChesserGuesserUnlimited() {
   const loaderData = useLoaderData<LoaderData>();
   const navigate = useNavigate();
 
-  const [chess, setChess] = useState(new Chess(loaderData.randomFEN));
+  const [, setChess] = useState(new Chess(loaderData.randomFEN));
   const [fen, setFen] = useState(loaderData.randomFEN);
   const [boardOrientation, setBoardOrientation] = useState<"white" | "black">(getCurrentPlayer(loaderData.randomFEN).toLowerCase() as "white" | "black");
   const [sliderValue, setSliderValue] = useState(0);
@@ -206,19 +206,19 @@ export default function ChesserGuesserUnlimited() {
         </Article>
         <Article title="About Chesser Guesser" subtitle="">
           <Subarticle subtitle="Overview">
-            <p>Inspired by GeoGuessr, Chesser Guesser challenges players to estimate the computer's evaluation of chess positions. Players try to estimate the value of specific chess positions as accurately as possible, matching or closely approximating the engine's evaluation to extend their streak. The goal is to sharpen your evaluative skills by understanding why certain positions are deemed advantageous or disadvantageous by the computer.</p>
+            <p>Inspired by GeoGuessr, Chesser Guesser challenges players to estimate the computer&apos;s evaluation of chess positions. Players try to estimate the value of specific chess positions as accurately as possible, matching or closely approximating the engine&apos;s evaluation to extend their streak. The goal is to sharpen your evaluative skills by understanding why certain positions are deemed advantageous or disadvantageous by the computer.</p>
           </Subarticle>
           <Subarticle subtitle="The Analysis">
             <p>The game integrates with the <a href='https://lichess.org/@/lichess/blog/thousands-of-stockfish-analysers/WN-gLzAA'>Lichess Cloud Analysis</a> to fetch position evaluations at scale, giving access to all the positions and their evaluations without me having to do any work. Having this resource made the tough part of this project incredibly easy.</p>
 
             <p>Chesser Guesser uses Python connected to several Amazon DynamoDB instances for data storage. Lichess gives us a huge number of analyzed positions – we get to parse those down and only insert the interesting ones for our game. The criteria used was: </p>
-            <p className='pl-8'>- The evaluation is not above 400 centipawns (a centipawn is a unit of advantage, with 100 ~= 1 pawn's advantage) in either direction or between -50 and 50 centipawns</p>
+            <p className='pl-8'>- The evaluation is not above 400 centipawns (a centipawn is a unit of advantage, with 100 ~= 1 pawn&apos;s advantage) in either direction or between -50 and 50 centipawns</p>
             <p className='pl-8'>- The same number of entries must be given for both the black and white side</p>
             <p className='pl-8'>- There are less than 5 pawns on any rank, to remove most analysis being on openings</p>
             <p>A total of 400 evaluations were added, although thousands meet the criteria and there are over a million with saved analysis</p>
           </Subarticle>
           <Subarticle subtitle="The UI">
-            <p>For the chess board I used the open source <a href='https://github.com/lichess-org/chessground/tree/master'>Chessground</a>. I've used it before and gotta say, its the best. Again, thank you to Lichess for providing these resources! </p>
+            <p>For the chess board I used the open source <a href='https://github.com/lichess-org/chessground/tree/master'>Chessground</a>. I&apos;ve used it before and gotta say, its the best. Again, thank you to Lichess for providing these resources! </p>
             <p>Sliders and such were able to be reused from another, now defunct project. I made a few improvements to help with it on mobile (75+% of users are mobile users) which is always great.</p>
           </Subarticle>
           <Subarticle subtitle="Reception">

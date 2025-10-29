@@ -1,4 +1,3 @@
-import React from 'react';
 
 interface Photo {
   src: string;
@@ -15,7 +14,10 @@ interface LightboxPhotoProps {
 export default function LightboxPhoto({ photo, index, onClick }: LightboxPhotoProps) {
   return (
     <div 
-      onClick={() => onClick(index)} 
+      onClick={() => onClick(index)}
+      onKeyDown={(e) => e.key === 'Enter' && onClick(index)}
+      role="button"
+      tabIndex={0}
       className="cursor-pointer my-8 group transition-all duration-200 hover:scale-105"
     >
       <div className="border-4 border-black bg-white p-2 hover:shadow-lg transition-all duration-200">

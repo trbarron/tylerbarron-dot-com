@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 
 interface Photo {
   src: string;
@@ -64,10 +64,16 @@ export default function CustomLightbox({
     <div 
       className="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center p-4"
       onClick={close}
+      onKeyDown={(e) => e.key === 'Enter' && close()}
+      role="button"
+      tabIndex={0}
     >
       <div 
         className="relative bg-white border-4 border-black max-w-5xl max-h-full flex flex-col"
         onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.key === 'Enter' && e.stopPropagation()}
+        role="dialog"
+        tabIndex={-1}
       >
         {/* Header */}
         <div className="bg-white border-b-4 border-black p-4 flex justify-between items-center">

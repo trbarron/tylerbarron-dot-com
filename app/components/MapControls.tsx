@@ -1,4 +1,12 @@
-import React from 'react';
+
+interface MapControlsProps {
+  showReviews: boolean;
+  setShowReviews: (show: boolean) => void;
+  setShowPizzaScore: (show: boolean) => void;
+  setShowPerfectRatings: (show: boolean) => void;
+  scoreFilter: number;
+  setScoreFilter: (value: number) => void;
+}
 
 const MapControls = ({
     showReviews,
@@ -7,9 +15,9 @@ const MapControls = ({
     setShowPerfectRatings,
     scoreFilter,
     setScoreFilter,
-  }) => {
+  }: MapControlsProps) => {
 
-  const handleVisualizationChange = (mode) => {
+  const handleVisualizationChange = (mode: string) => {
     if (mode === 'reviews') {
       setShowReviews(true);
       setShowPizzaScore(false);

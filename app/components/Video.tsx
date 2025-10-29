@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
 
-export default function Video({ src, caption }) {
+interface VideoProps {
+  src: string;
+  caption?: string;
+}
+
+export default function Video({ src, caption }: VideoProps) {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {

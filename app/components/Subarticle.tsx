@@ -1,6 +1,11 @@
-import React from 'react';
+import { ReactNode } from 'react';
 
-export function Subarticle({ children, subtitle }) {
+interface SubarticleProps {
+  children: ReactNode;
+  subtitle?: string;
+}
+
+export function Subarticle({ children, subtitle }: SubarticleProps) {
   return (
     <section className="my-4">
       {subtitle && <h2 className="text-2xl mb-4 ml-6">{subtitle}</h2>}

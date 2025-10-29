@@ -1,13 +1,13 @@
-import React, { useState, useEffect, useRef, memo, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Chess } from 'chess.js';
 import Chessboard from '~/components/Chessboard';
 import { Navbar } from "~/components/Navbar";
 import Footer from "~/components/Footer";
 import Article from "~/components/Article";
-import chessgroundBase from '../styles/chessground.base.css';
-import chessgroundBrown from '../styles/chessground.brown.css';
-import chessgroundCburnett from '../styles/chessground.cburnett.css';
-import { useLoaderData } from "@remix-run/react";
+import chessgroundBase from '../styles/chessground.base.css?url';
+import chessgroundBrown from '../styles/chessground.brown.css?url';
+import chessgroundCburnett from '../styles/chessground.cburnett.css?url';
+import { useLoaderData } from "react-router";
 import Timer from "~/components/Timer";
 import { GamePhase, type GamePhaseType, type SeatKey } from "~/types/generated";
 
@@ -68,11 +68,6 @@ export default function CollaborativeCheckmate() {
   const [gameLog, setGameLog] = useState<GameLogEntry[]>([]);
   const [connected, setConnected] = useState(false);
 
-  // Add missing state variables
-  const [lastMove, setLastMove] = useState<{from: string, to: string} | null>(null);
-  const [submittedMoves, setSubmittedMoves] = useState<any[]>([]);
-  const [teammateMoves, setTeammateMoves] = useState<any[]>([]);
-
   // Connection handling state
   const [reconnecting, setReconnecting] = useState(false);
   const [reconnectAttempts, setReconnectAttempts] = useState(0);
@@ -81,9 +76,7 @@ export default function CollaborativeCheckmate() {
   const [hasReceivedInitialState, setHasReceivedInitialState] = useState(false);
 
   // Heartbeat state
-  const [connectionId, setConnectionId] = useState<string>('');
   const [lastHeartbeatSent, setLastHeartbeatSent] = useState<number>(0);
-  const [lastHeartbeatReceived, setLastHeartbeatReceived] = useState<number>(0);
 
   // WebSocket reference
   const socketRef = useRef<WebSocket | null>(null);
@@ -202,7 +195,7 @@ export default function CollaborativeCheckmate() {
             case 'connection_established':
               break;
 
-            case 'heartbeat_response':
+            case 'heartbeat_response': {
               // Handle heartbeat response
               const responseTime = Date.now();
               setLastHeartbeatReceived(responseTime);
@@ -217,6 +210,7 @@ export default function CollaborativeCheckmate() {
               const roundTripTime = responseTime - lastHeartbeatSent;
               console.log(`Heartbeat RTT: ${roundTripTime}ms`);
               break;
+            }
 
             case 'move_submitted':
               // Update player's submitted state
@@ -227,7 +221,7 @@ export default function CollaborativeCheckmate() {
               }]);
               break;
 
-            case 'player_ready':
+            case 'player_ready': {
               // Update player's ready state
               const currentPlayers = playersRef.current;
               const seatKey = Object.keys(currentPlayers).find(key =>
@@ -262,6 +256,7 @@ export default function CollaborativeCheckmate() {
                 }]);
               }
               break;
+            }
 
             case 'game_state_update':
               // Only update game phase if it's included in the update
@@ -301,6 +296,7 @@ export default function CollaborativeCheckmate() {
               }
 
               // Handle player seat/ready status updates if present
+              {
               const seatUpdates: Partial<PlayersState> = {};
               (['t1p1', 't1p2', 't2p1', 't2p2'] as SeatKey[]).forEach(seat => {
                 if (data[`${seat}_seat`] !== undefined || data[`${seat}_ready`] !== undefined) {
@@ -366,6 +362,7 @@ export default function CollaborativeCheckmate() {
               } else if (!hasReceivedInitialState) {
                 setHasReceivedInitialState(true);
               }
+              }
               break;
 
             case 'timer_update':
@@ -376,7 +373,7 @@ export default function CollaborativeCheckmate() {
               }
               break;
 
-            case 'move_selected':
+            case 'move_selected': {
               const moveText = `${data.move.from} to ${data.move.to}`;
               setGameLog(prev => [...prev, {
                 type: 'engine',
@@ -393,8 +390,9 @@ export default function CollaborativeCheckmate() {
               setSubmittedMoves([]);
               setTeammateMoves([]);
               break;
+            }
 
-            case 'player_disconnected':
+            case 'player_disconnected': {
               // Update player status to not ready
               const disconnectedSeatKey = Object.keys(players).find(key =>
                 players[key as SeatKey].id === data.player_id
@@ -412,6 +410,7 @@ export default function CollaborativeCheckmate() {
                 message: `${data.player_id} disconnected`
               }]);
               break;
+            }
 
             case 'game_over':
               // Handle game over messages (checkmate, stalemate, etc.)
@@ -476,7 +475,7 @@ export default function CollaborativeCheckmate() {
         }
       };
 
-      socketRef.current.onerror = (error: Event) => {
+      socketRef.current.onerror = () => {
         console.log(`WebSocket error: Unknown error`);
         
         if (!reconnecting) {
@@ -560,7 +559,7 @@ export default function CollaborativeCheckmate() {
   // Find which seat the current player is in, if any
   const getCurrentPlayerSeat = (): SeatKey | null => {
     return Object.entries(playersRef.current).find(
-      ([_, player]) => player.id === playerIdRef.current
+      ([, player]) => player.id === playerIdRef.current
     )?.[0] as SeatKey || null;
   };
 
@@ -770,7 +769,7 @@ export default function CollaborativeCheckmate() {
                         move: (orig, dest) => {
                           // Instead of making the move, draw an arrow and send to server
                           if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-                            let chessCopy = new Chess(fen);
+                            const chessCopy = new Chess(fen);
                             chessCopy.move({ from: orig, to: dest, promotion: 'q' });
                             socketRef.current.send(JSON.stringify({
                               type: "submit_move",
@@ -867,6 +866,9 @@ export default function CollaborativeCheckmate() {
                           'border border-gray-200'
                         }`}
                       onClick={() => ((players.t1p1.id === null || players.t1p1.id === playerId) && !players.t1p1.ready) && takeSeat('t1p1')}
+                      onKeyDown={(e) => e.key === 'Enter' && ((players.t1p1.id === null || players.t1p1.id === playerId) && !players.t1p1.ready) && takeSeat('t1p1')}
+                      role="button"
+                      tabIndex={0}
                     >
                       <div className={`w-6 h-6 rounded-full mr-2 ${players.t1p1.ready ? 'bg-green-500' : 'bg-gray-200'
                         }`}></div>
@@ -882,6 +884,9 @@ export default function CollaborativeCheckmate() {
                           'border border-gray-200'
                         }`}
                       onClick={() => ((players.t1p2.id === null || players.t1p2.id === playerId) && !players.t1p2.ready) && takeSeat('t1p2')}
+                      onKeyDown={(e) => e.key === 'Enter' && ((players.t1p2.id === null || players.t1p2.id === playerId) && !players.t1p2.ready) && takeSeat('t1p2')}
+                      role="button"
+                      tabIndex={0}
                     >
                       <div className={`w-6 h-6 rounded-full mr-2 ${players.t1p2.ready ? 'bg-green-500' : 'bg-gray-200'
                         }`}></div>
@@ -902,6 +907,9 @@ export default function CollaborativeCheckmate() {
                           'border border-gray-200'
                         }`}
                       onClick={() => ((players.t2p1.id === null || players.t2p1.id === playerId) && !players.t2p1.ready) && takeSeat('t2p1')}
+                      onKeyDown={(e) => e.key === 'Enter' && ((players.t2p1.id === null || players.t2p1.id === playerId) && !players.t2p1.ready) && takeSeat('t2p1')}
+                      role="button"
+                      tabIndex={0}
                     >
                       <div className={`w-6 h-6 rounded-full mr-2 ${players.t2p1.ready ? 'bg-green-500' : 'bg-gray-200'
                         }`}></div>
@@ -917,6 +925,9 @@ export default function CollaborativeCheckmate() {
                           'border border-gray-200'
                         }`}
                       onClick={() => ((players.t2p2.id === null || players.t2p2.id === playerId) && !players.t2p2.ready) && takeSeat('t2p2')}
+                      onKeyDown={(e) => e.key === 'Enter' && ((players.t2p2.id === null || players.t2p2.id === playerId) && !players.t2p2.ready) && takeSeat('t2p2')}
+                      role="button"
+                      tabIndex={0}
                     >
                       <div className={`w-6 h-6 rounded-full mr-2 ${players.t2p2.ready ? 'bg-green-500' : 'bg-gray-200'
                         }`}></div>

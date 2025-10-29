@@ -62,7 +62,7 @@ const BoulderingTracker = () => {
             <p>This is where it highlights the holds, showing in the first few seconds of the video. It uses color and depth to determine if the hold is contiguous</p>
             
             <p className="font-bold text-gray-dark">Detecting Human to Hold Collisions: </p>
-            <p>This is done by tracking the human hand and checking it against the distance (one threshold) and depth (another threshold). If each are met, the hold is marked as "reached" and the color is changed.</p>
+            <p>This is done by tracking the human hand and checking it against the distance (one threshold) and depth (another threshold). If each are met, the hold is marked as &quot;reached&quot; and the color is changed.</p>
             
             <p className="py-4"></p>
             <p><a href="https://github.com/trbarron/bouldering-sensing">Check out the code here</a></p>
