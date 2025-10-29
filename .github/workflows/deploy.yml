@@ -121,6 +121,12 @@ jobs:
       - name: 📦 Copy build output to Lambda
         run: |
           cp -r build server/
+          
+      - name: 🔍 Verify public directory
+        run: |
+          ls -la public/ | head -20
+          echo "Asset count:"
+          find public/assets -type f | wc -l
 
       - name: 🚀 Production Deploy
         if: github.ref == 'refs/heads/master'
