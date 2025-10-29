@@ -2,7 +2,7 @@ import { createRequestHandler } from "@ballatech/react-router7-preset-aws";
 
 const requestHandler = createRequestHandler({
   // @ts-expect-error - React Router build types
-  build: () => import("./build/server/index.js"),
+  build: () => import("./build/server/root/index.mjs"),
   mode: process.env.NODE_ENV,
   getLoadContext() {
     return {};

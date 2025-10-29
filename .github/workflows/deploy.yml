@@ -111,6 +111,11 @@ jobs:
       - name: 🏗 Build
         run: |
           npm run build
+          
+      - name: 🏗 Build Architect Handler
+        run: |
+          mkdir -p server
+          npx esbuild server.ts --platform=node --target=node20 --format=esm --bundle --outfile=server/index.mjs '--external:@aws-sdk/*' --external:aws-sdk --metafile=server/metafile.server.json
 
       - name: 🧹 Clean dependencies
         run: |
