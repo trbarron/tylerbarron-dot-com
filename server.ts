@@ -1,15 +1,22 @@
-import { createRequestHandler } from "@ballatech/react-router7-preset-aws";
-import { readFileSync, existsSync } from "fs";
-import { join } from "path";
-
-// Bridge Arc's ARC_ENV to React Router's expected NODE_ENV
-// Arc sets: ARC_ENV='testing' (sandbox), 'staging', or 'production'
-// In production, NODE_ENV is set via arc env command
+// CRITICAL: Set NODE_ENV BEFORE any imports
+// React Router uses Node.js conditional exports that resolve at import time
 if (!process.env.NODE_ENV) {
   process.env.NODE_ENV = process.env.ARC_ENV === 'testing' ? 'development' : 
                          process.env.ARC_ENV === 'staging' ? 'staging' : 
                          'production';
 }
+
+// Log environment on cold start
+console.log('[LAMBDA INIT] Environment:', {
+  NODE_ENV: process.env.NODE_ENV,
+  ARC_ENV: process.env.ARC_ENV,
+  ARC_SANDBOX: process.env.ARC_SANDBOX,
+  AWS_EXECUTION_ENV: process.env.AWS_EXECUTION_ENV,
+});
+
+import { createRequestHandler } from "@ballatech/react-router7-preset-aws";
+import { readFileSync, existsSync } from "fs";
+import { join } from "path";
 
 // The adapter will automatically use process.env.NODE_ENV for mode
 const requestHandler = createRequestHandler({
@@ -19,6 +26,14 @@ const requestHandler = createRequestHandler({
     return {};
   },
 });
+
+// Verify which React Router distribution was loaded
+try {
+  const reactRouterPath = require.resolve('react-router');
+  console.log('[LAMBDA INIT] React Router resolved to:', reactRouterPath);
+} catch (e) {
+  console.log('[LAMBDA INIT] Could not resolve React Router path:', e);
+}
 
 async function handlerFn(event, context) {
   try {
