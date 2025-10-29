@@ -116,17 +116,11 @@ jobs:
           
       - name: 🏗 Build Architect Handler
         run: |
-          NODE_ENV=production npx esbuild server.ts --platform=node --target=node20 --format=esm --bundle --minify --outfile=server/index.mjs '--external:@aws-sdk/*' --external:aws-sdk '--external:@react-router/*' '--external:@ballatech/*' --external:react --external:react-dom '--external:./build/*' --packages=external
+          NODE_ENV=production npx esbuild server.ts --platform=node --target=node20 --format=esm --bundle --minify --outfile=server/index.mjs '--external:@aws-sdk/*' --external:aws-sdk '--external:@react-router/*' --external:react --external:react-dom '--external:./build/*'
           
       - name: 📦 Copy build output to Lambda
         run: |
           cp -r build server/
-      
-      - name: 📥 Install Lambda dependencies
-        run: |
-          cd server
-          NODE_ENV=production npm ci
-          cd ..
 
       - name: 🚀 Production Deploy
         if: github.ref == 'refs/heads/master'

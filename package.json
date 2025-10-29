@@ -6,7 +6,7 @@
   "scripts": {
     "analyze": "NODE_ENV=production webpack --config webpack.config.js --profile --json > stats.json && webpack-bundle-analyzer stats.json",
     "build": "react-router build --mode=production",
-    "build:arc": "npm run build && mkdir -p public && cp -r build/client/* public/ && mkdir -p server && NODE_ENV=production npx esbuild server.ts --platform=node --target=node20 --format=esm --bundle --minify --outfile=server/index.mjs '--external:@aws-sdk/*' --external:aws-sdk '--external:@react-router/*' '--external:@ballatech/*' --external:react --external:react-dom '--external:./build/*' --packages=external && cp -r build server/",
+    "build:arc": "npm run build && mkdir -p public && cp -r build/client/* public/ && mkdir -p server && NODE_ENV=production npx esbuild server.ts --platform=node --target=node20 --format=esm --bundle --minify --outfile=server/index.mjs '--external:@aws-sdk/*' --external:aws-sdk '--external:@react-router/*' --external:react --external:react-dom '--external:./build/*' && cp -r build server/",
     "format": "prettier --write .",
     "dev": "react-router dev",
     "dev:arc": "npm run build:arc && arc sandbox -e testing",
