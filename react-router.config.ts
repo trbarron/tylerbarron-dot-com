@@ -3,7 +3,7 @@ import type { Config } from "@react-router/dev/config";
 export default {
   appDirectory: "app",
   assetsBuildDirectory: "public/build",
-  publicPath: "/_static/build/",
+  publicPath: "/build/",
   serverBuildFile: "index.mjs",
   serverMinify: true,
   serverModuleFormat: "esm",
