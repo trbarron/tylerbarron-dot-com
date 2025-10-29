@@ -1,4 +1,4 @@
-import type { LinksFunction, LoaderFunctionArgs } from "react-router";
+import type { LinksFunction } from "react-router";
 import {
   Links,
   Meta,
@@ -7,7 +7,7 @@ import {
   ScrollRestoration,
   useLoaderData
 } from "react-router";
-import stylesHref from './styles/index.css?url';
+import styles from './styles/index.css?url';
 
 export async function loader() {
   return {

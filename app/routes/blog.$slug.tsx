@@ -1,4 +1,5 @@
-import { useLoaderData, Link } from 'react-router';
+import { useLoaderData } from 'react-router';
+import type { LoaderFunctionArgs } from 'react-router';
 import { getMDXComponent } from 'mdx-bundler/client/index.js';
 import { useMemo } from 'react';
 import { processMdx } from '~/utils/mdx.server';
@@ -7,7 +8,7 @@ import path from 'path';
 import { Navbar } from "../components/Navbar.js";
 import Footer from "../components/Footer.js";
 
-export const loader = async ({ params }: any) => {
+export const loader = async ({ params }: LoaderFunctionArgs) => {
   const { slug } = params;
   
   if (process.env.NODE_ENV === 'production') {

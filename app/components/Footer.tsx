@@ -1,4 +1,3 @@
-import { Link } from 'react-router';
 import email from "~/images/Global/email.svg";
 import git from "~/images/Global/git.svg";
 import linkedin from "~/images/Global/in.svg";

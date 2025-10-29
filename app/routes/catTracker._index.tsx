@@ -1,6 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense, lazy } from "react";
 import { useLoaderData } from "react-router";
-import { Suspense, lazy } from 'react';
 
 import { Navbar } from "~/components/Navbar";
 import Footer from "~/components/Footer";
@@ -49,10 +48,7 @@ export default function ChecoLiveTracker() {
     const [isDetailedLoading, setIsDetailedLoading] = useState<boolean>(false);
     const [elapsedSeconds, setElapsedSeconds] = useState<number>(0);
 
-    if (!basicData) {
-        return <h2 className="text-4xl font-bold text-red-500">Error loading data</h2>;
-    }
-
+    // All hooks must be called before any conditional returns
     useEffect(() => {
         let timer: NodeJS.Timeout | null = null;
 
@@ -132,6 +128,7 @@ export default function ChecoLiveTracker() {
                 const response = await fetch(
                     "https://nj3ho46btl.execute-api.us-west-2.amazonaws.com/checoStage/checoRestEndpoint"
                 );
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const data = await response.json();
             } catch (error) {
                 console.error("Error polling API:", error);
@@ -142,6 +139,11 @@ export default function ChecoLiveTracker() {
 
         return () => clearInterval(pollInterval);
     }, []);
+
+    // Now it's safe to do conditional returns after all hooks
+    if (!basicData) {
+        return <h2 className="text-4xl font-bold text-red-500">Error loading data</h2>;
+    }
 
     return (
         <div className="bg-background bg-fixed min-h-screen flex flex-col">

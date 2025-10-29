@@ -4,7 +4,7 @@ const requestHandler = createRequestHandler({
   // @ts-expect-error - React Router build types
   build: () => import("./build/server/index.js"),
   mode: process.env.NODE_ENV,
-  getLoadContext(event) {
+  getLoadContext() {
     return {};
   },
 });
