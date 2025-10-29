@@ -111,6 +111,8 @@ jobs:
       - name: 🏗 Build
         run: |
           NODE_ENV=production npm run build
+          mkdir -p public
+          cp -r build/client/* public/
           
       - name: 🏗 Build Architect Handler
         run: |
