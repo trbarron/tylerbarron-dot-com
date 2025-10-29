@@ -16,3 +16,11 @@ architecture x86_64
 
 @static
 fingerprint false
+
+@env
+production
+  AWS_BUCKET_NAME
+  AWS_REGION
+  SUPABASE_URL
+  SUPABASE_ANON_KEY
+  GA_TRACKING_ID
