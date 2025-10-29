@@ -160,9 +160,33 @@ export default function Chessboard({
         cgRef.current = undefined;
       }
     };
-  }, [isClient, chess, viewOnly, movable, allowDrawing, playableColor, orientation, 
-      animated, animationDuration, highlightMoves, draggable, events, 
-      drawable, selectable]);
+  }, [isClient]);
+
+  // Update Chessground config when props change
+  useEffect(() => {
+    if (!cgRef.current) return;
+
+    cgRef.current.set({
+      orientation,
+      viewOnly,
+      movable: typeof movable === 'boolean' ? { 
+        enabled: movable && !viewOnly,
+        free: false,
+        dests: calcMovable().dests,
+        color: playableColor
+      } : movable,
+      draggable: typeof draggable === 'boolean' ? {
+        enabled: draggable && !viewOnly && !!movable,
+        showGhost: true
+      } : {
+        ...draggable,
+        enabled: draggable.enabled && !viewOnly && !!movable
+      },
+      drawable: drawable || {
+        enabled: allowDrawing,
+      }
+    });
+  }, [viewOnly, movable, orientation, draggable, drawable, playableColor, allowDrawing]);
 
   // Update board if initialFen changes
   useEffect(() => {

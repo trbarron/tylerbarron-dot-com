@@ -195,6 +195,7 @@ export default function CollaborativeCheckmate() {
         try {
           const data = JSON.parse(event.data);
           console.log(`Received message: ${JSON.stringify(data)}`);
+          console.log(`Current board state - fen: ${fen}, viewOnly: ${!((gamePhase === GamePhase.TEAM1_SELECTION && playerTeam === 1) || (gamePhase === GamePhase.TEAM2_SELECTION && playerTeam === 2)) || lockedIn}, movable: ${!!playerTeam && ((gamePhase === GamePhase.TEAM1_SELECTION && playerTeam === 1) || (gamePhase === GamePhase.TEAM2_SELECTION && playerTeam === 2)) && !lockedIn}`);
 
           // Handle different message types
           switch (data.type) {
