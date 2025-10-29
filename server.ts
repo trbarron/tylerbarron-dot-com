@@ -1,5 +1,4 @@
 // CRITICAL: Set NODE_ENV BEFORE any imports
-// React Router uses Node.js conditional exports that resolve at import time
 if (!process.env.NODE_ENV) {
   process.env.NODE_ENV = process.env.ARC_ENV === 'testing' ? 'development' : 
                          process.env.ARC_ENV === 'staging' ? 'staging' : 
@@ -14,14 +13,22 @@ console.log('[LAMBDA INIT] Environment:', {
   AWS_EXECUTION_ENV: process.env.AWS_EXECUTION_ENV,
 });
 
-import { createRequestHandler } from "@ballatech/react-router7-preset-aws";
 import { readFileSync, existsSync } from "fs";
 import { join } from "path";
 
-// The adapter will automatically use process.env.NODE_ENV for mode
+// WORKAROUND: React Router 7's package.json always points to development build
+// Import the adapter which will internally import react-router
+// The adapter's mode parameter should handle dev vs prod behavior
+import { createRequestHandler } from "@ballatech/react-router7-preset-aws";
+
+// Explicitly set mode - the adapter defaults to NODE_ENV, but let's be explicit
+const mode = process.env.NODE_ENV === 'production' ? 'production' : 'development';
+console.log('[LAMBDA INIT] Creating request handler with mode:', mode);
+
 const requestHandler = createRequestHandler({
   // @ts-expect-error - React Router build types
   build: () => import("./build/server/root/index.mjs"),
+  mode: mode,
   getLoadContext() {
     return {};
   },
