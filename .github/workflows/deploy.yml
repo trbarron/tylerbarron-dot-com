@@ -110,15 +110,13 @@ jobs:
           
       - name: 🏗 Build
         run: |
-          export NODE_ENV=production
           npm run build
           mkdir -p public
           cp -r build/client/* public/
           
       - name: 🏗 Build Architect Handler
         run: |
-          export NODE_ENV=production
-          npx esbuild server.ts --platform=node --target=node20 --format=esm --bundle --outfile=server/index.mjs '--external:@aws-sdk/*' --external:aws-sdk '--external:@react-router/*' '--external:@ballatech/*' --external:react --external:react-dom '--external:./build/*' --packages=external --define:process.env.NODE_ENV=\"production\"
+          npx esbuild server.ts --platform=node --target=node20 --format=esm --bundle --outfile=server/index.mjs '--external:@aws-sdk/*' --external:aws-sdk '--external:@react-router/*' '--external:@ballatech/*' --external:react --external:react-dom '--external:./build/*' --packages=external
           
       - name: 📦 Copy build output to Lambda
         run: |
@@ -129,7 +127,6 @@ jobs:
         run: arc deploy --production --prune --verbose --debug
         env:
           CI: true
-          NODE_ENV: production
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}

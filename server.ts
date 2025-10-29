@@ -2,15 +2,16 @@ import { createRequestHandler } from "@ballatech/react-router7-preset-aws";
 import { readFileSync, existsSync } from "fs";
 import { join } from "path";
 
-// Determine if we're in production based on Arc or AWS Lambda environment
-const isProduction = process.env.ARC_ENV === 'production' || 
-                     process.env.AWS_EXECUTION_ENV?.startsWith('AWS_Lambda') ||
-                     !process.env.ARC_SANDBOX;
+// Bridge Arc's ARC_ENV to React Router's expected NODE_ENV
+// Arc automatically sets: ARC_ENV='testing' (sandbox), 'staging', or 'production'
+if (!process.env.NODE_ENV && process.env.ARC_ENV) {
+  process.env.NODE_ENV = process.env.ARC_ENV === 'testing' ? 'development' : process.env.ARC_ENV;
+}
 
+// The adapter will automatically use process.env.NODE_ENV for mode
 const requestHandler = createRequestHandler({
   // @ts-expect-error - React Router build types
   build: () => import("./build/server/root/index.mjs"),
-  mode: isProduction ? 'production' : 'development',
   getLoadContext() {
     return {};
   },

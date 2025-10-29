@@ -2,8 +2,7 @@ import { reactRouter } from "@react-router/dev/vite";
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
-export default defineConfig(({ mode }) => ({
-  mode: mode || (process.env.NODE_ENV === 'production' ? 'production' : 'development'),
+export default defineConfig({
   plugins: [
     reactRouter(),
     tsconfigPaths(),
@@ -25,4 +24,4 @@ export default defineConfig(({ mode }) => ({
   ssr: {
     external: ['recharts'],
   },
-}));
+});
