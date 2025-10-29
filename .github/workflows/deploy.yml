@@ -116,7 +116,7 @@ jobs:
           
       - name: 🏗 Build Architect Handler
         run: |
-          npx esbuild server.ts --platform=node --target=node20 --format=esm --bundle --outfile=server/index.mjs '--external:@aws-sdk/*' --external:aws-sdk '--external:@react-router/*' '--external:@ballatech/*' --external:react --external:react-dom '--external:./build/*' --packages=external
+          npx esbuild server.ts --platform=node --target=node20 --format=esm --bundle --minify --outfile=server/index.mjs '--external:@aws-sdk/*' --external:aws-sdk '--external:@react-router/*' '--external:@ballatech/*' --external:react --external:react-dom '--external:./build/*' --packages=external
           
       - name: 📦 Copy build output to Lambda
         run: |
@@ -124,7 +124,9 @@ jobs:
 
       - name: 🚀 Production Deploy
         if: github.ref == 'refs/heads/master'
-        run: arc deploy --production --prune --verbose --debug
+        run: |
+          arc env --add --env production NODE_ENV production || true
+          arc deploy --production --prune --verbose --debug
         env:
           CI: true
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}

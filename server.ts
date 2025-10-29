@@ -3,9 +3,12 @@ import { readFileSync, existsSync } from "fs";
 import { join } from "path";
 
 // Bridge Arc's ARC_ENV to React Router's expected NODE_ENV
-// Arc automatically sets: ARC_ENV='testing' (sandbox), 'staging', or 'production'
-if (!process.env.NODE_ENV && process.env.ARC_ENV) {
-  process.env.NODE_ENV = process.env.ARC_ENV === 'testing' ? 'development' : process.env.ARC_ENV;
+// Arc sets: ARC_ENV='testing' (sandbox), 'staging', or 'production'
+// In production, NODE_ENV is set via arc env command
+if (!process.env.NODE_ENV) {
+  process.env.NODE_ENV = process.env.ARC_ENV === 'testing' ? 'development' : 
+                         process.env.ARC_ENV === 'staging' ? 'staging' : 
+                         'production';
 }
 
 // The adapter will automatically use process.env.NODE_ENV for mode
