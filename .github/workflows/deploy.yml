@@ -116,7 +116,7 @@ jobs:
           
       - name: 🏗 Build Architect Handler
         run: |
-          npx esbuild server.ts --platform=node --target=node20 --format=esm --bundle --minify --outfile=server/index.mjs '--external:@aws-sdk/*' --external:aws-sdk '--external:@react-router/*' '--external:@ballatech/*' --external:react --external:react-dom '--external:./build/*' --packages=external
+          npx esbuild server.ts --platform=node --target=node20 --format=esm --bundle --minify --outfile=server/index.mjs '--external:@aws-sdk/*' --external:aws-sdk '--external:@react-router/*' --external:react-router '--external:@ballatech/*' --external:react --external:react-dom '--external:./build/*' --packages=external
           
       - name: 📦 Copy build output to Lambda
         run: |

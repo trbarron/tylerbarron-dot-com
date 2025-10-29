@@ -27,13 +27,8 @@ const requestHandler = createRequestHandler({
   },
 });
 
-// Verify which React Router distribution was loaded
-try {
-  const reactRouterPath = require.resolve('react-router');
-  console.log('[LAMBDA INIT] React Router resolved to:', reactRouterPath);
-} catch (e) {
-  console.log('[LAMBDA INIT] Could not resolve React Router path:', e);
-}
+// Log that initialization is complete
+console.log('[LAMBDA INIT] Handler initialized successfully');
 
 async function handlerFn(event, context) {
   try {
