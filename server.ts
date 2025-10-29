@@ -42,10 +42,13 @@ async function handlerFn(event, context) {
     // In local dev, serve static files from public directory
     const path = event.rawPath || event.path || event.requestContext?.http?.path;
     
-    // Only serve static files in Arc Sandbox (ARC_ENV='testing'), not production
-    if (process.env.ARC_ENV === 'testing' && path?.startsWith('/assets/')) {
-      // In Arc Sandbox, cwd is 'server/', so go up one level to find 'public/'
-      const publicDir = join(process.cwd(), '..', 'public');
+    // Serve static files in all environments when using spa mode
+    // In production, files are in build/client/, in dev they're in ../public/
+    if (path?.startsWith('/assets/') || path?.startsWith('/fonts/') || path?.startsWith('/images/')) {
+      const isProduction = process.env.ARC_ENV === 'production';
+      const publicDir = isProduction 
+        ? join(process.cwd(), 'build', 'client')
+        : join(process.cwd(), '..', 'public');
       const filePath = join(publicDir, path);
       
       if (existsSync(filePath)) {

@@ -17,6 +17,7 @@ architecture x86_64
 @static
 fingerprint true
 folder public
+spa true
 
 @env
 production
