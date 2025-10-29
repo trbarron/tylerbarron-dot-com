@@ -17,12 +17,17 @@ export async function loader() {
     NODE_ENV: process.env.NODE_ENV,
     AWS_BUCKET_NAME: process.env.AWS_BUCKET_NAME,
     AWS_REGION: process.env.AWS_REGION,
+    ARC_ENV: process.env.ARC_ENV,
+    allEnvKeys: Object.keys(process.env).filter(k => k.includes('AWS') || k.includes('NODE') || k.includes('ARC')),
     isProduction: process.env.NODE_ENV === 'production'
   });
   
-  if (process.env.NODE_ENV === 'production') {
+  // Use ARC_ENV (automatically set by Architect) to detect production
+  const isProduction = process.env.ARC_ENV === 'production' || process.env.NODE_ENV === 'production';
+  
+  if (isProduction) {
  
-    const region = process.env.AWS_REGION || 'us-west-2';
+    const region = 'us-west-2'; // Hardcode since it matches app.arc
     const bucketName = process.env.AWS_BUCKET_NAME || 'remix-website-writing-posts';
 
     const { S3Client, GetObjectCommand, ListObjectsV2Command } = await import('@aws-sdk/client-s3');

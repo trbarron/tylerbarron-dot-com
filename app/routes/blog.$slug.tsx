@@ -13,13 +13,16 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
   
   console.log('Blog loader - Environment check:', {
     NODE_ENV: process.env.NODE_ENV,
+    ARC_ENV: process.env.ARC_ENV,
     AWS_BUCKET_NAME: process.env.AWS_BUCKET_NAME,
-    isProduction: process.env.NODE_ENV === 'production',
     slug
   });
   
-  if (process.env.NODE_ENV === 'production') {
-    const region = process.env.AWS_REGION || 'us-west-2';
+  // Use ARC_ENV (automatically set by Architect) to detect production
+  const isProduction = process.env.ARC_ENV === 'production' || process.env.NODE_ENV === 'production';
+  
+  if (isProduction) {
+    const region = 'us-west-2'; // Hardcode since it matches app.arc
     const bucketName = process.env.AWS_BUCKET_NAME || 'remix-website-writing-posts';
     
     const { S3Client, GetObjectCommand } = await import('@aws-sdk/client-s3');
