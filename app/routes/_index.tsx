@@ -13,6 +13,13 @@ interface Post {
 }
 
 export async function loader() {
+  console.log('Environment check:', {
+    NODE_ENV: process.env.NODE_ENV,
+    AWS_BUCKET_NAME: process.env.AWS_BUCKET_NAME,
+    AWS_REGION: process.env.AWS_REGION,
+    isProduction: process.env.NODE_ENV === 'production'
+  });
+  
   if (process.env.NODE_ENV === 'production') {
  
     const region = process.env.AWS_REGION || 'us-west-2';

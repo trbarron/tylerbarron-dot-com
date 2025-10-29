@@ -11,6 +11,13 @@ import Footer from "../components/Footer.js";
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   const { slug } = params;
   
+  console.log('Blog loader - Environment check:', {
+    NODE_ENV: process.env.NODE_ENV,
+    AWS_BUCKET_NAME: process.env.AWS_BUCKET_NAME,
+    isProduction: process.env.NODE_ENV === 'production',
+    slug
+  });
+  
   if (process.env.NODE_ENV === 'production') {
     const region = process.env.AWS_REGION || 'us-west-2';
     const bucketName = process.env.AWS_BUCKET_NAME || 'remix-website-writing-posts';

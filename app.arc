@@ -19,6 +19,7 @@ fingerprint false
 
 @env
 production
+  NODE_ENV production
   AWS_BUCKET_NAME
   AWS_REGION
   SUPABASE_URL
