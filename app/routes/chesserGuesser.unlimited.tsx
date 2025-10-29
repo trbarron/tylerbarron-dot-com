@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useLoaderData, ScrollRestoration } from "react-router";
+import { useNavigate, useLoaderData, ScrollRestoration, type LinksFunction } from "react-router";
 import { Chess } from 'chess.js';
 import { Navbar } from "~/components/Navbar";
 import Footer from "~/components/Footer";
@@ -15,7 +15,7 @@ import chessgroundBase from '../styles/chessground.base.css?url';
 import chessgroundBrown from '../styles/chessground.brown.css?url';
 import chessgroundCburnett from '../styles/chessground.cburnett.css?url';
 
-export const links = () => [
+export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: chessgroundBase },
   { rel: 'stylesheet', href: chessgroundBrown },
   { rel: 'stylesheet', href: chessgroundCburnett }

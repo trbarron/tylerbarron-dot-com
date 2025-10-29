@@ -7,11 +7,11 @@ import Article from "~/components/Article";
 import chessgroundBase from '../styles/chessground.base.css?url';
 import chessgroundBrown from '../styles/chessground.brown.css?url';
 import chessgroundCburnett from '../styles/chessground.cburnett.css?url';
-import { useLoaderData } from "react-router";
+import { useLoaderData, type LinksFunction } from "react-router";
 import Timer from "~/components/Timer";
 import { GamePhase, type GamePhaseType, type SeatKey } from "~/types/generated";
 
-export const links = () => [
+export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: chessgroundBase },
   { rel: 'stylesheet', href: chessgroundBrown },
   { rel: 'stylesheet', href: chessgroundCburnett }
