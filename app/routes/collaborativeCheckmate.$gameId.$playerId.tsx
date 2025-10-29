@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { Chess } from 'chess.js';
 import Chessboard from '~/components/Chessboard';
 import { Navbar } from "~/components/Navbar";
@@ -745,6 +745,45 @@ export default function CollaborativeCheckmate() {
     }
   };
 
+  // Memoize the move handler to prevent unnecessary Chessboard remounts
+  const handleMove = useCallback((orig: string, dest: string) => {
+    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+      const chessCopy = new Chess(fen);
+      chessCopy.move({ from: orig, to: dest, promotion: 'q' });
+      socketRef.current.send(JSON.stringify({
+        type: "submit_move",
+        player_id: playerId,
+        move: chessCopy.fen()
+      }));
+
+      // Reset position to original FEN
+      chess.load(fen);
+      setFen(fen);
+      setChess(new Chess(fen));
+      setSelectedMove(true);
+
+      setShapes([{
+        orig: orig,
+        dest: dest,
+        brush: 'blue'
+      }]);
+    }
+  }, [fen, playerId, chess]);
+
+  // Memoize events object to prevent unnecessary Chessboard remounts
+  const chessboardEvents = useMemo(() => ({
+    move: handleMove
+  }), [handleMove]);
+
+  // Memoize drawable config to prevent unnecessary Chessboard remounts
+  const chessboardDrawable = useMemo(() => ({
+    enabled: true,
+    visible: true,
+    defaultSnapToValidMove: true,
+    eraseOnClick: true,
+    autoShapes: shapes
+  }), [shapes]);
+
   return (
     <div className="bg-background bg-fixed min-h-screen">
       <Navbar />
@@ -771,40 +810,8 @@ export default function CollaborativeCheckmate() {
                         (gamePhase === GamePhase.TEAM2_SELECTION && playerTeam === 2)) || lockedIn}
                       movable={!!playerTeam && ((gamePhase === GamePhase.TEAM1_SELECTION && playerTeam === 1) ||
                         (gamePhase === GamePhase.TEAM2_SELECTION && playerTeam === 2)) && !lockedIn}
-                      events={{
-                        move: (orig, dest) => {
-                          // Instead of making the move, draw an arrow and send to server
-                          if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-                            const chessCopy = new Chess(fen);
-                            chessCopy.move({ from: orig, to: dest, promotion: 'q' });
-                            socketRef.current.send(JSON.stringify({
-                              type: "submit_move",
-                              player_id: playerId,
-                              move: chessCopy.fen()
-                            }));
-
-                            // Reset position to original FEN
-                            chess.load(fen);
-                            setFen(fen);
-                            setChess(new Chess(fen));
-                            setSelectedMove(true);
-
-
-                            setShapes([{
-                              orig: orig,
-                              dest: dest,
-                              brush: 'blue'
-                            }]);
-                          }
-                        }
-                      }}
-                      drawable={{
-                        enabled: true,
-                        visible: true,
-                        defaultSnapToValidMove: true,
-                        eraseOnClick: true,
-                        autoShapes: shapes
-                      }}
+                      events={chessboardEvents}
+                      drawable={chessboardDrawable}
                     />
                   </div>
                 </div>
