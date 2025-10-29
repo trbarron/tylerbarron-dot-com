@@ -12,8 +12,6 @@ export default defineConfig({
       external: [
         'recharts',
         '@react-router/node',
-        'react',
-        'react-dom',
         'remix-utils/client-only'
       ],
     },

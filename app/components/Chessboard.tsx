@@ -65,9 +65,15 @@ export default function Chessboard({
   const internalRef = useRef<HTMLDivElement>(null);
   const [chess] = useState(new Chess(initialFen));
   const cgRef = useRef<Api>();
+  const [isClient, setIsClient] = useState(false);
 
   // Use the external ref if provided, otherwise use internal
   const ref = externalRef || internalRef;
+
+  // Ensure component only initializes on client
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const calcMovable = () => {
     if (viewOnly || !movable) return { enabled: false, free: false };
@@ -106,7 +112,7 @@ export default function Chessboard({
   };
 
   useEffect(() => {
-    if (!ref.current || cgRef.current) return;
+    if (!isClient || !ref.current || cgRef.current) return;
 
     const config: Config = {
       fen: chess.fen(),
@@ -154,7 +160,7 @@ export default function Chessboard({
         cgRef.current = undefined;
       }
     };
-  }, [chess, viewOnly, movable, allowDrawing, playableColor, orientation, 
+  }, [isClient, chess, viewOnly, movable, allowDrawing, playableColor, orientation, 
       animated, animationDuration, highlightMoves, draggable, events, 
       drawable, selectable]);
 
@@ -174,6 +180,7 @@ export default function Chessboard({
       <div 
         ref={ref} 
         className="aspect-square w-full"
+        style={{ minHeight: isClient ? 'auto' : '400px' }}
       />
     </div>
   );
