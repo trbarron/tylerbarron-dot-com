@@ -132,9 +132,6 @@ jobs:
         if: github.ref == 'refs/heads/master'
         run: |
           arc env --add --env production NODE_ENV production || true
-          echo "Deploying static assets first..."
-          arc deploy --production --static --verbose
-          echo "Deploying application..."
           arc deploy --production --prune --verbose --debug
         env:
           CI: true
