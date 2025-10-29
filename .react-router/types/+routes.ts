@@ -31,12 +31,6 @@ type Pages = {
   "/catTracker/blog": {
     params: {};
   };
-  "/chesserGuesser/blog": {
-    params: {};
-  };
-  "/chesserGuesser/landing": {
-    params: {};
-  };
   "/chesserGuesser/unlimited": {
     params: {};
   };
