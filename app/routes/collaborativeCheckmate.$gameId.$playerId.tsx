@@ -68,6 +68,11 @@ export default function CollaborativeCheckmate() {
   const [gameLog, setGameLog] = useState<GameLogEntry[]>([]);
   const [connected, setConnected] = useState(false);
 
+  // Add missing state variables
+  const [lastMove, setLastMove] = useState<{from: string, to: string} | null>(null);
+  const [submittedMoves, setSubmittedMoves] = useState<any[]>([]);
+  const [teammateMoves, setTeammateMoves] = useState<any[]>([]);
+
   // Connection handling state
   const [reconnecting, setReconnecting] = useState(false);
   const [reconnectAttempts, setReconnectAttempts] = useState(0);
@@ -76,7 +81,9 @@ export default function CollaborativeCheckmate() {
   const [hasReceivedInitialState, setHasReceivedInitialState] = useState(false);
 
   // Heartbeat state
+  const [connectionId, setConnectionId] = useState<string>('');
   const [lastHeartbeatSent, setLastHeartbeatSent] = useState<number>(0);
+  const [lastHeartbeatReceived, setLastHeartbeatReceived] = useState<number>(0);
 
   // WebSocket reference
   const socketRef = useRef<WebSocket | null>(null);
