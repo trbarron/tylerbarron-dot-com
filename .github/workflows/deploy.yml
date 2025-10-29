@@ -115,7 +115,7 @@ jobs:
       - name: 🏗 Build Architect Handler
         run: |
           mkdir -p server
-          npx esbuild server.ts --platform=node --target=node20 --format=esm --bundle --outfile=server/index.mjs '--external:@aws-sdk/*' --external:aws-sdk --metafile=server/metafile.server.json
+          npx esbuild server.ts --platform=node --target=node20 --format=esm --bundle --outfile=server/index.mjs '--external:@aws-sdk/*' --external:aws-sdk '--external:@react-router/*' '--external:@ballatech/*' --external:react --external:react-dom '--external:./build/*' --packages=external --metafile=server/metafile.server.json
 
       - name: 🧹 Clean dependencies
         run: |
