@@ -7,8 +7,6 @@ export default [
   route("camelUpCup", "routes/camelUpCup.tsx"),
   route("catTracker", "routes/catTracker._index.tsx"),
   route("catTracker/blog", "routes/catTracker.blog.tsx"),
-  route("chesserGuesser/blog", "routes/chesserGuesser.blog.tsx"),
-  route("chesserGuesser/landing", "routes/chesserGuesser.landing.tsx"),
   route("chesserGuesser/unlimited", "routes/chesserGuesser.unlimited.tsx"),
   route("collaborativeCheckmate", "routes/collaborativeCheckmate._index.tsx"),
   route("collaborativeCheckmate/:gameId/:playerId", "routes/collaborativeCheckmate.$gameId.$playerId.tsx"),
