@@ -68,7 +68,6 @@ export default function CollaborativeCheckmate() {
   const [gameLog, setGameLog] = useState<GameLogEntry[]>([]);
   const [connected, setConnected] = useState(false);
 
-  // Add missing state variables
   const [lastMove, setLastMove] = useState<{from: string, to: string} | null>(null);
   const [submittedMoves, setSubmittedMoves] = useState<any[]>([]);
   const [teammateMoves, setTeammateMoves] = useState<any[]>([]);
