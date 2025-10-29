@@ -11,15 +11,8 @@ import Footer from "../components/Footer.js";
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   const { slug } = params;
   
-  console.log('Blog loader - Environment check:', {
-    NODE_ENV: process.env.NODE_ENV,
-    ARC_ENV: process.env.ARC_ENV,
-    AWS_BUCKET_NAME: process.env.AWS_BUCKET_NAME,
-    slug
-  });
-  
   // Use ARC_ENV (automatically set by Architect) to detect production
-  const isProduction = process.env.ARC_ENV === 'production' || process.env.NODE_ENV === 'production';
+  const isProduction = process.env.ARC_ENV === 'production';
   
   if (isProduction) {
     const region = 'us-west-2'; // Hardcode since it matches app.arc

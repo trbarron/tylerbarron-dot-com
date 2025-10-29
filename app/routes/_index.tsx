@@ -13,17 +13,8 @@ interface Post {
 }
 
 export async function loader() {
-  console.log('Environment check:', {
-    NODE_ENV: process.env.NODE_ENV,
-    AWS_BUCKET_NAME: process.env.AWS_BUCKET_NAME,
-    AWS_REGION: process.env.AWS_REGION,
-    ARC_ENV: process.env.ARC_ENV,
-    allEnvKeys: Object.keys(process.env).filter(k => k.includes('AWS') || k.includes('NODE') || k.includes('ARC')),
-    isProduction: process.env.NODE_ENV === 'production'
-  });
-  
   // Use ARC_ENV (automatically set by Architect) to detect production
-  const isProduction = process.env.ARC_ENV === 'production' || process.env.NODE_ENV === 'production';
+  const isProduction = process.env.ARC_ENV === 'production';
   
   if (isProduction) {
  
