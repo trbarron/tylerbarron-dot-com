@@ -44,10 +44,8 @@ export default function CatTrackerBlog() {
           title="Cat Tracker"
           subtitle="Measuring Checo&apos;s Work Ethic"
         >
-          <Subarticle subtitle="">
-            <p>A familiar theme for me is having a fun idea and then later finding myself a bit too committed to the bit. That&apos;s what happened here with my cat, Checo.</p>
-            
-            <p>It all started with a simple curiosity: just how much does Checo work next to me? He seemed to always be there, clocking in hours by sleeping in his circle next to my desk. With a free weekend, I decided to turn this into a project to track his effort.</p>
+          <Subarticle subtitle="">           
+            <p>This project started with a simple curiosity: just how much does one of our catsCheco work next to me? He seemed to always be there, clocking in hours by sleeping in his circle next to my desk. With a free weekend, I decided to turn this into a project to track his effort.</p>
 
             <LightboxPhoto photo={photos[0]} index={0} onClick={openLightbox} />
 

@@ -4,7 +4,7 @@ tb-website-remix
 @aws
 prune true
 runtime nodejs20.x
-memory 4096
+memory 2048
 region us-west-2
 timeout 30
 architecture x86_64

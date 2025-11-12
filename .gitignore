@@ -8,3 +8,6 @@ node_modules
 /public/static.json
 /server/*
 !/server/package.json
+
+OPTIMIZATION_GUIDE.md
+OPTIMIZATION_SUMMARY.md

@@ -1,42 +1,166 @@
-# Tyler Barron's Website
+# Tyler Barron's Personal Website
 
-Built with React Router 7 (formerly Remix)
+A full-stack web application showcasing various projects, interactive applications, and blog posts. Built with modern web technologies including React Router 7, TypeScript, and Tailwind CSS.
 
-- 📖 [React Router docs](https://reactrouter.com/)
+🌐 **Live Site**: [tylerbarron.com](https://tylerbarron.com)
 
-## Development
+## 🚀 Tech Stack
 
-Run the dev server:
+- **Framework**: [React Router 7](https://reactrouter.com/)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS with custom typography plugin
+- **Content**: MDX for blog posts with remark/rehype plugins
+- **Chess UI**: Chessground library
+- **Data Visualization**: D3.js for maps and charts
+- **Lightbox**: yet-another-react-lightbox for image galleries
+- **Infrastructure**: AWS (Architect Framework, Lambda, S3)
+- **Build Tool**: Vite
+- **Package Manager**: npm
 
-```shellscript
-npm run dev
+## 📁 Project Structure
+
+```
+tylerbarron-dot-com/
+├── app/
+│   ├── components/        # Reusable React components
+│   ├── routes/           # Route handlers and pages
+│   ├── styles/           # Global CSS and Chessground themes
+│   ├── utils/            # Utility functions (MDX processing, etc.)
+│   └── types/            # TypeScript type definitions
+├── posts/                # MDX blog posts
+├── public/               # Static assets (images, fonts)
+├── server/               # Production server build
+└── build/                # Build output
+```
+## 🛠️ Development
+
+### Prerequisites
+
+- Node.js >= 20.0.0
+- npm
+
+### Getting Started
+
+1. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+
+2. **Run the development server**:
+   ```bash
+   npm run dev
+   ```
+
+   The app will be available at `http://localhost:5173`
+
+3. **Type checking**:
+   ```bash
+   npm run typecheck
+   ```
+
+4. **Linting**:
+   ```bash
+   npm run lint
+   ```
+
+5. **Code formatting**:
+   ```bash
+   npm run format
+   ```
+
+### Development with AWS (Architect)
+
+To develop with the AWS Architect sandbox:
+
+```bash
+npm run dev:arc
 ```
 
-## Deployment
+This builds the application and runs it in a local AWS environment simulation.
 
-First, build your app for production:
+## 📦 Building for Production
 
-```sh
+Build the application:
+
+```bash
 npm run build
 ```
 
-Then run the app in production mode:
+This generates:
+- `build/client/` - Client-side assets
+- `build/server/` - Server-side code
 
-```sh
+### AWS Deployment
+
+Build for AWS Lambda deployment:
+
+```bash
+npm run build:arc
+```
+
+This command:
+1. Builds the React Router app
+2. Copies client assets to `public/`
+3. Bundles the server code with esbuild
+4. Prepares the deployment package in `server/`
+
+## 🚢 Deployment
+
+### Standard Deployment
+
+Run the production server:
+
+```bash
 npm start
 ```
 
-Now you'll need to pick a host to deploy it to.
+### AWS Deployment
 
-### DIY
+The application is configured for deployment to AWS using the Architect framework. The infrastructure is defined in `app.arc` and `preferences.arc`.
 
-If you're familiar with deploying Node applications, the built-in React Router app server is production-ready.
+Deploy to AWS:
+```bash
+arc deploy
+```
 
-Make sure to deploy the output of `npm run build`
+The app uses:
+- AWS Lambda for serverless compute
+- S3 for static asset storage
+- CloudFront for CDN (configured via Architect)
 
-- `build/server`
-- `build/client`
+## 🎨 Styling
 
-## Styling
+The project uses:
+- **Tailwind CSS** for utility-first styling
+- **Custom typography** via `@tailwindcss/typography`
+- **Berkeley Mono** font family for code and special text
+- **Chessground CSS** for chess board styling
 
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever css framework you prefer. See the [Vite docs on css](https://vitejs.dev/guide/features.html#css) for more information.
+Configuration files:
+- `tailwind.config.ts` - Tailwind customization
+- `postcss.config.js` - PostCSS plugins
+- `app/styles/index.css` - Global styles
+
+## 📝 Adding Blog Posts
+
+Blog posts are written in MDX format and stored in the `posts/` directory.
+
+1. Create a new `.mdx` file in `posts/`
+2. Add frontmatter with metadata (title, date, description, etc.)
+3. Write content using Markdown with React components
+4. Access at `/blog/[filename]`
+
+Supported features:
+- Math equations (KaTeX)
+- Syntax highlighting
+- GitHub Flavored Markdown
+- Custom React components
+
+## 🔧 Configuration Files
+
+- `vite.config.ts` - Vite build configuration
+- `react-router.config.ts` - React Router configuration
+- `tsconfig.json` - TypeScript compiler options
+- `app.arc` - AWS Architect infrastructure definition
+- `prettier.config.cjs` - Prettier code formatting rules
+

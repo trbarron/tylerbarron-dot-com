@@ -10,16 +10,9 @@ export default defineConfig({
   build: {
     rollupOptions: {
       external: [
-        'recharts',
         '@react-router/node',
         'remix-utils/client-only'
       ],
     },
-  },
-  optimizeDeps: {
-    exclude: ['recharts'],
-  },
-  ssr: {
-    external: ['recharts'],
   },
 });
