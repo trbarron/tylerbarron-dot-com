@@ -15,6 +15,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
   const isProduction = process.env.ARC_ENV === 'production';
   
   if (isProduction) {
+    // In production, fetch pre-compiled JSON from S3
     const region = 'us-west-2'; // Hardcode since it matches app.arc
     const bucketName = process.env.AWS_BUCKET_NAME || 'remix-website-writing-posts';
     
@@ -24,21 +25,22 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
     try {
       const { Body } = await s3.send(new GetObjectCommand({
         Bucket: bucketName,
-        Key: `posts/${slug}.mdx`
+        Key: `compiled-posts/${slug}.json`
       }));
       
       if (!Body) {
         throw new Response('Not Found', { status: 404 });
       }
       
-      const source = await Body.transformToString();
-      const { code, frontmatter } = await processMdx(source);
+      const jsonString = await Body.transformToString();
+      const { code, frontmatter } = JSON.parse(jsonString);
       return Response.json({ code, frontmatter });
     } catch (error) {
       console.error('S3 Error:', error);
       throw new Response('Not Found', { status: 404 });
     }
   } else {
+    // In development, compile on the fly for better DX
     const filePath = path.join(process.cwd(), '..', 'posts', `${slug}.mdx`);
     try {
       const source = await fs.readFile(filePath, 'utf-8');

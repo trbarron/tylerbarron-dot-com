@@ -4,19 +4,16 @@
     "@aws-sdk/client-s3": "^3.717.0",
     "@ballatech/react-router7-preset-aws": "^1.0.1",
     "chess.js": "^1.0.0",
+    "chessground": "^9.1.1",
     "d3-geo": "^3.1.1",
     "isbot": "^4.1.0",
-    "mdx-bundler": "^10.0.3",
     "mnemonist": "^0.39.8",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router": "^7.0.1",
-    "rehype-img-size": "^1.0.1",
-    "rehype-katex": "^7.0.1",
-    "remark-gfm": "^4.0.0",
-    "remark-math": "^6.0.0",
     "remix-utils": "^7.6.0",
-    "topojson-client": "^3.1.0"
+    "topojson-client": "^3.1.0",
+    "yet-another-react-lightbox": "^3.21.5"
   }
 }
 

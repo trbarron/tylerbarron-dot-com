@@ -6,6 +6,7 @@ node_modules
 /public/build
 /public/assets
 /public/static.json
+/public/compiled-posts
 /server/*
 !/server/package.json
 

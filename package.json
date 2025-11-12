@@ -5,10 +5,11 @@
   "type": "module",
   "scripts": {
     "build": "react-router build --mode=production",
-    "build:arc": "npm run build && npm run build:arc:assets && npm run build:arc:server && npm run build:arc:deps",
+    "build:arc": "npm run build && npm run compile:mdx && npm run build:arc:assets && npm run build:arc:server && npm run build:arc:deps",
     "build:arc:assets": "mkdir -p public && cp -r build/client/* public/",
     "build:arc:server": "mkdir -p server && NODE_ENV=production npx esbuild server.ts --platform=node --target=node20 --format=esm --bundle --minify --tree-shaking=true --outfile=server/index.mjs '--external:@aws-sdk/*' --external:aws-sdk '--external:@react-router/*' --external:react --external:react-dom '--external:./build/*' && mkdir -p server/build/server && cp -r build/server/* server/build/server/ && cp build/server/index.js server/build/server/index.js 2>/dev/null || true",
     "build:arc:deps": "cd server && npm install --production --no-optional --no-audit --no-fund",
+    "compile:mdx": "node scripts/compile-mdx.mjs",
     "analyze": "node scripts/analyze-bundle.mjs",
     "analyze:deps": "cd server && npx npm-check -u",
     "test:deploy": "echo '\n🧪 Simulating Lambda Deployment\n' && npm run build:arc:server && npm run build:arc:deps && echo '\n📊 Size Analysis:' && echo 'Lambda Handler: '$(du -sh server/index.mjs 2>/dev/null | awk '{print $1}' || echo 'Not built') && echo 'SSR Build: '$(du -sh server/build 2>/dev/null | awk '{print $1}' || echo 'Not built') && echo 'Dependencies: '$(du -sh server/node_modules 2>/dev/null | awk '{print $1}' || echo 'Not installed') && echo 'TOTAL: '$(du -sh server 2>/dev/null | awk '{print $1}' || echo 'Not built') && echo '\n✅ Images in Lambda: '$(find server -name '*.jpg' -o -name '*.png' -o -name '*.gif' 2>/dev/null | grep -v node_modules | wc -l | tr -d ' ')' (should be 0)' && echo '✅ Ready to deploy!\n'",
