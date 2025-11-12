@@ -10,7 +10,7 @@ export default function Footer() {
           <div className="w-full px-4 mx-auto text-center">
             <div className="text-black font-neo">
               <div className="text-sm pb-4 text-black font-neo font-semibold tracking-wide">
-                V5.0.10
+                V5.0.11
               </div>
               <div className="mt-0 flex items-center justify-center space-x-4">
                 <a href="mailto: trbbarron@gmail.com"

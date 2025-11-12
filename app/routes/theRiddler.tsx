@@ -16,7 +16,7 @@ import barronSquareEight from "~/images/Riddler/barronSquareEight.jpg";
 import geometricPuzzle from "~/images/Riddler/sixPuzzle.jpg";
 import uniqueTileSnips from "~/images/Riddler/unique_tile_snips.png";
 import sevenSegDisplay from "~/images/Riddler/sevenSegDisplay.jpg";
-import setBoard from "~/images/Riddler/setBoard.png";
+import setBoard from "~/images/Riddler/setBoard.jpg";
 import neutColorado from "~/images/Riddler/neutColorado.png";
 import blueColorado from "~/images/Riddler/blueColorado.png";
 import crosswordOne from "~/images/Riddler/crosswordOne.png";

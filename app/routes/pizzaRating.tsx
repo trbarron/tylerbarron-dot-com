@@ -1,8 +1,11 @@
 // Import components
+import { lazy, Suspense } from "react";
 import { Navbar } from "../components/Navbar.js";
 import Footer from "../components/Footer.js";
 import Article from "../components/Article.js";
-import PizzaScoringMap from "~/components/PizzaScoringMap";
+
+
+const PizzaScoringMap = lazy(() => import("~/components/PizzaScoringMap"));
 
 
 const PizzaRating = () => {
@@ -11,7 +14,9 @@ const PizzaRating = () => {
       <Navbar />
       <main className="flex-grow">
         <Article title="Pizza Ratings" subtitle="">
-          <PizzaScoringMap />
+          <Suspense fallback={<div className="w-full p-6">Loading map...</div>}>
+            <PizzaScoringMap />
+          </Suspense>
         </Article>
       </main>
       <Footer />
