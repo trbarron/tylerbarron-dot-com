@@ -1,0 +1,36 @@
+---
+title: "Vestaboard Display Controller"
+date: 2025-11-12
+type: project
+subtitle: "A personalized real-time information display that saves $7/month"
+---
+
+## What It Does
+
+The [Vestaboard](https://www.vestaboard.com/) is one of those split-flap displays that looks like an old airport departure board. Vestaboard sells a subscription service to customize what it shows, but I figured I could write a Python script to do it myself and save $7/month.
+
+<img src="/images/vestaboardDisplay.jpg" alt="Vestaboard showing temperature, precipitation, work time, and custom counter" className="mx-auto" />
+
+The script updates the display every 20 minutes with:
+- **Current Weather**: Temperature and precipitation chance
+- **Work/Activity Time**: Pulls data from [my cat work tracker](https://tylerbarron.com/cat-tracker)
+- **Custom Counter**: How long it's been since a date
+- **Quiet Hours**: Pauses at night (11 PM - 6 AM) so the clicking doesn't wake anyone up
+
+## The Technical Approach
+
+The controller is built in Python and uses:
+- **Vestaboard's Read/Write API** for direct board control
+- **OpenWeatherMap API** for weather data
+- **Custom time tracking endpoint** that integrates with my personal activity tracker
+- **Cron job monitoring** to ensure the script stays running and auto-restarts
+
+The script runs continuously, respecting quiet hours and updating the board with fresh information throughout the day. A simple shell script monitors the process and automatically restarts it if needed.
+
+## Why Build This?
+
+Mostly to save some money, but also because it's a fun little project. The board only has 22 columns and 6 rows of characters, so you have to get creative with how you fit everything.
+
+If you want to add more stuff to display, it's pretty straightforward - grab your data from wherever, format it to fit the grid, and send it to the API.
+
+You can check out the full project on [GitHub](https://github.com/trbarron/vestaboard)

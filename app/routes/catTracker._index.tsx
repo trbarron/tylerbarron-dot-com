@@ -156,22 +156,95 @@ export default function ChecoLiveTracker() {
                             <h2 className="text-4xl font-bold text-red-500">Error loading data</h2>
                         ) : (
                             <>
-                                <div className="my-4">
-                                    <h3 className="text-2xl">
-                                        Currently Working: {' '}
-                                        <span className={`px-2 py-1 rounded ${
-                                            basicData.is_present
-                                                ? basicData.cat === 'Tuni'
-                                                    ? 'bg-white text-black'
-                                                    : 'bg-black text-white'
-                                                : ''
-                                        }`}>
-                                            {basicData.is_present ? basicData.cat : 'None'}
-                                        </span>
-                                    </h3>
-                                    <h3 className="text-2xl mt-2">
-                                        Time Worked Today: {getTotalWorkTime()}
-                                    </h3>
+                                <div className="my-8 max-w-2xl mx-auto px-4">
+                                    {/* Main Info Card */}
+                                    <div className="text-center mb-8">
+                                        {/* Total Time - Hero Element */}
+                                        <div className="text-sm text-black mb-3">Today</div>
+                                        <div className="text-6xl font-bold font-mono mb-1">{getTotalWorkTime()}</div>
+                                        
+                                        {/* Currently Working - Subtle */}
+                                        <div className="text-sm text-black my-2">
+                                            Currently Working: {' '}
+                                            <span className={`px-2 py-1 text-sm font-bold ${
+                                                basicData.is_present
+                                                    ? basicData.cat === 'Tuni'
+                                                        ? 'bg-white text-black border border-black'
+                                                        : 'bg-black text-white'
+                                                    : 'text-gray-500'
+                                            }`}>
+                                                {basicData.is_present ? basicData.cat : 'None'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Horizontal Percentage Bar with integrated legend */}
+                                    <div>
+                                        <div className="flex justify-between text-xs text-gray-600 mb-2 px-1">
+                                            <span>■ Checo</span>
+                                            <span>Tuni □</span>
+                                        </div>
+                                        
+                                        <div className="flex h-16 border-2 border-gray-400">
+                                            {(() => {
+                                                const parseTime = (timeStr: string) => {
+                                                    const parts = timeStr.split(':').map(Number);
+                                                    return parts[0] * 3600 + parts[1] * 60 + parts[2];
+                                                };
+                                                
+                                                const checoSeconds = parseTime(basicData.checo_time);
+                                                const tuniSeconds = parseTime(basicData.tuni_time);
+                                                const totalSeconds = checoSeconds + tuniSeconds;
+                                                
+                                                const checoPercent = totalSeconds > 0 ? (checoSeconds / totalSeconds) * 100 : 50;
+                                                const tuniPercent = totalSeconds > 0 ? (tuniSeconds / totalSeconds) * 100 : 50;
+                                                
+                                                return (
+                                                    <>
+                                                        <div 
+                                                            className="bg-black flex items-center justify-center text-white font-bold text-xl transition-all duration-500"
+                                                            style={{ width: `${checoPercent}%` }}
+                                                        >
+                                                            {checoPercent > 15 && `${checoPercent.toFixed(0)}%`}
+                                                        </div>
+                                                        <div 
+                                                            className="bg-white flex items-center justify-center text-black font-bold text-xl border-l-2 border-gray-400 transition-all duration-500"
+                                                            style={{ width: `${tuniPercent}%` }}
+                                                        >
+                                                            {tuniPercent > 15 && `${tuniPercent.toFixed(0)}%`}
+                                                        </div>
+                                                    </>
+                                                );
+                                            })()}
+                                        </div>
+                                        
+                                        {/* Explanation Text */}
+                                        <div className="text-center mt-3 text-xs text-gray-600">
+                                            {(() => {
+                                                const parseTime = (timeStr: string) => {
+                                                    const parts = timeStr.split(':').map(Number);
+                                                    return parts[0] * 3600 + parts[1] * 60 + parts[2];
+                                                };
+                                                
+                                                const checoSeconds = parseTime(basicData.checo_time);
+                                                const tuniSeconds = parseTime(basicData.tuni_time);
+                                                const totalSeconds = checoSeconds + tuniSeconds;
+                                                
+                                                if (totalSeconds === 0) return "No work time recorded today";
+                                                
+                                                const checoPercent = (checoSeconds / totalSeconds) * 100;
+                                                const tuniPercent = (tuniSeconds / totalSeconds) * 100;
+                                                
+                                                if (checoPercent > tuniPercent) {
+                                                    return `Checo contributed ${checoPercent.toFixed(0)}% of today's time`;
+                                                } else if (tuniPercent > checoPercent) {
+                                                    return `Tuni contributed ${tuniPercent.toFixed(0)}% of today's time`;
+                                                } else {
+                                                    return "Both cats worked equally today";
+                                                }
+                                            })()}
+                                        </div>
+                                    </div>
                                 </div>
                                 <ImageDisplay />
 
