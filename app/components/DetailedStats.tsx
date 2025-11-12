@@ -15,13 +15,17 @@ interface DetailedResponseData {
 }
 
 interface DetailedStatsProps {
-  data: DetailedResponseData;
+  data: DetailedResponseData | null;
   isLoading: boolean;
 }
 
 export default function DetailedStats({ data, isLoading }: DetailedStatsProps) {
   if (isLoading) {
     return <h2 className="text-xl text-gray-500">loading details</h2>;
+  }
+
+  if (!data) {
+    return <h2 className="text-xl text-gray-500">Error loading detailed stats</h2>;
   }
 
   return (
