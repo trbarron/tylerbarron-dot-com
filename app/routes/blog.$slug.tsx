@@ -1,6 +1,7 @@
 import { useLoaderData } from 'react-router';
 import type { LoaderFunctionArgs } from 'react-router';
 import { useMemo } from 'react';
+import { getMDXComponent } from 'mdx-bundler/client';
 import { Navbar } from "../components/Navbar.js";
 import Footer from "../components/Footer.js";
 
@@ -59,11 +60,8 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
 export default function BlogPost() {
   const { code, frontmatter } = useLoaderData<typeof loader>();
 
-  // Simple MDX component evaluator - replaces getMDXComponent from mdx-bundler
-  const Component = useMemo(() => {
-    const fn = new Function(code);
-    return fn().default;
-  }, [code]);
+  // Use getMDXComponent from mdx-bundler/client
+  const Component = useMemo(() => getMDXComponent(code), [code]);
 
   return (
     <div className="min-h-screen bg-white font-neo">
