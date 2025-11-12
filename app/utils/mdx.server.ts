@@ -1,5 +1,4 @@
 import { bundleMDX } from 'mdx-bundler';
-import rehypeHighlight from 'rehype-highlight';
 import rehypeImgSize from 'rehype-img-size';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -14,7 +13,6 @@ export async function processMdx(source: string) {
       options.remarkPlugins = [...(options.remarkPlugins ?? []), remarkGfm];
       options.rehypePlugins = [
         ...(options.rehypePlugins ?? []),
-        rehypeHighlight,
         [rehypeImgSize, { dir: "public" }]
       ];
       return options;
