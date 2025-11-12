@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback, lazy, Suspense } from "react";
 import { Chess } from 'chess.js';
-import Chessboard from '~/components/Chessboard';
+const Chessboard = lazy(() => import('~/components/Chessboard'));
 import { Navbar } from "~/components/Navbar";
 import Footer from "~/components/Footer";
 import Article from "~/components/Article";
@@ -804,16 +804,18 @@ export default function CollaborativeCheckmate() {
                     {/* Turn indicator banner */}
                     {((gamePhase === GamePhase.TEAM1_SELECTION && playerTeam === 1) ||
                       (gamePhase === GamePhase.TEAM2_SELECTION && playerTeam === 2))}
-                    <Chessboard
-                      initialFen={fen}
-                      orientation={orientation}
-                      viewOnly={!((gamePhase === GamePhase.TEAM1_SELECTION && playerTeam === 1) ||
-                        (gamePhase === GamePhase.TEAM2_SELECTION && playerTeam === 2)) || lockedIn}
-                      movable={!!playerTeam && ((gamePhase === GamePhase.TEAM1_SELECTION && playerTeam === 1) ||
-                        (gamePhase === GamePhase.TEAM2_SELECTION && playerTeam === 2)) && !lockedIn}
-                      events={chessboardEvents}
-                      drawable={chessboardDrawable}
-                    />
+                    <Suspense fallback={<div className="w-full aspect-square bg-gray-100 rounded flex items-center justify-center">Loading chessboard...</div>}>
+                      <Chessboard
+                        initialFen={fen}
+                        orientation={orientation}
+                        viewOnly={!((gamePhase === GamePhase.TEAM1_SELECTION && playerTeam === 1) ||
+                          (gamePhase === GamePhase.TEAM2_SELECTION && playerTeam === 2)) || lockedIn}
+                        movable={!!playerTeam && ((gamePhase === GamePhase.TEAM1_SELECTION && playerTeam === 1) ||
+                          (gamePhase === GamePhase.TEAM2_SELECTION && playerTeam === 2)) && !lockedIn}
+                        events={chessboardEvents}
+                        drawable={chessboardDrawable}
+                      />
+                    </Suspense>
                   </div>
                 </div>
               </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { useNavigate, useLoaderData, ScrollRestoration, type LinksFunction } from "react-router";
 import { Chess } from 'chess.js';
 import { Navbar } from "~/components/Navbar";
@@ -10,7 +10,7 @@ import { Subarticle } from "~/components/Subarticle";
 import whiteKingImage from '~/images/ChesserGuesser/whiteKing.png';
 import blackKingImage from '~/images/ChesserGuesser/blackKing.png';
 
-import Chessboard from '~/components/Chessboard';
+const Chessboard = lazy(() => import('~/components/Chessboard'));
 import chessgroundBase from '../styles/chessground.base.css?url';
 import chessgroundBrown from '../styles/chessground.brown.css?url';
 import chessgroundCburnett from '../styles/chessground.cburnett.css?url';
@@ -140,12 +140,14 @@ export default function ChesserGuesserUnlimited() {
         <Article title="Chesser Guesser" subtitle="">
             <div className="pb-6 mx-auto grid gap-x-4 grid-rows-2 md:grid-rows-1 grid-cols-1 md:grid-cols-2 md:ml-auto" style={{ gridTemplateColumns: "80% 20%", marginLeft: "-0.5rem", marginRight: "0.5rem" }}>
               <div className="w-100% col-span-2 md:col-span-1">
-                <Chessboard
-                  initialFen={fen}
-                  movable={false}
-                  allowDrawing={true}
-                  orientation={boardOrientation}
-                />
+                <Suspense fallback={<div className="w-full aspect-square bg-gray-100 rounded flex items-center justify-center">Loading chessboard...</div>}>
+                  <Chessboard
+                    initialFen={fen}
+                    movable={false}
+                    allowDrawing={true}
+                    orientation={boardOrientation}
+                  />
+                </Suspense>
 
                 <div className="gap-2 flex w-full mt-4 rounded">
                   <img src={blackKingImage} alt="Black King" className="w-12 h-12 flex-none" />
