@@ -1,10 +1,6 @@
 import { useLoaderData } from 'react-router';
 import type { LoaderFunctionArgs } from 'react-router';
-import { getMDXComponent } from 'mdx-bundler/client/index.js';
 import { useMemo } from 'react';
-import { processMdx } from '~/utils/mdx.server';
-import fs from 'fs/promises';
-import path from 'path';
 import { Navbar } from "../components/Navbar.js";
 import Footer from "../components/Footer.js";
 
@@ -41,6 +37,13 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
     }
   } else {
     // In development, compile on the fly for better DX
+    // Dynamic imports to avoid bundling mdx-bundler in production
+    const [{ processMdx }, fs, path] = await Promise.all([
+      import('~/utils/mdx.server'),
+      import('fs/promises'),
+      import('path')
+    ]);
+    
     const filePath = path.join(process.cwd(), '..', 'posts', `${slug}.mdx`);
     try {
       const source = await fs.readFile(filePath, 'utf-8');
@@ -56,7 +59,11 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
 export default function BlogPost() {
   const { code, frontmatter } = useLoaderData<typeof loader>();
 
-  const Component = useMemo(() => getMDXComponent(code), [code]);
+  // Simple MDX component evaluator - replaces getMDXComponent from mdx-bundler
+  const Component = useMemo(() => {
+    const fn = new Function(code);
+    return fn().default;
+  }, [code]);
 
   return (
     <div className="min-h-screen bg-white font-neo">

@@ -1,8 +1,5 @@
 import Footer from "~/components/Footer";
 import { Link, useLoaderData } from 'react-router';
-import fs from 'fs/promises';
-import path from 'path';
-import { processMdx } from '~/utils/mdx.server';
 
 interface Post {
   slug: string;
@@ -17,7 +14,7 @@ export async function loader() {
   const isProduction = process.env.ARC_ENV === 'production';
   
   if (isProduction) {
- 
+    // In production, fetch pre-compiled JSON files from S3
     const region = 'us-west-2'; // Hardcode since it matches app.arc
     const bucketName = process.env.AWS_BUCKET_NAME || 'remix-website-writing-posts';
 
@@ -27,27 +24,31 @@ export async function loader() {
     try {
       const { Contents = [] } = await s3.send(new ListObjectsV2Command({
         Bucket: bucketName,
-        Prefix: 'posts/'
+        Prefix: 'compiled-posts/'
       }));
 
- 
       const posts = await Promise.all(
         Contents.map(async (obj) => {
-          if (!obj.Key) return null;
-          const { Body } = await s3.send(new GetObjectCommand({
-            Bucket: bucketName,
-            Key: obj.Key
-          }));
-          if (!Body) return null;
-          const source = await Body.transformToString();
-          const { frontmatter } = await processMdx(source);
-          return {
-            slug: obj.Key.replace('posts/', '').replace('.mdx', ''),
-            title: frontmatter.title,
-            date: frontmatter.date,
-            type: frontmatter.type,
-            subtitle: frontmatter.subtitle,
-          };
+          if (!obj.Key || !obj.Key.endsWith('.json')) return null;
+          try {
+            const { Body } = await s3.send(new GetObjectCommand({
+              Bucket: bucketName,
+              Key: obj.Key
+            }));
+            if (!Body) return null;
+            const jsonString = await Body.transformToString();
+            const { frontmatter } = JSON.parse(jsonString);
+            return {
+              slug: obj.Key.replace('compiled-posts/', '').replace('.json', ''),
+              title: frontmatter.title,
+              date: frontmatter.date,
+              type: frontmatter.type,
+              subtitle: frontmatter.subtitle,
+            };
+          } catch (err) {
+            console.error(`Error processing ${obj.Key}:`, err);
+            return null;
+          }
         })
       );
       const validPosts = posts.filter((post): post is NonNullable<typeof post> => post !== null);
@@ -57,6 +58,14 @@ export async function loader() {
       return Response.json({ posts: [] });
     }
   } else {
+    // In development, compile MDX on the fly
+    // Dynamic imports to keep mdx-bundler out of production bundle
+    const [{ processMdx }, fs, path] = await Promise.all([
+      import('~/utils/mdx.server'),
+      import('fs/promises'),
+      import('path')
+    ]);
+    
     const postsPath = path.join(process.cwd(), '..', 'posts');
     try {
       const files = await fs.readdir(postsPath);
@@ -79,7 +88,7 @@ export async function loader() {
       return Response.json({ posts: [] });
     }
   }
- }
+}
 
 const links = [
   {
