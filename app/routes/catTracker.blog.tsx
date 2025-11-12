@@ -8,10 +8,9 @@ import Article from "~/components/Article";
 import CustomLightbox from "~/components/CustomLightbox";
 import LightboxPhoto from "~/components/LightboxPhoto";
 
-import checoSetup from "~/images/checoSetup.png";
-import checoWorking from "~/images/checoWorking.jpg";
-import vestaboard from "~/images/vestaboard.png";
-import inAction from "~/images/inAction.png";
+import checoSetup from "~/images/CatTracker/checoSetup.jpg";
+import checoWorking from "~/images/CatTracker/checoWorking.jpg";
+import vestaboard from "~/images/CatTracker/vestaboardDisplay.jpg";
 
 export const loader = async () => {
   // You can fetch data here if needed
@@ -29,7 +28,6 @@ export default function CatTrackerBlog() {
   const photos = [
     { src: checoSetup, alt: "Checo Setup", caption: "Hardware setup for tracking Checo" },
     { src: checoWorking, alt: "Checo Working", caption: "Checo hard at work, seen from camera" },
-    { src: inAction, alt: "Checo in Action", caption: "Checo in action" },
     { src: vestaboard, alt: "Checo's Work Log", caption: "Work time displayed on a Vestaboard" },
   ];
 
@@ -60,14 +58,11 @@ export default function CatTrackerBlog() {
             <p>The camera captures photos at ~40 second intervals, which are then processed to determine if there&apos;s a cat in the image via the custom AI model run on the edge. Based on the results it may add an entry to our database with details about which cat is in the image.</p>
 
             <p>When a user visits the website, we use API Gateway to hit a Lambda function to calculate the time worked and display that to the user.</p>
+            <p>It&apos;s a fun way to keep my manager, the Checo, on task!</p>
 
             <LightboxPhoto photo={photos[2]} index={2} onClick={openLightbox} />
 
-            <p>It&apos;s a fun way to keep my manager, the Checman, on task!</p>
-
-            <LightboxPhoto photo={photos[3]} index={3} onClick={openLightbox} />
-
-            <p>See the cat&apos;s current status here: <Link to="/CatTracker">The Cats Live</Link></p>
+            <p><Link to="/cat-tracker">See the cat&apos;s current status here</Link></p>
           </Subarticle>
         </Article>
       </main>

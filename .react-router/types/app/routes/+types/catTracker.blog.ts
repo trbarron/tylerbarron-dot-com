@@ -15,6 +15,18 @@ type Matches = [{
 }, {
   id: "routes/catTracker.blog";
   module: typeof import("../catTracker.blog.js");
+}] | [{
+  id: "root";
+  module: typeof import("../../root.js");
+}, {
+  id: "legacy-cat-tracker-blog";
+  module: typeof import("../catTracker.blog.js");
+}] | [{
+  id: "root";
+  module: typeof import("../../root.js");
+}, {
+  id: "legacy-cat-tracker-blog-pascal";
+  module: typeof import("../catTracker.blog.js");
 }];
 
 type Annotations = GetAnnotations<Info & { module: Module, matches: Matches }, false>;

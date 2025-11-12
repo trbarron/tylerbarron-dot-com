@@ -15,6 +15,12 @@ type Matches = [{
 }, {
   id: "routes/chesserGuesser.unlimited";
   module: typeof import("../chesserGuesser.unlimited.js");
+}] | [{
+  id: "root";
+  module: typeof import("../../root.js");
+}, {
+  id: "legacy-chesser-guesser";
+  module: typeof import("../chesserGuesser.unlimited.js");
 }];
 
 type Annotations = GetAnnotations<Info & { module: Module, matches: Matches }, false>;

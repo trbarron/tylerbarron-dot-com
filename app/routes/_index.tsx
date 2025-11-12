@@ -83,27 +83,27 @@ export async function loader() {
 
 const links = [
   {
-    to: "/TheRiddler",
+    to: "/the-riddler",
     title: "FiveThirtyEight's The Riddler",
     description: "Math puzzles and problems"
   },
   {
-    to: "/CamelUpCup",
+    to: "/camel-up-cup",
     title: "Camel Up Cup",
     description: "\"Bring your own board game playing bot\" competition"
   },
   {
-    to: "/chesserGuesser/unlimited",
+    to: "/chesser-guesser/unlimited",
     title: "Chesser Guesser",
     description: "Can you tell who is winning the chess game?"
   },
   {
-    to: "/collaborativeCheckmate",
+    to: "/collaborative-checkmate",
     title: "Collaborative Checkmate",
     description: "Play chess with your friends"
   },
   {
-    to: "/PizzaRating",
+    to: "/pizza-rating",
     title: "National Pizza Ratings",
     description: "Using Domino's to find the best pizza"
   },
@@ -118,7 +118,7 @@ const links = [
   //   description: "Blotto style game-theory challenge"
   // },
   {
-    to: "/CatTracker",
+    to: "/cat-tracker",
     title: "Cat Work Tracker",
     description: "Measuring the cat's time in the office"
   },
@@ -129,12 +129,12 @@ const links = [
     description: "A Godot game, a game jam submission"
   },
   {
-    to: "/Set",
+    to: "/set",
     title: "Set",
     description: "Using computer vision to play a board game"
   },
   {
-    to: "/BoulderingTracker",
+    to: "/bouldering-tracker",
     title: "Bouldering Tracker",
     description: "Using computer vision to track climbing style"
   },
@@ -144,7 +144,7 @@ const links = [
     description: "Collection of hardware and software mods"
   },
   {
-    to: "/GenerativeArt",
+    to: "/generative-art",
     title: "Generative Art",
     description: "Dive into plotters and generative art"
   },

@@ -15,6 +15,18 @@ type Matches = [{
 }, {
   id: "routes/theRiddler";
   module: typeof import("../theRiddler.js");
+}] | [{
+  id: "root";
+  module: typeof import("../../root.js");
+}, {
+  id: "legacy-the-riddler";
+  module: typeof import("../theRiddler.js");
+}] | [{
+  id: "root";
+  module: typeof import("../../root.js");
+}, {
+  id: "legacy-the-riddler-pascal";
+  module: typeof import("../theRiddler.js");
 }];
 
 type Annotations = GetAnnotations<Info & { module: Module, matches: Matches }, false>;

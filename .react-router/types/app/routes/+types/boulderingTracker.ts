@@ -15,6 +15,18 @@ type Matches = [{
 }, {
   id: "routes/boulderingTracker";
   module: typeof import("../boulderingTracker.js");
+}] | [{
+  id: "root";
+  module: typeof import("../../root.js");
+}, {
+  id: "legacy-bouldering-tracker";
+  module: typeof import("../boulderingTracker.js");
+}] | [{
+  id: "root";
+  module: typeof import("../../root.js");
+}, {
+  id: "legacy-bouldering-tracker-pascal";
+  module: typeof import("../boulderingTracker.js");
 }];
 
 type Annotations = GetAnnotations<Info & { module: Module, matches: Matches }, false>;

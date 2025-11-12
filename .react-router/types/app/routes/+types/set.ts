@@ -15,6 +15,12 @@ type Matches = [{
 }, {
   id: "routes/set";
   module: typeof import("../set.js");
+}] | [{
+  id: "root";
+  module: typeof import("../../root.js");
+}, {
+  id: "legacy-set-pascal";
+  module: typeof import("../set.js");
 }];
 
 type Annotations = GetAnnotations<Info & { module: Module, matches: Matches }, false>;
