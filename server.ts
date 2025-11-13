@@ -5,14 +5,6 @@ if (!process.env.NODE_ENV) {
                          'production';
 }
 
-// Log environment on cold start
-console.log('[LAMBDA INIT] Environment:', {
-  NODE_ENV: process.env.NODE_ENV,
-  ARC_ENV: process.env.ARC_ENV,
-  ARC_SANDBOX: process.env.ARC_SANDBOX,
-  AWS_EXECUTION_ENV: process.env.AWS_EXECUTION_ENV,
-});
-
 import { readFileSync, existsSync } from "fs";
 import { join } from "path";
 
@@ -23,7 +15,6 @@ import { createRequestHandler } from "@ballatech/react-router7-preset-aws";
 
 // Explicitly set mode - the adapter defaults to NODE_ENV, but let's be explicit
 const mode = process.env.NODE_ENV === 'production' ? 'production' : 'development';
-console.log('[LAMBDA INIT] Creating request handler with mode:', mode);
 
 const requestHandler = createRequestHandler({
   // @ts-expect-error - React Router build types
@@ -33,9 +24,6 @@ const requestHandler = createRequestHandler({
     return {};
   },
 });
-
-// Log that initialization is complete
-console.log('[LAMBDA INIT] Handler initialized successfully');
 
 async function handlerFn(event, context) {
   try {

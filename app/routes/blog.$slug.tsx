@@ -1,9 +1,22 @@
 import { useLoaderData } from 'react-router';
 import type { LoaderFunctionArgs } from 'react-router';
 import { useMemo } from 'react';
-import { getMDXComponent } from 'mdx-bundler/client';
+import * as React from 'react';
+import * as ReactDOM from 'react-dom';
+import * as jsxRuntime from 'react/jsx-runtime';
 import { Navbar } from "../components/Navbar.js";
 import Footer from "../components/Footer.js";
+
+// Inline MDX component evaluator (replaces getMDXComponent from mdx-bundler/client)
+function getMDXComponent(code: string) {
+  const scope = {
+    React,
+    ReactDOM,
+    _jsx_runtime: jsxRuntime,
+  };
+  const fn = new Function(...Object.keys(scope), code);
+  return fn(...Object.values(scope)).default;
+}
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   const { slug } = params;

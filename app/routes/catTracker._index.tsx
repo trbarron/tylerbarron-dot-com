@@ -185,7 +185,7 @@ export default function ChecoLiveTracker() {
                                             <span>Tuni □</span>
                                         </div>
                                         
-                                        <div className="flex h-16 border-2 border-gray-400">
+                                        <div className="flex h-10 border-2 border-gray-400">
                                             {(() => {
                                                 const parseTime = (timeStr: string) => {
                                                     const parts = timeStr.split(':').map(Number);
