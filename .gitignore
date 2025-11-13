@@ -9,6 +9,3 @@ node_modules
 /public/compiled-posts
 /server/*
 !/server/package.json
-
-OPTIMIZATION_GUIDE.md
-OPTIMIZATION_SUMMARY.md
