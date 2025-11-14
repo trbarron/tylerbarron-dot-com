@@ -61,7 +61,7 @@ const Set = () => {
   );
 
   return (
-    <div className="bg-background bg-fixed min-h-screen flex flex-col">
+    <div className="bg-black dark:bg-white bg-fixed min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-grow">
         <Article title="Set" subtitle="">

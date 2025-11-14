@@ -130,7 +130,7 @@ export default function ChesserGuesserUnlimited() {
   }
 
   return (
-    <div className="bg-background bg-fixed min-h-screen">
+    <div className="bg-black dark:bg-white bg-fixed min-h-screen flex flex-col">
       <Navbar />
       <ScrollRestoration getKey={(location) => {
         // Return consistent key for this route to maintain scroll
@@ -140,7 +140,7 @@ export default function ChesserGuesserUnlimited() {
         <Article title="Chesser Guesser" subtitle="">
             <div className="pb-6 mx-auto grid gap-x-4 grid-rows-2 md:grid-rows-1 grid-cols-1 md:grid-cols-2 md:ml-auto" style={{ gridTemplateColumns: "80% 20%", marginLeft: "-0.5rem", marginRight: "0.5rem" }}>
               <div className="w-100% col-span-2 md:col-span-1">
-                <Suspense fallback={<div className="w-full aspect-square bg-gray-100 rounded flex items-center justify-center">Loading chessboard...</div>}>
+                <Suspense fallback={<div className="w-full aspect-square bg-gray-100 dark:bg-gray-900 rounded flex items-center justify-center text-black dark:text-white font-neo">Loading chessboard...</div>}>
                   <Chessboard
                     initialFen={fen}
                     movable={false}
@@ -149,21 +149,21 @@ export default function ChesserGuesserUnlimited() {
                   />
                 </Suspense>
 
-                <div className="gap-2 flex w-full mt-4 rounded">
-                  <img src={blackKingImage} alt="Black King" className="w-12 h-12 flex-none" />
+                <div className="gap-2 flex w-full mt-4">
+                  <img src={blackKingImage} alt="Black King" className="w-12 h-12 flex-none dark:invert" />
                   <input
                     type="range"
                     min="-400"
                     max="400"
                     value={sliderValue}
                     onChange={handleSliderChange}
-                    className="range flex-auto cursor-pointer appearance-none bg-black h-2 my-auto rounded-lg"
+                    className="range flex-auto cursor-pointer appearance-none bg-black h-2 my-auto dark:bg-white border-2 border-black dark:!border-white"
                   />
-                  <img src={whiteKingImage} alt="White King" className="w-12 h-12 flex-none" />
+                  <img src={whiteKingImage} alt="White King" className="w-12 h-12 flex-none dark:invert" />
                 </div>
 
                 <button
-                  className="w-full bg-white text-black border-4 border-black px-6 py-3 font-extrabold uppercase tracking-wide hover:bg-black hover:text-white transition-all duration-100 flex flex-col items-center"
+                  className="w-full bg-white dark:bg-black text-black dark:text-white border-4 border-black dark:!border-white px-6 py-3 font-extrabold uppercase tracking-wide hover:bg-accent dark:hover:bg-accent hover:text-white transition-all duration-100 flex flex-col items-center font-neo"
                   onClick={submitGuess}
                 >
                   <span className="text-sm">
@@ -176,11 +176,11 @@ export default function ChesserGuesserUnlimited() {
               </div>
 
               <div className="justify-center text-center grid gap-y-3 h-80 md:h-full md:grid-cols-1 w-full grid-cols-3 col-span-2 md:col-span-1 gap-x-4 py-2 md:py-0">
-                <div className="bg-white shadow rounded-lg overflow-hidden w-full col-span-3 md:col-span-1 md:h-60 h-36">
-                  <div className="w-full text-gray border-b-2 border-green-500 py-0 md:py-2 inline-flex items-center justify-center text-sm md:text-md">
+                <div className="bg-white dark:bg-black border-4 border-black dark:!border-white overflow-hidden w-full col-span-3 md:col-span-1 md:h-60 h-36">
+                  <div className="w-full border-b-2 border-accent py-0 md:py-2 inline-flex items-center justify-center text-sm md:text-md font-neo font-bold uppercase text-black dark:text-white bg-white dark:bg-black">
                     Last Round:
                   </div>
-                  <div className="flex items-center justify-center px-4 py-0 md:py-2 bg-gray text-gray-light text-xs md:text-xs h-full overflow-y-hidden">
+                  <div className="flex items-center justify-center px-4 py-0 md:py-2 bg-white dark:bg-black text-black dark:text-white text-xs md:text-xs h-full overflow-y-hidden font-neo">
                     Answer: {lastEval.toFixed(2)} <br />
                     Guess: {lastSlider.toFixed(2)} <br /><br />
                     Difference: {(lastEval - lastSlider).toFixed(2)} <br /><br />
@@ -188,17 +188,17 @@ export default function ChesserGuesserUnlimited() {
                   </div>
                 </div>
 
-                <div className="bg-white shadow rounded-lg overflow-hidden w-full md:col-span-1">
-                  <div className="w-full text-gray border-b-2 z-30 bg-white border-green-500 py-0 md:py-2 inline-flex items-center justify-center text-sm md:text-md">
+                <div className="bg-white dark:bg-black border-4 border-black dark:!border-white overflow-hidden w-full md:col-span-1">
+                  <div className="w-full border-b-2 z-30 bg-white dark:bg-black border-accent py-0 md:py-2 inline-flex items-center justify-center text-sm md:text-md font-neo font-bold uppercase text-black dark:text-white">
                     Streak:
                   </div>
-                  <div className="h-full flex items-center justify-center px-4 pb-0 -mt-3 z-10 md:pb-4 bg-gray text-gray-light text-md md:text-lg overflow-y-hidden">
+                  <div className="h-full flex items-center justify-center px-4 pb-0 -mt-3 z-10 md:pb-4 bg-white dark:bg-black text-black dark:text-white text-md md:text-lg overflow-y-hidden font-neo font-bold">
                     {streak}
                   </div>
                 </div>
 
-                <div className={`shadow rounded-lg overflow-hidden w-full col-span-1 md:col-span-1 border ${currentTurn === 'White' ? 'bg-white border-black' : 'bg-black border-white'}`}>
-                  <div className={`w-full py-0 md:py-2 inline-flex items-center justify-center text-sm md:text-md my-auto h-full ${currentTurn === 'White' ? 'text-black' : 'text-white'}`}>
+                <div className={`border-4 overflow-hidden w-full col-span-1 md:col-span-1 ${currentTurn === 'White' ? 'bg-white border-black dark:!border-white' : 'bg-black border-black dark:!border-white'}`}>
+                  <div className={`w-full py-0 md:py-2 inline-flex items-center justify-center text-sm md:text-md my-auto h-full font-neo font-bold uppercase ${currentTurn === 'White' ? 'text-black' : 'text-white'}`}>
                     {currentTurn} to move
                   </div>
                 </div>

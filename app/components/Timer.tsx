@@ -48,13 +48,13 @@ const Timer = memo(function Timer({ timeRemaining: initialTime }: TimerProps) {
 
   return (
     <div className="w-full">
-      <div className="relative h-4 bg-gray-200 rounded-full overflow-hidden">
+      <div className="relative h-4 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden border border-black dark:!border-white">
         <div 
-          className="absolute h-full bg-gray-500 transition-all duration-100"
+          className="absolute h-full bg-accent transition-all duration-100"
           style={{ width: `${progress}%` }}
         />
       </div>
-      <div className="mt-1 text-sm text-gray-600 text-center">
+      <div className="mt-1 text-sm text-black dark:text-white text-center font-neo font-bold">
         {displayTime.toFixed(1)}s
       </div>
     </div>

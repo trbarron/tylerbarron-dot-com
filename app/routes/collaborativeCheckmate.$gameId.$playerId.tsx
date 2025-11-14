@@ -786,7 +786,7 @@ export default function CollaborativeCheckmate() {
   }), [shapes]);
 
   return (
-    <div className="bg-background bg-fixed min-h-screen">
+    <div className="bg-black dark:bg-white bg-fixed min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-grow">
         <Article title="Collaborative Checkmate" subtitle="">
@@ -804,7 +804,7 @@ export default function CollaborativeCheckmate() {
                     {/* Turn indicator banner */}
                     {((gamePhase === GamePhase.TEAM1_SELECTION && playerTeam === 1) ||
                       (gamePhase === GamePhase.TEAM2_SELECTION && playerTeam === 2))}
-                    <Suspense fallback={<div className="w-full aspect-square bg-gray-100 rounded flex items-center justify-center">Loading chessboard...</div>}>
+                    <Suspense fallback={<div className="w-full aspect-square bg-gray-100 dark:bg-gray-900 rounded flex items-center justify-center text-black dark:text-white font-neo">Loading chessboard...</div>}>
                       <Chessboard
                         initialFen={fen}
                         orientation={orientation}
@@ -822,35 +822,35 @@ export default function CollaborativeCheckmate() {
 
 
               {/* Game Phase Indicator */}
-              <div className="bg-white shadow rounded p-4 mb-2">
+              <div className="bg-white dark:bg-black border-2 border-black dark:!border-white p-4 mb-2">
                 <Timer
                   timeRemaining={timeRemaining}
                   key={timeRemainingKey}
                 />
                 <div className="relative h-12 flex items-center">
-                  <div className="absolute w-full h-2 bg-gray-200 rounded-full"></div>
+                  <div className="absolute w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
 
                   {/* Phase Markers */}
-                  <div className={`relative z-10 h-6 w-6 rounded-full border-2 border-white ${gamePhase === GamePhase.TEAM1_SELECTION ? 'bg-gray-500' : 'bg-gray-300'
+                  <div className={`relative z-10 h-6 w-6 rounded-full border-2 border-black dark:!border-white ${gamePhase === GamePhase.TEAM1_SELECTION ? 'bg-accent' : 'bg-gray-300 dark:bg-gray-600'
                     } flex items-center justify-center text-xs text-white font-bold ml-0`}>•</div>
                   <div className="flex-grow h-2"></div>
 
-                  <div className={`relative z-10 h-6 w-6 rounded-full border-2 border-white ${gamePhase === GamePhase.TEAM1_COMPUTING ? 'bg-gray-500' : 'bg-gray-300'
+                  <div className={`relative z-10 h-6 w-6 rounded-full border-2 border-black dark:!border-white ${gamePhase === GamePhase.TEAM1_COMPUTING ? 'bg-accent' : 'bg-gray-300 dark:bg-gray-600'
                     } flex items-center justify-center text-xs text-white font-bold`}>•</div>
                   <div className="flex-grow h-2"></div>
 
-                  <div className={`relative z-10 h-6 w-6 rounded-full border-2 border-white ${gamePhase === GamePhase.TEAM2_COMPUTING ? 'bg-gray-500' : 'bg-gray-300'
+                  <div className={`relative z-10 h-6 w-6 rounded-full border-2 border-black dark:!border-white ${gamePhase === GamePhase.TEAM2_COMPUTING ? 'bg-accent' : 'bg-gray-300 dark:bg-gray-600'
                     } flex items-center justify-center text-xs text-white font-bold mr-0`}>•</div>
                   <div className="flex-grow h-2"></div>
 
-                  <div className={`relative z-10 h-6 w-6 rounded-full border-2 border-white ${gamePhase === GamePhase.TEAM2_SELECTION ? 'bg-gray-500' : 'bg-gray-300'
+                  <div className={`relative z-10 h-6 w-6 rounded-full border-2 border-black dark:!border-white ${gamePhase === GamePhase.TEAM2_SELECTION ? 'bg-accent' : 'bg-gray-300 dark:bg-gray-600'
                     } flex items-center justify-center text-xs text-white font-bold`}>•</div>
                 </div>
-                <div className="flex justify-between text-xs mt-1">
-                  <span className="bg-white text-black px-2 py-1">Select</span>
-                  <span className="bg-white text-black px-2 py-1">Compute</span>
-                  <span className="bg-gray-700 text-white px-2 py-1">Compute</span>
-                  <span className="bg-gray-700 text-white px-2 py-1">Select</span>
+                <div className="flex justify-between text-xs mt-1 font-neo font-bold">
+                  <span className="bg-white text-black border border-black dark:!border-white px-2 py-1 uppercase">Select</span>
+                  <span className="bg-white text-black border border-black dark:!border-white px-2 py-1 uppercase">Compute</span>
+                  <span className="bg-black text-white border border-black dark:!border-white px-2 py-1 uppercase">Compute</span>
+                  <span className="bg-black text-white border border-black dark:!border-white px-2 py-1 uppercase">Select</span>
                 </div>
               </div>
 
@@ -858,10 +858,10 @@ export default function CollaborativeCheckmate() {
               <div className="grid grid-cols-1 gap-2 mb-12">
                 <button
                   onClick={lockInMove}
-                  className={`p-2 rounded font-bold transition-colors duration-200
+                  className={`p-2 border-2 border-black dark:!border-white font-bold transition-colors duration-200 font-neo uppercase
                     ${!connected || !selectedMove || lockedIn
-                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      : 'bg-gray-500 hover:bg-gray-600 text-white'
+                      ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                      : 'bg-white dark:bg-black text-black dark:text-white hover:bg-accent hover:text-white'
                     }`}
                   disabled={!connected || !selectedMove || lockedIn}
                 >
@@ -871,84 +871,84 @@ export default function CollaborativeCheckmate() {
 
               {/* Player Seats */}
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-white shadow rounded p-3 pt-0 mb-2">
-                  <h3 className="font-bold text-gray-500 text-lg my-1">White</h3>
+                <div className="bg-white dark:bg-black border-2 border-black dark:!border-white p-3 pt-0 mb-2">
+                  <h3 className="font-bold text-black dark:text-white text-lg my-1 font-neo uppercase border-b-2 border-accent pb-1">White</h3>
                   <div className="space-y-2">
                     {/* White Player 1 */}
                     <div
-                      className={`flex items-center p-2 rounded ${players.t1p1.id === playerId ? 'bg-blue-100' : ''
+                      className={`flex items-center p-2 font-neo text-black dark:text-white ${players.t1p1.id === playerId ? 'bg-accent text-white dark:text-white' : ''
                         } ${(players.t1p1.id === null || players.t1p1.id === playerId) && !players.t1p1.ready ?
-                          'border-2 border-dashed border-gray-300 cursor-pointer hover:bg-gray-100' :
-                          'border border-gray-200'
+                          'border-2 border-dashed border-black dark:!border-white cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-900' :
+                          'border border-black dark:!border-white'
                         }`}
                       onClick={() => ((players.t1p1.id === null || players.t1p1.id === playerId) && !players.t1p1.ready) && takeSeat('t1p1')}
                       onKeyDown={(e) => e.key === 'Enter' && ((players.t1p1.id === null || players.t1p1.id === playerId) && !players.t1p1.ready) && takeSeat('t1p1')}
                       role="button"
                       tabIndex={0}
                     >
-                      <div className={`w-6 h-6 rounded-full mr-2 ${players.t1p1.ready ? 'bg-green-500' : 'bg-gray-200'
+                      <div className={`w-6 h-6 rounded-full mr-2 border-2 border-black dark:!border-white ${players.t1p1.ready ? 'bg-green-500' : 'bg-white dark:bg-black'
                         }`}></div>
                       <span>{players.t1p1.id || '< Click to Join >'}</span>
-                      {players.t1p1.id === playerId && <span className="ml-2 text-xs text-blue-600">(You)</span>}
+                      {players.t1p1.id === playerId && <span className="ml-2 text-xs">(You)</span>}
                     </div>
 
                     {/* White Player 2 */}
                     <div
-                      className={`flex items-center p-2 rounded ${players.t1p2.id === playerId ? 'bg-blue-100' : ''
+                      className={`flex items-center p-2 font-neo text-black dark:text-white ${players.t1p2.id === playerId ? 'bg-accent text-white dark:text-white' : ''
                         } ${(players.t1p2.id === null || players.t1p2.id === playerId) && !players.t1p2.ready ?
-                          'border-2 border-dashed border-gray-300 cursor-pointer hover:bg-gray-100' :
-                          'border border-gray-200'
+                          'border-2 border-dashed border-black dark:!border-white cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-900' :
+                          'border border-black dark:!border-white'
                         }`}
                       onClick={() => ((players.t1p2.id === null || players.t1p2.id === playerId) && !players.t1p2.ready) && takeSeat('t1p2')}
                       onKeyDown={(e) => e.key === 'Enter' && ((players.t1p2.id === null || players.t1p2.id === playerId) && !players.t1p2.ready) && takeSeat('t1p2')}
                       role="button"
                       tabIndex={0}
                     >
-                      <div className={`w-6 h-6 rounded-full mr-2 ${players.t1p2.ready ? 'bg-green-500' : 'bg-gray-200'
+                      <div className={`w-6 h-6 rounded-full mr-2 border-2 border-black dark:!border-white ${players.t1p2.ready ? 'bg-green-500' : 'bg-white dark:bg-black'
                         }`}></div>
                       <span>{players.t1p2.id || '<Click to Join>'}</span>
-                      {players.t1p2.id === playerId && <span className="ml-2 text-xs text-blue-600">(You)</span>}
+                      {players.t1p2.id === playerId && <span className="ml-2 text-xs">(You)</span>}
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-white shadow rounded p-3 pt-0 mb-2">
-                  <h3 className="font-bold text-gray-500 text-lg my-1">Black</h3>
+                <div className="bg-white dark:bg-black border-2 border-black dark:!border-white p-3 pt-0 mb-2">
+                  <h3 className="font-bold text-black dark:text-white text-lg my-1 font-neo uppercase border-b-2 border-accent pb-1">Black</h3>
                   <div className="space-y-2">
                     {/* Black Player 1 */}
                     <div
-                      className={`flex items-center p-2 rounded ${players.t2p1.id === playerId ? 'bg-blue-100' : ''
+                      className={`flex items-center p-2 font-neo text-black dark:text-white ${players.t2p1.id === playerId ? 'bg-accent text-white dark:text-white' : ''
                         } ${(players.t2p1.id === null || players.t2p1.id === playerId) && !players.t2p1.ready ?
-                          'border-2 border-dashed border-gray-300 cursor-pointer hover:bg-gray-100' :
-                          'border border-gray-200'
+                          'border-2 border-dashed border-black dark:!border-white cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-900' :
+                          'border border-black dark:!border-white'
                         }`}
                       onClick={() => ((players.t2p1.id === null || players.t2p1.id === playerId) && !players.t2p1.ready) && takeSeat('t2p1')}
                       onKeyDown={(e) => e.key === 'Enter' && ((players.t2p1.id === null || players.t2p1.id === playerId) && !players.t2p1.ready) && takeSeat('t2p1')}
                       role="button"
                       tabIndex={0}
                     >
-                      <div className={`w-6 h-6 rounded-full mr-2 ${players.t2p1.ready ? 'bg-green-500' : 'bg-gray-200'
+                      <div className={`w-6 h-6 rounded-full mr-2 border-2 border-black dark:!border-white ${players.t2p1.ready ? 'bg-green-500' : 'bg-white dark:bg-black'
                         }`}></div>
                       <span>{players.t2p1.id || '< Click to Join >'}</span>
-                      {players.t2p1.id === playerId && <span className="ml-2 text-xs text-blue-600">(You)</span>}
+                      {players.t2p1.id === playerId && <span className="ml-2 text-xs">(You)</span>}
                     </div>
 
                     {/* Black Player 2 */}
                     <div
-                      className={`flex items-center p-2 rounded ${players.t2p2.id === playerId ? 'bg-blue-100' : ''
+                      className={`flex items-center p-2 font-neo text-black dark:text-white ${players.t2p2.id === playerId ? 'bg-accent text-white dark:text-white' : ''
                         } ${(players.t2p2.id === null || players.t2p2.id === playerId) && !players.t2p2.ready ?
-                          'border-2 border-dashed border-gray-300 cursor-pointer hover:bg-gray-100' :
-                          'border border-gray-200'
+                          'border-2 border-dashed border-black dark:!border-white cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-900' :
+                          'border border-black dark:!border-white'
                         }`}
                       onClick={() => ((players.t2p2.id === null || players.t2p2.id === playerId) && !players.t2p2.ready) && takeSeat('t2p2')}
                       onKeyDown={(e) => e.key === 'Enter' && ((players.t2p2.id === null || players.t2p2.id === playerId) && !players.t2p2.ready) && takeSeat('t2p2')}
                       role="button"
                       tabIndex={0}
                     >
-                      <div className={`w-6 h-6 rounded-full mr-2 ${players.t2p2.ready ? 'bg-green-500' : 'bg-gray-200'
+                      <div className={`w-6 h-6 rounded-full mr-2 border-2 border-black dark:!border-white ${players.t2p2.ready ? 'bg-green-500' : 'bg-white dark:bg-black'
                         }`}></div>
                       <span>{players.t2p2.id || '< Click to Join >'}</span>
-                      {players.t2p2.id === playerId && <span className="ml-2 text-xs text-blue-600">(You)</span>}
+                      {players.t2p2.id === playerId && <span className="ml-2 text-xs">(You)</span>}
                     </div>
                   </div>
                 </div>
@@ -958,10 +958,10 @@ export default function CollaborativeCheckmate() {
               <div className="grid grid-cols-1 gap-2 mb-4">
                 <button
                   onClick={readyUp}
-                  className={`p-2 rounded font-bold transition-colors duration-200
+                  className={`p-2 border-2 border-black dark:!border-white font-bold transition-colors duration-200 font-neo uppercase
                     ${!connected || (players.t1p1.id != playerId && players.t1p2.id != playerId && players.t2p1.id != playerId && players.t2p2.id != playerId) || (getCurrentPlayerSeat() !== null && players[getCurrentPlayerSeat()!].ready)
-                      ? 'bg-purple-300 text-purple-100 cursor-not-allowed'
-                      : 'bg-purple-500 hover:bg-purple-600 text-white'
+                      ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                      : 'bg-green-500 hover:bg-green-600 text-white border-green-600'
                     }`}
                   disabled={!connected || (players.t1p1.id != playerId && players.t1p2.id != playerId && players.t2p1.id != playerId && players.t2p2.id != playerId) || (getCurrentPlayerSeat() !== null && players[getCurrentPlayerSeat()!].ready)}
                 >
@@ -973,23 +973,23 @@ export default function CollaborativeCheckmate() {
             {/* Game log panel */}
             <div className="md:col-span-1">
               {/* Game log */}
-              <div className="bg-white shadow rounded overflow-hidden mb-4">
-                <div className="border-b-2 border-green-500 p-2 font-bold bg-white flex justify-between items-center">
+              <div className="bg-white dark:bg-black border-2 border-black dark:!border-white overflow-hidden mb-4">
+                <div className="border-b-2 border-accent p-2 font-bold bg-white dark:bg-black text-black dark:text-white flex justify-between items-center font-neo uppercase">
                   <span>Game Log</span>
                   {reconnecting && (
-                    <span className="text-xs text-orange-600 font-normal flex items-center">
+                    <span className="text-xs text-orange-600 dark:text-orange-400 font-normal flex items-center">
                       <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-orange-500 mr-1"></div>
                       Reconnecting...
                     </span>
                   )}
                   {!connected && !reconnecting && (
-                    <span className="text-xs text-red-600 font-normal">
+                    <span className="text-xs text-red-600 dark:text-red-400 font-normal">
                       Disconnected
                     </span>
                   )}
                 </div>
                 <div
-                  className="h-96 overflow-y-auto p-2 bg-gray-50"
+                  className="h-96 overflow-y-auto p-2 bg-white dark:bg-black"
                   ref={(el) => {
                     if (el) {
                       el.scrollTop = el.scrollHeight;
@@ -997,13 +997,13 @@ export default function CollaborativeCheckmate() {
                   }}
                 >
                   {gameLog.map((entry, index) => (
-                    <div key={index} className={`mb-1 p-1 rounded text-xs ${entry.type === 'system' ? 'bg-gray-100' :
-                      entry.type === 'move' ? 'bg-blue-50' :
-                        entry.type === 'engine' ? 'bg-yellow-50' :
-                          entry.type === 'phase' ? 'bg-white' :
-                            entry.type === 'error' ? 'bg-red-50' :
-                              entry.type === 'game_over' ? 'bg-purple-50' :
-                                entry.type === 'reconnecting' ? 'bg-orange-50' : ''
+                    <div key={index} className={`mb-1 p-1 border border-black dark:!border-white text-xs font-neo text-black dark:text-white ${entry.type === 'system' ? 'bg-gray-100 dark:bg-gray-900' :
+                      entry.type === 'move' ? 'bg-blue-100 dark:bg-blue-950' :
+                        entry.type === 'engine' ? 'bg-yellow-100 dark:bg-yellow-950' :
+                          entry.type === 'phase' ? 'bg-white dark:bg-black' :
+                            entry.type === 'error' ? 'bg-red-100 dark:bg-red-950' :
+                              entry.type === 'game_over' ? 'bg-purple-100 dark:bg-purple-950' :
+                                entry.type === 'reconnecting' ? 'bg-orange-100 dark:bg-orange-950' : ''
                       }`}>
                       {entry.player && <span className="font-bold">{entry.player}: </span>}
                       {entry.message}

@@ -107,16 +107,16 @@ export default function BlogPost() {
                           prose-li:font-neo prose-li:text-black dark:prose-li:text-white prose-li:font-medium prose-li:text-lg prose-li:my-1
                           prose-ul:font-neo prose-ul:text-black dark:prose-ul:text-white prose-ul:ml-6 prose-ul:my-4 prose-ul:list-disc prose-ul:pl-2
                           prose-ol:font-neo prose-ol:text-black dark:prose-ol:text-white prose-ol:ml-6 prose-ol:my-4 prose-ol:list-decimal prose-ol:pl-2
-                          prose-code:bg-gray-100 dark:prose-code:bg-black prose-code:text-black dark:prose-code:text-white prose-code:border prose-code:border-black dark:prose-code:!border-white prose-code:font-mono
+                          prose-code:bg-gray-100 dark:prose-code:bg-gray-900 prose-code:text-black dark:prose-code:text-white prose-code:border prose-code:border-black dark:prose-code:!border-white prose-code:font-mono
                           prose-code:before:content-none prose-code:after:content-none
                           prose-code:px-1 prose-code:py-0.5
-                          prose-pre:bg-gray-100 dark:prose-pre:bg-black prose-pre:text-black dark:prose-pre:text-white prose-pre:border-2 prose-pre:border-black dark:prose-pre:!border-white prose-pre:font-mono
-                          prose-blockquote:border-l-4 prose-blockquote:border-accent prose-blockquote:bg-gray-100 dark:prose-blockquote:bg-black prose-blockquote:font-neo
+                          prose-pre:bg-gray-100 dark:prose-pre:bg-gray-900 prose-pre:text-black dark:prose-pre:text-white prose-pre:border-2 prose-pre:border-black dark:prose-pre:!border-white prose-pre:font-mono
+                          prose-blockquote:border-l-4 prose-blockquote:border-accent prose-blockquote:bg-gray-100 dark:prose-blockquote:bg-gray-900 prose-blockquote:font-neo
                           prose-blockquote:pl-4 prose-blockquote:py-2 prose-blockquote:font-semibold prose-blockquote:text-lg prose-blockquote:not-italic
                           prose-blockquote:before:content-none prose-blockquote:after:content-none
                           prose-img:border-2 prose-img:border-black dark:prose-img:!border-white prose-img:transition-all
-                          prose-table:border-2 prose-table:border-black dark:prose-table:!border-white prose-table:font-neo prose-table:bg-white dark:prose-table:bg-black prose-table:font-medium
-                          prose-th:bg-black dark:prose-th:bg-black prose-th:text-white prose-th:border prose-th:border-black dark:prose-th:!border-white prose-th:font-bold prose-th:uppercase
+                          prose-table:border-2 prose-table:border-black dark:prose-table:!border-white prose-table:font-neo prose-table:bg-white dark:prose-table:bg-gray-900 prose-table:font-medium
+                          prose-th:bg-black dark:prose-th:bg-gray-800 prose-th:text-white prose-th:border prose-th:border-black dark:prose-th:!border-white prose-th:font-bold prose-th:uppercase
                           prose-td:border prose-td:border-black dark:prose-td:!border-white prose-td:px-2 prose-td:py-1
                           ">
             <Component />

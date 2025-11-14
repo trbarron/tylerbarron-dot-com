@@ -40,11 +40,11 @@ const ImageDisplay = () => {
   }
 
   if (isLoading) {
-    return <div className="text-center">Loading image...</div>;
+    return <div className="text-center text-black dark:text-white">Loading image...</div>;
   }
 
   if (error) {
-    return <div className="text-center text-red-500">{error}</div>;
+    return <div className="text-center text-red-500 dark:text-red-400">{error}</div>;
   }
 
   return (
@@ -54,9 +54,9 @@ const ImageDisplay = () => {
           <img
             src={`data:image/jpeg;base64,${imageData}`}
             alt="Cat"
-            className="mx-auto max-w-full h-auto"
+            className="mx-auto max-w-full h-auto border-2 border-black dark:!border-white"
           />
-          <h4>{timestamp}</h4>
+          <h4 className="text-black dark:text-white mt-2 font-neo">{timestamp}</h4>
         </div>
       )}
     </div>
