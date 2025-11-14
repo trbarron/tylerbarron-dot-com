@@ -8,3 +8,5 @@ declare module "@react-router/node" {
     }
   }
 
+// Git version injected at build time
+declare const __GIT_VERSION__: string;

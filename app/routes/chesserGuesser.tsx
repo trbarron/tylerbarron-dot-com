@@ -150,7 +150,7 @@ export default function ChesserGuesserUnlimited() {
                 </Suspense>
 
                 <div className="gap-2 flex w-full mt-4">
-                  <img src={blackKingImage} alt="Black King" className="w-12 h-12 flex-none dark:invert" />
+                  <img src={blackKingImage} alt="Black King" className="w-12 h-12 flex-none" />
                   <input
                     type="range"
                     min="-400"
@@ -159,7 +159,7 @@ export default function ChesserGuesserUnlimited() {
                     onChange={handleSliderChange}
                     className="range flex-auto cursor-pointer appearance-none bg-black h-2 my-auto dark:bg-white border-2 border-black dark:!border-white"
                   />
-                  <img src={whiteKingImage} alt="White King" className="w-12 h-12 flex-none dark:invert" />
+                  <img src={whiteKingImage} alt="White King" className="w-12 h-12 flex-none" />
                 </div>
 
                 <button

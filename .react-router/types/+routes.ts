@@ -34,7 +34,7 @@ type Pages = {
   "/cat-tracker/blog": {
     params: {};
   };
-  "/chesser-guesser/unlimited": {
+  "/chesser-guesser": {
     params: {};
   };
   "/collaborative-checkmate": {
@@ -79,7 +79,7 @@ type Pages = {
   "/CatTracker/Blog": {
     params: {};
   };
-  "/chesserGuesser/unlimited": {
+  "/chesserGuesser": {
     params: {};
   };
   "/collaborativeCheckmate": {
@@ -123,7 +123,7 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/blog/:slug" | "/favicon.ico" | "/bouldering-tracker" | "/camel-up-cup" | "/cat-tracker" | "/cat-tracker/blog" | "/chesser-guesser/unlimited" | "/collaborative-checkmate" | "/collaborative-checkmate/:gameId/:playerId" | "/generative-art" | "/pizza-rating" | "/the-riddler" | "/boulderingTracker" | "/BoulderingTracker" | "/camelUpCup" | "/CamelUpCup" | "/catTracker" | "/CatTracker" | "/catTracker/blog" | "/CatTracker/Blog" | "/chesserGuesser/unlimited" | "/collaborativeCheckmate" | "/collaborativeCheckmate/:gameId/:playerId" | "/generativeArt" | "/GenerativeArt" | "/pizzaRating" | "/PizzaRating" | "/theRiddler" | "/TheRiddler" | "/set" | "/Set" | "/SSBM";
+    page: "/" | "/blog/:slug" | "/favicon.ico" | "/bouldering-tracker" | "/camel-up-cup" | "/cat-tracker" | "/cat-tracker/blog" | "/chesser-guesser" | "/collaborative-checkmate" | "/collaborative-checkmate/:gameId/:playerId" | "/generative-art" | "/pizza-rating" | "/the-riddler" | "/boulderingTracker" | "/BoulderingTracker" | "/camelUpCup" | "/CamelUpCup" | "/catTracker" | "/CatTracker" | "/catTracker/blog" | "/CatTracker/Blog" | "/chesserGuesser" | "/collaborativeCheckmate" | "/collaborativeCheckmate/:gameId/:playerId" | "/generativeArt" | "/GenerativeArt" | "/pizzaRating" | "/PizzaRating" | "/theRiddler" | "/TheRiddler" | "/set" | "/Set" | "/SSBM";
   };
   "routes/_index.tsx": {
     id: "routes/_index";
@@ -177,12 +177,12 @@ type RouteFiles = {
     id: "legacy-cat-tracker-blog-pascal";
     page: "/CatTracker/Blog";
   };
-  "routes/chesserGuesser.unlimited.tsx": {
-    id: "routes/chesserGuesser.unlimited";
-    page: "/chesser-guesser/unlimited";
+  "routes/chesserGuesser.tsx": {
+    id: "routes/chesserGuesser";
+    page: "/chesser-guesser";
   } | {
     id: "legacy-chesser-guesser";
-    page: "/chesserGuesser/unlimited";
+    page: "/chesserGuesser";
   };
   "routes/collaborativeCheckmate._index.tsx": {
     id: "routes/collaborativeCheckmate._index";
@@ -250,7 +250,7 @@ type RouteModules = {
   "routes/camelUpCup": typeof import("./app/routes/camelUpCup.tsx");
   "routes/catTracker._index": typeof import("./app/routes/catTracker._index.tsx");
   "routes/catTracker.blog": typeof import("./app/routes/catTracker.blog.tsx");
-  "routes/chesserGuesser.unlimited": typeof import("./app/routes/chesserGuesser.unlimited.tsx");
+  "routes/chesserGuesser": typeof import("./app/routes/chesserGuesser.tsx");
   "routes/collaborativeCheckmate._index": typeof import("./app/routes/collaborativeCheckmate._index.tsx");
   "routes/collaborativeCheckmate.$gameId.$playerId": typeof import("./app/routes/collaborativeCheckmate.$gameId.$playerId.tsx");
   "routes/generativeArt": typeof import("./app/routes/generativeArt.tsx");
@@ -264,7 +264,7 @@ type RouteModules = {
   "legacy-cat-tracker-pascal": typeof import("./app/routes/catTracker._index.tsx");
   "legacy-cat-tracker-blog": typeof import("./app/routes/catTracker.blog.tsx");
   "legacy-cat-tracker-blog-pascal": typeof import("./app/routes/catTracker.blog.tsx");
-  "legacy-chesser-guesser": typeof import("./app/routes/chesserGuesser.unlimited.tsx");
+  "legacy-chesser-guesser": typeof import("./app/routes/chesserGuesser.tsx");
   "legacy-collaborative-checkmate": typeof import("./app/routes/collaborativeCheckmate._index.tsx");
   "legacy-collaborative-checkmate-game": typeof import("./app/routes/collaborativeCheckmate.$gameId.$playerId.tsx");
   "legacy-generative-art": typeof import("./app/routes/generativeArt.tsx");

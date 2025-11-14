@@ -102,7 +102,7 @@ const links = [
     description: "\"Bring your own board game playing bot\" competition"
   },
   {
-    to: "/chesser-guesser/unlimited",
+    to: "/chesser-guesser",
     title: "Chesser Guesser",
     description: "Can you tell who is winning the chess game?"
   },

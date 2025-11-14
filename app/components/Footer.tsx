@@ -11,7 +11,7 @@ export default function Footer() {
           <div className="w-full px-4 mx-auto text-center">
             <div className="text-black dark:text-white font-neo">
               <div className="text-sm pb-4 text-black dark:text-white font-neo font-semibold tracking-wide">
-                V5.0.22
+                version: {__GIT_VERSION__}
               </div>
               
               {/* Dark mode toggle on its own row */}
