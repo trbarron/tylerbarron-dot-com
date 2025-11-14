@@ -100,6 +100,7 @@ export default function BlogPost() {
                           prose-headings:font-neo prose-headings:font-extrabold prose-headings:text-black dark:prose-headings:text-white prose-headings:uppercase prose-headings:tracking-tight
                           prose-headings:border-b-2 prose-headings:border-accent prose-headings:pb-2
                           prose-p:font-neo prose-p:text-black dark:prose-p:text-white prose-p:leading-relaxed prose-p:font-medium prose-p:text-lg
+                          prose-strong:text-black dark:prose-strong:text-gray-100 prose-strong:font-extrabold
                           prose-a:text-black dark:prose-a:text-white prose-a:no-underline prose-a:border-b-2 prose-a:border-black dark:prose-a:!border-white prose-a:pb-0.5 prose-a:font-semibold
                           prose-a:transition-all prose-a:duration-100
                           hover:prose-a:bg-accent dark:hover:prose-a:bg-accent hover:prose-a:text-white hover:prose-a:border-accent

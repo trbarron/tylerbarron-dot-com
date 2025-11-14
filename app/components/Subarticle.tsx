@@ -19,7 +19,7 @@ export function Subarticle({ children, subtitle }: SubarticleProps) {
                       hover:[&_a]:bg-accent dark:hover:[&_a]:bg-accent hover:[&_a]:text-white hover:[&_a]:border-accent hover:[&_a]:px-1 hover:[&_a]:-mx-1
                       [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:my-4 [&_ul]:text-black [&_ul]:dark:text-white [&_ul]:font-neo
                       [&_li]:text-black [&_li]:dark:text-white [&_li]:my-1 [&_li]:font-neo
-                      [&_strong]:font-bold [&_strong]:text-black [&_strong]:dark:text-white
+                      [&_strong]:font-extrabold [&_strong]:text-black [&_strong]:dark:text-gray-100
                       [&_em]:italic [&_em]:text-black [&_em]:dark:text-white
                       [&_img]:border-2 [&_img]:border-black [&_img]:dark:!border-white [&_img]:my-4">
         {children}
