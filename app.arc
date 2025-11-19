@@ -3,7 +3,7 @@ tb-website-remix
 
 @aws
 prune true
-runtime nodejs20.x
+runtime nodejs22.x
 memory 2048
 region us-west-2
 timeout 30
