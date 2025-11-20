@@ -94,11 +94,11 @@ const SSBM = () => {
             
             <p>I modified the stage Pokémon Stadium to have the UW Logo</p>
             
-            <PhotoComponent photo={textureModPhotos[4]} index={5} />
+            <PhotoComponent photo={textureModPhotos[4]} index={4} />
             
             <p>Finally, Fox and Falco's lasers are now purple. Like all the other mods this is togglable</p>
             
-            <PhotoComponent photo={textureModPhotos[5]} index={6} />
+            <PhotoComponent photo={textureModPhotos[5]} index={5} />
           </Subarticle>
           
           <Subarticle subtitle="How to get it:">
@@ -121,13 +121,13 @@ const SSBM = () => {
             
             <p>Hax promised to sell these controllers but he was very slow to make it market. As a result I decided to build my own</p>
             
-            <PhotoComponent photo={boxxPhotos[1]} index={textureModPhotos.length + 2} />
+            <PhotoComponent photo={boxxPhotos[1]} index={textureModPhotos.length + 1} />
             
             <p className="w-screen"></p>
                         
             <p>I linked a more detailed build process. The build itself took 20 hours, two hardware trips, five online orders and one burnt thumb. The code is based on SimpleController's, modified for my button layout and application. The only thing left is to get good with it</p>
             
-            <PhotoComponent photo={boxxPhotos[2]} index={textureModPhotos.length + 4} />
+            <PhotoComponent photo={boxxPhotos[2]} index={textureModPhotos.length + 2} />
           </Subarticle>
           
           <Subarticle subtitle="How to get it:">

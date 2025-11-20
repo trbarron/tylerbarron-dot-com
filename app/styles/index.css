@@ -1,6 +1,21 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@variant dark (.dark &);
+
+@theme {
+  --font-mono: "JetBrains Mono", "SF Mono", "Monaco", "Consolas", "Liberation Mono", "Courier New", monospace;
+  --font-neo: "Inter", system-ui, -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;
+
+  --spacing-xl: 49rem;
+
+  --color-accent: #00605E;
+  --color-accent-light: #008B87;
+  --color-accent-dark: #004643;
+
+  --color-gray-100: #f5f5f5;
+  --color-gray-200: #e5e5e5;
+  --color-gray-700: #404040;
+  --color-gray-900: #171717;
+}
 
 @font-face {
   font-family: 'Berkeley';
@@ -18,19 +33,19 @@
     font-weight: 500;
     font-size: 16px;
   }
-  
+
   * {
     border-color: #000000;
   }
 
   /* Blue-green text selection */
   ::selection {
-    background-color: #018076;
+    background-color: var(--color-accent-light);
     color: #ffffff;
   }
 
   ::-moz-selection {
-    background-color: #018076;
+    background-color: var(--color-accent-light);
     color: #ffffff;
   }
 }
@@ -77,9 +92,9 @@
   }
 
   a:not(.block):not([class*="block"]):not(.no-underline):not([class*="no-underline"]):hover {
-    background-color: #000000;
+    background-color: #00605E;
     color: #ffffff;
-    border-bottom: 3px solid #000000;
+    border-bottom: 3px solid #00605E;
   }
 
   p {
@@ -97,7 +112,8 @@
     }
   }
 
-  ul, ol {
+  ul,
+  ol {
     @apply pl-4 pr-4 mx-auto leading-relaxed my-6 text-black;
     font-family: 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Helvetica', 'Arial', sans-serif;
     font-weight: 500;
@@ -106,7 +122,9 @@
   }
 
   @media (min-width: 1024px) {
-    ul, ol {
+
+    ul,
+    ol {
       @apply w-11/12;
       font-size: 18px;
     }
@@ -208,13 +226,17 @@
   }
 
   /* Input styles */
-  input, textarea, select {
+  input,
+  textarea,
+  select {
     @apply bg-white text-black border-2 border-black px-3 py-2;
     font-family: 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Helvetica', 'Arial', sans-serif;
     font-weight: 500;
   }
 
-  input:focus, textarea:focus, select:focus {
+  input:focus,
+  textarea:focus,
+  select:focus {
     @apply outline-none ring-0 border-black bg-gray-100;
   }
 
@@ -317,7 +339,8 @@
     font-weight: 500;
   }
 
-  th, td {
+  th,
+  td {
     @apply border-2 border-black px-4 py-2 text-left;
   }
 
@@ -347,7 +370,7 @@
   }
 
   /* Exception for icons that should stay black/white */
-  .icon-bw, 
+  .icon-bw,
   footer img,
   nav img {
     filter: none !important;
@@ -360,26 +383,5 @@
 
   .hover\:bg-black:hover * {
     color: #ffffff !important;
-  }
-
-  /* Blue-green accent utilities */
-  .accent-border {
-    border-color: #00605E;
-  }
-
-  .accent-bg {
-    background-color: #00605E;
-  }
-
-  .accent-text {
-    color: #00605E;
-  }
-
-  .hover\:accent-bg:hover {
-    background-color: #00605E;
-  }
-
-  .hover\:accent-text:hover {
-    color: #00605E;
   }
 }

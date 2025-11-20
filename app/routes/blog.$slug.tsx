@@ -102,9 +102,9 @@ export default function BlogPost() {
                           prose-p:font-neo prose-p:text-black dark:prose-p:text-white prose-p:leading-relaxed prose-p:font-medium prose-p:text-lg
                           prose-strong:text-black dark:prose-strong:text-gray-100 prose-strong:font-extrabold
                           prose-a:text-black dark:prose-a:text-white prose-a:no-underline prose-a:border-b-2 prose-a:border-black dark:prose-a:!border-white prose-a:pb-0.5 prose-a:font-semibold
-                          prose-a:transition-all prose-a:duration-100
-                          hover:prose-a:bg-accent dark:hover:prose-a:bg-accent hover:prose-a:text-white hover:prose-a:border-accent
-                          hover:prose-a:px-1 hover:prose-a:-mx-1
+                          prose-a:transition-all
+                          prose-a:hover:bg-accent prose-a:hover:text-white prose-a:hover:border-accent
+                          prose-a:hover:px-1 prose-a:hover:-mx-1
                           prose-li:font-neo prose-li:text-black dark:prose-li:text-white prose-li:font-medium prose-li:text-lg prose-li:my-1
                           prose-ul:font-neo prose-ul:text-black dark:prose-ul:text-white prose-ul:ml-6 prose-ul:my-4 prose-ul:list-disc prose-ul:pl-2
                           prose-ol:font-neo prose-ol:text-black dark:prose-ol:text-white prose-ol:ml-6 prose-ol:my-4 prose-ol:list-decimal prose-ol:pl-2

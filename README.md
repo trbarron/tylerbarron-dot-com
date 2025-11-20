@@ -7,14 +7,15 @@ A full-stack web application showcasing various projects, interactive applicatio
 ## 🚀 Tech Stack
 
 - **Framework**: [React Router 7](https://reactrouter.com/)
+- **UI Library**: React 19
 - **Language**: TypeScript
-- **Styling**: Tailwind CSS with custom typography plugin
+- **Styling**: Tailwind CSS 4 with custom typography plugin
 - **Content**: MDX for blog posts with remark/rehype plugins
 - **Chess UI**: Chessground library
 - **Data Visualization**: D3.js for maps and charts
 - **Lightbox**: yet-another-react-lightbox for image galleries
 - **Infrastructure**: AWS (Architect Framework, Lambda, S3)
-- **Build Tool**: Vite
+- **Build Tool**: Vite 6
 - **Package Manager**: npm
 
 ## 📁 Project Structure
@@ -36,7 +37,7 @@ tylerbarron-dot-com/
 
 ### Prerequisites
 
-- Node.js >= 20.0.0
+- Node.js >= 22.0.0
 - npm
 
 ### Getting Started
@@ -51,7 +52,6 @@ tylerbarron-dot-com/
    npm run dev
    ```
 
-   The app will be available at `http://localhost:5173`
 
 3. **Type checking**:
    ```bash
@@ -131,15 +131,14 @@ The app uses:
 ## 🎨 Styling
 
 The project uses:
-- **Tailwind CSS** for utility-first styling
+- **Tailwind CSS 4** for utility-first styling with new `@theme` syntax
 - **Custom typography** via `@tailwindcss/typography`
 - **Berkeley Mono** font family for code and special text
 - **Chessground CSS** for chess board styling
 
 Configuration files:
-- `tailwind.config.ts` - Tailwind customization
+- `app/styles/index.css` - Global styles with Tailwind 4 `@theme` configuration
 - `postcss.config.js` - PostCSS plugins
-- `app/styles/index.css` - Global styles
 
 ## 📝 Adding Blog Posts
 

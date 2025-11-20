@@ -22,7 +22,7 @@ export default function Footer() {
               {/* Social media buttons on separate row */}
               <div className="mt-0 flex items-center justify-center space-x-4">
                 <a href="mailto: trbbarron@gmail.com"
-                  className="bg-white dark:bg-black !border-2 border-black dark:!border-white h-12 w-12 flex items-center justify-center hover:bg-accent dark:hover:bg-accent transition-all duration-100"
+                  className="bg-white dark:bg-black !border-2 border-black dark:!border-white h-12 w-12 flex items-center justify-center hover:bg-accent dark:hover:bg-accent"
                   type="button">
                   <div className="dark:invert">
                     <img
@@ -34,7 +34,7 @@ export default function Footer() {
                 </a>
 
                 <a href="https://github.com/trbarron"
-                  className="bg-white dark:bg-black !border-2 border-black dark:!border-white h-12 w-12 flex items-center justify-center hover:bg-accent dark:hover:bg-accent transition-all duration-100"
+                  className="bg-white dark:bg-black !border-2 border-black dark:!border-white h-12 w-12 flex items-center justify-center hover:bg-accent dark:hover:bg-accent"
                   type="button">
                   <div className="dark:invert">
                     <img
@@ -46,7 +46,7 @@ export default function Footer() {
                 </a>
 
                 <a href="https://linkedin.com/in/tylerbarron"
-                  className="bg-white dark:bg-black !border-2 border-black dark:!border-white h-12 w-12 flex items-center justify-center hover:bg-accent dark:hover:bg-accent transition-all duration-100"
+                  className="bg-white dark:bg-black !border-2 border-black dark:!border-white h-12 w-12 flex items-center justify-center hover:bg-accent dark:hover:bg-accent"
                   type="button">
                   <div className="dark:invert">
                     <img

@@ -47,7 +47,7 @@ export function DarkModeToggle() {
     <div className="inline-flex w-44 border-2 border-black dark:!border-white" role="radiogroup" aria-label="Theme selection">
       <button
         onClick={setLightMode}
-        className={`flex-1 h-6 transition-all duration-100 relative ${
+        className={`flex-1 h-6 relative ${
           !darkMode 
             ? 'ring-1 ring-inset ring-accent' 
             : 'hover:opacity-80'
@@ -61,7 +61,7 @@ export function DarkModeToggle() {
       </button>
       <button
         onClick={setDarkModeOn}
-        className={`flex-1 h-6 border-l-2 border-black dark:!border-white transition-all duration-100 relative ${
+        className={`flex-1 h-6 border-l-2 border-black dark:!border-white relative ${
           darkMode 
             ? 'ring-1 ring-inset ring-accent' 
             : 'hover:opacity-80'

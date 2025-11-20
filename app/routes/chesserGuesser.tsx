@@ -61,12 +61,14 @@ export default function ChesserGuesserUnlimited() {
   const [lastEval, setLastEval] = useState(0);
   const [positiveMessage, setPositiveMessage] = useState(getPositiveMessage());
   const [negativeMessage, setNegativeMessage] = useState(getNegativeMessage());
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     setChess(new Chess(loaderData.randomFEN));
     setFen(loaderData.randomFEN);
     setBoardOrientation(getCurrentPlayer(loaderData.randomFEN).toLowerCase() as "white" | "black");
     setCurrentTurn(getCurrentPlayer(loaderData.randomFEN));
+    setIsSubmitting(false); // Re-enable submit button when new puzzle loads
   }, [loaderData.randomFEN]);
 
   const handleSliderChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -74,6 +76,10 @@ export default function ChesserGuesserUnlimited() {
   };
 
   function submitGuess() {
+    if (isSubmitting) return; // Prevent multiple submissions
+    
+    setIsSubmitting(true); // Lock the button
+    
     const difference = Math.abs(loaderData.evalScore - sliderValue) / 100;
     let correctSide = false;
     if (loaderData.evalScore > 20 && sliderValue > 0) {
@@ -163,11 +169,12 @@ export default function ChesserGuesserUnlimited() {
                 </div>
 
                 <button
-                  className="w-full bg-white dark:bg-black text-black dark:text-white border-4 border-black dark:!border-white px-6 py-3 font-extrabold uppercase tracking-wide hover:bg-accent dark:hover:bg-accent hover:text-white transition-all duration-100 flex flex-col items-center font-neo"
+                  className="w-full bg-white dark:bg-black text-black dark:text-white border-4 border-black dark:!border-white px-6 py-3 font-extrabold uppercase tracking-wide hover:bg-accent dark:hover:bg-accent hover:text-white disabled:opacity-50 disabled:cursor-not-allowed flex flex-col items-center font-neo"
                   onClick={submitGuess}
+                  disabled={isSubmitting}
                 >
                   <span className="text-sm">
-                    Submit
+                    {isSubmitting ? 'Loading...' : 'Submit'}
                   </span>
                   <span className="text-sm">
                     {(sliderValue / 100).toFixed(2)}

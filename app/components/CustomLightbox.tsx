@@ -82,7 +82,7 @@ export default function CustomLightbox({
           </div>
           <button
             onClick={close}
-            className="bg-white text-black border-2 border-black px-3 py-1 font-extrabold uppercase tracking-wide hover:bg-black hover:text-white transition-all duration-100"
+            className="bg-white text-black border-2 border-black px-3 py-1 font-extrabold uppercase tracking-wide hover:bg-black hover:text-white"
           >
             ×
           </button>
@@ -101,13 +101,13 @@ export default function CustomLightbox({
             <>
               <button
                 onClick={goToPrevious}
-                className="absolute left-8 top-1/2 transform -translate-y-1/2 bg-white text-black border-4 border-black px-4 py-3 font-extrabold uppercase tracking-wide hover:bg-black hover:text-white transition-all duration-100"
+                className="absolute left-8 top-1/2 transform -translate-y-1/2 bg-white text-black border-4 border-black px-4 py-3 font-extrabold uppercase tracking-wide hover:bg-black hover:text-white"
               >
                 ←
               </button>
               <button
                 onClick={goToNext}
-                className="absolute right-8 top-1/2 transform -translate-y-1/2 bg-white text-black border-4 border-black px-4 py-3 font-extrabold uppercase tracking-wide hover:bg-black hover:text-white transition-all duration-100"
+                className="absolute right-8 top-1/2 transform -translate-y-1/2 bg-white text-black border-4 border-black px-4 py-3 font-extrabold uppercase tracking-wide hover:bg-black hover:text-white"
               >
                 →
               </button>
@@ -131,7 +131,7 @@ export default function CustomLightbox({
               <button
                 key={index}
                 onClick={() => setCurrentIndex(index)}
-                className={`flex-shrink-0 w-16 h-16 border-2 border-black overflow-hidden transition-all duration-100 ${
+                className={`flex-shrink-0 w-16 h-16 border-2 border-black overflow-hidden ${
                   index === currentIndex ? 'ring-4 ring-black' : 'hover:ring-2 hover:ring-black'
                 }`}
               >
