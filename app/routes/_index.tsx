@@ -66,7 +66,7 @@ export async function loader() {
       import('path')
     ]);
     
-    const postsPath = path.join(process.cwd(), '..', 'posts');
+    const postsPath = path.join(process.cwd(), 'posts');
     try {
       const files = await fs.readdir(postsPath);
       const posts = await Promise.all(

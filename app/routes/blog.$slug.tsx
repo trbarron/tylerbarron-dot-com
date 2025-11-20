@@ -58,7 +58,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
       import('path')
     ]);
     
-    const filePath = path.join(process.cwd(), '..', 'posts', `${slug}.mdx`);
+    const filePath = path.join(process.cwd(), 'posts', `${slug}.mdx`);
     try {
       const source = await fs.readFile(filePath, 'utf-8');
       const { code, frontmatter } = await processMdx(source);

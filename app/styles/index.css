@@ -34,8 +34,17 @@
     font-size: 16px;
   }
 
+  .dark body {
+    background-color: #000000;
+    color: #ffffff;
+  }
+
   * {
     border-color: #000000;
+  }
+
+  .dark * {
+    border-color: #ffffff;
   }
 
   /* Blue-green text selection */
@@ -68,6 +77,10 @@
     font-weight: 600;
   }
 
+  .dark a {
+    color: #ffffff;
+  }
+
   /* Ensure no-underline class removes all underline styling */
   a.no-underline,
   .no-underline,
@@ -91,6 +104,10 @@
     padding-bottom: 2px;
   }
 
+  .dark a:not(.block):not([class*="block"]):not(.no-underline):not([class*="no-underline"]) {
+    border-bottom: 3px solid #ffffff;
+  }
+
   a:not(.block):not([class*="block"]):not(.no-underline):not([class*="no-underline"]):hover {
     background-color: #00605E;
     color: #ffffff;
@@ -98,11 +115,16 @@
   }
 
   p {
-    @apply pl-4 pr-4 mx-auto leading-relaxed my-6 text-black;
+    @apply pl-4 pr-4 mx-auto leading-relaxed my-6;
     font-family: 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Helvetica', 'Arial', sans-serif;
     font-weight: 500;
     font-size: 17px;
     line-height: 1.5;
+    color: #000000;
+  }
+
+  .dark p {
+    color: #ffffff;
   }
 
   @media (min-width: 1024px) {
@@ -114,11 +136,17 @@
 
   ul,
   ol {
-    @apply pl-4 pr-4 mx-auto leading-relaxed my-6 text-black;
+    @apply pl-4 pr-4 mx-auto leading-relaxed my-6;
     font-family: 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Helvetica', 'Arial', sans-serif;
     font-weight: 500;
     font-size: 17px;
     line-height: 1.5;
+    color: #000000;
+  }
+
+  .dark ul,
+  .dark ol {
+    color: #ffffff;
   }
 
   @media (min-width: 1024px) {
@@ -140,34 +168,56 @@
 
   h1 {
     font-family: 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Helvetica', 'Arial', sans-serif;
-    @apply text-4xl lg:text-6xl leading-none text-black p-6 border-b-4 border-black w-full;
+    @apply text-4xl lg:text-6xl leading-none p-6 border-b-4 w-full;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: -0.02em;
+    color: #000000;
+    border-color: #000000;
+  }
+
+  .dark h1 {
+    color: #ffffff;
+    border-color: #ffffff;
   }
 
   h2 {
     font-family: 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Helvetica', 'Arial', sans-serif;
-    @apply text-3xl lg:text-5xl text-black p-4;
+    @apply text-3xl lg:text-5xl p-4;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: -0.01em;
     line-height: 1.1;
+    color: #000000;
+  }
+
+  .dark h2 {
+    color: #ffffff;
   }
 
   h3 {
     font-family: 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Helvetica', 'Arial', sans-serif;
-    @apply text-2xl lg:text-4xl text-black ml-8 mt-6 p-2;
+    @apply text-2xl lg:text-4xl ml-8 mt-6 p-2;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: -0.01em;
+    color: #000000;
+  }
+
+  .dark h3 {
+    color: #ffffff;
   }
 
   h4 {
     font-family: 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Helvetica', 'Arial', sans-serif;
-    @apply text-xl lg:text-3xl text-black ml-8 mt-4 p-2;
+    @apply text-xl lg:text-3xl ml-8 mt-4 p-2;
     font-weight: 700;
     text-transform: uppercase;
+    color: #000000;
+  }
+
+  .dark h4 {
+    color: #ffffff;
   }
 
   h6 {
@@ -177,17 +227,31 @@
   }
 
   hr {
-    @apply py-8 border-black border-4;
+    @apply py-8 border-4;
+    border-color: #000000;
+  }
+
+  .dark hr {
+    border-color: #ffffff;
   }
 
   blockquote {
-    @apply border-l-8 border-black bg-gray-100 ml-8 pl-6 py-4;
+    @apply border-l-8 ml-8 pl-6 py-4;
     font-family: 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Helvetica', 'Arial', sans-serif;
     font-weight: 600;
     font-style: normal;
     font-size: 20px;
     line-height: 1.4;
     quotes: none;
+    border-color: #000000;
+    background-color: #f5f5f5;
+    color: #000000;
+  }
+
+  .dark blockquote {
+    border-color: #ffffff;
+    background-color: #171717;
+    color: #ffffff;
   }
 
   blockquote::before,
@@ -202,17 +266,32 @@
 
   /* Utilitarian button styles */
   button {
-    @apply bg-white text-black border-4 border-black px-6 py-3;
+    @apply border-4 px-6 py-3;
     font-family: 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Helvetica', 'Arial', sans-serif;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     transition: all 0.1s ease;
     font-size: 16px;
+    background-color: #ffffff;
+    color: #000000;
+    border-color: #000000;
+  }
+
+  .dark button {
+    background-color: #000000;
+    color: #ffffff;
+    border-color: #ffffff;
   }
 
   button:hover {
-    @apply bg-black text-white;
+    background-color: #000000;
+    color: #ffffff;
+  }
+
+  .dark button:hover {
+    background-color: #ffffff;
+    color: #000000;
   }
 
   button:disabled {
@@ -229,15 +308,35 @@
   input,
   textarea,
   select {
-    @apply bg-white text-black border-2 border-black px-3 py-2;
+    @apply border-2 px-3 py-2;
     font-family: 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Helvetica', 'Arial', sans-serif;
     font-weight: 500;
+    background-color: #ffffff;
+    color: #000000;
+    border-color: #000000;
+  }
+
+  .dark input,
+  .dark textarea,
+  .dark select {
+    background-color: #000000;
+    color: #ffffff;
+    border-color: #ffffff;
   }
 
   input:focus,
   textarea:focus,
   select:focus {
-    @apply outline-none ring-0 border-black bg-gray-100;
+    @apply outline-none ring-0;
+    background-color: #f5f5f5;
+    border-color: #000000;
+  }
+
+  .dark input:focus,
+  .dark textarea:focus,
+  .dark select:focus {
+    background-color: #171717;
+    border-color: #ffffff;
   }
 
   /* Range slider styles */
@@ -272,7 +371,7 @@
 
   /* Radio button styles */
   input[type="radio"] {
-    @apply border-2 border-black bg-white;
+    @apply border-2;
     -webkit-appearance: none;
     appearance: none;
     width: 20px;
@@ -282,11 +381,23 @@
     padding: 0;
     position: relative;
     cursor: pointer;
+    background-color: #ffffff;
+    border-color: #000000;
+  }
+
+  .dark input[type="radio"] {
+    background-color: #000000;
+    border-color: #ffffff;
   }
 
   input[type="radio"]:checked {
     background-color: #000000;
     border-color: #000000;
+  }
+
+  .dark input[type="radio"]:checked {
+    background-color: #ffffff;
+    border-color: #ffffff;
   }
 
   input[type="radio"]:checked::after {
@@ -301,9 +412,13 @@
     transform: translate(-50%, -50%);
   }
 
+  .dark input[type="radio"]:checked::after {
+    background-color: #000000;
+  }
+
   /* Checkbox styles */
   input[type="checkbox"] {
-    @apply border-2 border-black bg-white;
+    @apply border-2;
     -webkit-appearance: none;
     appearance: none;
     width: 20px;
@@ -313,11 +428,23 @@
     position: relative;
     cursor: pointer;
     border-radius: 0;
+    background-color: #ffffff;
+    border-color: #000000;
+  }
+
+  .dark input[type="checkbox"] {
+    background-color: #000000;
+    border-color: #ffffff;
   }
 
   input[type="checkbox"]:checked {
     background-color: #000000;
     border-color: #000000;
+  }
+
+  .dark input[type="checkbox"]:checked {
+    background-color: #ffffff;
+    border-color: #ffffff;
   }
 
   input[type="checkbox"]:checked::after {
@@ -332,36 +459,77 @@
     line-height: 1;
   }
 
+  .dark input[type="checkbox"]:checked::after {
+    color: #000000;
+  }
+
   /* Table styles */
   table {
-    @apply border-collapse border-4 border-black w-full bg-white;
+    @apply border-collapse border-4 w-full;
     font-family: 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Helvetica', 'Arial', sans-serif;
     font-weight: 500;
+    background-color: #ffffff;
+    border-color: #000000;
+  }
+
+  .dark table {
+    background-color: #171717;
+    border-color: #ffffff;
   }
 
   th,
   td {
-    @apply border-2 border-black px-4 py-2 text-left;
+    @apply border-2 px-4 py-2 text-left;
+    border-color: #000000;
+  }
+
+  .dark th,
+  .dark td {
+    border-color: #ffffff;
   }
 
   th {
-    @apply bg-black text-white;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    background-color: #000000;
+    color: #ffffff;
+  }
+
+  .dark th {
+    background-color: #ffffff;
+    color: #000000;
   }
 
   /* Code styles - keep monospace for code */
   code {
-    @apply bg-gray-100 text-black px-2 py-1 border-2 border-black;
+    @apply px-2 py-1 border-2;
     font-family: 'JetBrains Mono', 'SF Mono', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
     font-weight: 500;
+    background-color: #f5f5f5;
+    color: #000000;
+    border-color: #000000;
+  }
+
+  .dark code {
+    background-color: #171717;
+    color: #ffffff;
+    border-color: #ffffff;
   }
 
   pre {
-    @apply bg-gray-100 text-black p-4 border-4 border-black overflow-x-auto;
+    @apply p-4 border-4 overflow-x-auto;
     font-family: 'JetBrains Mono', 'SF Mono', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
     font-weight: 500;
+    background-color: #f5f5f5;
+    color: #000000;
+    border-color: #000000;
+  }
+
+  .dark pre {
+    background-color: #171717;
+    color: #ffffff;
+    border-color: #ffffff;
   }
 
   /* Image styles - show in full color by default */
