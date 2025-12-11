@@ -5,8 +5,10 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-  useLoaderData
+  useLoaderData,
+  useLocation,
 } from "react-router";
+import { useEffect } from "react";
 import styles from './styles/index.css?url';
 
 export async function loader() {
@@ -27,6 +29,15 @@ export const meta = () => {
 
 export default function App() {
   const { gaTrackingId } = useLoaderData<typeof loader>();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (gaTrackingId?.length) {
+      (window as any).gtag?.("config", gaTrackingId, {
+        page_path: location.pathname + location.search,
+      });
+    }
+  }, [location, gaTrackingId]);
 
   return (
     <html lang="en">
