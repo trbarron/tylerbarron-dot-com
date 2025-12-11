@@ -83,37 +83,13 @@ export function selectDailyPuzzles(
   };
 }
 
-/**
- * Calculate score for a single puzzle attempt
- *
- * Scoring rules:
- * - Must guess correct side (white/black/equal) to score points
- * - If correct side:
- *   - Base score: 50 points
- *   - Bonus: Up to 50 points based on accuracy
- *   - Formula: 50 + (50 * (1 - min(|diff|/400, 1)))
- * - If wrong side: 0 points
- */
 export function calculatePuzzleScore(
   guess: number,
   actual: number
 ): number {
-  // Determine if guess is on correct side
-  const correctSide = (() => {
-    if (actual > 20 && guess > 0) return true; // Both white advantage
-    if (actual < -20 && guess < 0) return true; // Both black advantage
-    if (actual >= -20 && actual <= 20 && guess >= -20 && guess <= 20) return true; // Both equal
-    return false;
-  })();
-
-  if (!correctSide) return 0;
-
-  // Calculate accuracy bonus
-  const diff = Math.abs(actual - guess);
-  const accuracyRatio = Math.min(diff / 400, 1); // 400 = max difference
-  const accuracyBonus = 50 * (1 - accuracyRatio);
-
-  return Math.round(50 + accuracyBonus);
+  // Score is simply the absolute difference
+  // Lower is better
+  return Math.abs(actual - guess);
 }
 
 /**

@@ -18,6 +18,7 @@ import { Leaderboard } from "~/components/ChesserGuesser/Leaderboard";
 import { EndlessModePrompt } from "~/components/ChesserGuesser/EndlessModePrompt";
 import { ModeIndicator } from "~/components/ChesserGuesser/ModeIndicator";
 import { DailyCompletionMessage } from "~/components/ChesserGuesser/DailyCompletionMessage";
+import { LeaderboardModal } from "~/components/ChesserGuesser/LeaderboardModal";
 
 // Import utilities
 import type { GameMode, ChessPuzzle, DailyPuzzleSet, DailyGameState } from "~/utils/chesserGuesser/types";
@@ -78,6 +79,7 @@ export default function ChesserGuesserUnlimited() {
   // Game mode state
   const [gameMode, setGameMode] = useState<GameMode>('endless');
   const [showUsernameModal, setShowUsernameModal] = useState(false);
+  const [showLeaderboardModal, setShowLeaderboardModal] = useState(false);
   const [username, setUsername] = useState<string>('');
 
   // Endless mode state
@@ -332,6 +334,7 @@ export default function ChesserGuesserUnlimited() {
       } else {
         // Daily game completed - show final state
         setIsSubmitting(false);
+        setShowLeaderboardModal(true);
       }
     } catch (error) {
       console.error('Error submitting daily guess:', error);
@@ -426,8 +429,8 @@ export default function ChesserGuesserUnlimited() {
             />
           )}
 
-          <div className="pb-6 mx-auto grid gap-x-4 grid-rows-2 md:grid-rows-1 grid-cols-1 md:grid-cols-2 md:ml-auto" style={{ gridTemplateColumns: "80% 20%", marginLeft: "-0.5rem", marginRight: "0.5rem" }}>
-            <div className="w-100% col-span-2 md:col-span-1">
+          <div className="pb-6 mx-auto grid gap-x-4 grid-cols-1 md:grid-cols-5 md:ml-auto -mx-2 md:mx-2">
+            <div className="w-100% col-span-1 md:col-span-4">
               {/* Mode Indicator */}
               <div className="mb-4">
                 <ModeIndicator mode={gameMode} />
@@ -474,7 +477,7 @@ export default function ChesserGuesserUnlimited() {
             </div>
 
             {/* Sidebar */}
-            <div className="justify-center text-center grid gap-y-3 h-80 md:h-full md:grid-cols-1 w-full grid-cols-3 col-span-2 md:col-span-1 gap-x-4 py-2 md:py-0">
+            <div className="justify-center text-center grid gap-y-3 h-auto md:h-full md:grid-cols-1 w-full grid-cols-3 col-span-1 md:col-span-1 gap-x-4 py-2 md:py-0">
               {/* Daily Progress Tracker (only in daily mode) */}
               {gameMode === 'daily' && (
                 <div className="col-span-3 md:col-span-1">
@@ -488,7 +491,7 @@ export default function ChesserGuesserUnlimited() {
               )}
 
               {/* Last Round Info */}
-              <div className="bg-white dark:bg-black border-4 border-black dark:!border-white overflow-hidden w-full col-span-3 md:col-span-1 md:h-60 h-36">
+              <div className="bg-white dark:bg-black border-4 border-black dark:!border-white overflow-hidden w-full col-span-3 md:col-span-1 md:h-40 h-36">
                 <div className="w-full border-b-2 border-accent py-0 md:py-2 inline-flex items-center justify-center text-sm md:text-md font-neo font-bold uppercase text-black dark:text-white bg-white dark:bg-black">
                   Last Round:
                 </div>
@@ -519,24 +522,24 @@ export default function ChesserGuesserUnlimited() {
                 </div>
               </div>
 
-              {/* Leaderboard (daily mode only) */}
-              {gameMode === 'daily' && (
-                <div className="col-span-3 md:col-span-1">
-                  <Leaderboard
-                    currentUsername={username}
-                    date={getTodayDateString()}
-                  />
-                </div>
-              )}
+
             </div>
           </div>
+        </Article>
+
+        {/* Leaderboard Section */}
+        <Article title="Daily Leaderboard" subtitle="" styleModifier="pb-6">
+          <Leaderboard
+            currentUsername={username}
+            date={getTodayDateString()}
+          />
         </Article>
 
         {/* About Section */}
         <Article title="About Chesser Guesser" subtitle="">
           <Subarticle subtitle="Overview">
             <p>Inspired by GeoGuessr, Chesser Guesser challenges players to estimate the computer&apos;s evaluation of chess positions. Players try to estimate the value of specific chess positions as accurately as possible, matching or closely approximating the engine&apos;s evaluation to extend their streak. The goal is to sharpen your evaluative skills by understanding why certain positions are deemed advantageous or disadvantageous by the computer.</p>
-            <p className="mt-4"><strong>Daily Ranked Mode:</strong> Compete on the daily leaderboard! Everyone gets the same 4 puzzles each day (1 easy, 1 medium, 1 hard, 1 expert). Earn up to 400 points total and see how you rank globally.</p>
+            <p className="mt-4"><strong>Ranked Mode:</strong> Compete on the daily leaderboard! Everyone gets the same 4 puzzles each day (1 easy, 1 medium, 1 hard, 1 expert). Earn up to 400 points total and see how you rank globally.</p>
           </Subarticle>
           <Subarticle subtitle="The Analysis">
             <p>The game integrates with the <a href='https://lichess.org/@/lichess/blog/thousands-of-stockfish-analysers/WN-gLzAA'>Lichess Cloud Analysis</a> to fetch position evaluations at scale, giving access to all the positions and their evaluations without me having to do any work. Having this resource made the tough part of this project incredibly easy.</p>
@@ -565,6 +568,14 @@ export default function ChesserGuesserUnlimited() {
         initialUsername={username}
         onSubmit={handleUsernameSubmit}
         onCancel={() => setShowUsernameModal(false)}
+      />
+
+      {/* Leaderboard Modal */}
+      <LeaderboardModal
+        isOpen={showLeaderboardModal}
+        onClose={() => setShowLeaderboardModal(false)}
+        username={username}
+        date={getTodayDateString()}
       />
     </div>
   );

@@ -38,8 +38,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const redis = getRedisClient();
     const leaderboardKey = `chesserGuesser:leaderboard:${dateString}`;
 
-    // Get top N users from sorted set (descending by score)
-    const topUsers = await redis.zrevrange(
+    // Get top N users from sorted set (ascending by score - lowest diff is best)
+    const topUsers = await redis.zrange(
       leaderboardKey,
       0,
       limit - 1,
@@ -73,7 +73,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     // If username provided, also get their rank if not in top N
     let userRank: LeaderboardEntry | null = null;
     if (usernameParam) {
-      const userRankNumber = await redis.zrevrank(leaderboardKey, usernameParam);
+      const userRankNumber = await redis.zrank(leaderboardKey, usernameParam);
       if (userRankNumber !== null) {
         const isInTopN = userRankNumber < limit;
 

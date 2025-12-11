@@ -22,20 +22,11 @@ export function DailyCompletionMessage({
     return `✅ Great job!`;
   };
 
-  const getScoreMessage = () => {
-    if (totalScore >= 350) return "Outstanding! 🌟";
-    if (totalScore >= 300) return "Excellent work! 💯";
-    if (totalScore >= 250) return "Great job! 👏";
-    if (totalScore >= 200) return "Well done! 👍";
-    if (totalScore >= 150) return "Good effort! 💪";
-    return "Thanks for playing! 🎯";
-  };
-
   return (
     <div className="bg-accent border-4 border-black dark:!border-white p-6 mb-4">
       <div className="text-center">
         <h2 className="font-neo font-bold uppercase text-2xl text-white mb-4">
-          Daily Complete!
+          Complete! Nice!
         </h2>
 
         <div className="bg-white dark:bg-black border-2 border-black dark:!border-white p-4 mb-4">
@@ -48,7 +39,6 @@ export function DailyCompletionMessage({
         </div>
 
         <div className="space-y-2 text-white font-neo">
-          <p className="text-lg font-bold">{getScoreMessage()}</p>
           {rank && (
             <p className="text-md">{getRankMessage()}</p>
           )}
@@ -57,12 +47,6 @@ export function DailyCompletionMessage({
               Rank: #{rank} out of {totalPlayers} players
             </p>
           )}
-        </div>
-
-        <div className="mt-4 pt-4 border-t-2 border-white">
-          <p className="font-neo text-sm text-white">
-            Come back tomorrow for new puzzles!
-          </p>
         </div>
       </div>
     </div>

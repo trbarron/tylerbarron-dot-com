@@ -1,5 +1,5 @@
 // Username Input Modal Component
-// Shown before starting daily ranked mode
+// Shown before starting ranked mode
 
 import { useState, useEffect, useRef } from "react";
 

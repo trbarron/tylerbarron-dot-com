@@ -20,7 +20,7 @@ export function DailyProgressTracker({
     <div className="bg-white dark:bg-black border-4 border-black dark:!border-white mb-4">
       {/* Header */}
       <div className="border-b-2 border-accent py-2 inline-flex items-center justify-center text-sm md:text-md font-neo font-bold uppercase text-black dark:text-white w-full">
-        Daily Progress
+        Progress
       </div>
 
       {/* Score Display */}

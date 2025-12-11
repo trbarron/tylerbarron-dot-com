@@ -1,5 +1,5 @@
 // Mode Switcher Component
-// Allows switching between Endless and Daily Ranked modes
+// Allows switching between Endless and Ranked modes
 
 import { GameMode } from "~/utils/chesserGuesser/types";
 
@@ -17,7 +17,7 @@ export function ModeSwitcher({ currentMode, onModeChange, disabled = false }: Mo
           onClick={() => !disabled && onModeChange('endless')}
           disabled={disabled}
           className={`
-            font-neo font-bold uppercase tracking-wide text-sm md:text-md
+            font-neo font-bold uppercase tracking-wide text-xs md:text-md
             transition-all duration-200 border-r-2 border-black dark:!border-white
             ${currentMode === 'endless'
               ? 'bg-black text-white dark:bg-white dark:text-black'
@@ -32,7 +32,7 @@ export function ModeSwitcher({ currentMode, onModeChange, disabled = false }: Mo
           onClick={() => !disabled && onModeChange('daily')}
           disabled={disabled}
           className={`
-            font-neo font-bold uppercase tracking-wide text-sm md:text-md
+            font-neo font-bold uppercase tracking-wide text-xs md:text-md
             transition-all duration-200
             ${currentMode === 'daily'
               ? 'bg-black text-white dark:bg-white dark:text-black'
@@ -41,7 +41,7 @@ export function ModeSwitcher({ currentMode, onModeChange, disabled = false }: Mo
             ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
           `}
         >
-          Daily Ranked
+          Ranked
         </button>
       </div>
     </div>

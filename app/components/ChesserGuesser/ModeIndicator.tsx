@@ -19,7 +19,7 @@ export function ModeIndicator({ mode }: ModeIndicatorProps) {
         }
       `}
     >
-      {mode === 'daily' ? '🏆 Daily Ranked' : '♾️ Endless Mode'}
+      {mode === 'daily' ? '🏆 Ranked' : '♾️ Endless Mode'}
     </div>
   );
 }

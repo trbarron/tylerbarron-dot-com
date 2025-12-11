@@ -36,7 +36,7 @@ export function Leaderboard({
       if (currentUsername) params.append('username', currentUsername);
       params.append('limit', '50');
 
-      const response = await fetch(`/api/chesserGuesser/leaderboard?${params}`);
+      const response = await fetch(`/api/chesserGuesser/leaderboard?${params}&t=${Date.now()}`);
       if (!response.ok) throw new Error('Failed to fetch leaderboard');
 
       const data = await response.json();
@@ -66,8 +66,8 @@ export function Leaderboard({
       </div>
 
       {/* Content */}
-      <div>(
-        <div className="max-h-96 overflow-y-auto">
+      <div>
+        <div className="max-h-[500px] overflow-y-auto">
           {isLoading ? (
             <div className="p-4 text-center font-neo text-sm text-gray-600 dark:text-gray-400">
               Loading...
@@ -93,7 +93,7 @@ export function Leaderboard({
                     className={`
                       border-b border-black dark:!border-white p-2 font-neo text-xs
                       ${isCurrentUser
-                        ? 'bg-accent bg-opacity-20 dark:bg-accent dark:bg-opacity-20'
+                        ? 'bg-yellow-100 dark:bg-yellow-900'
                         : 'bg-white dark:bg-black'
                       }
                     `}
@@ -109,10 +109,8 @@ export function Leaderboard({
                         </span>
                       </div>
                       <div className="flex items-center gap-3 flex-shrink-0">
-                        <span className="text-gray-600 dark:text-gray-400">
-                          {entry.completedPuzzles}/4
-                        </span>
-                        <span className="font-bold text-accent min-w-12 text-right">
+
+                        <span className={`font-bold min-w-12 text-right ${isCurrentUser ? 'text-black dark:text-white' : 'text-accent'}`} title="Total Difference">
                           {entry.score}
                         </span>
                       </div>
@@ -125,7 +123,7 @@ export function Leaderboard({
               {userRank && (
                 <>
                   <div className="border-b-2 border-black dark:!border-white"></div>
-                  <div className="bg-accent bg-opacity-30 dark:bg-accent dark:bg-opacity-30 border-b border-black dark:!border-white p-2 font-neo text-xs">
+                  <div className="bg-yellow-100 dark:bg-yellow-900 border-b border-black dark:!border-white p-2 font-neo text-xs">
                     <div className="flex justify-between items-center">
                       <div className="flex items-center gap-2">
                         <span className="font-bold w-8">#{userRank.rank}</span>
@@ -134,10 +132,8 @@ export function Leaderboard({
                         </span>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="text-gray-600 dark:text-gray-400">
-                          {userRank.completedPuzzles}/4
-                        </span>
-                        <span className="font-bold text-accent min-w-12 text-right">
+
+                        <span className="font-bold text-black dark:text-white min-w-12 text-right" title="Total Difference">
                           {userRank.score}
                         </span>
                       </div>

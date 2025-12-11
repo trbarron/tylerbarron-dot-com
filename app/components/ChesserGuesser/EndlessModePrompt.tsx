@@ -1,5 +1,5 @@
 // Endless Mode Prompt Component
-// Encourages users to try daily ranked mode after playing endless
+// Encourages users to try ranked mode after playing endless
 
 interface EndlessModePromptProps {
   onTryRanked: () => void;
@@ -13,7 +13,7 @@ export function EndlessModePrompt({ onTryRanked, onDismiss, gamesPlayed }: Endle
       <div className="flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex-1">
           <h3 className="font-neo font-bold uppercase text-md mb-2">
-            🏆 Try Daily Ranked Mode!
+            🏆 Try Ranked Mode!
           </h3>
           <p className="font-neo text-sm">
             You've played {gamesPlayed} endless games. Ready to compete on the daily leaderboard?
