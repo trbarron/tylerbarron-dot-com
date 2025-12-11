@@ -7,7 +7,7 @@ import { getRedisClient } from "~/utils/redis.server";
 import { calculatePuzzleScore } from "~/utils/chesserGuesser/puzzleSelection";
 import { getTodayDateString } from "~/utils/chesserGuesser/seededRandom";
 
-const TTL_7_DAYS = 7 * 24 * 60 * 60; // 7 days in seconds
+const TTL_30_DAYS = 30 * 24 * 60 * 60; // 30 days in seconds
 
 /**
  * Validate username
@@ -88,7 +88,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     await redis.setex(
       submissionKey,
-      TTL_7_DAYS,
+      TTL_30_DAYS,
       JSON.stringify(submission)
     );
 
@@ -99,7 +99,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     await redis.setex(
       userScoreKey,
-      TTL_7_DAYS,
+      TTL_30_DAYS,
       newTotalScore.toString()
     );
 
@@ -110,14 +110,14 @@ export async function action({ request }: ActionFunctionArgs) {
 
     await redis.setex(
       completedKey,
-      TTL_7_DAYS,
+      TTL_30_DAYS,
       newCompleted.toString()
     );
 
     // Update leaderboard (sorted set by total score)
     const leaderboardKey = `chesserGuesser:leaderboard:${dateString}`;
     await redis.zadd(leaderboardKey, newTotalScore, username);
-    await redis.expire(leaderboardKey, TTL_7_DAYS);
+    await redis.expire(leaderboardKey, TTL_30_DAYS);
 
     // Update user summary
     const summaryKey = `chesserGuesser:summary:${dateString}:${username}`;
@@ -131,7 +131,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     await redis.setex(
       summaryKey,
-      TTL_7_DAYS,
+      TTL_30_DAYS,
       JSON.stringify(summary)
     );
 

@@ -1,7 +1,6 @@
 import email from "~/images/Global/email.svg";
 import git from "~/images/Global/git.svg";
 import linkedin from "~/images/Global/in.svg";
-import { DarkModeToggle } from './DarkModeToggle';
 
 export default function Footer() {
   return (
@@ -13,11 +12,7 @@ export default function Footer() {
               <div className="text-sm pb-4 text-black dark:text-white font-neo font-semibold tracking-wide">
                 version: {__GIT_VERSION__}
               </div>
-              
-              {/* Dark mode toggle on its own row */}
-              <div className="mb-4 flex items-center justify-center">
-                <DarkModeToggle />
-              </div>
+
 
               {/* Social media buttons on separate row */}
               <div className="mt-0 flex items-center justify-center space-x-4">

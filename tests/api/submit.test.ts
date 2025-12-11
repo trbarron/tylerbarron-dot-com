@@ -4,6 +4,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { action } from '~/routes/api/chesserGuesser/submit';
 
 // Mock Redis
 const mockRedis = {
@@ -26,7 +27,7 @@ describe('Submit Score API', () => {
     vi.restoreAllMocks();
   });
 
-  describe('POST /api/chesserGuesser/submit', () => {
+  describe('action', () => {
     const validSubmission = {
       username: 'testuser123',
       date: '2024-01-15',
@@ -35,17 +36,26 @@ describe('Submit Score API', () => {
       actualEval: 120,
     };
 
+    const createRequest = (body: any, method: string = 'POST') => {
+      return new Request('http://localhost/api/chesserGuesser/submit', {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: method !== 'GET' ? JSON.stringify(body) : undefined,
+      });
+    };
+
     it('should accept valid submission', async () => {
       mockRedis.get.mockResolvedValue(null); // No existing submission
       mockRedis.get.mockResolvedValueOnce(null).mockResolvedValueOnce('0'); // userScore, completed
 
-      const response = await fetch('/api/chesserGuesser/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(validSubmission),
-      });
+      const request = createRequest(validSubmission);
+      const response = await action({ request, params: {}, context: {} } as any);
 
-      expect(response.status).toBe(200);
+      expect(response.status).toBe(200); // Response objects in tests might not have status property directly accessible if it's a native Response, but assert response.json().
+      // Actually action returns Response.json(), which is a standard Response.
+
       const result = await response.json();
       expect(result.success).toBe(true);
       expect(result.score).toBeGreaterThan(0);
@@ -64,11 +74,8 @@ describe('Submit Score API', () => {
         timestamp: Date.now(),
       }));
 
-      const response = await fetch('/api/chesserGuesser/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(validSubmission),
-      });
+      const request = createRequest(validSubmission);
+      const response = await action({ request, params: {}, context: {} } as any);
 
       expect(response.status).toBe(409);
       const result = await response.json();
@@ -87,11 +94,9 @@ describe('Submit Score API', () => {
       ];
 
       for (const username of invalidUsernames.slice(0, -1)) {
-        const response = await fetch('/api/chesserGuesser/submit', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...validSubmission, username }),
-        });
+        const request = createRequest({ ...validSubmission, username });
+        const response = await action({ request, params: {}, context: {} } as any);
+
 
         if (username === '123') {
           expect(response.status).toBe(200);
@@ -117,22 +122,16 @@ describe('Submit Score API', () => {
         mockRedis.get.mockClear();
         mockRedis.get.mockResolvedValue(null);
 
-        const response = await fetch('/api/chesserGuesser/submit', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...validSubmission, username }),
-        });
+        const request = createRequest({ ...validSubmission, username });
+        const response = await action({ request, params: {}, context: {} } as any);
 
         expect(response.status).toBe(200);
       }
     });
 
     it('should reject invalid date format', async () => {
-      const response = await fetch('/api/chesserGuesser/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...validSubmission, date: '2024/01/15' }),
-      });
+      const request = createRequest({ ...validSubmission, date: '2024/01/15' });
+      const response = await action({ request, params: {}, context: {} } as any);
 
       expect(response.status).toBe(400);
       const result = await response.json();
@@ -143,11 +142,8 @@ describe('Submit Score API', () => {
       const invalidIndices = [-1, 4, 10, 'invalid'];
 
       for (const puzzleIndex of invalidIndices) {
-        const response = await fetch('/api/chesserGuesser/submit', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...validSubmission, puzzleIndex }),
-        });
+        const request = createRequest({ ...validSubmission, puzzleIndex });
+        const response = await action({ request, params: {}, context: {} } as any);
 
         expect(response.status).toBe(400);
       }
@@ -160,11 +156,8 @@ describe('Submit Score API', () => {
         mockRedis.get.mockClear();
         mockRedis.get.mockResolvedValue(null);
 
-        const response = await fetch('/api/chesserGuesser/submit', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...validSubmission, puzzleIndex: i }),
-        });
+        const request = createRequest({ ...validSubmission, puzzleIndex: i });
+        const response = await action({ request, params: {}, context: {} } as any);
 
         expect(response.status).toBe(200);
       }
@@ -184,11 +177,8 @@ describe('Submit Score API', () => {
         mockRedis.get.mockClear();
         mockRedis.get.mockResolvedValue(null);
 
-        const response = await fetch('/api/chesserGuesser/submit', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...validSubmission, guess, actualEval: actual }),
-        });
+        const request = createRequest({ ...validSubmission, guess, actualEval: actual });
+        const response = await action({ request, params: {}, context: {} } as any);
 
         const result = await response.json();
         expect(result.score).toBeCloseTo(expectedScore, 0);
@@ -201,11 +191,8 @@ describe('Submit Score API', () => {
         .mockResolvedValueOnce('0') // userScore = 0
         .mockResolvedValueOnce('0'); // completed = 0
 
-      const response1 = await fetch('/api/chesserGuesser/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...validSubmission, puzzleIndex: 0 }),
-      });
+      const request1 = createRequest({ ...validSubmission, puzzleIndex: 0 });
+      const response1 = await action({ request: request1, params: {}, context: {} });
 
       const result1 = await response1.json();
       const firstScore = result1.totalScore;
@@ -216,11 +203,8 @@ describe('Submit Score API', () => {
         .mockResolvedValueOnce(String(firstScore)) // Previous score
         .mockResolvedValueOnce('1'); // completed = 1
 
-      const response2 = await fetch('/api/chesserGuesser/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...validSubmission, puzzleIndex: 1 }),
-      });
+      const request2 = createRequest({ ...validSubmission, puzzleIndex: 1 });
+      const response2 = await action({ request: request2, params: {}, context: {} });
 
       const result2 = await response2.json();
       expect(result2.totalScore).toBeGreaterThan(firstScore);
@@ -229,11 +213,8 @@ describe('Submit Score API', () => {
     it('should update leaderboard', async () => {
       mockRedis.get.mockResolvedValue(null);
 
-      await fetch('/api/chesserGuesser/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(validSubmission),
-      });
+      const request = createRequest(validSubmission);
+      await action({ request, params: {}, context: {} });
 
       expect(mockRedis.zadd).toHaveBeenCalledWith(
         'chesserGuesser:leaderboard:2024-01-15',
@@ -245,36 +226,30 @@ describe('Submit Score API', () => {
     it('should set TTL on all stored data', async () => {
       mockRedis.get.mockResolvedValue(null);
 
-      await fetch('/api/chesserGuesser/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(validSubmission),
-      });
+      const request = createRequest(validSubmission);
+      await action({ request, params: {}, context: {} });
 
-      const TTL_7_DAYS = 7 * 24 * 60 * 60;
+      const TTL_30_DAYS = 30 * 24 * 60 * 60;
 
       // Check all setex calls have correct TTL
       const setexCalls = mockRedis.setex.mock.calls;
       expect(setexCalls.length).toBeGreaterThan(0);
       setexCalls.forEach((call: any[]) => {
-        expect(call[1]).toBe(TTL_7_DAYS);
+        expect(call[1]).toBe(TTL_30_DAYS);
       });
 
       // Check leaderboard expire
       expect(mockRedis.expire).toHaveBeenCalledWith(
         'chesserGuesser:leaderboard:2024-01-15',
-        TTL_7_DAYS
+        TTL_30_DAYS
       );
     });
 
     it('should track puzzles completed', async () => {
       mockRedis.get.mockResolvedValue(null);
 
-      const response = await fetch('/api/chesserGuesser/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(validSubmission),
-      });
+      const request = createRequest(validSubmission);
+      const response = await action({ request, params: {}, context: {} } as any);
 
       const result = await response.json();
       expect(result.puzzlesCompleted).toBe(1);
@@ -292,11 +267,8 @@ describe('Submit Score API', () => {
 
       const beforeTimestamp = Date.now();
 
-      await fetch('/api/chesserGuesser/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(validSubmission),
-      });
+      const request = createRequest(validSubmission);
+      await action({ request, params: {}, context: {} });
 
       const afterTimestamp = Date.now();
 
@@ -311,9 +283,8 @@ describe('Submit Score API', () => {
     });
 
     it('should reject non-POST requests', async () => {
-      const response = await fetch('/api/chesserGuesser/submit', {
-        method: 'GET',
-      });
+      const request = createRequest(validSubmission, 'GET');
+      const response = await action({ request, params: {}, context: {} } as any);
 
       expect(response.status).toBe(405);
       const result = await response.json();
@@ -323,11 +294,8 @@ describe('Submit Score API', () => {
     it('should handle Redis errors gracefully', async () => {
       mockRedis.get.mockRejectedValue(new Error('Redis connection failed'));
 
-      const response = await fetch('/api/chesserGuesser/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(validSubmission),
-      });
+      const request = createRequest(validSubmission);
+      const response = await action({ request, params: {}, context: {} } as any);
 
       expect(response.status).toBe(500);
       const result = await response.json();
@@ -336,20 +304,25 @@ describe('Submit Score API', () => {
   });
 
   describe('Score Calculation Edge Cases', () => {
+    const createRequest = (body: any, method: string = 'POST') => {
+      return new Request('http://localhost/api/chesserGuesser/submit', {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+    };
+
     it('should handle zero evaluations correctly', async () => {
       mockRedis.get.mockResolvedValue(null);
 
-      const response = await fetch('/api/chesserGuesser/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: 'testuser',
-          date: '2024-01-15',
-          puzzleIndex: 0,
-          guess: 0,
-          actualEval: 0,
-        }),
+      const request = createRequest({
+        username: 'testuser',
+        date: '2024-01-15',
+        puzzleIndex: 0,
+        guess: 0,
+        actualEval: 0,
       });
+      const response = await action({ request, params: {}, context: {} } as any);
 
       const result = await response.json();
       expect(result.score).toBe(100); // Perfect equal position
@@ -368,17 +341,14 @@ describe('Submit Score API', () => {
         mockRedis.get.mockClear();
         mockRedis.get.mockResolvedValue(null);
 
-        const response = await fetch('/api/chesserGuesser/submit', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            username: 'testuser',
-            date: '2024-01-15',
-            puzzleIndex: 0,
-            guess,
-            actualEval: actual,
-          }),
+        const request = createRequest({
+          username: 'testuser',
+          date: '2024-01-15',
+          puzzleIndex: 0,
+          guess,
+          actualEval: actual,
         });
+        const response = await action({ request, params: {}, context: {} } as any);
 
         const result = await response.json();
         expect(result.score).toBeGreaterThanOrEqual(0);
