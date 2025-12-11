@@ -17,6 +17,7 @@ import { DailyProgressTracker } from "~/components/ChesserGuesser/DailyProgressT
 import { Leaderboard } from "~/components/ChesserGuesser/Leaderboard";
 import { EndlessModePrompt } from "~/components/ChesserGuesser/EndlessModePrompt";
 import { ModeIndicator } from "~/components/ChesserGuesser/ModeIndicator";
+import { DailyCompletionMessage } from "~/components/ChesserGuesser/DailyCompletionMessage";
 
 // Import utilities
 import type { GameMode, ChessPuzzle, DailyPuzzleSet, DailyGameState } from "~/utils/chesserGuesser/types";
@@ -98,6 +99,8 @@ export default function ChesserGuesserUnlimited() {
   const [dailyGameState, setDailyGameState] = useState<DailyGameState | null>(null);
   const [dailyTotalScore, setDailyTotalScore] = useState(0);
   const [lastDailyScore, setLastDailyScore] = useState<number | undefined>(undefined);
+  const [isDailyLoading, setIsDailyLoading] = useState(false);
+  const [dailyError, setDailyError] = useState<string | null>(null);
 
   // Endless mode prompt state
   const [showEndlessPrompt, setShowEndlessPrompt] = useState(false);
@@ -153,10 +156,20 @@ export default function ChesserGuesserUnlimited() {
 
   const loadDailyPuzzles = async () => {
     try {
+      setIsDailyLoading(true);
+      setDailyError(null);
+
       const response = await fetch(`/api/chesserGuesser/puzzles?date=${getTodayDateString()}`);
-      if (!response.ok) throw new Error('Failed to load daily puzzles');
+      if (!response.ok) {
+        throw new Error(`Failed to load daily puzzles: ${response.status}`);
+      }
 
       const data: DailyPuzzleSet = await response.json();
+
+      if (!data.puzzles || data.puzzles.length !== 4) {
+        throw new Error('Invalid puzzle data received');
+      }
+
       setDailyPuzzles(data.puzzles);
 
       // Initialize daily game state if not exists
@@ -171,8 +184,14 @@ export default function ChesserGuesserUnlimited() {
         setDailyGameState(newState);
         saveDailyState(newState);
       }
+
+      setIsDailyLoading(false);
     } catch (error) {
       console.error('Error loading daily puzzles:', error);
+      setDailyError(error instanceof Error ? error.message : 'Failed to load puzzles');
+      setIsDailyLoading(false);
+      // Fallback to endless mode
+      setGameMode('endless');
     }
   };
 
@@ -271,7 +290,8 @@ export default function ChesserGuesserUnlimited() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to submit score');
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(errorData.error || 'Failed to submit score');
       }
 
       const result = await response.json();
@@ -285,11 +305,13 @@ export default function ChesserGuesserUnlimited() {
         timestamp: Date.now(),
       };
 
+      const isLastPuzzle = currentPuzzleIndex === 3;
+
       const updatedState: DailyGameState = {
         ...dailyGameState,
         attempts: [...dailyGameState.attempts, newAttempt],
         totalScore: result.totalScore,
-        completed: currentPuzzleIndex === 3, // Last puzzle
+        completed: isLastPuzzle, // Last puzzle
       };
 
       setDailyGameState(updatedState);
@@ -301,17 +323,19 @@ export default function ChesserGuesserUnlimited() {
       setLastSlider(sliderValue / 100);
 
       // Move to next puzzle or finish
-      if (currentPuzzleIndex < 3) {
+      if (!isLastPuzzle) {
         setTimeout(() => {
           setCurrentPuzzleIndex(currentPuzzleIndex + 1);
+          setSliderValue(0); // Reset slider for next puzzle
           setIsSubmitting(false);
         }, 1500);
       } else {
-        // Daily game completed
+        // Daily game completed - show final state
         setIsSubmitting(false);
       }
     } catch (error) {
       console.error('Error submitting daily guess:', error);
+      alert(error instanceof Error ? error.message : 'Failed to submit score. Please try again.');
       setIsSubmitting(false);
     }
   }
@@ -374,10 +398,38 @@ export default function ChesserGuesserUnlimited() {
             />
           )}
 
+          {/* Daily Loading State */}
+          {gameMode === 'daily' && isDailyLoading && (
+            <div className="bg-white dark:bg-black border-4 border-black dark:!border-white p-6 mb-4 text-center">
+              <div className="font-neo text-black dark:text-white">
+                Loading daily puzzles...
+              </div>
+            </div>
+          )}
+
+          {/* Daily Error State */}
+          {gameMode === 'daily' && dailyError && (
+            <div className="bg-red-100 dark:bg-red-900 border-4 border-red-500 dark:!border-red-400 p-4 mb-4">
+              <p className="font-neo text-red-800 dark:text-red-200 font-bold mb-2">
+                Error Loading Puzzles
+              </p>
+              <p className="font-neo text-red-800 dark:text-red-200 text-sm">
+                {dailyError}
+              </p>
+            </div>
+          )}
+
+          {/* Daily Completion Message */}
+          {gameMode === 'daily' && isDailyCompleted && (
+            <DailyCompletionMessage
+              totalScore={dailyTotalScore}
+            />
+          )}
+
           <div className="pb-6 mx-auto grid gap-x-4 grid-rows-2 md:grid-rows-1 grid-cols-1 md:grid-cols-2 md:ml-auto" style={{ gridTemplateColumns: "80% 20%", marginLeft: "-0.5rem", marginRight: "0.5rem" }}>
             <div className="w-100% col-span-2 md:col-span-1">
               {/* Mode Indicator */}
-              <div className="mb-2">
+              <div className="mb-4">
                 <ModeIndicator mode={gameMode} />
               </div>
 
@@ -473,8 +525,6 @@ export default function ChesserGuesserUnlimited() {
                   <Leaderboard
                     currentUsername={username}
                     date={getTodayDateString()}
-                    isCollapsible={true}
-                    initialCollapsed={false}
                   />
                 </div>
               )}

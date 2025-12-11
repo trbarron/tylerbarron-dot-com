@@ -7,17 +7,12 @@ import type { LeaderboardEntry } from "~/utils/chesserGuesser/types";
 interface LeaderboardProps {
   currentUsername?: string;
   date?: string;
-  isCollapsible?: boolean;
-  initialCollapsed?: boolean;
 }
 
 export function Leaderboard({
   currentUsername,
-  date,
-  isCollapsible = true,
-  initialCollapsed = false
+  date
 }: LeaderboardProps) {
-  const [isCollapsed, setIsCollapsed] = useState(initialCollapsed);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [userRank, setUserRank] = useState<LeaderboardEntry | null>(null);
   const [totalPlayers, setTotalPlayers] = useState(0);
@@ -66,24 +61,12 @@ export function Leaderboard({
   return (
     <div className="bg-white dark:bg-black border-4 border-black dark:!border-white">
       {/* Header */}
-      <div
-        className={`border-b-2 border-accent p-2 bg-white dark:bg-black flex justify-between items-center ${
-          isCollapsible ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-900' : ''
-        }`}
-        onClick={() => isCollapsible && setIsCollapsed(!isCollapsed)}
-      >
-        <h3 className="font-neo font-bold uppercase text-sm text-black dark:text-white">
-          Leaderboard
-        </h3>
-        {isCollapsible && (
-          <span className="font-neo text-black dark:text-white">
-            {isCollapsed ? '▼' : '▲'}
-          </span>
-        )}
+      <div className="border-b-2 border-accent py-2 inline-flex items-center justify-center text-sm md:text-md font-neo font-bold uppercase text-black dark:text-white w-full">
+        Leaderboard
       </div>
 
       {/* Content */}
-      {!isCollapsed && (
+      <div>(
         <div className="max-h-96 overflow-y-auto">
           {isLoading ? (
             <div className="p-4 text-center font-neo text-sm text-gray-600 dark:text-gray-400">
@@ -170,7 +153,7 @@ export function Leaderboard({
             </>
           )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

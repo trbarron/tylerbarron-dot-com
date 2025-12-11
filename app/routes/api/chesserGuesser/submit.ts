@@ -2,7 +2,6 @@
 // POST /api/chesserGuesser/submit
 // Body: { username, date, puzzleIndex, guess, actualEval }
 
-import { json } from "react-router";
 import type { ActionFunctionArgs } from "react-router";
 import { getRedisClient } from "~/utils/redis.server";
 import { calculatePuzzleScore } from "~/utils/chesserGuesser/puzzleSelection";
@@ -24,7 +23,7 @@ function validateUsername(username: string): boolean {
 export async function action({ request }: ActionFunctionArgs) {
   try {
     if (request.method !== 'POST') {
-      return json({ error: 'Method not allowed' }, { status: 405 });
+      return Response.json({ error: 'Method not allowed' }, { status: 405 });
     }
 
     const body = await request.json();
@@ -32,7 +31,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     // Validate inputs
     if (!validateUsername(username)) {
-      return json(
+      return Response.json(
         { error: 'Invalid username. Use 3-20 alphanumeric characters or underscores.' },
         { status: 400 }
       );
@@ -40,21 +39,21 @@ export async function action({ request }: ActionFunctionArgs) {
 
     const dateString = date || getTodayDateString();
     if (!/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
-      return json(
+      return Response.json(
         { error: 'Invalid date format. Use YYYY-MM-DD.' },
         { status: 400 }
       );
     }
 
     if (typeof puzzleIndex !== 'number' || puzzleIndex < 0 || puzzleIndex > 3) {
-      return json(
+      return Response.json(
         { error: 'Invalid puzzle index. Must be 0-3.' },
         { status: 400 }
       );
     }
 
     if (typeof guess !== 'number' || typeof actualEval !== 'number') {
-      return json(
+      return Response.json(
         { error: 'Invalid guess or actualEval. Must be numbers.' },
         { status: 400 }
       );
@@ -67,7 +66,7 @@ export async function action({ request }: ActionFunctionArgs) {
     const existing = await redis.get(submissionKey);
 
     if (existing) {
-      return json(
+      return Response.json(
         { error: 'Puzzle already submitted' },
         { status: 409 }
       );
@@ -136,7 +135,7 @@ export async function action({ request }: ActionFunctionArgs) {
       JSON.stringify(summary)
     );
 
-    return json({
+    return Response.json({
       success: true,
       score,
       totalScore: newTotalScore,
@@ -144,7 +143,7 @@ export async function action({ request }: ActionFunctionArgs) {
     });
   } catch (error) {
     console.error('Submit API error:', error);
-    return json(
+    return Response.json(
       { error: 'Failed to submit puzzle score' },
       { status: 500 }
     );

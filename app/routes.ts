@@ -40,5 +40,10 @@ export default [
   route("set", "routes/set.tsx"),
   { path: "Set", file: "routes/set.tsx", id: "legacy-set-pascal" },
   route("SSBM", "routes/SSBM.tsx"),
+
+  // API routes for Chesser Guesser
+  route("api/chesserGuesser/puzzles", "routes/api/chesserGuesser/puzzles.ts"),
+  route("api/chesserGuesser/submit", "routes/api/chesserGuesser/submit.ts"),
+  route("api/chesserGuesser/leaderboard", "routes/api/chesserGuesser/leaderboard.ts"),
 ] satisfies RouteConfig;
 

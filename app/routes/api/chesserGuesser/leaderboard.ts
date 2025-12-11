@@ -1,7 +1,6 @@
 // API Route: Get daily leaderboard
 // GET /api/chesserGuesser/leaderboard?date=YYYY-MM-DD&limit=50
 
-import { json } from "react-router";
 import type { LoaderFunctionArgs } from "react-router";
 import { getRedisClient } from "~/utils/redis.server";
 import { getTodayDateString } from "~/utils/chesserGuesser/seededRandom";
@@ -22,7 +21,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     // Validate date format
     if (!/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
-      return json(
+      return Response.json(
         { error: 'Invalid date format. Use YYYY-MM-DD.' },
         { status: 400 }
       );
@@ -30,7 +29,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     // Validate limit
     if (isNaN(limit) || limit < 1 || limit > 100) {
-      return json(
+      return Response.json(
         { error: 'Invalid limit. Must be 1-100.' },
         { status: 400 }
       );
@@ -100,7 +99,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     // Get total number of players
     const totalPlayers = await redis.zcard(leaderboardKey);
 
-    return json({
+    return Response.json({
       leaderboard,
       userRank,
       totalPlayers,
@@ -112,7 +111,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     });
   } catch (error) {
     console.error('Leaderboard API error:', error);
-    return json(
+    return Response.json(
       { error: 'Failed to fetch leaderboard' },
       { status: 500 }
     );

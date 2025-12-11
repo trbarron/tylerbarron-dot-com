@@ -118,12 +118,21 @@ type Pages = {
   "/SSBM": {
     params: {};
   };
+  "/api/chesserGuesser/puzzles": {
+    params: {};
+  };
+  "/api/chesserGuesser/submit": {
+    params: {};
+  };
+  "/api/chesserGuesser/leaderboard": {
+    params: {};
+  };
 };
 
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/blog/:slug" | "/favicon.ico" | "/bouldering-tracker" | "/camel-up-cup" | "/cat-tracker" | "/cat-tracker/blog" | "/chesser-guesser" | "/collaborative-checkmate" | "/collaborative-checkmate/:gameId/:playerId" | "/generative-art" | "/pizza-rating" | "/the-riddler" | "/boulderingTracker" | "/BoulderingTracker" | "/camelUpCup" | "/CamelUpCup" | "/catTracker" | "/CatTracker" | "/catTracker/blog" | "/CatTracker/Blog" | "/chesserGuesser" | "/collaborativeCheckmate" | "/collaborativeCheckmate/:gameId/:playerId" | "/generativeArt" | "/GenerativeArt" | "/pizzaRating" | "/PizzaRating" | "/theRiddler" | "/TheRiddler" | "/set" | "/Set" | "/SSBM";
+    page: "/" | "/blog/:slug" | "/favicon.ico" | "/bouldering-tracker" | "/camel-up-cup" | "/cat-tracker" | "/cat-tracker/blog" | "/chesser-guesser" | "/collaborative-checkmate" | "/collaborative-checkmate/:gameId/:playerId" | "/generative-art" | "/pizza-rating" | "/the-riddler" | "/boulderingTracker" | "/BoulderingTracker" | "/camelUpCup" | "/CamelUpCup" | "/catTracker" | "/CatTracker" | "/catTracker/blog" | "/CatTracker/Blog" | "/chesserGuesser" | "/collaborativeCheckmate" | "/collaborativeCheckmate/:gameId/:playerId" | "/generativeArt" | "/GenerativeArt" | "/pizzaRating" | "/PizzaRating" | "/theRiddler" | "/TheRiddler" | "/set" | "/Set" | "/SSBM" | "/api/chesserGuesser/puzzles" | "/api/chesserGuesser/submit" | "/api/chesserGuesser/leaderboard";
   };
   "routes/_index.tsx": {
     id: "routes/_index";
@@ -239,6 +248,18 @@ type RouteFiles = {
     id: "routes/SSBM";
     page: "/SSBM";
   };
+  "routes/api/chesserGuesser/puzzles.ts": {
+    id: "routes/api/chesserGuesser/puzzles";
+    page: "/api/chesserGuesser/puzzles";
+  };
+  "routes/api/chesserGuesser/submit.ts": {
+    id: "routes/api/chesserGuesser/submit";
+    page: "/api/chesserGuesser/submit";
+  };
+  "routes/api/chesserGuesser/leaderboard.ts": {
+    id: "routes/api/chesserGuesser/leaderboard";
+    page: "/api/chesserGuesser/leaderboard";
+  };
 };
 
 type RouteModules = {
@@ -276,4 +297,7 @@ type RouteModules = {
   "routes/set": typeof import("./app/routes/set.tsx");
   "legacy-set-pascal": typeof import("./app/routes/set.tsx");
   "routes/SSBM": typeof import("./app/routes/SSBM.tsx");
+  "routes/api/chesserGuesser/puzzles": typeof import("./app/routes/api/chesserGuesser/puzzles.ts");
+  "routes/api/chesserGuesser/submit": typeof import("./app/routes/api/chesserGuesser/submit.ts");
+  "routes/api/chesserGuesser/leaderboard": typeof import("./app/routes/api/chesserGuesser/leaderboard.ts");
 };
