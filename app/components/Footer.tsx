@@ -4,12 +4,12 @@ import linkedin from "~/images/Global/in.svg";
 
 export default function Footer() {
   return (
-    <footer className="bg-white dark:bg-black border-t-4 border-black dark:!border-white py-8">
+    <footer className="bg-white  border-t-4 border-black  py-8">
       <div className="container mx-auto px-4">
         <div className="flex flex-wrap items-center justify-center">
           <div className="w-full px-4 mx-auto text-center">
-            <div className="text-black dark:text-white font-neo">
-              <div className="text-sm pb-4 text-black dark:text-white font-neo font-semibold tracking-wide">
+            <div className="text-black  font-neo">
+              <div className="text-sm pb-4 text-black  font-neo font-semibold tracking-wide">
                 version: {__GIT_VERSION__}
               </div>
 
@@ -17,9 +17,9 @@ export default function Footer() {
               {/* Social media buttons on separate row */}
               <div className="mt-0 flex items-center justify-center space-x-4">
                 <a href="mailto: trbbarron@gmail.com"
-                  className="bg-white dark:bg-black !border-2 border-black dark:!border-white h-12 w-12 flex items-center justify-center hover:bg-accent dark:hover:bg-accent"
+                  className="bg-white  !border-2 border-black  h-12 w-12 flex items-center justify-center hover:bg-accent "
                   type="button">
-                  <div className="dark:invert">
+                  <div className="">
                     <img
                       src={email}
                       alt="EMAIL"
@@ -29,9 +29,9 @@ export default function Footer() {
                 </a>
 
                 <a href="https://github.com/trbarron"
-                  className="bg-white dark:bg-black !border-2 border-black dark:!border-white h-12 w-12 flex items-center justify-center hover:bg-accent dark:hover:bg-accent"
+                  className="bg-white  !border-2 border-black  h-12 w-12 flex items-center justify-center hover:bg-accent "
                   type="button">
-                  <div className="dark:invert">
+                  <div className="">
                     <img
                       src={git}
                       alt="GITHUB"
@@ -41,9 +41,9 @@ export default function Footer() {
                 </a>
 
                 <a href="https://linkedin.com/in/tylerbarron"
-                  className="bg-white dark:bg-black !border-2 border-black dark:!border-white h-12 w-12 flex items-center justify-center hover:bg-accent dark:hover:bg-accent"
+                  className="bg-white  !border-2 border-black  h-12 w-12 flex items-center justify-center hover:bg-accent "
                   type="button">
-                  <div className="dark:invert">
+                  <div className="">
                     <img
                       src={linkedin}
                       alt="LINKEDIN"

@@ -182,46 +182,46 @@ export default function Index() {
   const allProjects = [...links, ...projectPosts];
 
   return (
-    <main className="min-h-screen bg-white dark:bg-black relative font-neo">
-      <section className="w-full py-16 top-0 z-10 flex items-center justify-center border-b-4 border-black dark:!border-white">
+    <main className="min-h-screen bg-white  relative font-neo">
+      <section className="w-full py-16 top-0 z-10 flex items-center justify-center border-b-4 border-black ">
         <div className="text-center">
-          <div className="text-5xl md:text-6xl xl:text-7xl text-black dark:text-white font-neo font-extrabold tracking-tighter">
+          <div className="text-5xl md:text-6xl xl:text-7xl text-black  font-neo font-extrabold tracking-tighter">
             BARRON WASTELAND
           </div>
-          <div className="text-black dark:text-white text-xl xl:text-2xl font-neo font-semibold mt-2 tracking-wide">
+          <div className="text-black  text-xl xl:text-2xl font-neo font-semibold mt-2 tracking-wide">
             FOOD FOR THOUGHT // IDEAS FOR EATING
           </div>
         </div>
       </section>
 
-      <section className="w-full flex items-center justify-center bg-white dark:bg-black py-12">
+      <section className="w-full flex items-center justify-center bg-white  py-12">
         <div className="flex flex-col items-center w-full max-w-4xl">
-          <h2 className="text-black dark:text-white text-4xl font-neo font-extrabold mb-8 border-b-2 border-accent pb-2 tracking-tight">PROJECTS</h2>
+          <h2 className="text-black  text-4xl font-neo font-extrabold mb-8 border-b-2 border-accent pb-2 tracking-tight">PROJECTS</h2>
           <div className="w-full px-8">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
               {allProjects.map(({ to, title, description }) => (
-                <div key={to} className="border-2 border-black dark:!border-white bg-white dark:bg-black hover:bg-accent dark:hover:bg-accent group">
+                <div key={to} className="border-2 border-black  bg-white  hover:bg-accent  group">
                   <Link to={to} className="block p-4 no-underline hover:no-underline h-full">
-                    <div className="font-neo font-bold text-lg text-black dark:text-white group-hover:text-white tracking-wide">{title.toUpperCase()}</div>
-                    <div className="font-neo text-sm mt-1 opacity-75 text-black dark:text-white group-hover:text-white group-hover:opacity-100 font-medium">{description}</div>
+                    <div className="font-neo font-bold text-lg text-black  group-hover:text-white tracking-wide">{title.toUpperCase()}</div>
+                    <div className="font-neo text-sm mt-1 opacity-75 text-black  group-hover:text-white group-hover:opacity-100 font-medium">{description}</div>
                   </Link>
                 </div>
               ))}
             </div>
           </div>
 
-          <h2 className="text-black dark:text-white text-4xl font-neo font-extrabold mb-8 mt-16 border-b-2 border-accent pb-2 tracking-tight">WRITING</h2>
+          <h2 className="text-black  text-4xl font-neo font-extrabold mb-8 mt-16 border-b-2 border-accent pb-2 tracking-tight">WRITING</h2>
           <ul className="w-full space-y-4 px-8">
             {posts.filter((post: Post) => post.type !== 'project').map((post: Post) => (
-              <li key={post.slug} className="border-2 border-black dark:!border-white bg-white dark:bg-black hover:bg-accent dark:hover:bg-accent group">
+              <li key={post.slug} className="border-2 border-black  bg-white  hover:bg-accent  group">
                 <Link to={`/blog/${post.slug}`} className="block p-4 no-underline hover:no-underline">
-                  <div className="font-neo font-bold text-lg text-black dark:text-white group-hover:text-white tracking-wide">{post.title.toUpperCase()}</div>
+                  <div className="font-neo font-bold text-lg text-black  group-hover:text-white tracking-wide">{post.title.toUpperCase()}</div>
                   {post.subtitle && (
-                    <div className="font-neo text-base mt-1 text-black dark:text-white group-hover:text-white opacity-80 group-hover:opacity-100 font-medium">
+                    <div className="font-neo text-base mt-1 text-black  group-hover:text-white opacity-80 group-hover:opacity-100 font-medium">
                       {post.subtitle}
                     </div>
                   )}
-                  <div className="font-neo text-sm mt-1 opacity-75 text-black dark:text-white group-hover:text-white group-hover:opacity-100 font-medium">
+                  <div className="font-neo text-sm mt-1 opacity-75 text-black  group-hover:text-white group-hover:opacity-100 font-medium">
                     {new Date(post.date).toLocaleDateString('en-US', {
                       year: 'numeric',
                       month: 'long',
@@ -234,7 +234,7 @@ export default function Index() {
           </ul>
         </div>
       </section>
-      <div className="border-t-4 border-black dark:!border-white">
+      <div className="border-t-4 border-black ">
         <Footer />
       </div>
     </main>

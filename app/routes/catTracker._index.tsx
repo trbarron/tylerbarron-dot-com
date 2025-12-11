@@ -146,12 +146,12 @@ export default function ChecoLiveTracker() {
     }
 
     return (
-        <div className="bg-black dark:bg-white bg-fixed min-h-screen flex flex-col">
+        <div className="bg-black  bg-fixed min-h-screen flex flex-col">
             <Navbar />
             <main className="flex-grow">
                 <Article title="" subtitle="">
                     <div className="text-center">
-                        <h2 className="text-3xl text-black dark:text-white">Cat Work Tracker</h2>
+                        <h2 className="text-3xl text-black ">Cat Work Tracker</h2>
                         {!basicData ? (
                             <h2 className="text-4xl font-bold text-red-500">Error loading data</h2>
                         ) : (
@@ -160,18 +160,18 @@ export default function ChecoLiveTracker() {
                                     {/* Main Info Card */}
                                     <div className="text-center mb-8">
                                         {/* Total Time - Hero Element */}
-                                        <div className="text-sm text-black dark:text-white mb-3">Today</div>
-                                        <div className="text-6xl font-bold font-mono mb-1 text-black dark:text-white">{getTotalWorkTime()}</div>
+                                        <div className="text-sm text-black  mb-3">Today</div>
+                                        <div className="text-6xl font-bold font-mono mb-1 text-black ">{getTotalWorkTime()}</div>
                                         
                                         {/* Currently Working - Subtle */}
-                                        <div className="text-sm text-black dark:text-white my-2">
+                                        <div className="text-sm text-black  my-2">
                                             Currently Working: {' '}
                                             <span className={`px-2 py-1 text-sm font-bold ${
                                                 basicData.is_present
                                                     ? basicData.cat === 'Tuni'
-                                                        ? 'bg-white dark:bg-black text-black dark:text-white border border-black dark:border-white'
-                                                        : 'bg-black dark:bg-white text-white dark:text-black border border-black dark:border-white'
-                                                    : 'text-gray-500 dark:text-gray-400'
+                                                        ? 'bg-white  text-black  border border-black '
+                                                        : 'bg-black  text-white  border border-black '
+                                                    : 'text-gray-500 '
                                             }`}>
                                                 {basicData.is_present ? basicData.cat : 'None'}
                                             </span>
@@ -180,12 +180,12 @@ export default function ChecoLiveTracker() {
                                     
                                     {/* Horizontal Percentage Bar with integrated legend */}
                                     <div>
-                                        <div className="flex justify-between text-xs text-black dark:text-white mb-2 px-1">
+                                        <div className="flex justify-between text-xs text-black  mb-2 px-1">
                                             <span>Checo</span>
                                             <span>Tuni</span>
                                         </div>
                                         
-                                        <div className="flex h-10 border-2 border-black dark:!border-white">
+                                        <div className="flex h-10 border-2 border-black ">
                                             {(() => {
                                                 const parseTime = (timeStr: string) => {
                                                     const parts = timeStr.split(':').map(Number);
@@ -208,7 +208,7 @@ export default function ChecoLiveTracker() {
                                                             {checoPercent > 15 && `${checoPercent.toFixed(0)}%`}
                                                         </div>
                                                         <div 
-                                                            className="bg-white flex items-center justify-center text-black dark:text-white font-bold text-xl border-l-2 border-gray-400 dark:border-gray-500 transition-all duration-500"
+                                                            className="bg-white flex items-center justify-center text-black  font-bold text-xl border-l-2 border-gray-400  transition-all duration-500"
                                                             style={{ width: `${tuniPercent}%` }}
                                                         >
                                                             {tuniPercent > 15 && `${tuniPercent.toFixed(0)}%`}
@@ -219,7 +219,7 @@ export default function ChecoLiveTracker() {
                                         </div>
                                         
                                         {/* Explanation Text */}
-                                        <div className="text-center mt-3 text-xs text-gray-600 dark:text-gray-300">
+                                        <div className="text-center mt-3 text-xs text-gray-600 ">
                                             {(() => {
                                                 const parseTime = (timeStr: string) => {
                                                     const parts = timeStr.split(':').map(Number);
@@ -250,7 +250,7 @@ export default function ChecoLiveTracker() {
 
                                 <button
                                     onClick={toggleDetails}
-                                    className="bg-white dark:bg-black text-black dark:text-white border-4 border-black dark:!border-white px-6 py-3 font-extrabold uppercase tracking-wide hover:bg-black dark:hover:bg-white hover:text-white dark:hover:text-black"
+                                    className="bg-white  text-black  border-4 border-black  px-6 py-3 font-extrabold uppercase tracking-wide hover:bg-black  hover:text-white "
                                 >
                                     {showDetails ? "Hide Details" : "Show Details"}
                                 </button>
@@ -265,7 +265,7 @@ export default function ChecoLiveTracker() {
                                 )}
                             </>
                         )}
-                        <a href="/CatTracker/Blog" className="block mt-8 mb-20 text-black dark:text-white underline hover:text-accent dark:hover:text-accent">
+                        <a href="/CatTracker/Blog" className="block mt-8 mb-20 text-black  underline hover:text-accent ">
                             Learn more about the Cat Tracker project
                         </a>
                     </div>

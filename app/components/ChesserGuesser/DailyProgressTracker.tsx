@@ -17,18 +17,18 @@ export function DailyProgressTracker({
   const puzzles = [0, 1, 2, 3];
 
   return (
-    <div className="bg-white dark:bg-black border-4 border-black dark:!border-white mb-4">
+    <div className="bg-white  border-4 border-black  mb-4">
       {/* Header */}
-      <div className="border-b-2 border-accent py-2 inline-flex items-center justify-center text-sm md:text-md font-neo font-bold uppercase text-black dark:text-white w-full">
+      <div className="border-b-2 border-accent py-2 inline-flex items-center justify-center text-sm md:text-md font-neo font-bold uppercase text-black  w-full">
         Progress
       </div>
 
       {/* Score Display */}
-      <div className="p-4 text-center border-b-2 border-black dark:!border-white">
-        <div className="font-neo text-3xl md:text-4xl font-bold text-black dark:text-white">
+      <div className="p-4 text-center border-b-2 border-black ">
+        <div className="font-neo text-3xl md:text-4xl font-bold text-black ">
           {totalScore}
         </div>
-        <div className="font-neo text-xs uppercase text-gray-600 dark:text-gray-400">
+        <div className="font-neo text-xs uppercase text-gray-600 ">
           Total Score
         </div>
         {lastPuzzleScore !== undefined && lastPuzzleScore >= 0 && (
@@ -55,8 +55,8 @@ export function DailyProgressTracker({
                   ${isCompleted
                     ? 'bg-accent text-white border-accent'
                     : isCurrent
-                      ? 'bg-white dark:bg-black text-black dark:text-white border-black dark:!border-white animate-pulse'
-                      : 'bg-gray-100 dark:bg-gray-900 text-gray-400 dark:text-gray-600 border-gray-300 dark:!border-gray-700'
+                      ? 'bg-white  text-black  border-black  animate-pulse'
+                      : 'bg-gray-100  text-gray-400  border-gray-300 '
                   }
                 `}
               >
@@ -70,7 +70,7 @@ export function DailyProgressTracker({
             );
           })}
         </div>
-        <div className="text-center mt-2 font-neo text-xs text-gray-600 dark:text-gray-400">
+        <div className="text-center mt-2 font-neo text-xs text-gray-600 ">
           {completedPuzzles}/4 Completed
         </div>
       </div>

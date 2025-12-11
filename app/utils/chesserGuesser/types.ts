@@ -48,7 +48,8 @@ export interface UserStats {
 }
 
 export interface EndlessModePrompt {
-  show: boolean;
+  show: boolean; // Deprecated, use hasShown for logic
+  hasShown?: boolean;
   gamesPlayed: number;
   threshold: number; // Show prompt after this many games
 }

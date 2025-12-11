@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@variant dark (.dark &);
 
 @theme {
   --font-mono: "JetBrains Mono", "SF Mono", "Monaco", "Consolas", "Liberation Mono", "Courier New", monospace;
@@ -9,7 +8,6 @@
 
   --color-accent: #00605E;
   --color-accent-light: #008B87;
-  --color-accent-dark: #004643;
 
   --color-gray-100: #f5f5f5;
   --color-gray-200: #e5e5e5;

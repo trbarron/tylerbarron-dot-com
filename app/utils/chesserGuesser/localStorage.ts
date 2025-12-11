@@ -8,6 +8,7 @@ const STORAGE_KEYS = {
   USERNAME: 'chesserGuesser:username',
   ENDLESS_PROMPT: 'chesserGuesser:endlessPrompt',
   ENDLESS_COUNT: 'chesserGuesser:endlessCount',
+  MAX_STREAK: 'chesserGuesser:maxStreak',
 } as const;
 
 /**
@@ -127,14 +128,25 @@ export function shouldShowEndlessPrompt(): boolean {
     const count = getEndlessCount();
     const promptData = localStorage.getItem(STORAGE_KEYS.ENDLESS_PROMPT);
 
+    const THRESHOLD = 4;
+
     if (!promptData) {
-      // First time - set random threshold between 3-5
-      const threshold = 3 + Math.floor(Math.random() * 3); // 3, 4, or 5
+      // First time initialization
       const data: EndlessModePrompt = {
         show: false,
+        hasShown: false,
         gamesPlayed: count,
-        threshold
+        threshold: THRESHOLD
       };
+
+      // If we already hit the threshold on first load (edge case), mark as shown to trigger
+      if (count >= THRESHOLD) {
+        data.show = true;
+        data.hasShown = true;
+        localStorage.setItem(STORAGE_KEYS.ENDLESS_PROMPT, JSON.stringify(data));
+        return true;
+      }
+
       localStorage.setItem(STORAGE_KEYS.ENDLESS_PROMPT, JSON.stringify(data));
       return false;
     }
@@ -144,13 +156,16 @@ export function shouldShowEndlessPrompt(): boolean {
     // Update games played
     data.gamesPlayed = count;
 
-    // Show prompt if threshold reached and not already shown
-    if (count >= data.threshold && !data.show) {
+    // Show prompt if threshold reached and NEVER shown before
+    if (count >= THRESHOLD && !data.hasShown) {
       data.show = true;
+      data.hasShown = true; // Mark as shown immediately so we don't show again
       localStorage.setItem(STORAGE_KEYS.ENDLESS_PROMPT, JSON.stringify(data));
       return true;
     }
 
+    // Ensure persistence of games count
+    localStorage.setItem(STORAGE_KEYS.ENDLESS_PROMPT, JSON.stringify(data));
     return false;
   } catch (e) {
     console.warn('Failed to check endless prompt:', e);
@@ -171,6 +186,29 @@ export function dismissEndlessPrompt(): void {
     }
   } catch (e) {
     console.warn('Failed to dismiss endless prompt:', e);
+  }
+}
+
+/**
+ * Save max streak to localStorage
+ */
+export function saveMaxStreak(streak: number): void {
+  try {
+    localStorage.setItem(STORAGE_KEYS.MAX_STREAK, streak.toString());
+  } catch (e) {
+    console.warn('Failed to save max streak:', e);
+  }
+}
+
+/**
+ * Load max streak from localStorage
+ */
+export function loadMaxStreak(): number {
+  try {
+    return parseInt(localStorage.getItem(STORAGE_KEYS.MAX_STREAK) || '0', 10);
+  } catch (e) {
+    console.warn('Failed to load max streak:', e);
+    return 0;
   }
 }
 

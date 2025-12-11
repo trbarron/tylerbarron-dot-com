@@ -59,9 +59,9 @@ export function Leaderboard({
   };
 
   return (
-    <div className="bg-white dark:bg-black border-4 border-black dark:!border-white">
+    <div className="bg-white  border-4 border-black ">
       {/* Header */}
-      <div className="border-b-2 border-accent py-2 inline-flex items-center justify-center text-sm md:text-md font-neo font-bold uppercase text-black dark:text-white w-full">
+      <div className="border-b-2 border-accent py-2 inline-flex items-center justify-center text-sm md:text-md font-neo font-bold uppercase text-black  w-full">
         Leaderboard
       </div>
 
@@ -69,15 +69,15 @@ export function Leaderboard({
       <div>
         <div className="max-h-[500px] overflow-y-auto">
           {isLoading ? (
-            <div className="p-4 text-center font-neo text-sm text-gray-600 dark:text-gray-400">
+            <div className="p-4 text-center font-neo text-sm text-gray-600 ">
               Loading...
             </div>
           ) : error ? (
-            <div className="p-4 text-center font-neo text-sm text-red-600 dark:text-red-400">
+            <div className="p-4 text-center font-neo text-sm text-red-600 ">
               {error}
             </div>
           ) : leaderboard.length === 0 ? (
-            <div className="p-4 text-center font-neo text-sm text-gray-600 dark:text-gray-400">
+            <div className="p-4 text-center font-neo text-sm text-gray-600 ">
               No scores yet today.<br />Be the first!
             </div>
           ) : (
@@ -91,10 +91,10 @@ export function Leaderboard({
                   <div
                     key={`${entry.username}-${index}`}
                     className={`
-                      border-b border-black dark:!border-white p-2 font-neo text-xs
+                      border-b border-black  p-2 font-neo text-xs
                       ${isCurrentUser
-                        ? 'bg-yellow-100 dark:bg-yellow-900'
-                        : 'bg-white dark:bg-black'
+                        ? 'bg-yellow-100 '
+                        : 'bg-white '
                       }
                     `}
                   >
@@ -103,14 +103,14 @@ export function Leaderboard({
                         <span className={`font-bold w-8 flex-shrink-0 ${entry.rank <= 3 ? 'text-md' : ''}`}>
                           {medal || `#${entry.rank}`}
                         </span>
-                        <span className={`truncate ${isCurrentUser ? 'font-bold' : ''} text-black dark:text-white`}>
+                        <span className={`truncate ${isCurrentUser ? 'font-bold' : ''} text-black `}>
                           {entry.username}
                           {isCurrentUser && ' (You)'}
                         </span>
                       </div>
                       <div className="flex items-center gap-3 flex-shrink-0">
 
-                        <span className={`font-bold min-w-12 text-right ${isCurrentUser ? 'text-black dark:text-white' : 'text-accent'}`} title="Total Difference">
+                        <span className={`font-bold min-w-12 text-right ${isCurrentUser ? 'text-black ' : 'text-accent'}`} title="Total Difference">
                           {entry.score}
                         </span>
                       </div>
@@ -122,18 +122,18 @@ export function Leaderboard({
               {/* User Rank (if outside top 50) */}
               {userRank && (
                 <>
-                  <div className="border-b-2 border-black dark:!border-white"></div>
-                  <div className="bg-yellow-100 dark:bg-yellow-900 border-b border-black dark:!border-white p-2 font-neo text-xs">
+                  <div className="border-b-2 border-black "></div>
+                  <div className="bg-yellow-100  border-b border-black  p-2 font-neo text-xs">
                     <div className="flex justify-between items-center">
                       <div className="flex items-center gap-2">
                         <span className="font-bold w-8">#{userRank.rank}</span>
-                        <span className="font-bold text-black dark:text-white">
+                        <span className="font-bold text-black ">
                           {userRank.username} (You)
                         </span>
                       </div>
                       <div className="flex items-center gap-3">
 
-                        <span className="font-bold text-black dark:text-white min-w-12 text-right" title="Total Difference">
+                        <span className="font-bold text-black  min-w-12 text-right" title="Total Difference">
                           {userRank.score}
                         </span>
                       </div>
@@ -143,7 +143,7 @@ export function Leaderboard({
               )}
 
               {/* Footer */}
-              <div className="p-2 text-center font-neo text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-900">
+              <div className="p-2 text-center font-neo text-xs text-gray-600  bg-gray-50 ">
                 {totalPlayers} {totalPlayers === 1 ? 'player' : 'players'} today
               </div>
             </>

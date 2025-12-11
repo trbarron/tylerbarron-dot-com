@@ -71,7 +71,7 @@ const SSBM = () => {
   );
 
   return (
-    <div className="bg-black dark:bg-white bg-fixed min-h-screen flex flex-col">
+    <div className="bg-black  bg-fixed min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-grow">
         <Article title="Super Smash Bros. Melee" subtitle="">

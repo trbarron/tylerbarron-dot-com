@@ -23,17 +23,17 @@ export function DailyCompletionMessage({
   };
 
   return (
-    <div className="bg-accent border-4 border-black dark:!border-white p-6 mb-4">
+    <div className="bg-accent border-4 border-black  p-6 mb-4">
       <div className="text-center">
         <h2 className="font-neo font-bold uppercase text-2xl text-white mb-4">
           Complete! Nice!
         </h2>
 
-        <div className="bg-white dark:bg-black border-2 border-black dark:!border-white p-4 mb-4">
-          <div className="font-neo text-4xl font-bold text-black dark:text-white">
+        <div className="bg-white  border-2 border-black  p-4 mb-4">
+          <div className="font-neo text-4xl font-bold text-black ">
             {totalScore}
           </div>
-          <div className="font-neo text-sm text-gray-600 dark:text-gray-400 uppercase">
+          <div className="font-neo text-sm text-gray-600  uppercase">
             Total Points
           </div>
         </div>

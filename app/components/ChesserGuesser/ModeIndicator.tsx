@@ -15,7 +15,7 @@ export function ModeIndicator({ mode }: ModeIndicatorProps) {
         border-4
         ${mode === 'daily'
           ? 'bg-accent text-white border-accent'
-          : 'bg-white dark:bg-black text-black dark:text-white border-black dark:!border-white'
+          : 'bg-white  text-black  border-black '
         }
       `}
     >

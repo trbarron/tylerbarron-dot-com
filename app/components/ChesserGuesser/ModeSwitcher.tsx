@@ -11,17 +11,17 @@ interface ModeSwitcherProps {
 
 export function ModeSwitcher({ currentMode, onModeChange, disabled = false }: ModeSwitcherProps) {
   return (
-    <div className="bg-white dark:bg-black border-4 border-black dark:!border-white mb-4">
+    <div className="bg-white  border-4 border-black  mb-4">
       <div className="grid grid-cols-2 h-12">
         <button
           onClick={() => !disabled && onModeChange('endless')}
           disabled={disabled}
           className={`
             font-neo font-bold uppercase tracking-wide text-xs md:text-md
-            transition-all duration-200 border-r-2 border-black dark:!border-white
+            transition-all duration-200 border-r-2 border-black 
             ${currentMode === 'endless'
-              ? 'bg-black text-white dark:bg-white dark:text-black'
-              : 'bg-white text-black dark:bg-black dark:text-white hover:bg-gray-100 dark:hover:bg-gray-900'
+              ? 'bg-black text-white  '
+              : 'bg-white text-black   hover:bg-gray-100 '
             }
             ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
           `}
@@ -35,8 +35,8 @@ export function ModeSwitcher({ currentMode, onModeChange, disabled = false }: Mo
             font-neo font-bold uppercase tracking-wide text-xs md:text-md
             transition-all duration-200
             ${currentMode === 'daily'
-              ? 'bg-black text-white dark:bg-white dark:text-black'
-              : 'bg-white text-black dark:bg-black dark:text-white hover:bg-gray-100 dark:hover:bg-gray-900'
+              ? 'bg-black text-white  '
+              : 'bg-white text-black   hover:bg-gray-100 '
             }
             ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
           `}

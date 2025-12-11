@@ -19,6 +19,7 @@ import { EndlessModePrompt } from "~/components/ChesserGuesser/EndlessModePrompt
 import { ModeIndicator } from "~/components/ChesserGuesser/ModeIndicator";
 import { DailyCompletionMessage } from "~/components/ChesserGuesser/DailyCompletionMessage";
 import { LeaderboardModal } from "~/components/ChesserGuesser/LeaderboardModal";
+import { EndlessProgressTracker } from "~/components/ChesserGuesser/EndlessProgressTracker";
 
 // Import utilities
 import type { GameMode, ChessPuzzle, DailyPuzzleSet, DailyGameState } from "~/utils/chesserGuesser/types";
@@ -33,6 +34,8 @@ import {
   getEndlessCount,
   shouldShowEndlessPrompt,
   dismissEndlessPrompt,
+  loadMaxStreak,
+  saveMaxStreak,
 } from "~/utils/chesserGuesser/localStorage";
 
 const Chessboard = lazy(() => import('~/components/Chessboard'));
@@ -89,10 +92,10 @@ export default function ChesserGuesserUnlimited() {
   const [sliderValue, setSliderValue] = useState(0);
   const [currentTurn, setCurrentTurn] = useState(getCurrentPlayer(loaderData.randomFEN));
   const [streak, setStreak] = useState(0);
+  const [maxStreak, setMaxStreak] = useState(0);
   const [lastSlider, setLastSlider] = useState(0);
   const [lastEval, setLastEval] = useState(0);
-  const [positiveMessage, setPositiveMessage] = useState(getPositiveMessage());
-  const [negativeMessage, setNegativeMessage] = useState(getNegativeMessage());
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Daily mode state
@@ -123,6 +126,9 @@ export default function ChesserGuesserUnlimited() {
       setCurrentPuzzleIndex(savedDailyState.attempts.length);
       setDailyTotalScore(savedDailyState.totalScore);
     }
+
+    // Load max streak
+    setMaxStreak(loadMaxStreak());
   }, []);
 
   // Update puzzle when loader data changes (endless mode)
@@ -249,11 +255,14 @@ export default function ChesserGuesserUnlimited() {
     }
 
     if (correctSide) {
-      setStreak(streak + 1);
-      setPositiveMessage(getPositiveMessage());
+      const newStreak = streak + 1;
+      setStreak(newStreak);
+      if (newStreak > maxStreak) {
+        setMaxStreak(newStreak);
+        saveMaxStreak(newStreak);
+      }
     } else {
       setStreak(0);
-      setNegativeMessage(getNegativeMessage());
     }
 
     setLastEval(loaderData.evalScore / 100);
@@ -343,26 +352,7 @@ export default function ChesserGuesserUnlimited() {
     }
   }
 
-  function getPositiveMessage() {
-    const messages = [
-      "Keep it up!", "Nice!", "Good job!", "You're on a roll!",
-      "You're doing great!", "You're on fire!", "You're killing it!",
-      "You're unstoppable!", "You're a genius!", "You're a master!",
-      "You're a legend!", "You're a god!", "You're a beast!",
-      "You're a monster!", "Let's go!", "Correct!!"
-    ];
-    return messages[Math.floor(Math.random() * messages.length)] + " 👍";
-  }
 
-  function getNegativeMessage() {
-    const messages = [
-      "Keep trying!", "Next time!", "Good effort!", "You'll get it!",
-      "You're close!", "You're almost there!", "You're getting warmer!",
-      "Close, but no cigar!", "Oomph! Next time!", "You're so close!",
-      "Maybe next time!"
-    ];
-    return messages[Math.floor(Math.random() * messages.length)] + " 😓";
-  }
 
   function getCurrentPlayer(fen: string) {
     const parts = fen.split(' ');
@@ -373,7 +363,7 @@ export default function ChesserGuesserUnlimited() {
   const isDailyCompleted = dailyGameState?.completed || (gameMode === 'daily' && currentPuzzleIndex >= 4);
 
   return (
-    <div className="bg-black dark:bg-white bg-fixed min-h-screen flex flex-col">
+    <div className="bg-black  bg-fixed min-h-screen flex flex-col">
       <Navbar />
       <ScrollRestoration getKey={(location) => location.pathname} />
       <main className="flex-grow">
@@ -403,8 +393,8 @@ export default function ChesserGuesserUnlimited() {
 
           {/* Daily Loading State */}
           {gameMode === 'daily' && isDailyLoading && (
-            <div className="bg-white dark:bg-black border-4 border-black dark:!border-white p-6 mb-4 text-center">
-              <div className="font-neo text-black dark:text-white">
+            <div className="bg-white  border-4 border-black  p-6 mb-4 text-center">
+              <div className="font-neo text-black ">
                 Loading daily puzzles...
               </div>
             </div>
@@ -412,11 +402,11 @@ export default function ChesserGuesserUnlimited() {
 
           {/* Daily Error State */}
           {gameMode === 'daily' && dailyError && (
-            <div className="bg-red-100 dark:bg-red-900 border-4 border-red-500 dark:!border-red-400 p-4 mb-4">
-              <p className="font-neo text-red-800 dark:text-red-200 font-bold mb-2">
+            <div className="bg-red-100  border-4 border-red-500  p-4 mb-4">
+              <p className="font-neo text-red-800  font-bold mb-2">
                 Error Loading Puzzles
               </p>
-              <p className="font-neo text-red-800 dark:text-red-200 text-sm">
+              <p className="font-neo text-red-800  text-sm">
                 {dailyError}
               </p>
             </div>
@@ -437,7 +427,7 @@ export default function ChesserGuesserUnlimited() {
               </div>
 
               {/* Chessboard */}
-              <Suspense fallback={<div className="w-full aspect-square bg-gray-100 dark:bg-gray-900 rounded flex items-center justify-center text-black dark:text-white font-neo">Loading chessboard...</div>}>
+              <Suspense fallback={<div className="w-full aspect-square bg-gray-100  rounded flex items-center justify-center text-black  font-neo">Loading chessboard...</div>}>
                 <Chessboard
                   initialFen={fen}
                   movable={false}
@@ -455,7 +445,7 @@ export default function ChesserGuesserUnlimited() {
                   max="400"
                   value={sliderValue}
                   onChange={handleSliderChange}
-                  className="range flex-auto cursor-pointer appearance-none bg-black h-2 my-auto dark:bg-white border-2 border-black dark:!border-white"
+                  className="range flex-auto cursor-pointer appearance-none bg-black h-2 my-auto  border-2 border-black "
                   disabled={isDailyCompleted}
                 />
                 <img src={whiteKingImage} alt="White King" className="w-12 h-12 flex-none" />
@@ -463,7 +453,7 @@ export default function ChesserGuesserUnlimited() {
 
               {/* Submit Button */}
               <button
-                className="w-full bg-white dark:bg-black text-black dark:text-white border-4 border-black dark:!border-white px-6 py-3 font-extrabold uppercase tracking-wide hover:bg-accent dark:hover:bg-accent hover:text-white disabled:opacity-50 disabled:cursor-not-allowed flex flex-col items-center font-neo mt-4"
+                className="w-full bg-white  text-black  border-4 border-black  px-6 py-3 font-extrabold uppercase tracking-wide hover:bg-accent  hover:text-white disabled:opacity-50 disabled:cursor-not-allowed flex flex-col items-center font-neo mt-4"
                 onClick={submitGuess}
                 disabled={isSubmitting || isDailyCompleted}
               >
@@ -490,33 +480,34 @@ export default function ChesserGuesserUnlimited() {
                 </div>
               )}
 
-              {/* Last Round Info */}
-              <div className="bg-white dark:bg-black border-4 border-black dark:!border-white overflow-hidden w-full col-span-3 md:col-span-1 md:h-40 h-36">
-                <div className="w-full border-b-2 border-accent py-0 md:py-2 inline-flex items-center justify-center text-sm md:text-md font-neo font-bold uppercase text-black dark:text-white bg-white dark:bg-black">
-                  Last Round:
-                </div>
-                <div className="flex items-center justify-center px-4 py-0 md:py-2 bg-white dark:bg-black text-black dark:text-white text-xs md:text-xs h-full overflow-y-hidden font-neo">
-                  Answer: {lastEval.toFixed(2)} <br />
-                  Guess: {lastSlider.toFixed(2)} <br /><br />
-                  Difference: {(lastEval - lastSlider).toFixed(2)} <br /><br />
-                  {lastEval === 0 ? "" : (gameMode === 'endless' ? (streak > 0 ? positiveMessage : negativeMessage) : (lastDailyScore !== undefined && lastDailyScore > 0 ? positiveMessage : lastDailyScore === 0 ? negativeMessage : ""))}
-                </div>
-              </div>
-
-              {/* Streak (endless mode only) */}
+              {/* Endless Progress Tracker (only in endless mode) */}
               {gameMode === 'endless' && (
-                <div className="bg-white dark:bg-black border-4 border-black dark:!border-white overflow-hidden w-full md:col-span-1">
-                  <div className="w-full border-b-2 z-30 bg-white dark:bg-black border-accent py-0 md:py-2 inline-flex items-center justify-center text-sm md:text-md font-neo font-bold uppercase text-black dark:text-white">
-                    Streak:
-                  </div>
-                  <div className="h-full flex items-center justify-center px-4 pb-0 -mt-3 z-10 md:pb-4 bg-white dark:bg-black text-black dark:text-white text-md md:text-lg overflow-y-hidden font-neo font-bold">
-                    {streak}
-                  </div>
+                <div className="col-span-3 md:col-span-1">
+                  <EndlessProgressTracker
+                    streak={streak}
+                    gamesPlayed={getEndlessCount()}
+                    maxStreak={maxStreak}
+                  />
                 </div>
               )}
 
+              {/* Last Round Info */}
+              <div className="bg-white  border-4 border-black  overflow-hidden w-full col-span-3 md:col-span-1 md:h-64 h-48">
+                <div className="w-full border-b-2 border-accent py-0 md:py-2 inline-flex items-center justify-center text-sm md:text-md font-neo font-bold uppercase text-black  bg-white ">
+                  Last Round:
+                </div>
+                <div className="flex items-center justify-center px-4 py-0 md:py-2 bg-white  text-black  text-xs md:text-xs h-full overflow-y-hidden font-neo">
+                  Answer: {lastEval.toFixed(2)} <br />
+                  Guess: {lastSlider.toFixed(2)} <br /><br />
+                  Difference: {(lastEval - lastSlider).toFixed(2)} <br /><br />
+
+                </div>
+              </div>
+
+
+
               {/* Turn Indicator */}
-              <div className={`border-4 overflow-hidden w-full col-span-1 md:col-span-1 ${currentTurn === 'White' ? 'bg-white border-black dark:!border-white' : 'bg-black border-black dark:!border-white'}`}>
+              <div className={`border-4 overflow-hidden w-full col-span-1 md:col-span-1 ${currentTurn === 'White' ? 'bg-white border-black ' : 'bg-black border-black '}`}>
                 <div className={`w-full py-0 md:py-2 inline-flex items-center justify-center text-sm md:text-md my-auto h-full font-neo font-bold uppercase ${currentTurn === 'White' ? 'text-black' : 'text-white'}`}>
                   {currentTurn} to move
                 </div>
