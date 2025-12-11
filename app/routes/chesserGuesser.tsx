@@ -10,6 +10,29 @@ import { Subarticle } from "~/components/Subarticle";
 import whiteKingImage from '~/images/ChesserGuesser/whiteKing.png';
 import blackKingImage from '~/images/ChesserGuesser/blackKing.png';
 
+// Import new components
+import { ModeSwitcher } from "~/components/ChesserGuesser/ModeSwitcher";
+import { UsernameModal } from "~/components/ChesserGuesser/UsernameModal";
+import { DailyProgressTracker } from "~/components/ChesserGuesser/DailyProgressTracker";
+import { Leaderboard } from "~/components/ChesserGuesser/Leaderboard";
+import { EndlessModePrompt } from "~/components/ChesserGuesser/EndlessModePrompt";
+import { ModeIndicator } from "~/components/ChesserGuesser/ModeIndicator";
+
+// Import utilities
+import type { GameMode, ChessPuzzle, DailyPuzzleSet, DailyGameState } from "~/utils/chesserGuesser/types";
+import { calculatePuzzleScore } from "~/utils/chesserGuesser/puzzleSelection";
+import { getTodayDateString } from "~/utils/chesserGuesser/seededRandom";
+import {
+  loadUsername,
+  saveUsername,
+  loadDailyState,
+  saveDailyState,
+  incrementEndlessCount,
+  getEndlessCount,
+  shouldShowEndlessPrompt,
+  dismissEndlessPrompt,
+} from "~/utils/chesserGuesser/localStorage";
+
 const Chessboard = lazy(() => import('~/components/Chessboard'));
 import chessgroundBase from '../styles/chessground.base.css?url';
 import chessgroundBrown from '../styles/chessground.brown.css?url';
@@ -32,7 +55,7 @@ export const loader = async () => {
     const response = await fetch('https://f73vgbj1jk.execute-api.us-west-2.amazonaws.com/prod/chesserGuesser');
     const data = await response.json();
     const parsedBody = JSON.parse(data.body);
-    
+
     return Response.json({
       randomFEN: parsedBody.fen,
       evalScore: parseInt(parsedBody.eval),
@@ -51,6 +74,12 @@ export default function ChesserGuesserUnlimited() {
   const loaderData = useLoaderData<LoaderData>();
   const navigate = useNavigate();
 
+  // Game mode state
+  const [gameMode, setGameMode] = useState<GameMode>('endless');
+  const [showUsernameModal, setShowUsernameModal] = useState(false);
+  const [username, setUsername] = useState<string>('');
+
+  // Endless mode state
   const [, setChess] = useState(new Chess(loaderData.randomFEN));
   const [fen, setFen] = useState(loaderData.randomFEN);
   const [boardOrientation, setBoardOrientation] = useState<"white" | "black">(getCurrentPlayer(loaderData.randomFEN).toLowerCase() as "white" | "black");
@@ -63,23 +92,131 @@ export default function ChesserGuesserUnlimited() {
   const [negativeMessage, setNegativeMessage] = useState(getNegativeMessage());
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Daily mode state
+  const [dailyPuzzles, setDailyPuzzles] = useState<ChessPuzzle[]>([]);
+  const [currentPuzzleIndex, setCurrentPuzzleIndex] = useState(0);
+  const [dailyGameState, setDailyGameState] = useState<DailyGameState | null>(null);
+  const [dailyTotalScore, setDailyTotalScore] = useState(0);
+  const [lastDailyScore, setLastDailyScore] = useState<number | undefined>(undefined);
+
+  // Endless mode prompt state
+  const [showEndlessPrompt, setShowEndlessPrompt] = useState(false);
+
+  // Initialize on mount
   useEffect(() => {
-    setChess(new Chess(loaderData.randomFEN));
-    setFen(loaderData.randomFEN);
-    setBoardOrientation(getCurrentPlayer(loaderData.randomFEN).toLowerCase() as "white" | "black");
-    setCurrentTurn(getCurrentPlayer(loaderData.randomFEN));
-    setIsSubmitting(false); // Re-enable submit button when new puzzle loads
-  }, [loaderData.randomFEN]);
+    // Load username if exists
+    const savedUsername = loadUsername();
+    if (savedUsername) {
+      setUsername(savedUsername);
+    }
+
+    // Check for daily state
+    const savedDailyState = loadDailyState();
+    if (savedDailyState && !savedDailyState.completed) {
+      // Resume daily game
+      setDailyGameState(savedDailyState);
+      setCurrentPuzzleIndex(savedDailyState.attempts.length);
+      setDailyTotalScore(savedDailyState.totalScore);
+    }
+  }, []);
+
+  // Update puzzle when loader data changes (endless mode)
+  useEffect(() => {
+    if (gameMode === 'endless') {
+      setChess(new Chess(loaderData.randomFEN));
+      setFen(loaderData.randomFEN);
+      setBoardOrientation(getCurrentPlayer(loaderData.randomFEN).toLowerCase() as "white" | "black");
+      setCurrentTurn(getCurrentPlayer(loaderData.randomFEN));
+      setIsSubmitting(false);
+    }
+  }, [loaderData.randomFEN, gameMode]);
+
+  // Load daily puzzles when switching to daily mode
+  useEffect(() => {
+    if (gameMode === 'daily' && dailyPuzzles.length === 0) {
+      loadDailyPuzzles();
+    }
+  }, [gameMode]);
+
+  // Update current puzzle for daily mode
+  useEffect(() => {
+    if (gameMode === 'daily' && dailyPuzzles.length > 0 && currentPuzzleIndex < dailyPuzzles.length) {
+      const puzzle = dailyPuzzles[currentPuzzleIndex];
+      setChess(new Chess(puzzle.fen));
+      setFen(puzzle.fen);
+      setBoardOrientation(getCurrentPlayer(puzzle.fen).toLowerCase() as "white" | "black");
+      setCurrentTurn(getCurrentPlayer(puzzle.fen));
+      setSliderValue(0);
+      setIsSubmitting(false);
+    }
+  }, [gameMode, dailyPuzzles, currentPuzzleIndex]);
+
+  const loadDailyPuzzles = async () => {
+    try {
+      const response = await fetch(`/api/chesserGuesser/puzzles?date=${getTodayDateString()}`);
+      if (!response.ok) throw new Error('Failed to load daily puzzles');
+
+      const data: DailyPuzzleSet = await response.json();
+      setDailyPuzzles(data.puzzles);
+
+      // Initialize daily game state if not exists
+      if (!dailyGameState) {
+        const newState: DailyGameState = {
+          username,
+          date: getTodayDateString(),
+          attempts: [],
+          totalScore: 0,
+          completed: false,
+        };
+        setDailyGameState(newState);
+        saveDailyState(newState);
+      }
+    } catch (error) {
+      console.error('Error loading daily puzzles:', error);
+    }
+  };
 
   const handleSliderChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSliderValue(Number(event.target.value));
   };
 
-  function submitGuess() {
-    if (isSubmitting) return; // Prevent multiple submissions
-    
-    setIsSubmitting(true); // Lock the button
-    
+  const handleModeChange = (newMode: GameMode) => {
+    if (newMode === 'daily') {
+      // Check if username is set
+      const savedUsername = loadUsername();
+      if (!savedUsername) {
+        setShowUsernameModal(true);
+        return;
+      }
+      setUsername(savedUsername);
+    }
+
+    setGameMode(newMode);
+    setSliderValue(0);
+    setLastSlider(0);
+    setLastEval(0);
+  };
+
+  const handleUsernameSubmit = (newUsername: string) => {
+    setUsername(newUsername);
+    saveUsername(newUsername);
+    setShowUsernameModal(false);
+    setGameMode('daily');
+  };
+
+  async function submitGuess() {
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+
+    if (gameMode === 'endless') {
+      await submitEndlessGuess();
+    } else {
+      await submitDailyGuess();
+    }
+  }
+
+  async function submitEndlessGuess() {
     const difference = Math.abs(loaderData.evalScore - sliderValue) / 100;
     let correctSide = false;
     if (loaderData.evalScore > 20 && sliderValue > 0) {
@@ -101,11 +238,82 @@ export default function ChesserGuesserUnlimited() {
     setLastEval(loaderData.evalScore / 100);
     setLastSlider(sliderValue / 100);
 
-    navigate(".", { 
-      replace: true
-    });
+    // Increment endless count and check for prompt
+    const count = incrementEndlessCount();
+    if (shouldShowEndlessPrompt()) {
+      setShowEndlessPrompt(true);
+    }
 
-    return difference;
+    navigate(".", { replace: true });
+  }
+
+  async function submitDailyGuess() {
+    if (!dailyGameState || currentPuzzleIndex >= dailyPuzzles.length) {
+      setIsSubmitting(false);
+      return;
+    }
+
+    const currentPuzzle = dailyPuzzles[currentPuzzleIndex];
+    const score = calculatePuzzleScore(sliderValue, currentPuzzle.eval);
+
+    try {
+      // Submit to backend
+      const response = await fetch('/api/chesserGuesser/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username,
+          date: getTodayDateString(),
+          puzzleIndex: currentPuzzleIndex,
+          guess: sliderValue,
+          actualEval: currentPuzzle.eval,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit score');
+      }
+
+      const result = await response.json();
+
+      // Update local state
+      const newAttempt = {
+        puzzleIndex: currentPuzzleIndex,
+        guess: sliderValue,
+        actualEval: currentPuzzle.eval,
+        score,
+        timestamp: Date.now(),
+      };
+
+      const updatedState: DailyGameState = {
+        ...dailyGameState,
+        attempts: [...dailyGameState.attempts, newAttempt],
+        totalScore: result.totalScore,
+        completed: currentPuzzleIndex === 3, // Last puzzle
+      };
+
+      setDailyGameState(updatedState);
+      saveDailyState(updatedState);
+
+      setDailyTotalScore(result.totalScore);
+      setLastDailyScore(score);
+      setLastEval(currentPuzzle.eval / 100);
+      setLastSlider(sliderValue / 100);
+
+      // Move to next puzzle or finish
+      if (currentPuzzleIndex < 3) {
+        setTimeout(() => {
+          setCurrentPuzzleIndex(currentPuzzleIndex + 1);
+          setIsSubmitting(false);
+        }, 1500);
+      } else {
+        // Daily game completed
+        setIsSubmitting(false);
+      }
+    } catch (error) {
+      console.error('Error submitting daily guess:', error);
+      setIsSubmitting(false);
+    }
   }
 
   function getPositiveMessage() {
@@ -135,66 +343,113 @@ export default function ChesserGuesserUnlimited() {
     return turnIndicator === 'w' ? 'White' : 'Black';
   }
 
+  const isDailyCompleted = dailyGameState?.completed || (gameMode === 'daily' && currentPuzzleIndex >= 4);
+
   return (
     <div className="bg-black dark:bg-white bg-fixed min-h-screen flex flex-col">
       <Navbar />
-      <ScrollRestoration getKey={(location) => {
-        // Return consistent key for this route to maintain scroll
-        return location.pathname;
-      }} />
+      <ScrollRestoration getKey={(location) => location.pathname} />
       <main className="flex-grow">
         <Article title="Chesser Guesser" subtitle="">
-            <div className="pb-6 mx-auto grid gap-x-4 grid-rows-2 md:grid-rows-1 grid-cols-1 md:grid-cols-2 md:ml-auto" style={{ gridTemplateColumns: "80% 20%", marginLeft: "-0.5rem", marginRight: "0.5rem" }}>
-              <div className="w-100% col-span-2 md:col-span-1">
-                <Suspense fallback={<div className="w-full aspect-square bg-gray-100 dark:bg-gray-900 rounded flex items-center justify-center text-black dark:text-white font-neo">Loading chessboard...</div>}>
-                  <Chessboard
-                    initialFen={fen}
-                    movable={false}
-                    allowDrawing={true}
-                    orientation={boardOrientation}
-                  />
-                </Suspense>
+          {/* Mode Switcher */}
+          <ModeSwitcher
+            currentMode={gameMode}
+            onModeChange={handleModeChange}
+            disabled={isSubmitting}
+          />
 
-                <div className="gap-2 flex w-full mt-4">
-                  <img src={blackKingImage} alt="Black King" className="w-12 h-12 flex-none" />
-                  <input
-                    type="range"
-                    min="-400"
-                    max="400"
-                    value={sliderValue}
-                    onChange={handleSliderChange}
-                    className="range flex-auto cursor-pointer appearance-none bg-black h-2 my-auto dark:bg-white border-2 border-black dark:!border-white"
-                  />
-                  <img src={whiteKingImage} alt="White King" className="w-12 h-12 flex-none" />
-                </div>
+          {/* Endless Mode Prompt */}
+          {showEndlessPrompt && gameMode === 'endless' && (
+            <EndlessModePrompt
+              onTryRanked={() => {
+                dismissEndlessPrompt();
+                setShowEndlessPrompt(false);
+                handleModeChange('daily');
+              }}
+              onDismiss={() => {
+                dismissEndlessPrompt();
+                setShowEndlessPrompt(false);
+              }}
+              gamesPlayed={getEndlessCount()}
+            />
+          )}
 
-                <button
-                  className="w-full bg-white dark:bg-black text-black dark:text-white border-4 border-black dark:!border-white px-6 py-3 font-extrabold uppercase tracking-wide hover:bg-accent dark:hover:bg-accent hover:text-white disabled:opacity-50 disabled:cursor-not-allowed flex flex-col items-center font-neo"
-                  onClick={submitGuess}
-                  disabled={isSubmitting}
-                >
-                  <span className="text-sm">
-                    {isSubmitting ? 'Loading...' : 'Submit'}
-                  </span>
-                  <span className="text-sm">
-                    {(sliderValue / 100).toFixed(2)}
-                  </span>
-                </button>
+          <div className="pb-6 mx-auto grid gap-x-4 grid-rows-2 md:grid-rows-1 grid-cols-1 md:grid-cols-2 md:ml-auto" style={{ gridTemplateColumns: "80% 20%", marginLeft: "-0.5rem", marginRight: "0.5rem" }}>
+            <div className="w-100% col-span-2 md:col-span-1">
+              {/* Mode Indicator */}
+              <div className="mb-2">
+                <ModeIndicator mode={gameMode} />
               </div>
 
-              <div className="justify-center text-center grid gap-y-3 h-80 md:h-full md:grid-cols-1 w-full grid-cols-3 col-span-2 md:col-span-1 gap-x-4 py-2 md:py-0">
-                <div className="bg-white dark:bg-black border-4 border-black dark:!border-white overflow-hidden w-full col-span-3 md:col-span-1 md:h-60 h-36">
-                  <div className="w-full border-b-2 border-accent py-0 md:py-2 inline-flex items-center justify-center text-sm md:text-md font-neo font-bold uppercase text-black dark:text-white bg-white dark:bg-black">
-                    Last Round:
-                  </div>
-                  <div className="flex items-center justify-center px-4 py-0 md:py-2 bg-white dark:bg-black text-black dark:text-white text-xs md:text-xs h-full overflow-y-hidden font-neo">
-                    Answer: {lastEval.toFixed(2)} <br />
-                    Guess: {lastSlider.toFixed(2)} <br /><br />
-                    Difference: {(lastEval - lastSlider).toFixed(2)} <br /><br />
-                    {lastEval === 0 ? "" : (streak > 0 ? positiveMessage : negativeMessage)}
-                  </div>
-                </div>
+              {/* Chessboard */}
+              <Suspense fallback={<div className="w-full aspect-square bg-gray-100 dark:bg-gray-900 rounded flex items-center justify-center text-black dark:text-white font-neo">Loading chessboard...</div>}>
+                <Chessboard
+                  initialFen={fen}
+                  movable={false}
+                  allowDrawing={true}
+                  orientation={boardOrientation}
+                />
+              </Suspense>
 
+              {/* Slider */}
+              <div className="gap-2 flex w-full mt-4">
+                <img src={blackKingImage} alt="Black King" className="w-12 h-12 flex-none" />
+                <input
+                  type="range"
+                  min="-400"
+                  max="400"
+                  value={sliderValue}
+                  onChange={handleSliderChange}
+                  className="range flex-auto cursor-pointer appearance-none bg-black h-2 my-auto dark:bg-white border-2 border-black dark:!border-white"
+                  disabled={isDailyCompleted}
+                />
+                <img src={whiteKingImage} alt="White King" className="w-12 h-12 flex-none" />
+              </div>
+
+              {/* Submit Button */}
+              <button
+                className="w-full bg-white dark:bg-black text-black dark:text-white border-4 border-black dark:!border-white px-6 py-3 font-extrabold uppercase tracking-wide hover:bg-accent dark:hover:bg-accent hover:text-white disabled:opacity-50 disabled:cursor-not-allowed flex flex-col items-center font-neo mt-4"
+                onClick={submitGuess}
+                disabled={isSubmitting || isDailyCompleted}
+              >
+                <span className="text-sm">
+                  {isSubmitting ? 'Loading...' : isDailyCompleted ? 'Daily Complete!' : 'Submit'}
+                </span>
+                <span className="text-sm">
+                  {(sliderValue / 100).toFixed(2)}
+                </span>
+              </button>
+            </div>
+
+            {/* Sidebar */}
+            <div className="justify-center text-center grid gap-y-3 h-80 md:h-full md:grid-cols-1 w-full grid-cols-3 col-span-2 md:col-span-1 gap-x-4 py-2 md:py-0">
+              {/* Daily Progress Tracker (only in daily mode) */}
+              {gameMode === 'daily' && (
+                <div className="col-span-3 md:col-span-1">
+                  <DailyProgressTracker
+                    currentPuzzle={currentPuzzleIndex}
+                    completedPuzzles={dailyGameState?.attempts.length || 0}
+                    totalScore={dailyTotalScore}
+                    lastPuzzleScore={lastDailyScore}
+                  />
+                </div>
+              )}
+
+              {/* Last Round Info */}
+              <div className="bg-white dark:bg-black border-4 border-black dark:!border-white overflow-hidden w-full col-span-3 md:col-span-1 md:h-60 h-36">
+                <div className="w-full border-b-2 border-accent py-0 md:py-2 inline-flex items-center justify-center text-sm md:text-md font-neo font-bold uppercase text-black dark:text-white bg-white dark:bg-black">
+                  Last Round:
+                </div>
+                <div className="flex items-center justify-center px-4 py-0 md:py-2 bg-white dark:bg-black text-black dark:text-white text-xs md:text-xs h-full overflow-y-hidden font-neo">
+                  Answer: {lastEval.toFixed(2)} <br />
+                  Guess: {lastSlider.toFixed(2)} <br /><br />
+                  Difference: {(lastEval - lastSlider).toFixed(2)} <br /><br />
+                  {lastEval === 0 ? "" : (gameMode === 'endless' ? (streak > 0 ? positiveMessage : negativeMessage) : (lastDailyScore !== undefined && lastDailyScore > 0 ? positiveMessage : lastDailyScore === 0 ? negativeMessage : ""))}
+                </div>
+              </div>
+
+              {/* Streak (endless mode only) */}
+              {gameMode === 'endless' && (
                 <div className="bg-white dark:bg-black border-4 border-black dark:!border-white overflow-hidden w-full md:col-span-1">
                   <div className="w-full border-b-2 z-30 bg-white dark:bg-black border-accent py-0 md:py-2 inline-flex items-center justify-center text-sm md:text-md font-neo font-bold uppercase text-black dark:text-white">
                     Streak:
@@ -203,19 +458,35 @@ export default function ChesserGuesserUnlimited() {
                     {streak}
                   </div>
                 </div>
+              )}
 
-                <div className={`border-4 overflow-hidden w-full col-span-1 md:col-span-1 ${currentTurn === 'White' ? 'bg-white border-black dark:!border-white' : 'bg-black border-black dark:!border-white'}`}>
-                  <div className={`w-full py-0 md:py-2 inline-flex items-center justify-center text-sm md:text-md my-auto h-full font-neo font-bold uppercase ${currentTurn === 'White' ? 'text-black' : 'text-white'}`}>
-                    {currentTurn} to move
-                  </div>
+              {/* Turn Indicator */}
+              <div className={`border-4 overflow-hidden w-full col-span-1 md:col-span-1 ${currentTurn === 'White' ? 'bg-white border-black dark:!border-white' : 'bg-black border-black dark:!border-white'}`}>
+                <div className={`w-full py-0 md:py-2 inline-flex items-center justify-center text-sm md:text-md my-auto h-full font-neo font-bold uppercase ${currentTurn === 'White' ? 'text-black' : 'text-white'}`}>
+                  {currentTurn} to move
                 </div>
-
               </div>
+
+              {/* Leaderboard (daily mode only) */}
+              {gameMode === 'daily' && (
+                <div className="col-span-3 md:col-span-1">
+                  <Leaderboard
+                    currentUsername={username}
+                    date={getTodayDateString()}
+                    isCollapsible={true}
+                    initialCollapsed={false}
+                  />
+                </div>
+              )}
             </div>
+          </div>
         </Article>
+
+        {/* About Section */}
         <Article title="About Chesser Guesser" subtitle="">
           <Subarticle subtitle="Overview">
             <p>Inspired by GeoGuessr, Chesser Guesser challenges players to estimate the computer&apos;s evaluation of chess positions. Players try to estimate the value of specific chess positions as accurately as possible, matching or closely approximating the engine&apos;s evaluation to extend their streak. The goal is to sharpen your evaluative skills by understanding why certain positions are deemed advantageous or disadvantageous by the computer.</p>
+            <p className="mt-4"><strong>Daily Ranked Mode:</strong> Compete on the daily leaderboard! Everyone gets the same 4 puzzles each day (1 easy, 1 medium, 1 hard, 1 expert). Earn up to 400 points total and see how you rank globally.</p>
           </Subarticle>
           <Subarticle subtitle="The Analysis">
             <p>The game integrates with the <a href='https://lichess.org/@/lichess/blog/thousands-of-stockfish-analysers/WN-gLzAA'>Lichess Cloud Analysis</a> to fetch position evaluations at scale, giving access to all the positions and their evaluations without me having to do any work. Having this resource made the tough part of this project incredibly easy.</p>
@@ -237,6 +508,14 @@ export default function ChesserGuesserUnlimited() {
         </Article>
       </main>
       <Footer />
+
+      {/* Username Modal */}
+      <UsernameModal
+        isOpen={showUsernameModal}
+        initialUsername={username}
+        onSubmit={handleUsernameSubmit}
+        onCancel={() => setShowUsernameModal(false)}
+      />
     </div>
   );
 }
