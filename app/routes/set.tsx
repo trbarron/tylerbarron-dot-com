@@ -2,6 +2,9 @@ import { useState } from "react";
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 
+const setSetup = getImageUrl('Set/setSetup.jpg');
+const setAnswers = getImageUrl('Set/setAnswers.jpg');
+const setBoard = getImageUrl('Set/setBoard.jpg');
 // Import components
 import { Navbar } from "../components/Navbar.js";
 import Footer from "../components/Footer.js";
@@ -9,9 +12,7 @@ import { Subarticle } from "../components/Subarticle.js";
 import Article from "../components/Article.js";
 
 // Import assets
-import setBoard from "~/images/Set/setBoard.jpg";
-import setAnswers from "~/images/Set/setAnswers.jpg";
-import setSetup from "~/images/Set/setSetup.jpg";
+import { getImageUrl } from '~/utils/cdn';
 
 const Set = () => {
   const [open, setOpen] = useState(false);
@@ -29,28 +30,28 @@ const Set = () => {
   };
 
   const PhotoComponent = ({ photo, index }: { photo: typeof photos[0]; index: number }) => (
-    <div 
-      onClick={() => openLightbox(index)} 
+    <div
+      onClick={() => openLightbox(index)}
       style={{
-        cursor: 'pointer', 
+        cursor: 'pointer',
         margin: '20px auto',
         textAlign: 'center',
         maxWidth: '80%'
       }}
     >
-      <img 
-        src={photo.src} 
-        alt={photo.alt} 
+      <img
+        src={photo.src}
+        alt={photo.alt}
         style={{
-          maxWidth: '100%', 
+          maxWidth: '100%',
           height: 'auto',
           display: 'block',
           margin: '0 auto'
-        }} 
+        }}
       />
       {photo.caption && (
         <p style={{
-          fontStyle: 'italic', 
+          fontStyle: 'italic',
           marginTop: '10px',
           textAlign: 'center'
         }}>
@@ -83,22 +84,22 @@ const Set = () => {
             <p>Here's a demo:</p>
 
             <div style={{
-              position: 'relative', 
-              paddingBottom: '56.25%', 
-              height: 0, 
-              overflow: 'hidden', 
+              position: 'relative',
+              paddingBottom: '56.25%',
+              height: 0,
+              overflow: 'hidden',
               maxWidth: '80%',  // Match photo width
               margin: '20px auto'  // Center the video container
             }}>
-              <iframe 
-                src="https://www.youtube.com/embed/U1rkMZI7B4M" 
-                style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%'}} 
-                allow="autoplay; encrypted-media" 
+              <iframe
+                src="https://www.youtube.com/embed/U1rkMZI7B4M"
+                style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+                allow="autoplay; encrypted-media"
                 allowFullScreen
                 title="Demoing the product"
               ></iframe>
             </div>
-            <p style={{fontStyle: 'italic', marginTop: '10px', textAlign: 'center'}}>Demoing the product</p>
+            <p style={{ fontStyle: 'italic', marginTop: '10px', textAlign: 'center' }}>Demoing the product</p>
 
             <p>I was very happy with what I was able to create in one weekend and ended up taking first in the hackathon.</p>
           </Subarticle>

@@ -6,10 +6,9 @@ import Footer from "~/components/Footer";
 import Article from "~/components/Article";
 import { Subarticle } from "~/components/Subarticle";
 
+const blackKingImage = getImageUrl('ChesserGuesser/blackKing.png');
+const whiteKingImage = getImageUrl('ChesserGuesser/whiteKing.png');
 // Import images
-import whiteKingImage from '~/images/ChesserGuesser/whiteKing.png';
-import blackKingImage from '~/images/ChesserGuesser/blackKing.png';
-
 // Import new components
 import { ModeSwitcher } from "~/components/ChesserGuesser/ModeSwitcher";
 import { UsernameModal } from "~/components/ChesserGuesser/UsernameModal";
@@ -42,6 +41,7 @@ const Chessboard = lazy(() => import('~/components/Chessboard'));
 import chessgroundBase from '../styles/chessground.base.css?url';
 import chessgroundBrown from '../styles/chessground.brown.css?url';
 import chessgroundCburnett from '../styles/chessground.cburnett.css?url';
+import { getImageUrl } from '~/utils/cdn';
 
 export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: chessgroundBase },

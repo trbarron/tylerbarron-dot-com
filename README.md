@@ -40,6 +40,22 @@ tylerbarron-dot-com/
 - Node.js >= 22.0.0
 - npm
 
+### 🖼️ Managing Images
+
+Images are hosted on an S3 CDN to improve performance.
+
+**To add new images:**
+1. Place them in `app/images/`.
+2. Run the upload script:
+   ```bash
+   npm run deploy:images
+   ```
+3. Use them in your code:
+   ```ts
+   import { getImageUrl } from '~/utils/cdn';
+   const myImage = getImageUrl('Folder/image.jpg');
+   ```
+
 ### Getting Started
 
 1. **Install dependencies**:

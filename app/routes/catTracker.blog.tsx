@@ -8,10 +8,12 @@ import Article from "~/components/Article";
 import CustomLightbox from "~/components/CustomLightbox";
 import LightboxPhoto from "~/components/LightboxPhoto";
 
-import checoSetup from "~/images/CatTracker/checoSetup.jpg";
-import checoWorking from "~/images/CatTracker/checoWorking.jpg";
 import vestaboard from "~/images/CatTracker/vestaboardDisplay.jpg";
+import { getImageUrl } from '~/utils/cdn';
 
+const vestaboard = getImageUrl('CatTracker/vestaboardDisplay.jpg');
+const checoWorking = getImageUrl('CatTracker/checoWorking.jpg');
+const checoSetup = getImageUrl('CatTracker/checoSetup.jpg');
 export const loader = async () => {
   // You can fetch data here if needed
   return {

@@ -1,7 +1,9 @@
-import email from "~/images/Global/email.svg";
-import git from "~/images/Global/git.svg";
 import linkedin from "~/images/Global/in.svg";
+import { getImageUrl } from '~/utils/cdn';
 
+const linkedin = getImageUrl('Global/in.svg');
+const git = getImageUrl('Global/git.svg');
+const email = getImageUrl('Global/email.svg');
 export default function Footer() {
   return (
     <footer className="bg-white  border-t-4 border-black  py-8">

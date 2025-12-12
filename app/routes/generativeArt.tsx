@@ -2,6 +2,12 @@ import React, { useState } from "react";
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 
+const pic5 = getImageUrl('GenerativeArt/5.jpg');
+const pic4 = getImageUrl('GenerativeArt/4.jpg');
+const pic3 = getImageUrl('GenerativeArt/3.jpg');
+const pic2 = getImageUrl('GenerativeArt/2.jpg');
+const pic1 = getImageUrl('GenerativeArt/1.jpg');
+const plotter = getImageUrl('GenerativeArt/plotter.jpg');
 // Import components
 import { Navbar } from "../components/Navbar.js";
 import Footer from "../components/Footer.js";
@@ -10,12 +16,8 @@ import Article from "../components/Article.js";
 import Riddler from "../components/Riddler.js";
 
 // Import assets
-import plotter from "~/images/GenerativeArt/plotter.jpg";
-import pic1 from "~/images/GenerativeArt/1.jpg";
-import pic2 from "~/images/GenerativeArt/2.jpg";
-import pic3 from "~/images/GenerativeArt/3.jpg";
-import pic4 from "~/images/GenerativeArt/4.jpg";
-import pic5 from "~/images/GenerativeArt/5.jpg";
+
+import { getImageUrl } from '~/utils/cdn';
 
 const GenerativeArt = () => {
   const [open, setOpen] = useState(false);
@@ -36,9 +38,9 @@ const GenerativeArt = () => {
   };
 
   const PhotoComponent = ({ photo, index }: { photo: typeof photos[0]; index: number }) => (
-    <div onClick={() => openLightbox(index)} style={{cursor: 'pointer', margin: '20px 0'}}>
-      <img src={photo.src} alt={photo.alt} style={{maxWidth: '100%', height: 'auto'}} />
-      {photo.caption && <p style={{fontStyle: 'italic', marginTop: '10px'}}>{photo.caption}</p>}
+    <div onClick={() => openLightbox(index)} style={{ cursor: 'pointer', margin: '20px 0' }}>
+      <img src={photo.src} alt={photo.alt} style={{ maxWidth: '100%', height: 'auto' }} />
+      {photo.caption && <p style={{ fontStyle: 'italic', marginTop: '10px' }}>{photo.caption}</p>}
     </div>
   );
 
@@ -49,13 +51,13 @@ const GenerativeArt = () => {
         <Article title="Generative Art" subtitle="">
           <Subarticle subtitle="goodbad.png">
             <p>Inspired by <a href="https://medium.com/quarterstudio/an-intro-to-pen-plotters-29b6bd4327ba">a blog post</a> I decided to purchase a 1980's pen plotter and get into the world of generative art</p>
-            
+
             <PhotoComponent photo={photos[0]} index={0} />
 
             <p>After taking some online classes I set up an instagram to showcase my art: <a href="https://www.instagram.com/goodbad.png/">goodbad.png</a>. This led to an invitation to an online community of generative artists to share work and methodology</p>
-            
+
             <p>After months of sharing work I was accepted to showcase my art at the local library with an exhibition for the public. This was unfortunately canceled due to COVID-19 but <a href="https://www.instagram.com/p/B_h_3LmAZSy/">led to a digital exhibition on their instagram</a></p>
-            
+
             <p>Here is my artist's statement about the generative work:</p>
 
             <Riddler>
