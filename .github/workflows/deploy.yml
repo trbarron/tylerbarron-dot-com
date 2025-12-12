@@ -124,6 +124,8 @@ jobs:
           npm run build
           mkdir -p public
           cp -r build/client/* public/
+        env:
+          VITE_CDN_URL: ${{ secrets.VITE_CDN_URL }}
           
       - name: 🏗 Build Architect Handler
         run: |
@@ -153,3 +155,4 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
           GA_TRACKING_ID: ${{ secrets.GA_TRACKING_ID }}
+          VITE_CDN_URL: ${{ secrets.VITE_CDN_URL }}

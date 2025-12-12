@@ -4,9 +4,7 @@
  */
 
 // CDN base URL from environment or fallback to S3 direct URL
-const CDN_URL = typeof process !== 'undefined'
-  ? process.env.CDN_URL || process.env.AWS_BUCKET_URL || ''
-  : '';
+const CDN_URL = (import.meta.env.VITE_CDN_URL || process.env.CDN_URL || process.env.AWS_BUCKET_URL || '') as string;
 
 // For local development, you can use a different URL or empty string to use relative paths
 const isDevelopment = typeof process !== 'undefined' && process.env.NODE_ENV === 'development';

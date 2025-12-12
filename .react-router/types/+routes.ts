@@ -22,6 +22,9 @@ type Pages = {
   "/favicon.ico": {
     params: {};
   };
+  "/healthcheck": {
+    params: {};
+  };
   "/bouldering-tracker": {
     params: {};
   };
@@ -132,7 +135,7 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/blog/:slug" | "/favicon.ico" | "/bouldering-tracker" | "/camel-up-cup" | "/cat-tracker" | "/cat-tracker/blog" | "/chesser-guesser" | "/collaborative-checkmate" | "/collaborative-checkmate/:gameId/:playerId" | "/generative-art" | "/pizza-rating" | "/the-riddler" | "/boulderingTracker" | "/BoulderingTracker" | "/camelUpCup" | "/CamelUpCup" | "/catTracker" | "/CatTracker" | "/catTracker/blog" | "/CatTracker/Blog" | "/chesserGuesser" | "/collaborativeCheckmate" | "/collaborativeCheckmate/:gameId/:playerId" | "/generativeArt" | "/GenerativeArt" | "/pizzaRating" | "/PizzaRating" | "/theRiddler" | "/TheRiddler" | "/set" | "/Set" | "/SSBM" | "/api/chesserGuesser/puzzles" | "/api/chesserGuesser/submit" | "/api/chesserGuesser/leaderboard";
+    page: "/" | "/blog/:slug" | "/favicon.ico" | "/healthcheck" | "/bouldering-tracker" | "/camel-up-cup" | "/cat-tracker" | "/cat-tracker/blog" | "/chesser-guesser" | "/collaborative-checkmate" | "/collaborative-checkmate/:gameId/:playerId" | "/generative-art" | "/pizza-rating" | "/the-riddler" | "/boulderingTracker" | "/BoulderingTracker" | "/camelUpCup" | "/CamelUpCup" | "/catTracker" | "/CatTracker" | "/catTracker/blog" | "/CatTracker/Blog" | "/chesserGuesser" | "/collaborativeCheckmate" | "/collaborativeCheckmate/:gameId/:playerId" | "/generativeArt" | "/GenerativeArt" | "/pizzaRating" | "/PizzaRating" | "/theRiddler" | "/TheRiddler" | "/set" | "/Set" | "/SSBM" | "/api/chesserGuesser/puzzles" | "/api/chesserGuesser/submit" | "/api/chesserGuesser/leaderboard";
   };
   "routes/_index.tsx": {
     id: "routes/_index";
@@ -145,6 +148,10 @@ type RouteFiles = {
   "routes/favicon[.]ico.ts": {
     id: "routes/favicon[.]ico";
     page: "/favicon.ico";
+  };
+  "routes/healthcheck.tsx": {
+    id: "routes/healthcheck";
+    page: "/healthcheck";
   };
   "routes/boulderingTracker.tsx": {
     id: "routes/boulderingTracker";
@@ -267,6 +274,7 @@ type RouteModules = {
   "routes/_index": typeof import("./app/routes/_index.tsx");
   "routes/blog.$slug": typeof import("./app/routes/blog.$slug.tsx");
   "routes/favicon[.]ico": typeof import("./app/routes/favicon[.]ico.ts");
+  "routes/healthcheck": typeof import("./app/routes/healthcheck.tsx");
   "routes/boulderingTracker": typeof import("./app/routes/boulderingTracker.tsx");
   "routes/camelUpCup": typeof import("./app/routes/camelUpCup.tsx");
   "routes/catTracker._index": typeof import("./app/routes/catTracker._index.tsx");

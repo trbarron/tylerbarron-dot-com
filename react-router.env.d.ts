@@ -1,1 +1,1 @@
-// TypeScript environment declarations for React Router
+/// <reference types="vite/client" />

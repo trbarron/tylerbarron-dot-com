@@ -4,7 +4,8 @@ export default [
   index("routes/_index.tsx"),
   route("blog/:slug", "routes/blog.$slug.tsx"),
   route("favicon.ico", "routes/favicon[.]ico.ts"),
-  
+  route("healthcheck", "routes/healthcheck.tsx"),
+
   // Kebab-case routes (preferred)
   route("bouldering-tracker", "routes/boulderingTracker.tsx"),
   route("camel-up-cup", "routes/camelUpCup.tsx"),
@@ -16,7 +17,7 @@ export default [
   route("generative-art", "routes/generativeArt.tsx"),
   route("pizza-rating", "routes/pizzaRating.tsx"),
   route("the-riddler", "routes/theRiddler.tsx"),
-  
+
   // Legacy camelCase and PascalCase routes (for backward compatibility)
   { path: "boulderingTracker", file: "routes/boulderingTracker.tsx", id: "legacy-bouldering-tracker" },
   { path: "BoulderingTracker", file: "routes/boulderingTracker.tsx", id: "legacy-bouldering-tracker-pascal" },
@@ -35,7 +36,7 @@ export default [
   { path: "PizzaRating", file: "routes/pizzaRating.tsx", id: "legacy-pizza-rating-pascal" },
   { path: "theRiddler", file: "routes/theRiddler.tsx", id: "legacy-the-riddler" },
   { path: "TheRiddler", file: "routes/theRiddler.tsx", id: "legacy-the-riddler-pascal" },
-  
+
   // Other routes
   route("set", "routes/set.tsx"),
   { path: "Set", file: "routes/set.tsx", id: "legacy-set-pascal" },
