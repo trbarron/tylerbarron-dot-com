@@ -67,7 +67,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     if (existing) {
       return Response.json(
-        { error: 'Puzzle already submitted' },
+        { error: 'You already submitted for the day' },
         { status: 409 }
       );
     }

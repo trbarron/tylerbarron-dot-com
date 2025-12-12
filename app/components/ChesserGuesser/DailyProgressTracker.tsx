@@ -44,7 +44,7 @@ export function DailyProgressTracker({
           {puzzles.map((puzzleIndex) => {
             const isCompleted = puzzleIndex < completedPuzzles;
             const isCurrent = puzzleIndex === currentPuzzle && !isCompleted;
-            const isPending = puzzleIndex > currentPuzzle;
+            const _isPending = puzzleIndex > currentPuzzle;
 
             return (
               <div

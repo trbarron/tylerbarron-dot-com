@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 
 const ImageDisplay = () => {
-  const [imageData, setImageData] = useState(null);
+  const [imageData, setImageData] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [timestamp, setTimestamp] = useState("");
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -27,7 +27,7 @@ const ImageDisplay = () => {
         setTimestamp(data.timestamp);
         setIsLoading(false);
       } catch (err) {
-        setError(err.message || 'An error occurred while loading the image');
+        setError((err as Error).message || 'An error occurred while loading the image');
         setIsLoading(false);
       }
     };

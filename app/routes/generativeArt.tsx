@@ -30,12 +30,12 @@ const GenerativeArt = () => {
     { src: pic5, alt: "Photo 5" },
   ];
 
-  const openLightbox = (index) => {
+  const openLightbox = (index: number) => {
     setPhotoIndex(index);
     setOpen(true);
   };
 
-  const PhotoComponent = ({ photo, index }) => (
+  const PhotoComponent = ({ photo, index }: { photo: typeof photos[0]; index: number }) => (
     <div onClick={() => openLightbox(index)} style={{cursor: 'pointer', margin: '20px 0'}}>
       <img src={photo.src} alt={photo.alt} style={{maxWidth: '100%', height: 'auto'}} />
       {photo.caption && <p style={{fontStyle: 'italic', marginTop: '10px'}}>{photo.caption}</p>}

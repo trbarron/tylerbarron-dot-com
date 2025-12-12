@@ -244,7 +244,7 @@ export default function ChesserGuesserUnlimited() {
   }
 
   async function submitEndlessGuess() {
-    const difference = Math.abs(loaderData.evalScore - sliderValue) / 100;
+    const _difference = Math.abs(loaderData.evalScore - sliderValue) / 100;
     let correctSide = false;
     if (loaderData.evalScore > 20 && sliderValue > 0) {
       correctSide = true;
@@ -269,7 +269,7 @@ export default function ChesserGuesserUnlimited() {
     setLastSlider(sliderValue / 100);
 
     // Increment endless count and check for prompt
-    const count = incrementEndlessCount();
+    const _count = incrementEndlessCount();
     if (shouldShowEndlessPrompt()) {
       setShowEndlessPrompt(true);
     }

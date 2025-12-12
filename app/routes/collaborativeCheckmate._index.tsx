@@ -3,13 +3,19 @@ import { useNavigate } from "react-router";
 import Footer from "~/components/Footer";
 import { Navbar } from "~/components/Navbar";
 
+interface Game {
+  game_id: string;
+  occupied_seats: number;
+  created_time: number;
+}
+
 export default function CollaborativeCheckmate() {
   const [gameCode, setGameCode] = useState("");
   const [playerId, setPlayerId] = useState("");
   const [isPrivate, setIsPrivate] = useState(false);
-  const [availableGames, setAvailableGames] = useState([]);
+  const [availableGames, setAvailableGames] = useState<Game[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -41,7 +47,7 @@ export default function CollaborativeCheckmate() {
   }, []);
 
   // Format the time difference
-  const formatTimeSince = (timestamp) => {
+  const formatTimeSince = (timestamp: number) => {
     const now = Date.now() / 1000;
     const diffSeconds = Math.floor(now - timestamp);
     
@@ -54,7 +60,7 @@ export default function CollaborativeCheckmate() {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!gameCode || !playerId) {
@@ -67,7 +73,7 @@ export default function CollaborativeCheckmate() {
     });
   };
 
-  const joinGame = (gameId) => {
+  const joinGame = (gameId: string) => {
     if (!playerId) {
       alert("Please enter a username first");
       return;

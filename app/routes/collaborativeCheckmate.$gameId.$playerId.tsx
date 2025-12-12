@@ -68,9 +68,11 @@ export default function CollaborativeCheckmate() {
   const [gameLog, setGameLog] = useState<GameLogEntry[]>([]);
   const [connected, setConnected] = useState(false);
 
-  const [lastMove, setLastMove] = useState<{from: string, to: string} | null>(null);
-  const [submittedMoves, setSubmittedMoves] = useState<any[]>([]);
-  const [teammateMoves, setTeammateMoves] = useState<any[]>([]);
+  const [_lastMove, setLastMove] = useState<{from: string, to: string} | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [_submittedMoves, setSubmittedMoves] = useState<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [_teammateMoves, setTeammateMoves] = useState<any[]>([]);
 
   // Connection handling state
   const [reconnecting, setReconnecting] = useState(false);
@@ -80,9 +82,9 @@ export default function CollaborativeCheckmate() {
   const [hasReceivedInitialState, setHasReceivedInitialState] = useState(false);
 
   // Heartbeat state
-  const [connectionId, setConnectionId] = useState<string>('');
+  const [_connectionId, setConnectionId] = useState<string>('');
   const [lastHeartbeatSent, setLastHeartbeatSent] = useState<number>(0);
-  const [lastHeartbeatReceived, setLastHeartbeatReceived] = useState<number>(0);
+  const [_lastHeartbeatReceived, setLastHeartbeatReceived] = useState<number>(0);
 
   // WebSocket reference
   const socketRef = useRef<WebSocket | null>(null);
@@ -331,6 +333,7 @@ export default function CollaborativeCheckmate() {
                   if (info && typeof info === 'object' && 'id' in info && info.id === playerIdRef.current) {
                     // Store our seat information when we take a seat
                     setLastKnownSeat(seat as SeatKey);
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     setLastKnownReadyState((info as any).ready || false);
                     
                     if (seat.startsWith('t1')) {

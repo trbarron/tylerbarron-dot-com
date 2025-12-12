@@ -67,7 +67,7 @@ export function selectDailyPuzzles(
   dateString: string = getTodayDateString()
 ): DailyPuzzleSet {
   const seed = dateSeed(dateString);
-  const rng = createSeededRandom(seed);
+  const _rng = createSeededRandom(seed);
 
   // Simple selection: pick 4 random puzzles deterministically
   const indices = selectDailyPuzzleIndices(dateString, allPuzzles.length);

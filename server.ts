@@ -20,12 +20,10 @@ const requestHandler = createRequestHandler({
   // @ts-expect-error - React Router build types
   build: () => import("./build/server/root/index.mjs"),
   mode: mode,
-  getLoadContext() {
-    return {};
-  },
 });
 
-async function handlerFn(event, context) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function handlerFn(event: any, context: any) {
   try {
     // In local dev, serve static files from public directory
     const path = event.rawPath || event.path || event.requestContext?.http?.path;
@@ -63,7 +61,8 @@ async function handlerFn(event, context) {
       }
     }
     
-    const response = await requestHandler(event, context);
+    // @ts-expect-error - AWS Lambda context type mismatch with React Router adapter
+    const response = await requestHandler(event, context, {});
     return response;
   } catch (error) {
     console.error('Handler error:', error);

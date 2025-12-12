@@ -192,7 +192,7 @@ describe('Submit Score API', () => {
         .mockResolvedValueOnce('0'); // completed = 0
 
       const request1 = createRequest({ ...validSubmission, puzzleIndex: 0 });
-      const response1 = await action({ request: request1, params: {}, context: {} });
+      const response1 = await action({ request: request1, params: {}, context: {}, unstable_pattern: {} as any });
 
       const result1 = await response1.json();
       const firstScore = result1.totalScore;
@@ -204,7 +204,7 @@ describe('Submit Score API', () => {
         .mockResolvedValueOnce('1'); // completed = 1
 
       const request2 = createRequest({ ...validSubmission, puzzleIndex: 1 });
-      const response2 = await action({ request: request2, params: {}, context: {} });
+      const response2 = await action({ request: request2, params: {}, context: {}, unstable_pattern: {} as any });
 
       const result2 = await response2.json();
       expect(result2.totalScore).toBeGreaterThan(firstScore);
@@ -214,7 +214,7 @@ describe('Submit Score API', () => {
       mockRedis.get.mockResolvedValue(null);
 
       const request = createRequest(validSubmission);
-      await action({ request, params: {}, context: {} });
+      await action({ request, params: {}, context: {}, unstable_pattern: {} as any });
 
       expect(mockRedis.zadd).toHaveBeenCalledWith(
         'chesserGuesser:leaderboard:2024-01-15',
@@ -227,7 +227,7 @@ describe('Submit Score API', () => {
       mockRedis.get.mockResolvedValue(null);
 
       const request = createRequest(validSubmission);
-      await action({ request, params: {}, context: {} });
+      await action({ request, params: {}, context: {}, unstable_pattern: {} as any });
 
       const TTL_30_DAYS = 30 * 24 * 60 * 60;
 
@@ -268,7 +268,7 @@ describe('Submit Score API', () => {
       const beforeTimestamp = Date.now();
 
       const request = createRequest(validSubmission);
-      await action({ request, params: {}, context: {} });
+      await action({ request, params: {}, context: {}, unstable_pattern: {} as any });
 
       const afterTimestamp = Date.now();
 

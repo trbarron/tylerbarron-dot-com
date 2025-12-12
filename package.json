@@ -42,9 +42,12 @@
     "@react-router/node": "^7.9.0",
     "@tailwindcss/typography": "^0.5.15",
     "@types/aws-lambda": "^8.10.157",
+    "@types/d3-geo": "^3.1.0",
+    "@types/geojson": "^7946.0.16",
     "@types/ioredis": "^4.28.10",
     "@types/node": "^22.0.0",
     "@types/react-dom": "^18.2.7",
+    "@types/topojson-client": "^3.1.5",
     "@typescript-eslint/eslint-plugin": "^6.7.4",
     "@typescript-eslint/parser": "^6.7.4",
     "autoprefixer": "^10.4.20",
@@ -67,7 +70,8 @@
     "tailwindcss": "^4.1.17",
     "typescript": "^5.1.6",
     "vite": "^6.4.1",
-    "vite-tsconfig-paths": "^4.2.1"
+    "vite-tsconfig-paths": "^4.2.1",
+    "vitest": "^4.0.15"
   },
   "engines": {
     "node": ">=22.0.0"

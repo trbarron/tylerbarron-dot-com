@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 
@@ -42,19 +42,19 @@ const SSBM = () => {
   // Combine all photos for the lightbox
   const allPhotos = [...textureModPhotos, ...boxxPhotos];
 
-  const openLightbox = (index) => {
+  const openLightbox = (index: number) => {
     setPhotoIndex(index);
     setOpen(true);
   };
 
-  const PhotoComponent = ({ photo, index }) => (
+  const PhotoComponent = ({ photo, index }: { photo: typeof allPhotos[0]; index: number }) => (
     <div onClick={() => openLightbox(index)} style={{cursor: 'pointer', margin: '20px 0', textAlign: 'center'}}>
       <img src={photo.src} alt={photo.alt} style={{maxWidth: '100%', height: 'auto', margin: '0 auto', display: 'block'}} />
       {photo.caption && <p style={{fontStyle: 'italic', marginTop: '10px'}}>{photo.caption}</p>}
     </div>
   );
 
-  const VideoComponent = ({ src, caption }) => (
+  const VideoComponent = ({ src, caption }: { src: string; caption?: string }) => (
     <div style={{margin: '20px 0'}}>
       <div className="video-container" style={{position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden'}}>
         <iframe 

@@ -9,7 +9,7 @@ interface Post {
   subtitle?: string;
 }
 
-export async function loader() {
+export async function loader(): Promise<{ posts: Post[] }> {
   // Use ARC_ENV (automatically set by Architect) to detect production
   const isProduction = process.env.ARC_ENV === 'production';
   
@@ -52,10 +52,10 @@ export async function loader() {
         })
       );
       const validPosts = posts.filter((post): post is NonNullable<typeof post> => post !== null);
-      return Response.json({ posts: validPosts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) });
+      return { posts: validPosts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) };
     } catch (error) {
       console.error('S3 Error:', error);
-      return Response.json({ posts: [] });
+      return { posts: [] };
     }
   } else {
     // In development, compile MDX on the fly
@@ -82,10 +82,10 @@ export async function loader() {
           };
         })
       );
-      return Response.json({ posts: posts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) });
+      return { posts: posts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) };
     } catch (error) {
       console.error('Filesystem Error:', error);
-      return Response.json({ posts: [] });
+      return { posts: [] };
     }
   }
 }

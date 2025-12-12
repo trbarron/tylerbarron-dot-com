@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 
@@ -41,12 +41,12 @@ const Riddler = () => {
     { src: crosswordTwo, alt: "Crossword Two", caption: "Generated crossword grids" }
   ];
 
-  const openLightbox = (index) => {
+  const openLightbox = (index: number) => {
     setPhotoIndex(index);
     setOpen(true);
   };
 
-  const PhotoComponent = ({ photo, index }) => (
+  const PhotoComponent = ({ photo, index }: { photo: typeof photos[0]; index: number }) => (
     <div 
       onClick={() => openLightbox(index)} 
       style={{
@@ -189,7 +189,7 @@ const Riddler = () => {
             <li><a href="https://barronwasteland.wordpress.com/2016/05/25/the-riddler/">Jems</a></li>
             <li><a href="https://barronwasteland.wordpress.com/2016/04/16/the-riddler-space-race/">Space Race</a></li>
             <li><a href="https://barronwasteland.wordpress.com/2015/12/22/the-riddler-2-which-geyser-gushes-first/">Which Geyser Gushes First?</a></li>
-            <li><a href="https://barronwasteland.wordpress.com/2015/12/12/the-riddler-1-whats-the-best-way-to-drop-a-smartphone/">What's the Best Way To Drop A Smartphone?</a></li>   
+            <li><a href="https://barronwasteland.wordpress.com/2015/12/12/the-riddler-1-whats-the-best-way-to-drop-a-smartphone/">What's the Best Way To Drop A Smartphone?</a></li>
 
             </ul></p>
           </Subarticle>

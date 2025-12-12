@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 
@@ -23,12 +23,12 @@ const Set = () => {
     { src: setSetup, alt: "Set Setup", caption: "Hardware setup" },
   ];
 
-  const openLightbox = (index) => {
+  const openLightbox = (index: number) => {
     setPhotoIndex(index);
     setOpen(true);
   };
 
-  const PhotoComponent = ({ photo, index }) => (
+  const PhotoComponent = ({ photo, index }: { photo: typeof photos[0]; index: number }) => (
     <div 
       onClick={() => openLightbox(index)} 
       style={{

@@ -44,7 +44,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
       
       const jsonString = await Body.transformToString();
       const { code, frontmatter } = JSON.parse(jsonString);
-      return Response.json({ code, frontmatter });
+      return { code, frontmatter };
     } catch (error) {
       console.error('S3 Error:', error);
       throw new Response('Not Found', { status: 404 });
@@ -57,12 +57,12 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
       import('fs/promises'),
       import('path')
     ]);
-    
+
     const filePath = path.join(process.cwd(), 'posts', `${slug}.mdx`);
     try {
       const source = await fs.readFile(filePath, 'utf-8');
       const { code, frontmatter } = await processMdx(source);
-      return Response.json({ code, frontmatter });
+      return { code, frontmatter };
     } catch (error) {
       console.error('Filesystem Error:', error);
       throw new Response('Not Found', { status: 404 });

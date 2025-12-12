@@ -60,8 +60,10 @@ export default function PizzaLocationMap() {
       try {
         const response = await fetch('https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json');
         const topology = await response.json() as TopoJSON;
-        const statesGeo = feature(topology, topology.objects.states);
-        setUsStates(statesGeo);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const statesGeo = feature(topology as any, topology.objects.states as any);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        setUsStates(statesGeo as any);
       } catch (error) {
         console.error('Error loading US states:', error);
       }

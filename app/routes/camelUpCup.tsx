@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 
@@ -27,12 +27,12 @@ const CamelUpCup = () => {
     { src: eventOne, alt: "Event itself", caption: "Sir_Humpfree_Bogart's owner (me)" },
   ];
 
-  const openLightbox = (index) => {
+  const openLightbox = (index: number) => {
     setPhotoIndex(index);
     setOpen(true);
   };
 
-  const PhotoComponent = ({ photo, index }) => (
+  const PhotoComponent = ({ photo, index }: { photo: typeof photos[0]; index: number }) => (
     <div onClick={() => openLightbox(index)} style={{cursor: 'pointer', margin: '20px 0'}}>
       <img src={photo.src} alt={photo.alt} style={{maxWidth: '100%', height: 'auto'}} />
       {photo.caption && <p style={{fontStyle: 'italic', marginTop: '10px'}}>{photo.caption}</p>}

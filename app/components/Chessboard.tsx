@@ -25,7 +25,7 @@ interface ChessboardProps {
   };
   events?: {
     select?: (key: string) => void;
-    move?: (orig: string, dest: string, capturedPiece?: any) => void;
+    move?: (orig: string, dest: string, capturedPiece?: unknown) => void;
     change?: () => void;
   };
   drawable?: {
@@ -33,11 +33,11 @@ interface ChessboardProps {
     visible?: boolean;
     defaultSnapToValidMove?: boolean;
     eraseOnClick?: boolean;
-    onChange?: (shapes: any[]) => void;
-    shapes?: any[];
-    autoShapes?: any[];
+    onChange?: (shapes: unknown[]) => void;
+    shapes?: unknown[];
+    autoShapes?: unknown[];
   };
-  ref?: React.RefObject<any>;
+  ref?: React.RefObject<HTMLDivElement | Api>;
 }
 
 // Generate chess squares (a1 through h8)
@@ -68,7 +68,7 @@ export default function Chessboard({
   const [isClient, setIsClient] = useState(false);
 
   // Use the external ref if provided, otherwise use internal
-  const ref = externalRef || internalRef;
+  const ref = (externalRef as React.RefObject<HTMLDivElement>) || internalRef;
 
   // Ensure component only initializes on client
   useEffect(() => {
@@ -77,11 +77,13 @@ export default function Chessboard({
 
   const calcMovable = () => {
     if (viewOnly || !movable) return { free: false, dests: new Map() };
-    
+
     const dests = new Map();
     SQUARES.forEach(s => {
-      const ms = chess.moves({ square: s, verbose: true });
-      if (ms.length) dests.set(s, ms.map(m => m.to));
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const ms = chess.moves({ square: s as any, verbose: true });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if (ms.length) dests.set(s as any, ms.map(m => m.to as any));
     });
     
     return {
@@ -101,7 +103,8 @@ export default function Chessboard({
           fen: newFen,
           turnColor: chess.turn() === 'w' ? 'white' : 'black',
           movable: calcMovable(),
-          lastMove: highlightMoves ? [orig, dest] : undefined
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          lastMove: highlightMoves ? [orig as any, dest as any] : undefined
         });
 
         onMove?.(orig, dest, newFen);
@@ -120,7 +123,8 @@ export default function Chessboard({
       viewOnly,
       movable: calcMovable(),
       events: {
-        move: handleMove,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        move: handleMove as any,
         ...events
       },
       animation: {
@@ -138,7 +142,8 @@ export default function Chessboard({
         ...draggable,
         enabled: draggable.enabled && !viewOnly && !!movable
       },
-      drawable: drawable || {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      drawable: (drawable as any) || {
         enabled: allowDrawing,
       },
       selectable: selectable
@@ -147,8 +152,8 @@ export default function Chessboard({
     cgRef.current = Chessground(ref.current, config);
 
     // If external ref provided, expose the chessground instance
-    if (externalRef) {
-      externalRef.current = cgRef.current;
+    if (externalRef && cgRef.current) {
+      (externalRef as React.MutableRefObject<Api | null>).current = cgRef.current;
     }
 
     return () => {

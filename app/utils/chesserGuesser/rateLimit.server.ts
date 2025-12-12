@@ -234,6 +234,7 @@ export async function rateLimitMiddleware(
   request: Request,
   endpoint: 'submission' | 'leaderboard' | 'puzzles',
   identifier?: string
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<{ error: any; headers: Record<string, string> } | null> {
   let result: RateLimitResult;
 
