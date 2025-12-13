@@ -28,7 +28,9 @@ export function Leaderboard({
 
   const fetchLeaderboard = async () => {
     try {
-      setIsLoading(true);
+      if (leaderboard.length === 0) {
+        setIsLoading(true);
+      }
       setError(null);
 
       const params = new URLSearchParams();

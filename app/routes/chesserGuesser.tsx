@@ -110,6 +110,18 @@ export default function ChesserGuesserUnlimited() {
   // Endless mode prompt state
   const [showEndlessPrompt, setShowEndlessPrompt] = useState(false);
 
+  // Review mode state
+  const [isReviewMode, setIsReviewMode] = useState(false);
+  const [reviewPuzzleIndex, setReviewPuzzleIndex] = useState(0);
+  const [puzzleHistory, setPuzzleHistory] = useState<Array<{
+    fen: string;
+    eval: number;
+    guess: number;
+    timestamp: number;
+    mode: GameMode;
+  }>>([]);
+  const [copyFeedback, setCopyFeedback] = useState(false);
+
   // Initialize on mount
   useEffect(() => {
     // Load username if exists
@@ -162,6 +174,14 @@ export default function ChesserGuesserUnlimited() {
     }
   }, [gameMode, dailyPuzzles, currentPuzzleIndex]);
 
+  // Exit review mode when switching game modes
+  useEffect(() => {
+    if (isReviewMode) {
+      setIsReviewMode(false);
+      setReviewPuzzleIndex(0);
+    }
+  }, [gameMode]);
+
   const loadDailyPuzzles = async () => {
     try {
       setIsDailyLoading(true);
@@ -196,10 +216,49 @@ export default function ChesserGuesserUnlimited() {
       setIsDailyLoading(false);
     } catch (error) {
       console.error('Error loading daily puzzles:', error);
-      setDailyError(error instanceof Error ? error.message : 'Failed to load puzzles');
+
+      // Use fallback puzzles for local development
+      const fallbackPuzzles: ChessPuzzle[] = [
+        {
+          fen: 'r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4',
+          eval: 50,
+          difficulty: 'easy'
+        },
+        {
+          fen: '4r1k1/pp3ppp/2p5/2b5/4PB2/2P2P2/P5PP/3R2K1 w - - 0 1',
+          eval: -125,
+          difficulty: 'medium'
+        },
+        {
+          fen: '2r3k1/5ppp/p3p3/1p1pP3/3P4/1P2QP2/P5PP/3q2K1 w - - 0 1',
+          eval: 280,
+          difficulty: 'hard'
+        },
+        {
+          fen: '6k1/5ppp/4p3/3pP3/3P4/5P2/6PP/6K1 b - - 0 1',
+          eval: -15,
+          difficulty: 'expert'
+        }
+      ];
+
+      console.warn('Using fallback puzzles for development');
+      setDailyPuzzles(fallbackPuzzles);
+      setDailyError('⚠️ Using development puzzles (API unavailable)');
+
+      // Initialize daily game state if not exists
+      if (!dailyGameState) {
+        const newState: DailyGameState = {
+          username,
+          date: getTodayDateString(),
+          attempts: [],
+          totalScore: 0,
+          completed: false,
+        };
+        setDailyGameState(newState);
+        saveDailyState(newState);
+      }
+
       setIsDailyLoading(false);
-      // Fallback to endless mode
-      setGameMode('endless');
     }
   };
 
@@ -231,6 +290,41 @@ export default function ChesserGuesserUnlimited() {
     setGameMode('daily');
   };
 
+  const toggleReviewMode = () => {
+    // Filter history by current mode
+    const currentModeHistory = puzzleHistory.filter(p => p.mode === gameMode);
+    if (currentModeHistory.length === 0) return; // Can't review if no history for current mode
+
+    if (!isReviewMode) {
+      // Entering review mode - start at most recent (index 0)
+      setIsReviewMode(true);
+      setReviewPuzzleIndex(0);
+    } else {
+      // Exiting review mode
+      setIsReviewMode(false);
+    }
+  };
+
+  const navigateReviewPuzzle = (direction: 'prev' | 'next', filteredHistory: typeof puzzleHistory) => {
+    if (direction === 'prev' && reviewPuzzleIndex > 0) {
+      setReviewPuzzleIndex(reviewPuzzleIndex - 1);
+    } else if (direction === 'next' && reviewPuzzleIndex < filteredHistory.length - 1) {
+      setReviewPuzzleIndex(reviewPuzzleIndex + 1);
+    }
+  };
+
+  const copyFEN = async (fen: string) => {
+    try {
+      await navigator.clipboard.writeText(fen);
+      setCopyFeedback(true);
+      setTimeout(() => setCopyFeedback(false), 2000); // Hide after 2 seconds
+    } catch (err) {
+      console.error('Failed to copy FEN:', err);
+      // Fallback: show FEN in alert only on error
+      alert(`Could not copy. FEN: ${fen}`);
+    }
+  };
+
   async function submitGuess() {
     if (isSubmitting) return;
 
@@ -244,7 +338,6 @@ export default function ChesserGuesserUnlimited() {
   }
 
   async function submitEndlessGuess() {
-    const _difference = Math.abs(loaderData.evalScore - sliderValue) / 100;
     let correctSide = false;
     if (loaderData.evalScore > 20 && sliderValue > 0) {
       correctSide = true;
@@ -268,8 +361,21 @@ export default function ChesserGuesserUnlimited() {
     setLastEval(loaderData.evalScore / 100);
     setLastSlider(sliderValue / 100);
 
+    // Add to puzzle history (keep last 15 for endless mode)
+    setPuzzleHistory(prev => {
+      const newEntry = {
+        fen: loaderData.randomFEN,
+        eval: loaderData.evalScore,
+        guess: sliderValue,
+        timestamp: Date.now(),
+        mode: 'endless' as GameMode,
+      };
+      const updated = [newEntry, ...prev];
+      return updated.slice(0, 15); // Keep only last 15 for endless mode
+    });
+
     // Increment endless count and check for prompt
-    const _count = incrementEndlessCount();
+    incrementEndlessCount();
     if (shouldShowEndlessPrompt()) {
       setShowEndlessPrompt(true);
     }
@@ -333,6 +439,22 @@ export default function ChesserGuesserUnlimited() {
       setLastEval(currentPuzzle.eval / 100);
       setLastSlider(sliderValue / 100);
 
+      // Add to puzzle history (keep last 4 for daily mode)
+      setPuzzleHistory(prev => {
+        const newEntry = {
+          fen: currentPuzzle.fen,
+          eval: currentPuzzle.eval,
+          guess: sliderValue,
+          timestamp: Date.now(),
+          mode: 'daily' as GameMode,
+        };
+        const updated = [newEntry, ...prev];
+        // For daily mode, keep only the 4 puzzles from today
+        const dailyPuzzles = updated.filter(p => p.mode === 'daily').slice(0, 4);
+        const endlessPuzzles = updated.filter(p => p.mode === 'endless');
+        return [...dailyPuzzles, ...endlessPuzzles];
+      });
+
       // Move to next puzzle or finish
       if (!isLastPuzzle) {
         setTimeout(() => {
@@ -361,6 +483,28 @@ export default function ChesserGuesserUnlimited() {
   }
 
   const isDailyCompleted = dailyGameState?.completed || (gameMode === 'daily' && currentPuzzleIndex >= 4);
+
+  // Filter history by current game mode
+  const allModeHistory = puzzleHistory.filter(p => p.mode === gameMode);
+  const totalCount = allModeHistory.length;
+
+  // For display, limit to most recent 15 (for endless) or 4 (for daily)
+  const displayLimit = gameMode === 'endless' ? 15 : 4;
+  const filteredHistory = allModeHistory.slice(0, displayLimit);
+
+  // Calculate display number (most recent = highest number)
+  const displayPuzzleNumber = totalCount - reviewPuzzleIndex;
+
+  // Determine what to display (current puzzle or review puzzle)
+  const displayFen = isReviewMode && filteredHistory.length > 0
+    ? filteredHistory[reviewPuzzleIndex].fen
+    : fen;
+
+  const displayOrientation = isReviewMode && filteredHistory.length > 0
+    ? (getCurrentPlayer(filteredHistory[reviewPuzzleIndex].fen).toLowerCase() as "white" | "black")
+    : boardOrientation;
+
+  const reviewPuzzle = isReviewMode && filteredHistory.length > 0 ? filteredHistory[reviewPuzzleIndex] : null;
 
   return (
     <div className="bg-black  bg-fixed min-h-screen flex flex-col">
@@ -421,53 +565,191 @@ export default function ChesserGuesserUnlimited() {
 
           <div className="pb-6 mx-auto grid gap-x-4 grid-cols-1 md:grid-cols-5 md:ml-auto -mx-2 md:mx-2">
             <div className="w-100% col-span-1 md:col-span-4">
-              {/* Mode Indicator */}
-              <div className="mb-4">
-                <ModeIndicator mode={gameMode} />
+              {/* Mode Indicator and Turn Indicator */}
+              <div className="mb-4 flex gap-2 items-stretch">
+                <div className="flex-grow">
+                  <ModeIndicator mode={gameMode} />
+                </div>
+                <div className={`border-2 border-black  px-3 md:px-4 py-1 md:py-2 flex items-center justify-center ${
+                  currentTurn === 'White' ? 'bg-white text-black' : 'bg-black text-white'
+                }`}>
+                  <span className="font-neo font-bold text-xs md:text-sm uppercase whitespace-nowrap">
+                    {currentTurn} to move
+                  </span>
+                </div>
               </div>
+
 
               {/* Chessboard */}
               <Suspense fallback={<div className="w-full aspect-square bg-gray-100  rounded flex items-center justify-center text-black  font-neo">Loading chessboard...</div>}>
                 <Chessboard
-                  initialFen={fen}
+                  key={displayFen} // Force re-render when FEN changes
+                  initialFen={displayFen}
                   movable={false}
-                  allowDrawing={true}
-                  orientation={boardOrientation}
+                  allowDrawing={!isReviewMode}
+                  orientation={displayOrientation}
                 />
               </Suspense>
 
-              {/* Slider */}
-              <div className="gap-2 flex w-full mt-4">
-                <img src={blackKingImage} alt="Black King" className="w-12 h-12 flex-none" />
-                <input
-                  type="range"
-                  min="-400"
-                  max="400"
-                  value={sliderValue}
-                  onChange={handleSliderChange}
-                  className="range flex-auto cursor-pointer appearance-none bg-black h-2 my-auto  border-2 border-black "
-                  disabled={isDailyCompleted}
-                />
-                <img src={whiteKingImage} alt="White King" className="w-12 h-12 flex-none" />
-              </div>
+              {/* Slider - Hidden in review mode */}
+              {!isReviewMode && (
+                <div className="gap-2 flex w-full mt-4">
+                  <img src={blackKingImage} alt="Black King" className="w-12 h-12 flex-none" />
+                  <input
+                    type="range"
+                    min="-400"
+                    max="400"
+                    value={sliderValue}
+                    onChange={handleSliderChange}
+                    className="range flex-auto cursor-pointer appearance-none bg-black h-2 my-auto  border-2 border-black "
+                    disabled={isDailyCompleted}
+                  />
+                  <img src={whiteKingImage} alt="White King" className="w-12 h-12 flex-none" />
+                </div>
+              )}
 
-              {/* Submit Button */}
-              <button
-                className="w-full bg-white  text-black  border-4 border-black  px-6 py-3 font-extrabold uppercase tracking-wide hover:bg-accent  hover:text-white disabled:opacity-50 disabled:cursor-not-allowed flex flex-col items-center font-neo mt-4"
-                onClick={submitGuess}
-                disabled={isSubmitting || isDailyCompleted}
-              >
-                <span className="text-sm">
-                  {isSubmitting ? 'Loading...' : isDailyCompleted ? 'Daily Complete!' : 'Submit'}
-                </span>
-                <span className="text-sm">
-                  {(sliderValue / 100).toFixed(2)}
-                </span>
-              </button>
+              {/* Submit Button - Hidden in review mode */}
+              {!isReviewMode && (
+                <button
+                  className="w-full bg-white  text-black  border-4 border-black  px-6 py-3 font-extrabold uppercase tracking-wide hover:bg-accent  hover:text-white disabled:opacity-50 disabled:cursor-not-allowed flex flex-col items-center font-neo mt-4"
+                  onClick={submitGuess}
+                  disabled={isSubmitting || isDailyCompleted}
+                >
+                  <span className="text-sm">
+                    {isSubmitting ? 'Loading...' : isDailyCompleted ? 'Daily Complete!' : 'Submit'}
+                  </span>
+                  <span className="text-sm">
+                    {(sliderValue / 100).toFixed(2)}
+                  </span>
+                </button>
+              )}
             </div>
 
             {/* Sidebar */}
             <div className="justify-center text-center grid gap-y-3 h-auto md:h-full md:grid-cols-1 w-full grid-cols-3 col-span-1 md:col-span-1 gap-x-4 py-2 md:py-0">
+              {/* Last Round Info / Review Puzzle Info - First on mobile */}
+              {((lastEval !== 0 || lastSlider !== 0) || (isReviewMode && reviewPuzzle)) && (
+                <div className="bg-white  border-4 border-black  overflow-hidden w-full col-span-3 md:col-span-1">
+                  {/* Header */}
+                  <div className="w-full border-b-2 border-accent  py-2 flex flex-col items-center justify-center font-neo font-bold uppercase text-black  bg-white ">
+                    <span className="text-xs md:text-sm">
+                      {isReviewMode ? `Puzzle #${displayPuzzleNumber} of ${totalCount}` : gameMode === 'daily' && lastDailyScore !== undefined ? `Puzzle #${currentPuzzleIndex} Complete` : 'Last Round'}
+                    </span>
+                  </div>
+
+                  {/* Content */}
+                  <div className="p-3 md:p-4 bg-white  text-black  font-neo space-y-2">
+                    {/* Navigation buttons in review mode */}
+                    {isReviewMode && reviewPuzzle && (
+                      <div className="flex gap-1 mb-2">
+                        <button
+                          onClick={() => navigateReviewPuzzle('prev', filteredHistory)}
+                          disabled={reviewPuzzleIndex === 0}
+                          className="flex-1 px-1 py-1 bg-black  text-white  text-[10px] md:text-xs font-bold disabled:opacity-30"
+                        >
+                          ← New
+                        </button>
+                        <button
+                          onClick={() => navigateReviewPuzzle('next', filteredHistory)}
+                          disabled={reviewPuzzleIndex === filteredHistory.length - 1}
+                          className="flex-1 px-1 py-1 bg-black  text-white  text-[10px] md:text-xs font-bold disabled:opacity-30"
+                        >
+                          Old →
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Stats - shown in both modes */}
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="text-left">
+                        <div className="text-gray-600  uppercase text-[10px]">Your Guess</div>
+                        <div className="font-bold text-sm">
+                          {isReviewMode && reviewPuzzle
+                            ? (reviewPuzzle.guess / 100).toFixed(2)
+                            : lastSlider.toFixed(2)}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-gray-600  uppercase text-[10px]">Actual</div>
+                        <div className="font-bold text-sm">
+                          {isReviewMode && reviewPuzzle
+                            ? (reviewPuzzle.eval / 100).toFixed(2)
+                            : lastEval.toFixed(2)}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Difference */}
+                    <div className="border-t-2 border-gray-200  pt-2">
+                      <div className="text-gray-600  uppercase text-[10px]">Difference</div>
+                      <div className="font-bold text-lg text-accent ">
+                        {isReviewMode && reviewPuzzle
+                          ? Math.abs((reviewPuzzle.eval - reviewPuzzle.guess) / 100).toFixed(2)
+                          : Math.abs(lastEval - lastSlider).toFixed(2)}
+                      </div>
+                    </div>
+
+                    {/* Score (Daily mode only) */}
+                    {gameMode === 'daily' && (
+                      <div className="border-t-2 border-gray-200  pt-2">
+                        <div className="text-gray-600  uppercase text-[10px]">Score</div>
+                        <div className="font-bold text-lg text-green-600 ">
+                          {isReviewMode && reviewPuzzle && dailyGameState
+                            ? (() => {
+                                const attempt = dailyGameState.attempts.find(
+                                  a => Math.abs(a.guess - reviewPuzzle.guess) < 1 && Math.abs(a.actualEval - reviewPuzzle.eval) < 1
+                                );
+                                return attempt ? `${attempt.score}/100` : '-';
+                              })()
+                            : lastDailyScore !== undefined
+                              ? `${lastDailyScore}/100`
+                              : '-'}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Showing count indicator in review mode */}
+                    {isReviewMode && totalCount > displayLimit && (
+                      <div className="text-center text-gray-600  text-[10px] pt-1">
+                        (Showing last {displayLimit} of {totalCount})
+                      </div>
+                    )}
+
+                    {/* Copy FEN and Exit Review buttons in review mode */}
+                    {isReviewMode && reviewPuzzle && (
+                      <div className="space-y-1 mt-2">
+                        <button
+                          onClick={() => copyFEN(reviewPuzzle.fen)}
+                          className={`w-full px-2 py-1 text-[10px] font-bold transition-colors ${
+                            copyFeedback
+                              ? 'bg-green-600  text-white '
+                              : 'bg-gray-200  text-gray-700  hover:bg-gray-300 '
+                          }`}
+                        >
+                          {copyFeedback ? '✓ FEN Copied' : '📋 Copy FEN to Clipboard'}
+                        </button>
+                        <button
+                          onClick={toggleReviewMode}
+                          className="w-full px-3 py-2 bg-accent  text-white  font-bold text-xs hover:bg-black  transition-colors"
+                        >
+                          Exit Review
+                        </button>
+                      </div>
+                    )}
+
+                    {/* View All button in normal mode */}
+                    {totalCount > 0 && !isReviewMode && (
+                      <button
+                        onClick={toggleReviewMode}
+                        className="w-full mt-2 px-3 py-2 bg-black  text-white  font-bold text-xs hover:bg-accent  transition-colors"
+                      >
+                        View All Puzzles →
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* Daily Progress Tracker (only in daily mode) */}
               {gameMode === 'daily' && (
                 <div className="col-span-3 md:col-span-1">
@@ -490,28 +772,6 @@ export default function ChesserGuesserUnlimited() {
                   />
                 </div>
               )}
-
-              {/* Last Round Info */}
-              <div className="bg-white  border-4 border-black  overflow-hidden w-full col-span-3 md:col-span-1 md:h-64 h-48">
-                <div className="w-full border-b-2 border-accent py-0 md:py-2 inline-flex items-center justify-center text-sm md:text-md font-neo font-bold uppercase text-black  bg-white ">
-                  Last Round:
-                </div>
-                <div className="flex items-center justify-center px-4 py-0 md:py-2 bg-white  text-black  text-xs md:text-xs h-full overflow-y-hidden font-neo">
-                  Answer: {lastEval.toFixed(2)} <br />
-                  Guess: {lastSlider.toFixed(2)} <br /><br />
-                  Difference: {(lastEval - lastSlider).toFixed(2)} <br /><br />
-
-                </div>
-              </div>
-
-
-
-              {/* Turn Indicator */}
-              <div className={`border-4 overflow-hidden w-full col-span-1 md:col-span-1 ${currentTurn === 'White' ? 'bg-white border-black ' : 'bg-black border-black '}`}>
-                <div className={`w-full py-0 md:py-2 inline-flex items-center justify-center text-sm md:text-md my-auto h-full font-neo font-bold uppercase ${currentTurn === 'White' ? 'text-black' : 'text-white'}`}>
-                  {currentTurn} to move
-                </div>
-              </div>
 
 
             </div>

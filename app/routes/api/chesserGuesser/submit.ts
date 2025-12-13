@@ -114,10 +114,12 @@ export async function action({ request }: ActionFunctionArgs) {
       newCompleted.toString()
     );
 
-    // Update leaderboard (sorted set by total score)
-    const leaderboardKey = `chesserGuesser:leaderboard:${dateString}`;
-    await redis.zadd(leaderboardKey, newTotalScore, username);
-    await redis.expire(leaderboardKey, TTL_30_DAYS);
+    // Update leaderboard ONLY if all 4 puzzles are completed
+    if (newCompleted === 4) {
+      const leaderboardKey = `chesserGuesser:leaderboard:${dateString}`;
+      await redis.zadd(leaderboardKey, newTotalScore, username);
+      await redis.expire(leaderboardKey, TTL_30_DAYS);
+    }
 
     // Update user summary
     const summaryKey = `chesserGuesser:summary:${dateString}:${username}`;
