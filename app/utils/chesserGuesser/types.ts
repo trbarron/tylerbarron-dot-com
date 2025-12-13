@@ -5,7 +5,6 @@ export type GameMode = 'endless' | 'daily';
 export interface ChessPuzzle {
   fen: string;
   eval: number;
-  difficulty?: 'easy' | 'medium' | 'hard' | 'expert';
 }
 
 export interface DailyPuzzleSet {

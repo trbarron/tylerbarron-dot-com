@@ -1,23 +1,7 @@
-// Daily puzzle selection logic with difficulty balancing
+// Daily puzzle selection logic
 
 import { ChessPuzzle, DailyPuzzleSet } from './types';
 import { createSeededRandom, dateSeed, getTodayDateString } from './seededRandom';
-
-/**
- * Classify puzzle difficulty based on evaluation
- * Easy: ±50-150 cp
- * Medium: ±150-250 cp
- * Hard: ±250-350 cp
- * Expert: ±350-400 cp
- */
-export function classifyDifficulty(evalCentipawns: number): 'easy' | 'medium' | 'hard' | 'expert' {
-  const absEval = Math.abs(evalCentipawns);
-
-  if (absEval >= 50 && absEval < 150) return 'easy';
-  if (absEval >= 150 && absEval < 250) return 'medium';
-  if (absEval >= 250 && absEval < 350) return 'hard';
-  return 'expert'; // 350-400
-}
 
 /**
  * Select 4 puzzle indices deterministically based on date
@@ -25,7 +9,7 @@ export function classifyDifficulty(evalCentipawns: number): 'easy' | 'medium' | 
  * This function generates 4 indices (0 to totalPuzzles-1) that are:
  * 1. Deterministic - same date always produces same indices
  * 2. Well-distributed - indices are spread across the puzzle set
- * 3. Balanced - roughly one from each quarter of the difficulty range
+ * 3. Balanced - roughly one from each quarter of the puzzle range
  *
  * @param dateString - Date in YYYY-MM-DD format
  * @param totalPuzzles - Total number of puzzles available (default 400)
@@ -42,10 +26,6 @@ export function selectDailyPuzzleIndices(
   const quarterSize = Math.floor(totalPuzzles / 4);
 
   // Select one puzzle from each quarter to ensure variety
-  // Quarter 1: indices 0-99 (easy puzzles likely)
-  // Quarter 2: indices 100-199 (medium puzzles likely)
-  // Quarter 3: indices 200-299 (hard puzzles likely)
-  // Quarter 4: indices 300-399 (expert puzzles likely)
   for (let quarter = 0; quarter < 4; quarter++) {
     const start = quarter * quarterSize;
     const end = (quarter === 3) ? totalPuzzles : (quarter + 1) * quarterSize;
@@ -57,7 +37,7 @@ export function selectDailyPuzzleIndices(
 }
 
 /**
- * Select daily puzzles with balanced difficulty (LEGACY - for when we have all puzzles)
+ * Select daily puzzles (LEGACY - for when we have all puzzles)
  *
  * This function is kept for reference but is not used in the current implementation
  * since we don't fetch all puzzles. Instead, we use selectDailyPuzzleIndices.
@@ -71,10 +51,7 @@ export function selectDailyPuzzles(
 
   // Simple selection: pick 4 random puzzles deterministically
   const indices = selectDailyPuzzleIndices(dateString, allPuzzles.length);
-  const selectedPuzzles = indices.map(i => ({
-    ...allPuzzles[i],
-    difficulty: classifyDifficulty(allPuzzles[i].eval)
-  }));
+  const selectedPuzzles = indices.map(i => allPuzzles[i]);
 
   return {
     date: dateString,

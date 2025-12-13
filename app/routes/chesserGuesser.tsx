@@ -221,23 +221,19 @@ export default function ChesserGuesserUnlimited() {
       const fallbackPuzzles: ChessPuzzle[] = [
         {
           fen: 'r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4',
-          eval: 50,
-          difficulty: 'easy'
+          eval: 50
         },
         {
           fen: '4r1k1/pp3ppp/2p5/2b5/4PB2/2P2P2/P5PP/3R2K1 w - - 0 1',
-          eval: -125,
-          difficulty: 'medium'
+          eval: -125
         },
         {
           fen: '2r3k1/5ppp/p3p3/1p1pP3/3P4/1P2QP2/P5PP/3q2K1 w - - 0 1',
-          eval: 280,
-          difficulty: 'hard'
+          eval: 280
         },
         {
           fen: '6k1/5ppp/4p3/3pP3/3P4/5P2/6PP/6K1 b - - 0 1',
-          eval: -15,
-          difficulty: 'expert'
+          eval: -15
         }
       ];
 
@@ -643,18 +639,18 @@ export default function ChesserGuesserUnlimited() {
                     {isReviewMode && reviewPuzzle && (
                       <div className="flex gap-1 mb-2">
                         <button
-                          onClick={() => navigateReviewPuzzle('prev', filteredHistory)}
-                          disabled={reviewPuzzleIndex === 0}
-                          className="flex-1 px-1 py-1 bg-black  text-white  text-[10px] md:text-xs font-bold disabled:opacity-30"
-                        >
-                          ← New
-                        </button>
-                        <button
                           onClick={() => navigateReviewPuzzle('next', filteredHistory)}
                           disabled={reviewPuzzleIndex === filteredHistory.length - 1}
                           className="flex-1 px-1 py-1 bg-black  text-white  text-[10px] md:text-xs font-bold disabled:opacity-30"
                         >
-                          Old →
+                          ← Old
+                        </button>
+                        <button
+                          onClick={() => navigateReviewPuzzle('prev', filteredHistory)}
+                          disabled={reviewPuzzleIndex === 0}
+                          className="flex-1 px-1 py-1 bg-black  text-white  text-[10px] md:text-xs font-bold disabled:opacity-30"
+                        >
+                          New →
                         </button>
                       </div>
                     )}
@@ -689,25 +685,6 @@ export default function ChesserGuesserUnlimited() {
                       </div>
                     </div>
 
-                    {/* Score (Daily mode only) */}
-                    {gameMode === 'daily' && (
-                      <div className="border-t-2 border-gray-200  pt-2">
-                        <div className="text-gray-600  uppercase text-[10px]">Score</div>
-                        <div className="font-bold text-lg text-green-600 ">
-                          {isReviewMode && reviewPuzzle && dailyGameState
-                            ? (() => {
-                                const attempt = dailyGameState.attempts.find(
-                                  a => Math.abs(a.guess - reviewPuzzle.guess) < 1 && Math.abs(a.actualEval - reviewPuzzle.eval) < 1
-                                );
-                                return attempt ? `${attempt.score}/100` : '-';
-                              })()
-                            : lastDailyScore !== undefined
-                              ? `${lastDailyScore}/100`
-                              : '-'}
-                        </div>
-                      </div>
-                    )}
-
                     {/* Showing count indicator in review mode */}
                     {isReviewMode && totalCount > displayLimit && (
                       <div className="text-center text-gray-600  text-[10px] pt-1">
@@ -726,7 +703,7 @@ export default function ChesserGuesserUnlimited() {
                               : 'bg-gray-200  text-gray-700  hover:bg-gray-300 '
                           }`}
                         >
-                          {copyFeedback ? '✓ FEN Copied' : '📋 Copy FEN to Clipboard'}
+                          {copyFeedback ? 'FEN Copied' : 'Copy FEN'}
                         </button>
                         <button
                           onClick={toggleReviewMode}
@@ -790,7 +767,7 @@ export default function ChesserGuesserUnlimited() {
         <Article title="About Chesser Guesser" subtitle="">
           <Subarticle subtitle="Overview">
             <p>Inspired by GeoGuessr, Chesser Guesser challenges players to estimate the computer&apos;s evaluation of chess positions. Players try to estimate the value of specific chess positions as accurately as possible, matching or closely approximating the engine&apos;s evaluation to extend their streak. The goal is to sharpen your evaluative skills by understanding why certain positions are deemed advantageous or disadvantageous by the computer.</p>
-            <p className="mt-4"><strong>Ranked Mode:</strong> Compete on the daily leaderboard! Everyone gets the same 4 puzzles each day (1 easy, 1 medium, 1 hard, 1 expert). Earn up to 400 points total and see how you rank globally.</p>
+            <p className="mt-4"><strong>Ranked Mode:</strong> Compete on the daily leaderboard! Everyone gets the same 4 puzzles each day, see how you rank globally.</p>
           </Subarticle>
           <Subarticle subtitle="The Analysis">
             <p>The game integrates with the <a href='https://lichess.org/@/lichess/blog/thousands-of-stockfish-analysers/WN-gLzAA'>Lichess Cloud Analysis</a> to fetch position evaluations at scale, giving access to all the positions and their evaluations without me having to do any work. Having this resource made the tough part of this project incredibly easy.</p>

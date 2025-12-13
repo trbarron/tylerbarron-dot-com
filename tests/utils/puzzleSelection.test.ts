@@ -4,58 +4,12 @@
 
 import { describe, it, expect } from 'vitest';
 import {
-  classifyDifficulty,
   selectDailyPuzzleIndices,
   calculatePuzzleScore,
   validateDeterminism,
 } from '~/utils/chesserGuesser/puzzleSelection';
 
 describe('Puzzle Selection Utils', () => {
-  describe('classifyDifficulty', () => {
-    it('should classify easy puzzles (50-150 cp)', () => {
-      expect(classifyDifficulty(50)).toBe('easy');
-      expect(classifyDifficulty(100)).toBe('easy');
-      expect(classifyDifficulty(149)).toBe('easy');
-      expect(classifyDifficulty(-50)).toBe('easy');
-      expect(classifyDifficulty(-100)).toBe('easy');
-      expect(classifyDifficulty(-149)).toBe('easy');
-    });
-
-    it('should classify medium puzzles (150-250 cp)', () => {
-      expect(classifyDifficulty(150)).toBe('medium');
-      expect(classifyDifficulty(200)).toBe('medium');
-      expect(classifyDifficulty(249)).toBe('medium');
-      expect(classifyDifficulty(-150)).toBe('medium');
-      expect(classifyDifficulty(-200)).toBe('medium');
-      expect(classifyDifficulty(-249)).toBe('medium');
-    });
-
-    it('should classify hard puzzles (250-350 cp)', () => {
-      expect(classifyDifficulty(250)).toBe('hard');
-      expect(classifyDifficulty(300)).toBe('hard');
-      expect(classifyDifficulty(349)).toBe('hard');
-      expect(classifyDifficulty(-250)).toBe('hard');
-      expect(classifyDifficulty(-300)).toBe('hard');
-      expect(classifyDifficulty(-349)).toBe('hard');
-    });
-
-    it('should classify expert puzzles (350-400 cp)', () => {
-      expect(classifyDifficulty(350)).toBe('expert');
-      expect(classifyDifficulty(375)).toBe('expert');
-      expect(classifyDifficulty(400)).toBe('expert');
-      expect(classifyDifficulty(-350)).toBe('expert');
-      expect(classifyDifficulty(-375)).toBe('expert');
-      expect(classifyDifficulty(-400)).toBe('expert');
-    });
-
-    it('should handle edge cases at boundaries', () => {
-      expect(classifyDifficulty(49)).toBe('easy'); // Just below easy
-      expect(classifyDifficulty(150)).toBe('medium'); // Exactly at boundary
-      expect(classifyDifficulty(250)).toBe('hard'); // Exactly at boundary
-      expect(classifyDifficulty(350)).toBe('expert'); // Exactly at boundary
-    });
-  });
-
   describe('selectDailyPuzzleIndices', () => {
     it('should return exactly 4 indices', () => {
       const indices = selectDailyPuzzleIndices('2024-01-15', 400);
