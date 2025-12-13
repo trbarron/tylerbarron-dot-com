@@ -1,0 +1,66 @@
+# Claude Code Configuration
+
+## Project Overview
+
+This is a personal website built with React Router 7, TypeScript, and deployed on AWS using Architect.
+
+## Development Guidelines
+
+### Code Style
+- **Modular Design**: Keep files under 500 lines when possible
+- **Environment Safety**: Never hardcode secrets or API keys
+- **Test-First**: Write tests before implementation when applicable
+- **Clean Architecture**: Separate concerns appropriately
+- **Documentation**: Keep code comments and docs updated
+
+### File Organization
+- Source code: `app/`
+- Tests: `tests/`
+- Documentation: `docs/`
+- Scripts: `scripts/`
+- Blog posts: `posts/`
+
+**Important**: Never save working files, text files, markdown files, or tests to the root folder. Always use appropriate subdirectories.
+
+## Available Scripts
+
+### Build Commands
+- `npm run build` - Build project for production
+- `npm run build:arc` - Build for Architect deployment
+- `npm run dev` - Start development server
+- `npm run dev:arc` - Start Architect sandbox
+
+### Quality Checks
+- `npm run lint` - Run ESLint
+- `npm run typecheck` - Run TypeScript type checking
+- `npm run format` - Format code with Prettier
+- `npm test` - Run tests
+
+### Utilities
+- `npm run compile:mdx` - Compile MDX blog posts
+- `npm run analyze` - Analyze bundle size
+- `npm run test:deploy` - Simulate Lambda deployment
+
+## Tech Stack
+
+- **Framework**: React Router 7
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **Deployment**: AWS (Architect)
+- **Package Manager**: npm
+
+## Development Workflow
+
+1. Make changes in feature branch
+2. Run `npm run lint` and `npm run typecheck` locally
+3. Ensure tests pass
+4. Create pull request
+5. CI/CD will run lint, typecheck, and deploy on merge to master
+
+## Important Reminders
+
+- Do what has been asked; nothing more, nothing less
+- NEVER create files unless absolutely necessary
+- ALWAYS prefer editing existing files to creating new ones
+- NEVER proactively create documentation files (*.md) or README files unless explicitly requested
+- Never save working files, text/mds and tests to the root folder

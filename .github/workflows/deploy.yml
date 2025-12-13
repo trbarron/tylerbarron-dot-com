@@ -6,17 +6,6 @@ on:
       - master
   pull_request:
   workflow_dispatch:
-    inputs:
-      run_lint:
-        description: 'Run ESLint check'
-        required: true
-        type: boolean
-        default: false
-      run_typecheck:
-        description: 'Run TypeScript check'
-        required: true
-        type: boolean
-        default: false
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -61,7 +50,6 @@ jobs:
   lint:
     name: ⬣ ESLint
     runs-on: ubuntu-latest
-    if: github.event.inputs.run_lint == 'true'
     steps:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v4
@@ -70,9 +58,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
+          cache-dependency-path: ./package.json
 
       - name: 📥 Install deps
-        run: npm install
+        run: npm ci
 
       - name: 🔬 Lint
         run: npm run lint
@@ -80,7 +70,6 @@ jobs:
   typecheck:
     name: ʦ TypeScript
     runs-on: ubuntu-latest
-    if: github.event.inputs.run_typecheck == 'true'
     steps:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v4
@@ -89,15 +78,18 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
+          cache-dependency-path: ./package.json
 
       - name: 📥 Install deps
-        run: npm install
+        run: npm ci
 
       - name: 🔎 Type check
-        run: npm run typecheck --if-present
+        run: npm run typecheck
 
   deploy:
     runs-on: ubuntu-latest
+    needs: [lint, typecheck]
 
     steps:
       - name: 🛑 Cancel Previous Runs
