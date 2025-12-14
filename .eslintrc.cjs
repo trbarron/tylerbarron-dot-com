@@ -79,6 +79,9 @@ module.exports = {
           "argsIgnorePattern": "^_",
           "varsIgnorePattern": "^_"
         }],
+        "import/no-unresolved": ["error", {
+          "ignore": ["^\\./build/"]
+        }],
       },
     },
 
