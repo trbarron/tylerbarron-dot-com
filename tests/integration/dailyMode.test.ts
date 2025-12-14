@@ -185,9 +185,9 @@ describe('Daily Mode Integration Tests', () => {
   describe('Multiple Users Competition', () => {
     it('should rank multiple users correctly', async () => {
       const users = [
-        { username: 'alice', scores: [100, 95, 90, 85], total: 370 },
-        { username: 'bob', scores: [90, 90, 90, 90], total: 360 },
-        { username: 'charlie', scores: [100, 100, 50, 50], total: 300 },
+        { username: 'alice', total: 30 },
+        { username: 'bob', total: 40 },
+        { username: 'charlie', total: 50 },
       ];
 
       // All users submit their puzzles
@@ -225,11 +225,11 @@ describe('Daily Mode Integration Tests', () => {
         }
       }
 
-      // Check leaderboard ranking
+      // Check leaderboard ranking (lower scores are better)
       const mockLeaderboardData = [
-        'alice', '370',
-        'bob', '360',
-        'charlie', '300',
+        'alice', '30',
+        'bob', '40',
+        'charlie', '50',
       ];
 
       mockRedis.zrange.mockResolvedValue(mockLeaderboardData);
@@ -393,8 +393,8 @@ describe('Daily Mode Integration Tests', () => {
                 // Previously submitted puzzle
                 return Promise.resolve(JSON.stringify(submittedPuzzles[j]));
               } else if (j === i) {
-                // Current puzzle - it was just stored, return a score
-                return Promise.resolve(JSON.stringify({ score: 100 }));
+                // Current puzzle - it was just stored, return a score of 0 (perfect guess)
+                return Promise.resolve(JSON.stringify({ score: 0 }));
               }
             }
           }

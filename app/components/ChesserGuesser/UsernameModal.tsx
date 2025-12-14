@@ -91,7 +91,7 @@ export function UsernameModal({ isOpen, initialUsername = '', onSubmit, onCancel
             )}
 
             <div className="text-xs font-neo text-gray-600  mb-4">
-              • less than 20 characters<br />
+              • Less than 20 characters<br />
               • Letters, numbers, and underscores only
             </div>
 

@@ -86,151 +86,70 @@ describe('Puzzle Selection Utils', () => {
   });
 
   describe('calculatePuzzleScore', () => {
-    describe('Correct Side Detection', () => {
-      it('should give full points for perfect guess', () => {
-        expect(calculatePuzzleScore(100, 100)).toBe(100);
-        expect(calculatePuzzleScore(-100, -100)).toBe(100);
-        expect(calculatePuzzleScore(0, 0)).toBe(100);
-      });
+    it('should return 0 for perfect guess', () => {
+      expect(calculatePuzzleScore(100, 100)).toBe(0);
+      expect(calculatePuzzleScore(-100, -100)).toBe(0);
+      expect(calculatePuzzleScore(0, 0)).toBe(0);
+    });
 
-      it('should give points for correct side (white advantage)', () => {
-        const score = calculatePuzzleScore(100, 120);
-        expect(score).toBeGreaterThan(50);
-        expect(score).toBeLessThanOrEqual(100);
-      });
+    it('should return absolute distance for positive evals', () => {
+      expect(calculatePuzzleScore(100, 120)).toBe(20);
+      expect(calculatePuzzleScore(120, 100)).toBe(20);
+      expect(calculatePuzzleScore(50, 150)).toBe(100);
+    });
 
-      it('should give points for correct side (black advantage)', () => {
-        const score = calculatePuzzleScore(-100, -120);
-        expect(score).toBeGreaterThan(50);
-        expect(score).toBeLessThanOrEqual(100);
-      });
+    it('should return absolute distance for negative evals', () => {
+      expect(calculatePuzzleScore(-100, -120)).toBe(20);
+      expect(calculatePuzzleScore(-120, -100)).toBe(20);
+      expect(calculatePuzzleScore(-50, -150)).toBe(100);
+    });
 
-      it('should give points for correct equal assessment', () => {
-        const score = calculatePuzzleScore(10, 5);
-        expect(score).toBeGreaterThan(50);
-        expect(score).toBeLessThanOrEqual(100);
-      });
+    it('should return absolute distance when crossing zero', () => {
+      expect(calculatePuzzleScore(100, -100)).toBe(200);
+      expect(calculatePuzzleScore(-100, 100)).toBe(200);
+      expect(calculatePuzzleScore(50, -50)).toBe(100);
+    });
 
-      it('should give 0 points for wrong side', () => {
-        expect(calculatePuzzleScore(100, -100)).toBe(0);
-        expect(calculatePuzzleScore(-100, 100)).toBe(0);
-        expect(calculatePuzzleScore(100, 0)).toBe(0);
-        expect(calculatePuzzleScore(-100, 0)).toBe(0);
+    it('should handle zero evaluations', () => {
+      expect(calculatePuzzleScore(0, 0)).toBe(0);
+      expect(calculatePuzzleScore(10, 0)).toBe(10);
+      expect(calculatePuzzleScore(-10, 0)).toBe(10);
+      expect(calculatePuzzleScore(0, 50)).toBe(50);
+    });
+
+    it('should handle extreme evaluations', () => {
+      expect(calculatePuzzleScore(400, 400)).toBe(0);
+      expect(calculatePuzzleScore(-400, -400)).toBe(0);
+      expect(calculatePuzzleScore(400, 350)).toBe(50);
+      expect(calculatePuzzleScore(-400, -350)).toBe(50);
+    });
+
+    it('should return integer scores', () => {
+      const scores = [
+        calculatePuzzleScore(100, 110),
+        calculatePuzzleScore(100, 123),
+        calculatePuzzleScore(200, 234),
+        calculatePuzzleScore(-50, -75),
+      ];
+
+      scores.forEach(score => {
+        expect(Number.isInteger(score)).toBe(true);
       });
     });
 
-    describe('Accuracy Bonus Calculation', () => {
-      it('should give maximum bonus (100) for perfect guess', () => {
-        expect(calculatePuzzleScore(100, 100)).toBe(100);
-        expect(calculatePuzzleScore(-50, -50)).toBe(100);
-      });
-
-      it('should decrease score with increasing difference', () => {
-        const score1 = calculatePuzzleScore(100, 110);
-        const score2 = calculatePuzzleScore(100, 150);
-        const score3 = calculatePuzzleScore(100, 200);
-
-        expect(score1).toBeGreaterThan(score2);
-        expect(score2).toBeGreaterThan(score3);
-      });
-
-      it('should give minimum score (50) for maximum difference', () => {
-        const score = calculatePuzzleScore(100, 500); // 400+ difference
-        expect(score).toBe(50);
-      });
-
-      it('should handle small differences accurately', () => {
-        const score1 = calculatePuzzleScore(100, 101);
-        const score2 = calculatePuzzleScore(100, 105);
-        const score3 = calculatePuzzleScore(100, 110);
-
-        expect(score1).toBeGreaterThan(score2);
-        expect(score2).toBeGreaterThan(score3);
-        expect(score1).toBeGreaterThan(95);
-      });
+    it('should be symmetric (distance is same regardless of order)', () => {
+      expect(calculatePuzzleScore(100, 150)).toBe(calculatePuzzleScore(150, 100));
+      expect(calculatePuzzleScore(-100, -50)).toBe(calculatePuzzleScore(-50, -100));
+      expect(calculatePuzzleScore(0, 100)).toBe(calculatePuzzleScore(100, 0));
     });
 
-    describe('Edge Cases', () => {
-      it('should handle zero evaluations', () => {
-        expect(calculatePuzzleScore(0, 0)).toBe(100);
-        expect(calculatePuzzleScore(10, 0)).toBe(100); // Still equal range
-        expect(calculatePuzzleScore(-10, 0)).toBe(100);
-      });
+    it('should increase score with larger differences', () => {
+      const score1 = calculatePuzzleScore(100, 101);
+      const score2 = calculatePuzzleScore(100, 150);
+      const score3 = calculatePuzzleScore(100, 300);
 
-      it('should handle boundary at ±20', () => {
-        // Within equal range
-        expect(calculatePuzzleScore(20, 20)).toBe(100);
-        expect(calculatePuzzleScore(-20, -20)).toBe(100);
-        expect(calculatePuzzleScore(15, 10)).toBeGreaterThan(50);
-
-        // Outside equal range
-        expect(calculatePuzzleScore(25, 15)).toBe(0); // Guess advantage, actual equal
-        expect(calculatePuzzleScore(15, 25)).toBeGreaterThan(0); // Both advantage
-      });
-
-      it('should handle extreme evaluations', () => {
-        expect(calculatePuzzleScore(400, 400)).toBe(100);
-        expect(calculatePuzzleScore(-400, -400)).toBe(100);
-        expect(calculatePuzzleScore(400, 350)).toBeGreaterThan(85);
-      });
-
-      it('should round to integer scores', () => {
-        const scores = [
-          calculatePuzzleScore(100, 110),
-          calculatePuzzleScore(100, 123),
-          calculatePuzzleScore(200, 234),
-        ];
-
-        scores.forEach(score => {
-          expect(Number.isInteger(score)).toBe(true);
-        });
-      });
-    });
-
-    describe('Score Distribution', () => {
-      it('should produce scores between 0 and 100', () => {
-        const testCases = [
-          { guess: 100, actual: 120 },
-          { guess: -50, actual: -75 },
-          { guess: 0, actual: 10 },
-          { guess: 300, actual: 250 },
-          { guess: -200, actual: -300 },
-        ];
-
-        testCases.forEach(({ guess, actual }) => {
-          const score = calculatePuzzleScore(guess, actual);
-          expect(score).toBeGreaterThanOrEqual(0);
-          expect(score).toBeLessThanOrEqual(100);
-        });
-      });
-
-      it('should only give 50 or above when side is correct', () => {
-        const correctSideCases = [
-          { guess: 100, actual: 120 },
-          { guess: 100, actual: 400 },
-          { guess: -100, actual: -50 },
-          { guess: 0, actual: 10 },
-        ];
-
-        correctSideCases.forEach(({ guess, actual }) => {
-          const score = calculatePuzzleScore(guess, actual);
-          expect(score).toBeGreaterThanOrEqual(50);
-        });
-      });
-
-      it('should give 0 when side is wrong', () => {
-        const wrongSideCases = [
-          { guess: 100, actual: -100 },
-          { guess: -100, actual: 100 },
-          { guess: 50, actual: -50 },
-          { guess: -200, actual: 200 },
-        ];
-
-        wrongSideCases.forEach(({ guess, actual }) => {
-          const score = calculatePuzzleScore(guess, actual);
-          expect(score).toBe(0);
-        });
-      });
+      expect(score1).toBeLessThan(score2);
+      expect(score2).toBeLessThan(score3);
     });
   });
 
@@ -247,35 +166,33 @@ describe('Puzzle Selection Utils', () => {
   });
 
   describe('Realistic Scoring Scenarios', () => {
-    it('should score a nearly perfect guess highly', () => {
+    it('should give low score for nearly perfect guess', () => {
       const score = calculatePuzzleScore(100, 105);
-      expect(score).toBeGreaterThan(95);
+      expect(score).toBeLessThan(10);
     });
 
-    it('should give decent score for reasonable accuracy', () => {
+    it('should give medium score for moderate accuracy', () => {
       const score = calculatePuzzleScore(100, 150);
-      expect(score).toBeGreaterThan(60);
-      expect(score).toBeLessThan(95);
+      expect(score).toBeGreaterThan(40);
+      expect(score).toBeLessThan(60);
     });
 
-    it('should give low score for poor accuracy', () => {
+    it('should give high score for poor accuracy', () => {
       const score = calculatePuzzleScore(100, 300);
-      expect(score).toBeGreaterThan(50);
-      expect(score).toBeLessThan(65);
+      expect(score).toBeGreaterThan(150);
     });
 
     it('should handle realistic game scenarios', () => {
       const scenarios = [
-        { guess: 85, actual: 100, expectedRange: [90, 100] }, // Very close
-        { guess: 150, actual: 200, expectedRange: [70, 90] }, // Good
-        { guess: 100, actual: 250, expectedRange: [55, 75] }, // Okay
-        { guess: 50, actual: 350, expectedRange: [50, 65] }, // Poor but correct side
+        { guess: 85, actual: 100, expected: 15 }, // Very close
+        { guess: 150, actual: 200, expected: 50 }, // Moderate
+        { guess: 100, actual: 250, expected: 150 }, // Large difference
+        { guess: 50, actual: 350, expected: 300 }, // Very large difference
       ];
 
-      scenarios.forEach(({ guess, actual, expectedRange }) => {
+      scenarios.forEach(({ guess, actual, expected }) => {
         const score = calculatePuzzleScore(guess, actual);
-        expect(score).toBeGreaterThanOrEqual(expectedRange[0]);
-        expect(score).toBeLessThanOrEqual(expectedRange[1]);
+        expect(score).toBe(expected);
       });
     });
   });
