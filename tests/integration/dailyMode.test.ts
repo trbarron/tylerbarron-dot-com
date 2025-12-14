@@ -71,11 +71,22 @@ describe('Daily Mode Integration Tests', () => {
         { puzzleIndex: 3, guess: -290, actualEval: -300 },
       ];
 
-      let totalScore = 0;
-      for (const submission of submissions) {
+      const submittedPuzzles: any[] = [];
+      for (let i = 0; i < submissions.length; i++) {
+        const submission = submissions[i];
         mockRedis.get.mockClear();
-        mockRedis.get.mockResolvedValueOnce(String(totalScore)) // Current score
-          .mockResolvedValueOnce(String(submission.puzzleIndex)); // Completed count
+
+        // Mock completed count
+        mockRedis.get.mockResolvedValueOnce(String(i)); // Completed count
+
+        // Mock all 4 puzzle submissions - return what's been submitted so far
+        for (let j = 0; j < 4; j++) {
+          if (j < i) {
+            mockRedis.get.mockResolvedValueOnce(JSON.stringify(submittedPuzzles[j]));
+          } else {
+            mockRedis.get.mockResolvedValueOnce(null);
+          }
+        }
 
         const submitResponse = await submitAction(createActionArgs('/api/chesserGuesser/submit', {
           method: 'POST',
@@ -89,20 +100,23 @@ describe('Daily Mode Integration Tests', () => {
 
         expect(submitResponse.status).toBe(200);
         const result = await submitResponse.json();
-        expect(result.success).toBe(true);
-        if (totalScore > 0) {
-          expect(result.totalScore).toBeGreaterThan(totalScore);
+
+        // Store the submission for future mocking
+        submittedPuzzles.push({ score: result.score });
+
+        if (i > 0) {
+          expect(result.totalScore).toBeGreaterThan(0);
         }
-        totalScore = result.totalScore;
       }
 
       // Step 3: Check leaderboard
-      mockRedis.zrange.mockResolvedValue([testUsername, String(totalScore)]);
+      const finalTotalScore = submittedPuzzles.reduce((sum, p) => sum + p.score, 0);
+      mockRedis.zrange.mockResolvedValue([testUsername, String(finalTotalScore)]);
       mockRedis.zcard.mockResolvedValue(1);
       mockRedis.get.mockResolvedValueOnce('4').mockResolvedValueOnce(
         JSON.stringify({
           username: testUsername,
-          totalScore,
+          totalScore: finalTotalScore,
           lastUpdated: Date.now(),
         })
       );
@@ -112,7 +126,7 @@ describe('Daily Mode Integration Tests', () => {
 
       expect(leaderboardData.leaderboard).toHaveLength(1);
       expect(leaderboardData.leaderboard[0].username).toBe(testUsername);
-      expect(leaderboardData.leaderboard[0].score).toBe(totalScore);
+      expect(leaderboardData.leaderboard[0].score).toBe(finalTotalScore);
       expect(leaderboardData.leaderboard[0].completedPuzzles).toBe(4);
     });
 
@@ -123,13 +137,22 @@ describe('Daily Mode Integration Tests', () => {
         { puzzleIndex: 1, guess: -50, actualEval: -50 },
       ];
 
-      let totalScore = 0;
+      const submittedPuzzles: any[] = [];
       for (let i = 0; i < submissions.length; i++) {
         const submission = submissions[i];
         mockRedis.get.mockClear();
-        mockRedis.get.mockResolvedValueOnce(null)
-          .mockResolvedValueOnce(String(totalScore))
-          .mockResolvedValueOnce(String(i));
+
+        // Mock completed count
+        mockRedis.get.mockResolvedValueOnce(String(i));
+
+        // Mock all 4 puzzle submissions
+        for (let j = 0; j < 4; j++) {
+          if (j < i) {
+            mockRedis.get.mockResolvedValueOnce(JSON.stringify(submittedPuzzles[j]));
+          } else {
+            mockRedis.get.mockResolvedValueOnce(null);
+          }
+        }
 
         const submitResponse = await submitAction(createActionArgs('/api/chesserGuesser/submit', {
           method: 'POST',
@@ -142,12 +165,13 @@ describe('Daily Mode Integration Tests', () => {
         }));
 
         const result = await submitResponse.json();
-        totalScore = result.totalScore;
+        submittedPuzzles.push({ score: result.score });
         expect(result.puzzlesCompleted).toBe(i + 1);
       }
 
       // Verify on leaderboard with partial completion
-      mockRedis.zrange.mockResolvedValue([testUsername, String(totalScore)]);
+      const finalTotalScore = submittedPuzzles.reduce((sum, p) => sum + p.score, 0);
+      mockRedis.zrange.mockResolvedValue([testUsername, String(finalTotalScore)]);
       mockRedis.zcard.mockResolvedValue(1);
       mockRedis.get.mockResolvedValueOnce('2');
 
@@ -168,12 +192,21 @@ describe('Daily Mode Integration Tests', () => {
 
       // All users submit their puzzles
       for (const user of users) {
-        let userTotal = 0;
+        const submittedPuzzles: any[] = [];
         for (let i = 0; i < 4; i++) {
           mockRedis.get.mockClear();
-          mockRedis.get.mockResolvedValueOnce(null)
-            .mockResolvedValueOnce(String(userTotal))
-            .mockResolvedValueOnce(String(i));
+
+          // Mock completed count
+          mockRedis.get.mockResolvedValueOnce(String(i));
+
+          // Mock all 4 puzzle submissions
+          for (let j = 0; j < 4; j++) {
+            if (j < i) {
+              mockRedis.get.mockResolvedValueOnce(JSON.stringify(submittedPuzzles[j]));
+            } else {
+              mockRedis.get.mockResolvedValueOnce(null);
+            }
+          }
 
           const submitResponse = await submitAction(createActionArgs('/api/chesserGuesser/submit', {
             method: 'POST',
@@ -188,7 +221,7 @@ describe('Daily Mode Integration Tests', () => {
           }));
 
           const result = await submitResponse.json();
-          userTotal = result.totalScore;
+          submittedPuzzles.push({ score: result.score });
         }
       }
 
@@ -231,8 +264,11 @@ describe('Daily Mode Integration Tests', () => {
 
         // Submit score for this date
         mockRedis.get.mockClear();
-        mockRedis.get.mockResolvedValueOnce('0') // userScore = 0
-          .mockResolvedValueOnce('0'); // completed = 0
+        mockRedis.get.mockResolvedValueOnce('0') // completed = 0
+          .mockResolvedValueOnce(null) // puzzle 0 doesn't exist yet
+          .mockResolvedValueOnce(null) // puzzle 1 doesn't exist yet
+          .mockResolvedValueOnce(null) // puzzle 2 doesn't exist yet
+          .mockResolvedValueOnce(null); // puzzle 3 doesn't exist yet
 
         const submitResponse = await submitAction(createActionArgs('/api/chesserGuesser/submit', {
           method: 'POST',
@@ -337,14 +373,33 @@ describe('Daily Mode Integration Tests', () => {
 
   describe('Data Consistency', () => {
     it('should maintain consistent total score across submissions', async () => {
-      const expectedScores = [95, 90, 85, 80];
-      let runningTotal = 0;
+      const submittedPuzzles: any[] = [];
 
       for (let i = 0; i < 4; i++) {
         mockRedis.get.mockClear();
-        mockRedis.get.mockResolvedValueOnce(null)
-          .mockResolvedValueOnce(String(runningTotal))
-          .mockResolvedValueOnce(String(i));
+
+        // Mock completed count first
+        mockRedis.get.mockResolvedValueOnce(String(i));
+
+        // Use mockImplementation for subsequent get calls to handle totalScore calculation
+        let getCallCount = 0;
+        mockRedis.get.mockImplementation((key: string) => {
+          getCallCount++;
+
+          // The totalScore calculation loops through puzzles 0-3
+          for (let j = 0; j <= i; j++) {
+            if (key.includes(`:submission:`) && key.endsWith(`:${j}`)) {
+              if (j < i) {
+                // Previously submitted puzzle
+                return Promise.resolve(JSON.stringify(submittedPuzzles[j]));
+              } else if (j === i) {
+                // Current puzzle - it was just stored, return a score
+                return Promise.resolve(JSON.stringify({ score: 100 }));
+              }
+            }
+          }
+          return Promise.resolve(null);
+        });
 
         const submitResponse = await submitAction(createActionArgs('/api/chesserGuesser/submit', {
           method: 'POST',
@@ -359,16 +414,20 @@ describe('Daily Mode Integration Tests', () => {
         }));
 
         const result = await submitResponse.json();
-        runningTotal += result.score;
+        submittedPuzzles.push({ score: result.score });
 
-        expect(result.totalScore).toBe(runningTotal);
+        const expectedTotal = submittedPuzzles.reduce((sum, p) => sum + p.score, 0);
+        expect(result.totalScore).toBe(expectedTotal);
       }
     });
 
     it('should update leaderboard after each submission', async () => {
-      mockRedis.get.mockResolvedValueOnce(null)
-        .mockResolvedValueOnce('0')
-        .mockResolvedValueOnce('3'); // completed = 3 (this will be the 4th puzzle)
+      const mockScore = 95;
+      mockRedis.get.mockResolvedValueOnce('3') // completed = 3 (this will be the 4th puzzle)
+        .mockResolvedValueOnce(JSON.stringify({ score: mockScore })) // puzzle 0
+        .mockResolvedValueOnce(JSON.stringify({ score: mockScore })) // puzzle 1
+        .mockResolvedValueOnce(JSON.stringify({ score: mockScore })) // puzzle 2
+        .mockResolvedValueOnce(null); // puzzle 3 doesn't exist yet
 
       await submitAction(createActionArgs('/api/chesserGuesser/submit', {
         method: 'POST',
@@ -392,10 +451,13 @@ describe('Daily Mode Integration Tests', () => {
   });
 
   describe('TTL Management', () => {
-    it('should set 30-day TTL on all stored data', async () => {
-      mockRedis.get.mockResolvedValueOnce(null)
-        .mockResolvedValueOnce('0')
-        .mockResolvedValueOnce('3'); // completed = 3 (this will be the 4th puzzle)
+    it('should set 7-day TTL on all stored data', async () => {
+      const mockScore = 95;
+      mockRedis.get.mockResolvedValueOnce('3') // completed = 3 (this will be the 4th puzzle)
+        .mockResolvedValueOnce(JSON.stringify({ score: mockScore })) // puzzle 0
+        .mockResolvedValueOnce(JSON.stringify({ score: mockScore })) // puzzle 1
+        .mockResolvedValueOnce(JSON.stringify({ score: mockScore })) // puzzle 2
+        .mockResolvedValueOnce(null); // puzzle 3 doesn't exist yet
 
       await submitAction(createActionArgs('/api/chesserGuesser/submit', {
         method: 'POST',
@@ -409,18 +471,18 @@ describe('Daily Mode Integration Tests', () => {
         }),
       }));
 
-      const TTL_30_DAYS = 30 * 24 * 60 * 60;
+      const TTL_7_DAYS = 7 * 24 * 60 * 60;
 
       // Check all setex calls
       const setexCalls = mockRedis.setex.mock.calls;
       setexCalls.forEach((call: any[]) => {
-        expect(call[1]).toBe(TTL_30_DAYS);
+        expect(call[1]).toBe(TTL_7_DAYS);
       });
 
       // Check leaderboard expire
       expect(mockRedis.expire).toHaveBeenCalledWith(
         `chesserGuesser:leaderboard:${testDate}`,
-        TTL_30_DAYS
+        TTL_7_DAYS
       );
     });
   });

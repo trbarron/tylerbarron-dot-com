@@ -51,15 +51,24 @@ describe('Submit Score API', () => {
     };
 
     it('should accept valid submission', async () => {
-      mockRedis.get.mockResolvedValueOnce('0').mockResolvedValueOnce('0'); // userScore, completed
+      // Mock completed count
+      mockRedis.get.mockResolvedValueOnce('0'); // completed = 0
+
+      // Mock reading back the 4 puzzle submissions for totalScore calculation
+      // The current submission (puzzle 0) will have been stored by the time we calculate totalScore
+      mockRedis.get.mockImplementation((key: string) => {
+        if (key.includes(':submission:') && key.endsWith(':0')) {
+          // This is the current submission - it exists now
+          return Promise.resolve(JSON.stringify({ score: 95 }));
+        }
+        return Promise.resolve(null); // Other puzzles don't exist yet
+      });
 
       const response = await action(createActionArgs('/api/chesserGuesser/submit', createRequestBody(validSubmission)));
 
-      expect(response.status).toBe(200); // Response objects in tests might not have status property directly accessible if it's a native Response, but assert response.json().
-      // Actually action returns Response.json(), which is a standard Response.
+      expect(response.status).toBe(200);
 
       const result = await response.json();
-      expect(result.success).toBe(true);
       expect(result.score).toBeGreaterThan(0);
       expect(result.totalScore).toBeGreaterThan(0);
       expect(result.puzzlesCompleted).toBe(1);
@@ -108,7 +117,9 @@ describe('Submit Score API', () => {
 
       for (const username of validUsernames) {
         mockRedis.get.mockClear();
-        mockRedis.get.mockResolvedValue('0'); // userScore and completed
+        mockRedis.get.mockResolvedValue('0'); // completed
+        // Mock 4 puzzle submissions (all null - none exist yet)
+        mockRedis.get.mockResolvedValue(null);
 
         const response = await action(createActionArgs('/api/chesserGuesser/submit', createRequestBody({ ...validSubmission, username })));
 
@@ -137,7 +148,9 @@ describe('Submit Score API', () => {
     it('should accept valid puzzle indices (0-3)', async () => {
       for (let i = 0; i < 4; i++) {
         mockRedis.get.mockClear();
-        mockRedis.get.mockResolvedValue('0'); // userScore and completed
+        mockRedis.get.mockResolvedValue('0'); // completed
+        // Mock 4 puzzle submissions (all null)
+        mockRedis.get.mockResolvedValue(null);
 
         const response = await action(createActionArgs('/api/chesserGuesser/submit', createRequestBody({ ...validSubmission, puzzleIndex: i })));
 
@@ -155,7 +168,9 @@ describe('Submit Score API', () => {
 
       for (const { guess, actual, expectedScore } of testCases) {
         mockRedis.get.mockClear();
-        mockRedis.get.mockResolvedValue('0'); // userScore and completed
+        mockRedis.get.mockResolvedValue('0'); // completed
+        // Mock 4 puzzle submissions (all null)
+        mockRedis.get.mockResolvedValue(null);
 
         const response = await action(createActionArgs('/api/chesserGuesser/submit', createRequestBody({ ...validSubmission, guess, actualEval: actual })));
 
@@ -165,29 +180,40 @@ describe('Submit Score API', () => {
     });
 
     it('should update total score correctly', async () => {
-      // First submission
-      mockRedis.get.mockResolvedValueOnce('0') // userScore = 0
-        .mockResolvedValueOnce('0'); // completed = 0
+      // First submission (puzzle 0)
+      mockRedis.get.mockResolvedValueOnce('0') // completed = 0
+        .mockResolvedValueOnce(null) // puzzle 0 doesn't exist yet
+        .mockResolvedValueOnce(null) // puzzle 1 doesn't exist yet
+        .mockResolvedValueOnce(null) // puzzle 2 doesn't exist yet
+        .mockResolvedValueOnce(null); // puzzle 3 doesn't exist yet
 
       const response1 = await action(createActionArgs('/api/chesserGuesser/submit', createRequestBody({ ...validSubmission, puzzleIndex: 0 })));
 
       const result1 = await response1.json();
-      const firstScore = result1.totalScore;
+      const firstScore = result1.score;
+      const firstTotalScore = result1.totalScore;
 
-      // Second submission
+      // Second submission (puzzle 1) - now puzzle 0 exists
       mockRedis.get.mockClear();
-      mockRedis.get.mockResolvedValueOnce(String(firstScore)) // Previous score
-        .mockResolvedValueOnce('1'); // completed = 1
+      mockRedis.get.mockResolvedValueOnce('1') // completed = 1
+        .mockResolvedValueOnce(JSON.stringify({ score: firstScore })) // puzzle 0 exists with its score
+        .mockResolvedValueOnce(null) // puzzle 1 doesn't exist yet
+        .mockResolvedValueOnce(null) // puzzle 2 doesn't exist yet
+        .mockResolvedValueOnce(null); // puzzle 3 doesn't exist yet
 
       const response2 = await action(createActionArgs('/api/chesserGuesser/submit', createRequestBody({ ...validSubmission, puzzleIndex: 1 })));
 
       const result2 = await response2.json();
-      expect(result2.totalScore).toBeGreaterThan(firstScore);
+      expect(result2.totalScore).toBeGreaterThan(firstTotalScore);
     });
 
     it('should update leaderboard', async () => {
-      mockRedis.get.mockResolvedValueOnce('0') // userScore = 0
-        .mockResolvedValueOnce('3'); // completed = 3 (this will be the 4th puzzle)
+      const mockScore = 95;
+      mockRedis.get.mockResolvedValueOnce('3') // completed = 3 (this will be the 4th puzzle)
+        .mockResolvedValueOnce(JSON.stringify({ score: mockScore })) // puzzle 0
+        .mockResolvedValueOnce(JSON.stringify({ score: mockScore })) // puzzle 1
+        .mockResolvedValueOnce(JSON.stringify({ score: mockScore })) // puzzle 2
+        .mockResolvedValueOnce(null); // puzzle 3 doesn't exist yet (this is the current submission)
 
       const response = await action(createActionArgs('/api/chesserGuesser/submit', createRequestBody(validSubmission)));
 
@@ -200,20 +226,24 @@ describe('Submit Score API', () => {
     });
 
     it('should set TTL on all stored data', async () => {
-      mockRedis.get.mockResolvedValueOnce('0') // userScore = 0
-        .mockResolvedValueOnce('3'); // completed = 3 (this will be the 4th puzzle)
+      const mockScore = 95;
+      mockRedis.get.mockResolvedValueOnce('3') // completed = 3 (this will be the 4th puzzle)
+        .mockResolvedValueOnce(JSON.stringify({ score: mockScore })) // puzzle 0
+        .mockResolvedValueOnce(JSON.stringify({ score: mockScore })) // puzzle 1
+        .mockResolvedValueOnce(JSON.stringify({ score: mockScore })) // puzzle 2
+        .mockResolvedValueOnce(null); // puzzle 3 doesn't exist yet
 
       const response = await action(createActionArgs('/api/chesserGuesser/submit', createRequestBody(validSubmission)));
       expect(response.status).toBe(200);
 
-      const TTL_30_DAYS = 30 * 24 * 60 * 60;
+      const TTL_7_DAYS = 7 * 24 * 60 * 60;
 
       // Check SET NX call has correct TTL
       expect(mockRedis.set).toHaveBeenCalledWith(
         expect.any(String),
         expect.any(String),
         'EX',
-        TTL_30_DAYS,
+        TTL_7_DAYS,
         'NX'
       );
 
@@ -221,18 +251,22 @@ describe('Submit Score API', () => {
       const setexCalls = mockRedis.setex.mock.calls;
       expect(setexCalls.length).toBeGreaterThan(0);
       setexCalls.forEach((call: any[]) => {
-        expect(call[1]).toBe(TTL_30_DAYS);
+        expect(call[1]).toBe(TTL_7_DAYS);
       });
 
       // Check leaderboard expire
       expect(mockRedis.expire).toHaveBeenCalledWith(
         'chesserGuesser:leaderboard:2024-01-15',
-        TTL_30_DAYS
+        TTL_7_DAYS
       );
     });
 
     it('should track puzzles completed', async () => {
-      mockRedis.get.mockResolvedValue('0'); // userScore and completed
+      mockRedis.get.mockResolvedValueOnce('0') // completed = 0
+        .mockResolvedValueOnce(null) // puzzle 0 doesn't exist yet
+        .mockResolvedValueOnce(null) // puzzle 1 doesn't exist yet
+        .mockResolvedValueOnce(null) // puzzle 2 doesn't exist yet
+        .mockResolvedValueOnce(null); // puzzle 3 doesn't exist yet
 
       const response = await action(createActionArgs('/api/chesserGuesser/submit', createRequestBody(validSubmission)));
 
@@ -248,7 +282,11 @@ describe('Submit Score API', () => {
     });
 
     it('should store submission data with timestamp', async () => {
-      mockRedis.get.mockResolvedValue('0'); // userScore and completed
+      mockRedis.get.mockResolvedValueOnce('0') // completed = 0
+        .mockResolvedValueOnce(null) // puzzle 0 doesn't exist yet
+        .mockResolvedValueOnce(null) // puzzle 1 doesn't exist yet
+        .mockResolvedValueOnce(null) // puzzle 2 doesn't exist yet
+        .mockResolvedValueOnce(null); // puzzle 3 doesn't exist yet
 
       const beforeTimestamp = Date.now();
 
@@ -293,8 +331,11 @@ describe('Submit Score API', () => {
     };
 
     it('should handle zero evaluations correctly', async () => {
-      mockRedis.get.mockResolvedValueOnce('0') // userScore = 0
-        .mockResolvedValueOnce('0'); // completed = 0
+      mockRedis.get.mockResolvedValueOnce('0') // completed = 0
+        .mockResolvedValueOnce(null) // puzzle 0 doesn't exist yet
+        .mockResolvedValueOnce(null) // puzzle 1 doesn't exist yet
+        .mockResolvedValueOnce(null) // puzzle 2 doesn't exist yet
+        .mockResolvedValueOnce(null); // puzzle 3 doesn't exist yet
 
       const response = await action(createActionArgs('/api/chesserGuesser/submit', {
         method: 'POST',
@@ -321,8 +362,11 @@ describe('Submit Score API', () => {
 
       for (const { guess, actual } of extremeCases) {
         mockRedis.get.mockClear();
-        mockRedis.get.mockResolvedValueOnce('0') // userScore = 0
-          .mockResolvedValueOnce('0'); // completed = 0
+        mockRedis.get.mockResolvedValueOnce('0') // completed = 0
+          .mockResolvedValueOnce(null) // puzzle 0 doesn't exist yet
+          .mockResolvedValueOnce(null) // puzzle 1 doesn't exist yet
+          .mockResolvedValueOnce(null) // puzzle 2 doesn't exist yet
+          .mockResolvedValueOnce(null); // puzzle 3 doesn't exist yet
 
         const response = await action(createActionArgs('/api/chesserGuesser/submit', {
           method: 'POST',

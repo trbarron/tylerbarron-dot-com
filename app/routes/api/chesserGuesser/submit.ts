@@ -7,7 +7,7 @@ import { getRedisClient } from "~/utils/redis.server";
 import { calculatePuzzleScore } from "~/utils/chesserGuesser/puzzleSelection";
 import { getTodayDateString } from "~/utils/chesserGuesser/seededRandom";
 
-const TTL_30_DAYS = 30 * 24 * 60 * 60; // 30 days in seconds
+const TTL_7_DAYS = 7 * 24 * 60 * 60; // 7 days in seconds
 
 /**
  * Validate username
@@ -82,7 +82,7 @@ export async function action({ request }: ActionFunctionArgs) {
       submissionKey,
       JSON.stringify(submission),
       'EX',
-      TTL_30_DAYS,
+      TTL_7_DAYS,
       'NX'
     );
 
@@ -93,17 +93,6 @@ export async function action({ request }: ActionFunctionArgs) {
       );
     }
 
-    // Update user's total score for the day
-    const userScoreKey = `chesserGuesser:userScore:${dateString}:${username}`;
-    const currentScore = parseInt((await redis.get(userScoreKey)) || '0', 10);
-    const newTotalScore = currentScore + score;
-
-    await redis.setex(
-      userScoreKey,
-      TTL_30_DAYS,
-      newTotalScore.toString()
-    );
-
     // Update puzzles completed count
     const completedKey = `chesserGuesser:completed:${dateString}:${username}`;
     const completed = parseInt((await redis.get(completedKey)) || '0', 10);
@@ -111,15 +100,26 @@ export async function action({ request }: ActionFunctionArgs) {
 
     await redis.setex(
       completedKey,
-      TTL_30_DAYS,
+      TTL_7_DAYS,
       newCompleted.toString()
     );
+
+    // Calculate total score by summing all individual puzzle scores from Redis
+    let totalScore = 0;
+    for (let i = 0; i < 4; i++) {
+      const puzzleSubmissionKey = `chesserGuesser:submission:${dateString}:${username}:${i}`;
+      const puzzleData = await redis.get(puzzleSubmissionKey);
+      if (puzzleData) {
+        const puzzle = JSON.parse(puzzleData);
+        totalScore += puzzle.score;
+      }
+    }
 
     // Update leaderboard ONLY if all 4 puzzles are completed
     if (newCompleted === 4) {
       const leaderboardKey = `chesserGuesser:leaderboard:${dateString}`;
-      await redis.zadd(leaderboardKey, newTotalScore, username);
-      await redis.expire(leaderboardKey, TTL_30_DAYS);
+      await redis.zadd(leaderboardKey, totalScore, username);
+      await redis.expire(leaderboardKey, TTL_7_DAYS);
     }
 
     // Update user summary
@@ -127,21 +127,20 @@ export async function action({ request }: ActionFunctionArgs) {
     const summary = {
       username,
       date: dateString,
-      totalScore: newTotalScore,
+      totalScore,
       puzzlesCompleted: newCompleted,
       lastUpdated: Date.now(),
     };
 
     await redis.setex(
       summaryKey,
-      TTL_30_DAYS,
+      TTL_7_DAYS,
       JSON.stringify(summary)
     );
 
     return Response.json({
-      success: true,
       score,
-      totalScore: newTotalScore,
+      totalScore,
       puzzlesCompleted: newCompleted,
     });
   } catch (error) {
