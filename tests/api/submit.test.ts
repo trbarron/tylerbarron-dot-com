@@ -10,6 +10,7 @@ import { action } from '~/routes/api/chesserGuesser/submit';
 // Mock Redis
 const mockRedis = {
   get: vi.fn(),
+  set: vi.fn(),
   setex: vi.fn(),
   zadd: vi.fn(),
   expire: vi.fn(),
@@ -22,6 +23,8 @@ vi.mock('~/utils/redis.server', () => ({
 describe('Submit Score API', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Default: SET NX succeeds (no duplicate)
+    mockRedis.set.mockResolvedValue('OK');
   });
 
   afterEach(() => {
@@ -48,8 +51,7 @@ describe('Submit Score API', () => {
     };
 
     it('should accept valid submission', async () => {
-      mockRedis.get.mockResolvedValue(null); // No existing submission
-      mockRedis.get.mockResolvedValueOnce(null).mockResolvedValueOnce('0'); // userScore, completed
+      mockRedis.get.mockResolvedValueOnce('0').mockResolvedValueOnce('0'); // userScore, completed
 
       const response = await action(createActionArgs('/api/chesserGuesser/submit', createRequestBody(validSubmission)));
 
@@ -64,21 +66,14 @@ describe('Submit Score API', () => {
     });
 
     it('should reject duplicate submission', async () => {
-      mockRedis.get.mockResolvedValue(JSON.stringify({
-        username: 'testuser123',
-        date: '2024-01-15',
-        puzzleIndex: 0,
-        guess: 100,
-        actualEval: 120,
-        score: 95,
-        timestamp: Date.now(),
-      }));
+      // Mock SET with NX returning null (key already exists)
+      mockRedis.set.mockResolvedValue(null);
 
       const response = await action(createActionArgs('/api/chesserGuesser/submit', createRequestBody(validSubmission)));
 
       expect(response.status).toBe(409);
       const result = await response.json();
-      expect(result.error).toContain('already submitted');
+      expect(result.error).toContain('already submitted this puzzle');
     });
 
     it('should reject invalid username formats', async () => {
@@ -102,8 +97,6 @@ describe('Submit Score API', () => {
     });
 
     it('should accept valid username formats', async () => {
-      mockRedis.get.mockResolvedValue(null);
-
       const validUsernames = [
         'a', // Single character (min length)
         'ab', // Two characters
@@ -115,7 +108,7 @@ describe('Submit Score API', () => {
 
       for (const username of validUsernames) {
         mockRedis.get.mockClear();
-        mockRedis.get.mockResolvedValue(null);
+        mockRedis.get.mockResolvedValue('0'); // userScore and completed
 
         const response = await action(createActionArgs('/api/chesserGuesser/submit', createRequestBody({ ...validSubmission, username })));
 
@@ -142,11 +135,9 @@ describe('Submit Score API', () => {
     });
 
     it('should accept valid puzzle indices (0-3)', async () => {
-      mockRedis.get.mockResolvedValue(null);
-
       for (let i = 0; i < 4; i++) {
         mockRedis.get.mockClear();
-        mockRedis.get.mockResolvedValue(null);
+        mockRedis.get.mockResolvedValue('0'); // userScore and completed
 
         const response = await action(createActionArgs('/api/chesserGuesser/submit', createRequestBody({ ...validSubmission, puzzleIndex: i })));
 
@@ -155,8 +146,6 @@ describe('Submit Score API', () => {
     });
 
     it('should calculate score correctly', async () => {
-      mockRedis.get.mockResolvedValue(null);
-
       const testCases = [
         { guess: 100, actual: 100, expectedScore: 100 }, // Perfect
         { guess: 100, actual: 120, expectedScore: 95 }, // Close
@@ -166,7 +155,7 @@ describe('Submit Score API', () => {
 
       for (const { guess, actual, expectedScore } of testCases) {
         mockRedis.get.mockClear();
-        mockRedis.get.mockResolvedValue(null);
+        mockRedis.get.mockResolvedValue('0'); // userScore and completed
 
         const response = await action(createActionArgs('/api/chesserGuesser/submit', createRequestBody({ ...validSubmission, guess, actualEval: actual })));
 
@@ -177,8 +166,7 @@ describe('Submit Score API', () => {
 
     it('should update total score correctly', async () => {
       // First submission
-      mockRedis.get.mockResolvedValueOnce(null) // No existing submission
-        .mockResolvedValueOnce('0') // userScore = 0
+      mockRedis.get.mockResolvedValueOnce('0') // userScore = 0
         .mockResolvedValueOnce('0'); // completed = 0
 
       const response1 = await action(createActionArgs('/api/chesserGuesser/submit', createRequestBody({ ...validSubmission, puzzleIndex: 0 })));
@@ -188,8 +176,7 @@ describe('Submit Score API', () => {
 
       // Second submission
       mockRedis.get.mockClear();
-      mockRedis.get.mockResolvedValueOnce(null) // No existing submission
-        .mockResolvedValueOnce(String(firstScore)) // Previous score
+      mockRedis.get.mockResolvedValueOnce(String(firstScore)) // Previous score
         .mockResolvedValueOnce('1'); // completed = 1
 
       const response2 = await action(createActionArgs('/api/chesserGuesser/submit', createRequestBody({ ...validSubmission, puzzleIndex: 1 })));
@@ -199,8 +186,7 @@ describe('Submit Score API', () => {
     });
 
     it('should update leaderboard', async () => {
-      mockRedis.get.mockResolvedValueOnce(null) // No existing submission
-        .mockResolvedValueOnce('0') // userScore = 0
+      mockRedis.get.mockResolvedValueOnce('0') // userScore = 0
         .mockResolvedValueOnce('3'); // completed = 3 (this will be the 4th puzzle)
 
       const response = await action(createActionArgs('/api/chesserGuesser/submit', createRequestBody(validSubmission)));
@@ -214,14 +200,22 @@ describe('Submit Score API', () => {
     });
 
     it('should set TTL on all stored data', async () => {
-      mockRedis.get.mockResolvedValueOnce(null) // No existing submission
-        .mockResolvedValueOnce('0') // userScore = 0
+      mockRedis.get.mockResolvedValueOnce('0') // userScore = 0
         .mockResolvedValueOnce('3'); // completed = 3 (this will be the 4th puzzle)
 
       const response = await action(createActionArgs('/api/chesserGuesser/submit', createRequestBody(validSubmission)));
       expect(response.status).toBe(200);
 
       const TTL_30_DAYS = 30 * 24 * 60 * 60;
+
+      // Check SET NX call has correct TTL
+      expect(mockRedis.set).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.any(String),
+        'EX',
+        TTL_30_DAYS,
+        'NX'
+      );
 
       // Check all setex calls have correct TTL
       const setexCalls = mockRedis.setex.mock.calls;
@@ -238,7 +232,7 @@ describe('Submit Score API', () => {
     });
 
     it('should track puzzles completed', async () => {
-      mockRedis.get.mockResolvedValue(null);
+      mockRedis.get.mockResolvedValue('0'); // userScore and completed
 
       const response = await action(createActionArgs('/api/chesserGuesser/submit', createRequestBody(validSubmission)));
 
@@ -254,7 +248,7 @@ describe('Submit Score API', () => {
     });
 
     it('should store submission data with timestamp', async () => {
-      mockRedis.get.mockResolvedValue(null);
+      mockRedis.get.mockResolvedValue('0'); // userScore and completed
 
       const beforeTimestamp = Date.now();
 
@@ -262,12 +256,10 @@ describe('Submit Score API', () => {
 
       const afterTimestamp = Date.now();
 
-      const submissionCall = mockRedis.setex.mock.calls.find((call: any[]) =>
-        call[0].includes('submission')
-      );
-
-      expect(submissionCall).toBeDefined();
-      const submissionData = JSON.parse(submissionCall![2]);
+      // Check the SET call for submission data
+      expect(mockRedis.set).toHaveBeenCalled();
+      const setCall = mockRedis.set.mock.calls[0];
+      const submissionData = JSON.parse(setCall[1]);
       expect(submissionData.timestamp).toBeGreaterThanOrEqual(beforeTimestamp);
       expect(submissionData.timestamp).toBeLessThanOrEqual(afterTimestamp);
     });
@@ -301,8 +293,7 @@ describe('Submit Score API', () => {
     };
 
     it('should handle zero evaluations correctly', async () => {
-      mockRedis.get.mockResolvedValueOnce(null) // No existing submission
-        .mockResolvedValueOnce('0') // userScore = 0
+      mockRedis.get.mockResolvedValueOnce('0') // userScore = 0
         .mockResolvedValueOnce('0'); // completed = 0
 
       const response = await action(createActionArgs('/api/chesserGuesser/submit', {
@@ -322,8 +313,6 @@ describe('Submit Score API', () => {
     });
 
     it('should handle extreme evaluations', async () => {
-      mockRedis.get.mockResolvedValue(null);
-
       const extremeCases = [
         { guess: 400, actual: 400 },
         { guess: -400, actual: -400 },
@@ -332,8 +321,7 @@ describe('Submit Score API', () => {
 
       for (const { guess, actual } of extremeCases) {
         mockRedis.get.mockClear();
-        mockRedis.get.mockResolvedValueOnce(null) // No existing submission
-          .mockResolvedValueOnce('0') // userScore = 0
+        mockRedis.get.mockResolvedValueOnce('0') // userScore = 0
           .mockResolvedValueOnce('0'); // completed = 0
 
         const response = await action(createActionArgs('/api/chesserGuesser/submit', {

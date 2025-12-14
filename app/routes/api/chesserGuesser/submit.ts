@@ -61,21 +61,10 @@ export async function action({ request }: ActionFunctionArgs) {
 
     const redis = getRedisClient();
 
-    // Check if user already submitted this puzzle
-    const submissionKey = `chesserGuesser:submission:${dateString}:${username}:${puzzleIndex}`;
-    const existing = await redis.get(submissionKey);
-
-    if (existing) {
-      return Response.json(
-        { error: 'You already submitted for the day' },
-        { status: 409 }
-      );
-    }
-
     // Calculate score
     const score = calculatePuzzleScore(guess, actualEval);
 
-    // Store individual submission
+    // Store individual submission atomically (prevents race condition)
     const submission = {
       username,
       date: dateString,
@@ -86,11 +75,23 @@ export async function action({ request }: ActionFunctionArgs) {
       timestamp: Date.now(),
     };
 
-    await redis.setex(
+    const submissionKey = `chesserGuesser:submission:${dateString}:${username}:${puzzleIndex}`;
+
+    // Use SET with NX (only set if not exists) for atomic check-and-set
+    const wasSet = await redis.set(
       submissionKey,
+      JSON.stringify(submission),
+      'EX',
       TTL_30_DAYS,
-      JSON.stringify(submission)
+      'NX'
     );
+
+    if (!wasSet) {
+      return Response.json(
+        { error: 'You already submitted this puzzle' },
+        { status: 409 }
+      );
+    }
 
     // Update user's total score for the day
     const userScoreKey = `chesserGuesser:userScore:${dateString}:${username}`;
