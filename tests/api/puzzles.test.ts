@@ -1,9 +1,12 @@
+import { createLoaderArgs } from '../setup';
 /**
  * Tests for /api/chesserGuesser/puzzles route
  * Tests daily puzzle generation, caching, and rotation
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { loader } from '~/routes/api/chesserGuesser/puzzles';
+
 import type { DailyPuzzleSet } from '~/utils/chesserGuesser/types';
 
 // Mock Redis
@@ -43,7 +46,7 @@ describe('Daily Puzzles API', () => {
 
       mockRedis.get.mockResolvedValue(JSON.stringify(cachedPuzzles));
 
-      const response = await fetch('/api/chesserGuesser/puzzles?date=2024-01-15');
+      const response = await loader(createLoaderArgs('/api/chesserGuesser/puzzles?date=2024-01-15'));
 
       expect(mockRedis.get).toHaveBeenCalledWith('chesserGuesser:dailyPuzzles:2024-01-15');
       expect(response.status).toBe(200);
@@ -65,7 +68,7 @@ describe('Daily Puzzles API', () => {
 
       (global.fetch as any).mockResolvedValue(mockPuzzleResponse);
 
-      const response = await fetch('/api/chesserGuesser/puzzles?date=2024-01-15');
+      const response = await loader(createLoaderArgs('/api/chesserGuesser/puzzles?date=2024-01-15'));
 
       expect(mockRedis.setex).toHaveBeenCalledWith(
         'chesserGuesser:dailyPuzzles:2024-01-15',
@@ -75,7 +78,7 @@ describe('Daily Puzzles API', () => {
     });
 
     it('should reject invalid date format', async () => {
-      const response = await fetch('/api/chesserGuesser/puzzles?date=2024/01/15');
+      const response = await loader(createLoaderArgs('/api/chesserGuesser/puzzles?date=2024/01/15'));
 
       expect(response.status).toBe(400);
       const body = await response.json();
@@ -88,7 +91,7 @@ describe('Daily Puzzles API', () => {
 
       mockRedis.get.mockResolvedValue(null);
 
-      await fetch('/api/chesserGuesser/puzzles');
+      await loader(createLoaderArgs('/api/chesserGuesser/puzzles'));
 
       expect(mockRedis.get).toHaveBeenCalledWith(`chesserGuesser:dailyPuzzles:${expectedDate}`);
     });
@@ -107,7 +110,7 @@ describe('Daily Puzzles API', () => {
 
       mockRedis.get.mockResolvedValue(JSON.stringify(cachedPuzzles));
 
-      const response = await fetch('/api/chesserGuesser/puzzles?date=2024-01-15');
+      const response = await loader(createLoaderArgs('/api/chesserGuesser/puzzles?date=2024-01-15'));
       const data = await response.json();
 
       expect(data.puzzles).toHaveLength(4);
@@ -120,7 +123,7 @@ describe('Daily Puzzles API', () => {
         seed: 12345,
       }));
 
-      const response = await fetch('/api/chesserGuesser/puzzles?date=2024-01-15');
+      const response = await loader(createLoaderArgs('/api/chesserGuesser/puzzles?date=2024-01-15'));
 
       expect(response.headers.get('Cache-Control')).toBe('public, max-age=3600');
     });
@@ -129,11 +132,12 @@ describe('Daily Puzzles API', () => {
       mockRedis.get.mockResolvedValue(null);
       (global.fetch as any).mockRejectedValue(new Error('Network error'));
 
-      const response = await fetch('/api/chesserGuesser/puzzles?date=2024-01-15');
+      const response = await loader(createLoaderArgs('/api/chesserGuesser/puzzles?date=2024-01-15'));
 
-      expect(response.status).toBe(500);
+      // Should succeed with fallback puzzles instead of returning error
+      expect(response.status).toBe(200);
       const body = await response.json();
-      expect(body.error).toContain('Failed to fetch daily puzzles');
+      expect(body.puzzles).toHaveLength(4);
     });
 
     it('should generate same puzzles for same date (determinism)', async () => {
@@ -157,14 +161,14 @@ describe('Daily Puzzles API', () => {
       );
 
       // First call
-      const response1 = await fetch('/api/chesserGuesser/puzzles?date=2024-01-15');
+      const response1 = await loader(createLoaderArgs('/api/chesserGuesser/puzzles?date=2024-01-15'));
       const data1 = await response1.json();
 
       // Reset and call again
       callIndex = 0;
       mockRedis.get.mockResolvedValue(null);
 
-      const response2 = await fetch('/api/chesserGuesser/puzzles?date=2024-01-15');
+      const response2 = await loader(createLoaderArgs('/api/chesserGuesser/puzzles?date=2024-01-15'));
       const data2 = await response2.json();
 
       expect(data1.seed).toBe(data2.seed);
@@ -182,7 +186,7 @@ describe('Daily Puzzles API', () => {
         }),
       });
 
-      await fetch('/api/chesserGuesser/puzzles?date=2024-01-15');
+      await loader(createLoaderArgs('/api/chesserGuesser/puzzles?date=2024-01-15'));
 
       const TTL_7_DAYS = 7 * 24 * 60 * 60;
       expect(mockRedis.setex).toHaveBeenCalledWith(
@@ -195,8 +199,8 @@ describe('Daily Puzzles API', () => {
     it('should return different puzzles for different dates', async () => {
       mockRedis.get.mockResolvedValue(null);
 
-      const response1 = await fetch('/api/chesserGuesser/puzzles?date=2024-01-15');
-      const response2 = await fetch('/api/chesserGuesser/puzzles?date=2024-01-16');
+      const response1 = await loader(createLoaderArgs('/api/chesserGuesser/puzzles?date=2024-01-15'));
+      const response2 = await loader(createLoaderArgs('/api/chesserGuesser/puzzles?date=2024-01-16'));
 
       const data1 = await response1.json();
       const data2 = await response2.json();
@@ -218,10 +222,11 @@ describe('Daily Puzzles API', () => {
         }),
       });
 
-      await fetch('/api/chesserGuesser/puzzles?date=2024-01-15');
+      await loader(createLoaderArgs('/api/chesserGuesser/puzzles?date=2024-01-15'));
 
       expect(global.fetch).toHaveBeenCalledWith(
-        'https://f73vgbj1jk.execute-api.us-west-2.amazonaws.com/prod/chesserGuesser'
+        'https://f73vgbj1jk.execute-api.us-west-2.amazonaws.com/prod/chesserGuesser',
+        expect.objectContaining({ signal: expect.anything() })
       );
       expect(global.fetch).toHaveBeenCalledTimes(4); // 4 puzzles
     });
@@ -243,11 +248,11 @@ describe('Daily Puzzles API', () => {
         });
       });
 
-      const response = await fetch('/api/chesserGuesser/puzzles?date=2024-01-15');
+      const response = await loader(createLoaderArgs('/api/chesserGuesser/puzzles?date=2024-01-15'));
       const data = await response.json();
 
-      // Should still attempt to return puzzles, even if some fail
-      expect(data.puzzles.length).toBeLessThan(4);
+      // Should use fallback puzzles when fetch fails, always returning 4 puzzles
+      expect(data.puzzles).toHaveLength(4);
     });
   });
 });

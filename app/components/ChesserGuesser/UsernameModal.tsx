@@ -106,7 +106,7 @@ export function UsernameModal({ isOpen, initialUsername = '', onSubmit, onCancel
               </button>
               <button
                 type="submit"
-                disabled={username.length < 3}
+                disabled={!username}
                 className="bg-black  text-white  border-2 border-black  px-4 py-3 font-neo font-bold uppercase tracking-wide hover:bg-accent  hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 Start

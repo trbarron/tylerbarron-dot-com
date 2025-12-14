@@ -64,9 +64,61 @@ export function calculatePuzzleScore(
   guess: number,
   actual: number
 ): number {
-  // Score is simply the absolute difference
-  // Lower is better
-  return Math.abs(actual - guess);
+  const EQUAL_THRESHOLD = 20;
+  const MAX_DIFF = 200;
+
+  // Determine which "side" each evaluation is on
+  const getSide = (val: number): 'white' | 'black' | 'equal' => {
+    if (val > EQUAL_THRESHOLD) return 'white';
+    if (val < -EQUAL_THRESHOLD) return 'black';
+    return 'equal';
+  };
+
+  const guessSide = getSide(guess);
+  const actualSide = getSide(actual);
+
+  // Special case: both in equal range [-20, 20]
+  const bothInEqualRange = Math.abs(guess) <= EQUAL_THRESHOLD && Math.abs(actual) <= EQUAL_THRESHOLD;
+  if (bothInEqualRange) {
+    // If both in equal range, return 100 (perfect evaluation of "equal" position)
+    return 100;
+  }
+
+  // Check if guess and actual have the same sign (both positive or both negative)
+  const sameSign = (guess > 0 && actual > 0) || (guess < 0 && actual < 0) || (guess === 0 && actual === 0);
+
+  // If sides don't match by threshold, check if they have the same sign
+  if (guessSide !== actualSide) {
+    // If guess is in equal range but actual is advantage with same sign, give partial credit
+    if (guessSide === 'equal' && sameSign) {
+      // Underestimated the advantage, but got the direction right
+      const diff = Math.abs(actual - guess);
+      const accuracyPenalty = (50 * Math.min(diff, MAX_DIFF)) / MAX_DIFF;
+      return Math.round(100 - accuracyPenalty);
+    }
+    // Otherwise, wrong prediction
+    return 0;
+  }
+
+  // If sides match, calculate accuracy bonus
+  const diff = Math.abs(actual - guess);
+
+  // Perfect guess gets 100 points
+  if (diff === 0) {
+    return 100;
+  }
+
+  // Score decreases from 100 to 50 as difference increases
+  const accuracyPenalty = (50 * Math.min(diff, MAX_DIFF)) / MAX_DIFF;
+  const score = 100 - accuracyPenalty;
+
+  // For very large differences (> MAX_DIFF), cap at exactly 50
+  if (diff > MAX_DIFF) {
+    return 50;
+  }
+
+  // Round to integer and ensure minimum of 51 for all other correct-side guesses
+  return Math.max(51, Math.round(score));
 }
 
 /**

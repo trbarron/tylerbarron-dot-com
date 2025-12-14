@@ -1,4 +1,3 @@
-import linkedin from "~/images/Global/in.svg";
 import { getImageUrl } from '~/utils/cdn';
 
 const linkedin = getImageUrl('Global/in.svg');

@@ -8,7 +8,6 @@ import Article from "~/components/Article";
 import CustomLightbox from "~/components/CustomLightbox";
 import LightboxPhoto from "~/components/LightboxPhoto";
 
-import vestaboard from "~/images/CatTracker/vestaboardDisplay.jpg";
 import { getImageUrl } from '~/utils/cdn';
 
 const vestaboard = getImageUrl('CatTracker/vestaboardDisplay.jpg');

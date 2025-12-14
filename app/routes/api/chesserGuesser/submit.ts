@@ -13,8 +13,8 @@ const TTL_30_DAYS = 30 * 24 * 60 * 60; // 30 days in seconds
  * Validate username
  */
 function validateUsername(username: string): boolean {
-  // 3-20 characters, alphanumeric and underscores only
-  return /^[a-zA-Z0-9_]{3,20}$/.test(username);
+  // 1-20 characters, alphanumeric and underscores only
+  return /^[a-zA-Z0-9_]{1,20}$/.test(username);
 }
 
 /**
@@ -32,7 +32,7 @@ export async function action({ request }: ActionFunctionArgs) {
     // Validate inputs
     if (!validateUsername(username)) {
       return Response.json(
-        { error: 'Invalid username. Use 3-20 alphanumeric characters or underscores.' },
+        { error: 'Invalid username. Use 1-20 alphanumeric characters or underscores.' },
         { status: 400 }
       );
     }

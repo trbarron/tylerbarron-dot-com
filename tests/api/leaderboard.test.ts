@@ -1,3 +1,4 @@
+import { createLoaderArgs, createActionArgs } from '../setup';
 /**
  * Tests for /api/chesserGuesser/leaderboard route
  * Tests leaderboard retrieval, ranking, and filtering
@@ -5,11 +6,12 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import type { LeaderboardEntry } from '~/utils/chesserGuesser/types';
+import { loader } from '~/routes/api/chesserGuesser/leaderboard';
 
 // Mock Redis
 const mockRedis = {
-  zrevrange: vi.fn(),
-  zrevrank: vi.fn(),
+  zrange: vi.fn(),
+  zrank: vi.fn(),
   zscore: vi.fn(),
   zcard: vi.fn(),
   get: vi.fn(),
@@ -18,6 +20,11 @@ const mockRedis = {
 vi.mock('~/utils/redis.server', () => ({
   getRedisClient: () => mockRedis,
 }));
+
+// Helper to create a mock request
+function createRequest(url: string): Request {
+  return new Request(`http://localhost${url}`);
+}
 
 describe('Leaderboard API', () => {
   beforeEach(() => {
@@ -32,19 +39,20 @@ describe('Leaderboard API', () => {
     it('should return top 50 users by default', async () => {
       const mockLeaderboardData = Array.from({ length: 50 }, (_, i) => [
         `user${i}`,
-        String(400 - i * 5),
+        String(i * 5), // Lower scores are better
       ]).flat();
 
-      mockRedis.zrevrange.mockResolvedValue(mockLeaderboardData);
+      mockRedis.zrange.mockResolvedValue(mockLeaderboardData);
       mockRedis.zcard.mockResolvedValue(100);
       mockRedis.get.mockResolvedValue(null);
 
-      const response = await fetch('/api/chesserGuesser/leaderboard?date=2024-01-15');
+      const url = '/api/chesserGuesser/leaderboard?date=2024-01-15';
+      const response = await loader(createLoaderArgs(url));
       const data = await response.json();
 
       expect(data.leaderboard).toHaveLength(50);
       expect(data.totalPlayers).toBe(100);
-      expect(mockRedis.zrevrange).toHaveBeenCalledWith(
+      expect(mockRedis.zrange).toHaveBeenCalledWith(
         'chesserGuesser:leaderboard:2024-01-15',
         0,
         49,
@@ -58,14 +66,15 @@ describe('Leaderboard API', () => {
         String(400 - i * 10),
       ]).flat();
 
-      mockRedis.zrevrange.mockResolvedValue(mockLeaderboardData);
+      mockRedis.zrange.mockResolvedValue(mockLeaderboardData);
       mockRedis.zcard.mockResolvedValue(50);
 
-      const response = await fetch('/api/chesserGuesser/leaderboard?date=2024-01-15&limit=10');
+      const url = '/api/chesserGuesser/leaderboard?date=2024-01-15&limit=10';
+      const response = await loader(createLoaderArgs(url));
       const data = await response.json();
 
       expect(data.leaderboard).toHaveLength(10);
-      expect(mockRedis.zrevrange).toHaveBeenCalledWith(
+      expect(mockRedis.zrange).toHaveBeenCalledWith(
         'chesserGuesser:leaderboard:2024-01-15',
         0,
         9,
@@ -74,7 +83,8 @@ describe('Leaderboard API', () => {
     });
 
     it('should enforce maximum limit of 100', async () => {
-      const response = await fetch('/api/chesserGuesser/leaderboard?date=2024-01-15&limit=200');
+      const url = '/api/chesserGuesser/leaderboard?date=2024-01-15&limit=200';
+      const response = await loader(createLoaderArgs(url));
 
       expect(response.status).toBe(400);
       const data = await response.json();
@@ -82,7 +92,8 @@ describe('Leaderboard API', () => {
     });
 
     it('should enforce minimum limit of 1', async () => {
-      const response = await fetch('/api/chesserGuesser/leaderboard?date=2024-01-15&limit=0');
+      const url = '/api/chesserGuesser/leaderboard?date=2024-01-15&limit=0';
+      const response = await loader(createLoaderArgs(url));
 
       expect(response.status).toBe(400);
       const data = await response.json();
@@ -96,11 +107,12 @@ describe('Leaderboard API', () => {
         'charlie', '390',
       ];
 
-      mockRedis.zrevrange.mockResolvedValue(mockLeaderboardData);
+      mockRedis.zrange.mockResolvedValue(mockLeaderboardData);
       mockRedis.zcard.mockResolvedValue(3);
       mockRedis.get.mockResolvedValue(null);
 
-      const response = await fetch('/api/chesserGuesser/leaderboard?date=2024-01-15&limit=3');
+      const url = '/api/chesserGuesser/leaderboard?date=2024-01-15&limit=3';
+      const response = await loader(createLoaderArgs(url));
       const data = await response.json();
 
       expect(data.leaderboard[0].rank).toBe(1);
@@ -122,8 +134,8 @@ describe('Leaderboard API', () => {
         String(400 - i * 5),
       ]).flat();
 
-      mockRedis.zrevrange.mockResolvedValue(mockLeaderboardData);
-      mockRedis.zrevrank.mockResolvedValue(75); // User is rank 76
+      mockRedis.zrange.mockResolvedValue(mockLeaderboardData);
+      mockRedis.zrank.mockResolvedValue(75); // User is rank 76
       mockRedis.zscore.mockResolvedValue('200');
       mockRedis.zcard.mockResolvedValue(100);
       mockRedis.get.mockResolvedValue('4').mockResolvedValueOnce('4').mockResolvedValueOnce(
@@ -134,7 +146,8 @@ describe('Leaderboard API', () => {
         })
       );
 
-      const response = await fetch('/api/chesserGuesser/leaderboard?date=2024-01-15&username=myuser');
+      const url = '/api/chesserGuesser/leaderboard?date=2024-01-15&username=myuser';
+      const response = await loader(createLoaderArgs(url));
       const data = await response.json();
 
       expect(data.userRank).toBeDefined();
@@ -149,11 +162,12 @@ describe('Leaderboard API', () => {
         'user2', '395',
       ];
 
-      mockRedis.zrevrange.mockResolvedValue(mockLeaderboardData);
-      mockRedis.zrevrank.mockResolvedValue(0); // User is rank 1
+      mockRedis.zrange.mockResolvedValue(mockLeaderboardData);
+      mockRedis.zrank.mockResolvedValue(0); // User is rank 1
       mockRedis.zcard.mockResolvedValue(10);
 
-      const response = await fetch('/api/chesserGuesser/leaderboard?date=2024-01-15&username=myuser');
+      const url = '/api/chesserGuesser/leaderboard?date=2024-01-15&username=myuser';
+      const response = await loader(createLoaderArgs(url));
       const data = await response.json();
 
       expect(data.userRank).toBeNull();
@@ -161,11 +175,12 @@ describe('Leaderboard API', () => {
     });
 
     it('should handle user not on leaderboard', async () => {
-      mockRedis.zrevrange.mockResolvedValue([]);
-      mockRedis.zrevrank.mockResolvedValue(null); // User not found
+      mockRedis.zrange.mockResolvedValue([]);
+      mockRedis.zrank.mockResolvedValue(null); // User not found
       mockRedis.zcard.mockResolvedValue(0);
 
-      const response = await fetch('/api/chesserGuesser/leaderboard?date=2024-01-15&username=nonexistent');
+      const url = '/api/chesserGuesser/leaderboard?date=2024-01-15&username=nonexistent';
+      const response = await loader(createLoaderArgs(url));
       const data = await response.json();
 
       expect(data.userRank).toBeNull();
@@ -174,11 +189,12 @@ describe('Leaderboard API', () => {
     });
 
     it('should include completed puzzles count', async () => {
-      mockRedis.zrevrange.mockResolvedValue(['alice', '400']);
+      mockRedis.zrange.mockResolvedValue(['alice', '400']);
       mockRedis.get.mockResolvedValue('4'); // Completed 4 puzzles
       mockRedis.zcard.mockResolvedValue(1);
 
-      const response = await fetch('/api/chesserGuesser/leaderboard?date=2024-01-15&limit=1');
+      const url = '/api/chesserGuesser/leaderboard?date=2024-01-15&limit=1';
+      const response = await loader(createLoaderArgs(url));
       const data = await response.json();
 
       expect(data.leaderboard[0].completedPuzzles).toBe(4);
@@ -186,7 +202,7 @@ describe('Leaderboard API', () => {
 
     it('should include timestamp from summary', async () => {
       const testTimestamp = Date.now();
-      mockRedis.zrevrange.mockResolvedValue(['alice', '400']);
+      mockRedis.zrange.mockResolvedValue(['alice', '400']);
       mockRedis.get.mockResolvedValueOnce('4').mockResolvedValueOnce(
         JSON.stringify({
           username: 'alice',
@@ -196,7 +212,8 @@ describe('Leaderboard API', () => {
       );
       mockRedis.zcard.mockResolvedValue(1);
 
-      const response = await fetch('/api/chesserGuesser/leaderboard?date=2024-01-15&limit=1');
+      const url = '/api/chesserGuesser/leaderboard?date=2024-01-15&limit=1';
+      const response = await loader(createLoaderArgs(url));
       const data = await response.json();
 
       expect(data.leaderboard[0].timestamp).toBe(testTimestamp);
@@ -206,12 +223,13 @@ describe('Leaderboard API', () => {
       const today = new Date();
       const expectedDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
-      mockRedis.zrevrange.mockResolvedValue([]);
+      mockRedis.zrange.mockResolvedValue([]);
       mockRedis.zcard.mockResolvedValue(0);
 
-      await fetch('/api/chesserGuesser/leaderboard');
+      const url = '/api/chesserGuesser/leaderboard';
+      const response = await loader(createLoaderArgs(url));
 
-      expect(mockRedis.zrevrange).toHaveBeenCalledWith(
+      expect(mockRedis.zrange).toHaveBeenCalledWith(
         `chesserGuesser:leaderboard:${expectedDate}`,
         0,
         49,
@@ -220,7 +238,8 @@ describe('Leaderboard API', () => {
     });
 
     it('should reject invalid date format', async () => {
-      const response = await fetch('/api/chesserGuesser/leaderboard?date=2024/01/15');
+      const url = '/api/chesserGuesser/leaderboard?date=2024/01/15';
+      const response = await loader(createLoaderArgs(url));
 
       expect(response.status).toBe(400);
       const data = await response.json();
@@ -228,19 +247,21 @@ describe('Leaderboard API', () => {
     });
 
     it('should set cache headers', async () => {
-      mockRedis.zrevrange.mockResolvedValue([]);
+      mockRedis.zrange.mockResolvedValue([]);
       mockRedis.zcard.mockResolvedValue(0);
 
-      const response = await fetch('/api/chesserGuesser/leaderboard?date=2024-01-15');
+      const url = '/api/chesserGuesser/leaderboard?date=2024-01-15';
+      const response = await loader(createLoaderArgs(url));
 
       expect(response.headers.get('Cache-Control')).toBe('public, max-age=60');
     });
 
     it('should handle empty leaderboard', async () => {
-      mockRedis.zrevrange.mockResolvedValue([]);
+      mockRedis.zrange.mockResolvedValue([]);
       mockRedis.zcard.mockResolvedValue(0);
 
-      const response = await fetch('/api/chesserGuesser/leaderboard?date=2024-01-15');
+      const url = '/api/chesserGuesser/leaderboard?date=2024-01-15';
+      const response = await loader(createLoaderArgs(url));
       const data = await response.json();
 
       expect(data.leaderboard).toHaveLength(0);
@@ -249,9 +270,10 @@ describe('Leaderboard API', () => {
     });
 
     it('should handle Redis errors gracefully', async () => {
-      mockRedis.zrevrange.mockRejectedValue(new Error('Redis connection failed'));
+      mockRedis.zrange.mockRejectedValue(new Error('Redis connection failed'));
 
-      const response = await fetch('/api/chesserGuesser/leaderboard?date=2024-01-15');
+      const url = '/api/chesserGuesser/leaderboard?date=2024-01-15';
+      const response = await loader(createLoaderArgs(url));
 
       expect(response.status).toBe(500);
       const data = await response.json();
@@ -267,11 +289,12 @@ describe('Leaderboard API', () => {
         'charlie', '300',
       ];
 
-      mockRedis.zrevrange.mockResolvedValue(mockData);
+      mockRedis.zrange.mockResolvedValue(mockData);
       mockRedis.zcard.mockResolvedValue(3);
       mockRedis.get.mockResolvedValue(null);
 
-      const response = await fetch('/api/chesserGuesser/leaderboard?date=2024-01-15&limit=3');
+      const url = '/api/chesserGuesser/leaderboard?date=2024-01-15&limit=3';
+      const response = await loader(createLoaderArgs(url));
       const data = await response.json();
 
       expect(data.leaderboard[0].score).toBeGreaterThanOrEqual(data.leaderboard[1].score);
@@ -285,11 +308,12 @@ describe('Leaderboard API', () => {
         'charlie', '350',
       ];
 
-      mockRedis.zrevrange.mockResolvedValue(mockData);
+      mockRedis.zrange.mockResolvedValue(mockData);
       mockRedis.zcard.mockResolvedValue(3);
       mockRedis.get.mockResolvedValue(null);
 
-      const response = await fetch('/api/chesserGuesser/leaderboard?date=2024-01-15&limit=3');
+      const url = '/api/chesserGuesser/leaderboard?date=2024-01-15&limit=3';
+      const response = await loader(createLoaderArgs(url));
       const data = await response.json();
 
       expect(data.leaderboard[0].score).toBe(400);
@@ -301,32 +325,35 @@ describe('Leaderboard API', () => {
 
   describe('Leaderboard Data Integrity', () => {
     it('should handle missing completed count gracefully', async () => {
-      mockRedis.zrevrange.mockResolvedValue(['alice', '400']);
+      mockRedis.zrange.mockResolvedValue(['alice', '400']);
       mockRedis.get.mockResolvedValue(null); // No completed count
       mockRedis.zcard.mockResolvedValue(1);
 
-      const response = await fetch('/api/chesserGuesser/leaderboard?date=2024-01-15&limit=1');
+      const url = '/api/chesserGuesser/leaderboard?date=2024-01-15&limit=1';
+      const response = await loader(createLoaderArgs(url));
       const data = await response.json();
 
       expect(data.leaderboard[0].completedPuzzles).toBe(0);
     });
 
     it('should handle missing summary gracefully', async () => {
-      mockRedis.zrevrange.mockResolvedValue(['alice', '400']);
+      mockRedis.zrange.mockResolvedValue(['alice', '400']);
       mockRedis.get.mockResolvedValueOnce('4').mockResolvedValueOnce(null); // No summary
       mockRedis.zcard.mockResolvedValue(1);
 
-      const response = await fetch('/api/chesserGuesser/leaderboard?date=2024-01-15&limit=1');
+      const url = '/api/chesserGuesser/leaderboard?date=2024-01-15&limit=1';
+      const response = await loader(createLoaderArgs(url));
       const data = await response.json();
 
       expect(data.leaderboard[0].timestamp).toBe(0);
     });
 
     it('should include date in response', async () => {
-      mockRedis.zrevrange.mockResolvedValue([]);
+      mockRedis.zrange.mockResolvedValue([]);
       mockRedis.zcard.mockResolvedValue(0);
 
-      const response = await fetch('/api/chesserGuesser/leaderboard?date=2024-01-15');
+      const url = '/api/chesserGuesser/leaderboard?date=2024-01-15';
+      const response = await loader(createLoaderArgs(url));
       const data = await response.json();
 
       expect(data.date).toBe('2024-01-15');
