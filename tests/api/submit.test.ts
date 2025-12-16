@@ -160,10 +160,10 @@ describe('Submit Score API', () => {
 
     it('should calculate score correctly', async () => {
       const testCases = [
-        { guess: 100, actual: 100, expectedScore: 100 }, // Perfect
-        { guess: 100, actual: 120, expectedScore: 95 }, // Close
-        { guess: 100, actual: 0, expectedScore: 0 }, // Wrong side
-        { guess: -100, actual: 100, expectedScore: 0 }, // Opposite side
+        { guess: 100, actual: 100, expectedScore: 0 }, // Perfect (lower is better)
+        { guess: 100, actual: 120, expectedScore: 20 }, // Close
+        { guess: 100, actual: 0, expectedScore: 100 }, // Distance
+        { guess: -100, actual: 100, expectedScore: 200 }, // Opposite side (distance of 200)
       ];
 
       for (const { guess, actual, expectedScore } of testCases) {
@@ -350,7 +350,7 @@ describe('Submit Score API', () => {
       }));
 
       const result = await response.json();
-      expect(result.score).toBe(100); // Perfect equal position
+      expect(result.score).toBe(0); // Perfect guess (distance = 0)
     });
 
     it('should handle extreme evaluations', async () => {

@@ -22,10 +22,6 @@ export function UsernameModal({ isOpen, initialUsername = '', onSubmit, onCancel
   }, [isOpen]);
 
   const validateUsername = (name: string): boolean => {
-    if (name.length < 3) {
-      setError('Username must be at least 3 characters');
-      return false;
-    }
     if (name.length > 20) {
       setError('Username must be 20 characters or less');
       return false;
