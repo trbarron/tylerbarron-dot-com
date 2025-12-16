@@ -766,8 +766,9 @@ export default function ChesserGuesserUnlimited() {
         {/* About Section */}
         <Article title="About Chesser Guesser" subtitle="">
           <Subarticle subtitle="Overview">
-            <p>Inspired by GeoGuessr, Chesser Guesser challenges players to estimate the computer&apos;s evaluation of chess positions. Players try to estimate the value of specific chess positions as accurately as possible, matching or closely approximating the engine&apos;s evaluation to extend their streak. The goal is to sharpen your evaluative skills by understanding why certain positions are deemed advantageous or disadvantageous by the computer.</p>
-            <p className="mt-4"><strong>Ranked Mode:</strong> Compete on the daily leaderboard! Everyone gets the same 4 puzzles each day, see how you rank globally.</p>
+            <p>Inspired by GeoGuessr, Chesser Guesser challenges players to estimate the computer&apos;s evaluation of chess positions. Players try to estimate the value of specific chess positions as accurately as possible.</p>
+            <p className="mt-2"><strong>Endless Mode:</strong> Play and have fun. There are no stakes to this. Your streak gets extended if you correctly guess who is advantaged.</p>
+            <p className="mt-2"><strong>Ranked Mode:</strong> Compete on the daily leaderboard! Everyone gets the same 4 puzzles each day, see how you rank globally.</p>
           </Subarticle>
           <Subarticle subtitle="The Analysis">
             <p>The game integrates with the <a href='https://lichess.org/@/lichess/blog/thousands-of-stockfish-analysers/WN-gLzAA'>Lichess Cloud Analysis</a> to fetch position evaluations at scale, giving access to all the positions and their evaluations without me having to do any work. Having this resource made the tough part of this project incredibly easy.</p>
