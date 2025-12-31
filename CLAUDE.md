@@ -69,5 +69,29 @@ This is a personal website built with React Router 7, TypeScript, and deployed o
 - TypeScript 5.x (strict mode enabled), React 19, Node.js 22+ + React Router 7 (v7.9.0), Tailwind CSS 4, Vite 6, AWS Architec (001-modernize-website)
 - Redis (ioredis) for server-side state, LocalStorage for client persistence, S3 for compiled MDX/images (001-modernize-website)
 
+## Code Standards (Modernization)
+
+### Styling
+- **Tailwind CSS Only**: No inline `style={{}}` objects - use Tailwind utility classes
+- **Theme Fonts**: Use `font-neo` (Inter) for body text, `font-mono` (JetBrains Mono) for code blocks
+- **Global CSS**: Minimal scope - most styling via Tailwind classes
+
+### Component Structure
+- **Export Pattern**: Default exports for components, named exports for hooks/utilities
+- **TypeScript**: Explicit prop interfaces (e.g., `interface ButtonProps`)
+- **File Size**: Target <500 lines (ESLint warns at 500)
+- **Shared Components**: Extract patterns used in 2+ routes to `app/components/`
+
+### File Organization
+- Shared components: `app/components/` (PhotoGallery, Modal, Button, Card, etc.)
+- Custom hooks: `app/hooks/` (useLocalStorage, useLightbox)
+- Route files: `app/routes/` (keep focused on routing/data loading)
+- Documentation: `docs/code-standards.md` for detailed patterns
+
+### Testing
+- Visual regression: Playwright (`npm run test:visual`)
+- Unit tests: Vitest (`npm test`)
+- Always maintain existing test coverage
+
 ## Recent Changes
-- 001-modernize-website: Added TypeScript 5.x (strict mode enabled), React 19, Node.js 22+ + React Router 7 (v7.9.0), Tailwind CSS 4, Vite 6, AWS Architec
+- 001-modernize-website: Standardized Tailwind CSS patterns, decomposed large routes, unified typography system, enforced code standards via ESLint

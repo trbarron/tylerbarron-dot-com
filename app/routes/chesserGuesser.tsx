@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLoaderData, ScrollRestoration, type LinksFunction } from "react-router";
 import { Chess } from 'chess.js';
 import { Navbar } from "~/components/Navbar";
@@ -6,19 +6,18 @@ import Footer from "~/components/Footer";
 import Article from "~/components/Article";
 import { Subarticle } from "~/components/Subarticle";
 
-const blackKingImage = getImageUrl('ChesserGuesser/blackKing.png');
-const whiteKingImage = getImageUrl('ChesserGuesser/whiteKing.png');
-// Import images
 // Import new components
 import { ModeSwitcher } from "~/components/ChesserGuesser/ModeSwitcher";
 import { UsernameModal } from "~/components/ChesserGuesser/UsernameModal";
 import { DailyProgressTracker } from "~/components/ChesserGuesser/DailyProgressTracker";
 import { Leaderboard } from "~/components/ChesserGuesser/Leaderboard";
 import { EndlessModePrompt } from "~/components/ChesserGuesser/EndlessModePrompt";
-import { ModeIndicator } from "~/components/ChesserGuesser/ModeIndicator";
 import { DailyCompletionMessage } from "~/components/ChesserGuesser/DailyCompletionMessage";
 import { LeaderboardModal } from "~/components/ChesserGuesser/LeaderboardModal";
 import { EndlessProgressTracker } from "~/components/ChesserGuesser/EndlessProgressTracker";
+import GameBoard from "~/components/ChesserGuesser/GameBoard";
+import MoveControls from "~/components/ChesserGuesser/MoveControls";
+import ScoreDisplay from "~/components/ChesserGuesser/ScoreDisplay";
 
 // Import utilities
 import type { GameMode, ChessPuzzle, DailyPuzzleSet, DailyGameState } from "~/utils/chesserGuesser/types";
@@ -37,11 +36,9 @@ import {
   saveMaxStreak,
 } from "~/utils/chesserGuesser/localStorage";
 
-const Chessboard = lazy(() => import('~/components/Chessboard'));
 import chessgroundBase from '../styles/chessground.base.css?url';
 import chessgroundBrown from '../styles/chessground.brown.css?url';
 import chessgroundCburnett from '../styles/chessground.cburnett.css?url';
-import { getImageUrl } from '~/utils/cdn';
 
 export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: chessgroundBase },
@@ -561,171 +558,49 @@ export default function ChesserGuesserUnlimited() {
 
           <div className="pb-6 mx-auto grid gap-x-4 grid-cols-1 md:grid-cols-5 md:ml-auto -mx-2 md:mx-2">
             <div className="w-100% col-span-1 md:col-span-4">
-              {/* Mode Indicator and Turn Indicator */}
-              <div className="mb-4 flex gap-2 items-stretch">
-                <div className="flex-grow">
-                  <ModeIndicator mode={gameMode} />
-                </div>
-                <div className={`border-2 border-black  px-3 md:px-4 py-1 md:py-2 flex items-center justify-center ${
-                  currentTurn === 'White' ? 'bg-white text-black' : 'bg-black text-white'
-                }`}>
-                  <span className="font-neo font-bold text-xs md:text-sm uppercase whitespace-nowrap">
-                    {currentTurn} to move
-                  </span>
-                </div>
-              </div>
+              <GameBoard
+                mode={gameMode}
+                fen={displayFen}
+                orientation={displayOrientation}
+                currentTurn={currentTurn}
+                isReviewMode={isReviewMode}
+              />
 
-
-              {/* Chessboard */}
-              <Suspense fallback={<div className="w-full aspect-square bg-gray-100  rounded flex items-center justify-center text-black  font-neo">Loading chessboard...</div>}>
-                <Chessboard
-                  key={displayFen} // Force re-render when FEN changes
-                  initialFen={displayFen}
-                  movable={false}
-                  allowDrawing={!isReviewMode}
-                  orientation={displayOrientation}
+              {/* Move Controls - Hidden in review mode */}
+              {!isReviewMode && (
+                <MoveControls
+                  sliderValue={sliderValue}
+                  onSliderChange={handleSliderChange}
+                  onSubmit={submitGuess}
+                  isSubmitting={isSubmitting}
+                  isDisabled={isDailyCompleted}
+                  submitLabel={isDailyCompleted ? 'Daily Complete!' : undefined}
                 />
-              </Suspense>
-
-              {/* Slider - Hidden in review mode */}
-              {!isReviewMode && (
-                <div className="gap-2 flex w-full mt-4">
-                  <img src={blackKingImage} alt="Black King" className="w-12 h-12 flex-none" />
-                  <input
-                    type="range"
-                    min="-400"
-                    max="400"
-                    value={sliderValue}
-                    onChange={handleSliderChange}
-                    className="range flex-auto cursor-pointer appearance-none bg-black h-2 my-auto  border-2 border-black "
-                    disabled={isDailyCompleted}
-                  />
-                  <img src={whiteKingImage} alt="White King" className="w-12 h-12 flex-none" />
-                </div>
-              )}
-
-              {/* Submit Button - Hidden in review mode */}
-              {!isReviewMode && (
-                <button
-                  className="w-full bg-white  text-black  border-4 border-black  px-6 py-3 font-extrabold uppercase tracking-wide hover:bg-accent  hover:text-white disabled:opacity-50 disabled:cursor-not-allowed flex flex-col items-center font-neo mt-4"
-                  onClick={submitGuess}
-                  disabled={isSubmitting || isDailyCompleted}
-                >
-                  <span className="text-sm">
-                    {isSubmitting ? 'Loading...' : isDailyCompleted ? 'Daily Complete!' : 'Submit'}
-                  </span>
-                  <span className="text-sm">
-                    {(sliderValue / 100).toFixed(2)}
-                  </span>
-                </button>
               )}
             </div>
 
             {/* Sidebar */}
             <div className="justify-center text-center grid gap-y-3 h-auto md:h-full md:grid-cols-1 w-full grid-cols-3 col-span-1 md:col-span-1 gap-x-4 py-2 md:py-0">
               {/* Last Round Info / Review Puzzle Info - First on mobile */}
-              {((lastEval !== 0 || lastSlider !== 0) || (isReviewMode && reviewPuzzle)) && (
-                <div className="bg-white  border-4 border-black  overflow-hidden w-full col-span-3 md:col-span-1">
-                  {/* Header */}
-                  <div className="w-full border-b-2 border-accent  py-2 flex flex-col items-center justify-center font-neo font-bold uppercase text-black  bg-white ">
-                    <span className="text-xs md:text-sm">
-                      {isReviewMode ? `Puzzle #${displayPuzzleNumber} of ${totalCount}` : gameMode === 'daily' && lastDailyScore !== undefined ? `Puzzle #${currentPuzzleIndex} Complete` : 'Last Round'}
-                    </span>
-                  </div>
+              <ScoreDisplay
+                gameMode={gameMode}
+                isReviewMode={isReviewMode}
+                lastEval={lastEval}
+                lastSlider={lastSlider}
+                lastDailyScore={lastDailyScore}
+                currentPuzzleIndex={currentPuzzleIndex}
+                displayPuzzleNumber={displayPuzzleNumber}
+                totalCount={totalCount}
+                displayLimit={displayLimit}
+                reviewPuzzle={reviewPuzzle}
+                reviewPuzzleIndex={reviewPuzzleIndex}
+                filteredHistory={filteredHistory}
+                copyFeedback={copyFeedback}
+                onNavigateReview={navigateReviewPuzzle}
+                onCopyFEN={copyFEN}
+                onToggleReview={toggleReviewMode}
+              />
 
-                  {/* Content */}
-                  <div className="p-3 md:p-4 bg-white  text-black  font-neo space-y-2">
-                    {/* Navigation buttons in review mode */}
-                    {isReviewMode && reviewPuzzle && (
-                      <div className="flex gap-1 mb-2">
-                        <button
-                          onClick={() => navigateReviewPuzzle('next', filteredHistory)}
-                          disabled={reviewPuzzleIndex === filteredHistory.length - 1}
-                          className="flex-1 px-1 py-1 bg-black  text-white  text-[10px] md:text-xs font-bold disabled:opacity-30"
-                        >
-                          ← Old
-                        </button>
-                        <button
-                          onClick={() => navigateReviewPuzzle('prev', filteredHistory)}
-                          disabled={reviewPuzzleIndex === 0}
-                          className="flex-1 px-1 py-1 bg-black  text-white  text-[10px] md:text-xs font-bold disabled:opacity-30"
-                        >
-                          New →
-                        </button>
-                      </div>
-                    )}
-
-                    {/* Stats - shown in both modes */}
-                    <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div className="text-left">
-                        <div className="text-gray-600  uppercase text-[10px]">Your Guess</div>
-                        <div className="font-bold text-sm">
-                          {isReviewMode && reviewPuzzle
-                            ? (reviewPuzzle.guess / 100).toFixed(2)
-                            : lastSlider.toFixed(2)}
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-gray-600  uppercase text-[10px]">Actual</div>
-                        <div className="font-bold text-sm">
-                          {isReviewMode && reviewPuzzle
-                            ? (reviewPuzzle.eval / 100).toFixed(2)
-                            : lastEval.toFixed(2)}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Difference */}
-                    <div className="border-t-2 border-gray-200  pt-2">
-                      <div className="text-gray-600  uppercase text-[10px]">Difference</div>
-                      <div className="font-bold text-lg text-accent ">
-                        {isReviewMode && reviewPuzzle
-                          ? Math.abs((reviewPuzzle.eval - reviewPuzzle.guess) / 100).toFixed(2)
-                          : Math.abs(lastEval - lastSlider).toFixed(2)}
-                      </div>
-                    </div>
-
-                    {/* Showing count indicator in review mode */}
-                    {isReviewMode && totalCount > displayLimit && (
-                      <div className="text-center text-gray-600  text-[10px] pt-1">
-                        (Showing last {displayLimit} of {totalCount})
-                      </div>
-                    )}
-
-                    {/* Copy FEN and Exit Review buttons in review mode */}
-                    {isReviewMode && reviewPuzzle && (
-                      <div className="space-y-1 mt-2">
-                        <button
-                          onClick={() => copyFEN(reviewPuzzle.fen)}
-                          className={`w-full px-2 py-1 text-[10px] font-bold transition-colors ${
-                            copyFeedback
-                              ? 'bg-green-600  text-white '
-                              : 'bg-gray-200  text-gray-700  hover:bg-gray-300 '
-                          }`}
-                        >
-                          {copyFeedback ? 'FEN Copied' : 'Copy FEN'}
-                        </button>
-                        <button
-                          onClick={toggleReviewMode}
-                          className="w-full px-3 py-2 bg-accent  text-white  font-bold text-xs hover:bg-black  transition-colors"
-                        >
-                          Exit Review
-                        </button>
-                      </div>
-                    )}
-
-                    {/* View All button in normal mode */}
-                    {totalCount > 0 && !isReviewMode && (
-                      <button
-                        onClick={toggleReviewMode}
-                        className="w-full mt-2 px-3 py-2 bg-black  text-white  font-bold text-xs hover:bg-accent  transition-colors"
-                      >
-                        View All Puzzles →
-                      </button>
-                    )}
-                  </div>
-                </div>
-              )}
 
               {/* Daily Progress Tracker (only in daily mode) */}
               {gameMode === 'daily' && (
