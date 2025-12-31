@@ -50,17 +50,17 @@ const SSBM = () => {
   };
 
   const PhotoComponent = ({ photo, index }: { photo: typeof allPhotos[0]; index: number }) => (
-    <div onClick={() => openLightbox(index)} style={{ cursor: 'pointer', margin: '20px 0', textAlign: 'center' }}>
-      <img src={photo.src} alt={photo.alt} style={{ maxWidth: '100%', height: 'auto', margin: '0 auto', display: 'block' }} />
-      {photo.caption && <p style={{ fontStyle: 'italic', marginTop: '10px' }}>{photo.caption}</p>}
+    <div onClick={() => openLightbox(index)} className="cursor-pointer my-5 text-center">
+      <img src={photo.src} alt={photo.alt} className="max-w-full h-auto mx-auto block" />
+      {photo.caption && <p className="italic mt-2.5">{photo.caption}</p>}
     </div>
   );
 
   const VideoComponent = ({ src, caption }: { src: string; caption?: string }) => (
-    <div style={{ margin: '20px 0' }}>
-      <div className="video-container" style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden' }}>
+    <div className="my-5">
+      <div className="relative pb-[56.25%] h-0 overflow-hidden">
         <iframe
-          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+          className="absolute top-0 left-0 w-full h-full"
           src={src}
           title={caption || "Video"}
           frameBorder="0"
@@ -68,7 +68,7 @@ const SSBM = () => {
           allowFullScreen>
         </iframe>
       </div>
-      {caption && <p style={{ fontStyle: 'italic', marginTop: '10px' }}>{caption}</p>}
+      {caption && <p className="italic mt-2.5">{caption}</p>}
     </div>
   );
 

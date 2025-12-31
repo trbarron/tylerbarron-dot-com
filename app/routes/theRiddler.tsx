@@ -51,29 +51,15 @@ const Riddler = () => {
   const PhotoComponent = ({ photo, index }: { photo: typeof photos[0]; index: number }) => (
     <div
       onClick={() => openLightbox(index)}
-      style={{
-        cursor: 'pointer',
-        margin: '20px auto',
-        textAlign: 'center',
-        maxWidth: '80%'
-      }}
+      className="cursor-pointer my-5 mx-auto text-center max-w-[80%]"
     >
       <img
         src={photo.src}
         alt={photo.alt}
-        style={{
-          maxWidth: '100%',
-          height: 'auto',
-          display: 'block',
-          margin: '0 auto'
-        }}
+        className="max-w-full h-auto block mx-auto"
       />
       {photo.caption && (
-        <p style={{
-          fontStyle: 'italic',
-          marginTop: '10px',
-          textAlign: 'center'
-        }}>
+        <p className="italic mt-2.5 text-center">
           {photo.caption}
         </p>
       )}

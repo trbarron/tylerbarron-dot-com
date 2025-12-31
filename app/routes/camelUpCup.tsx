@@ -35,9 +35,9 @@ const CamelUpCup = () => {
   };
 
   const PhotoComponent = ({ photo, index }: { photo: typeof photos[0]; index: number }) => (
-    <div onClick={() => openLightbox(index)} style={{ cursor: 'pointer', margin: '20px 0' }}>
-      <img src={photo.src} alt={photo.alt} style={{ maxWidth: '100%', height: 'auto' }} />
-      {photo.caption && <p style={{ fontStyle: 'italic', marginTop: '10px' }}>{photo.caption}</p>}
+    <div onClick={() => openLightbox(index)} className="cursor-pointer my-5">
+      <img src={photo.src} alt={photo.alt} className="max-w-full h-auto" />
+      {photo.caption && <p className="italic mt-2.5">{photo.caption}</p>}
     </div>
   );
 

@@ -32,29 +32,15 @@ const Set = () => {
   const PhotoComponent = ({ photo, index }: { photo: typeof photos[0]; index: number }) => (
     <div
       onClick={() => openLightbox(index)}
-      style={{
-        cursor: 'pointer',
-        margin: '20px auto',
-        textAlign: 'center',
-        maxWidth: '80%'
-      }}
+      className="cursor-pointer my-5 mx-auto text-center max-w-[80%]"
     >
       <img
         src={photo.src}
         alt={photo.alt}
-        style={{
-          maxWidth: '100%',
-          height: 'auto',
-          display: 'block',
-          margin: '0 auto'
-        }}
+        className="max-w-full h-auto block mx-auto"
       />
       {photo.caption && (
-        <p style={{
-          fontStyle: 'italic',
-          marginTop: '10px',
-          textAlign: 'center'
-        }}>
+        <p className="italic mt-2.5 text-center">
           {photo.caption}
         </p>
       )}
@@ -83,23 +69,16 @@ const Set = () => {
 
             <p>Here's a demo:</p>
 
-            <div style={{
-              position: 'relative',
-              paddingBottom: '56.25%',
-              height: 0,
-              overflow: 'hidden',
-              maxWidth: '80%',  // Match photo width
-              margin: '20px auto'  // Center the video container
-            }}>
+            <div className="relative pb-[56.25%] h-0 overflow-hidden max-w-[80%] my-5 mx-auto">
               <iframe
                 src="https://www.youtube.com/embed/U1rkMZI7B4M"
-                style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+                className="absolute top-0 left-0 w-full h-full"
                 allow="autoplay; encrypted-media"
                 allowFullScreen
                 title="Demoing the product"
               ></iframe>
             </div>
-            <p style={{ fontStyle: 'italic', marginTop: '10px', textAlign: 'center' }}>Demoing the product</p>
+            <p className="italic mt-2.5 text-center">Demoing the product</p>
 
             <p>I was very happy with what I was able to create in one weekend and ended up taking first in the hackathon.</p>
           </Subarticle>

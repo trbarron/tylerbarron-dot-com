@@ -21,7 +21,9 @@ export default function Article({ title, subtitle, styleModifier = "", children 
                         {subtitle.toUpperCase()}
                     </h2>
                 </div>
-                {children}
+                <div className="prose">
+                    {children}
+                </div>
             </div>
         </section>
     );

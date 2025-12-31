@@ -1,17 +1,87 @@
-import React from 'react';
+import { useEffect } from 'react';
+import type { ReactNode } from 'react';
 
 interface ModalProps {
-  children: React.ReactNode;
+  isOpen: boolean;
   onClose: () => void;
+  title?: string;
+  children: ReactNode;
+  className?: string;
 }
 
-export function Modal({ children, onClose }: ModalProps) {
+/**
+ * Modal component for displaying dialogs and overlays.
+ *
+ * @example
+ * ```tsx
+ * <Modal
+ *   isOpen={isModalOpen}
+ *   onClose={() => setIsModalOpen(false)}
+ *   title="Confirm Action"
+ * >
+ *   <p>Are you sure?</p>
+ * </Modal>
+ * ```
+ */
+export default function Modal({
+  isOpen,
+  onClose,
+  title,
+  children,
+  className = '',
+}: ModalProps) {
+  // Handle escape key press
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isOpen, onClose]);
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-      <div className="bg-white border-4 border-black p-8 max-w-md w-full">
-        <button onClick={onClose} className="float-right bg-white text-black border-2 border-black px-2 py-1 font-extrabold hover:bg-black hover:text-white">×</button>
-        {children}
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+      onClick={onClose}
+    >
+      <div
+        className={`bg-white border-4 border-black p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto ${className}`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {title && (
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-bold font-neo">{title}</h2>
+            <button
+              onClick={onClose}
+              className="text-2xl font-bold hover:opacity-70 transition-opacity"
+              aria-label="Close modal"
+            >
+              ×
+            </button>
+          </div>
+        )}
+        <div className="font-neo">{children}</div>
       </div>
     </div>
   );
 }
+
+export type { ModalProps };

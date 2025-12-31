@@ -67,199 +67,8 @@
     @apply bg-black text-white;
   }
 
-  /* Simple link styles - no padding/margin changes on hover */
-  a {
-    color: #000000;
-    text-decoration: none;
-    transition: color 0.1s ease;
-    font-weight: 600;
-  }
-
-  .dark a {
-    color: #ffffff;
-  }
-
-  /* Ensure no-underline class removes all underline styling */
-  a.no-underline,
-  .no-underline,
-  .no-underline a,
-  [class*="no-underline"] {
-    border-bottom: none !important;
-    text-decoration: none !important;
-  }
-
-  a.no-underline:hover,
-  .no-underline:hover,
-  .no-underline a:hover,
-  [class*="no-underline"]:hover {
-    border-bottom: none !important;
-    text-decoration: none !important;
-  }
-
-  /* Only apply border-bottom to text links that aren't block elements or no-underline */
-  a:not(.block):not([class*="block"]):not(.no-underline):not([class*="no-underline"]) {
-    border-bottom: 3px solid #000000;
-    padding-bottom: 2px;
-  }
-
-  .dark a:not(.block):not([class*="block"]):not(.no-underline):not([class*="no-underline"]) {
-    border-bottom: 3px solid #ffffff;
-  }
-
-  a:not(.block):not([class*="block"]):not(.no-underline):not([class*="no-underline"]):hover {
-    background-color: #00605E;
-    color: #ffffff;
-    border-bottom: 3px solid #00605E;
-  }
-
-  p {
-    @apply pl-4 pr-4 mx-auto leading-relaxed my-6;
-    font-family: 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Helvetica', 'Arial', sans-serif;
-    font-weight: 500;
-    font-size: 17px;
-    line-height: 1.5;
-    color: #000000;
-  }
-
-  .dark p {
-    color: #ffffff;
-  }
-
-  @media (min-width: 1024px) {
-    p {
-      @apply w-11/12;
-      font-size: 18px;
-    }
-  }
-
-  ul,
-  ol {
-    @apply pl-4 pr-4 mx-auto leading-relaxed my-6;
-    font-family: 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Helvetica', 'Arial', sans-serif;
-    font-weight: 500;
-    font-size: 17px;
-    line-height: 1.5;
-    color: #000000;
-  }
-
-  .dark ul,
-  .dark ol {
-    color: #ffffff;
-  }
-
-  @media (min-width: 1024px) {
-
-    ul,
-    ol {
-      @apply w-11/12;
-      font-size: 18px;
-    }
-  }
-
-  li {
-    @apply ml-6 mb-2;
-  }
-
   .cg-wrap {
     background-image: url('/img/chessOpenings/trb2.svg');
-  }
-
-  h1 {
-    font-family: 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Helvetica', 'Arial', sans-serif;
-    @apply text-4xl lg:text-6xl leading-none p-6 border-b-4 w-full;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: -0.02em;
-    color: #000000;
-    border-color: #000000;
-  }
-
-  .dark h1 {
-    color: #ffffff;
-    border-color: #ffffff;
-  }
-
-  h2 {
-    font-family: 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Helvetica', 'Arial', sans-serif;
-    @apply text-3xl lg:text-5xl p-4;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: -0.01em;
-    line-height: 1.1;
-    color: #000000;
-  }
-
-  .dark h2 {
-    color: #ffffff;
-  }
-
-  h3 {
-    font-family: 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Helvetica', 'Arial', sans-serif;
-    @apply text-2xl lg:text-4xl ml-8 mt-6 p-2;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: -0.01em;
-    color: #000000;
-  }
-
-  .dark h3 {
-    color: #ffffff;
-  }
-
-  h4 {
-    font-family: 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Helvetica', 'Arial', sans-serif;
-    @apply text-xl lg:text-3xl ml-8 mt-4 p-2;
-    font-weight: 700;
-    text-transform: uppercase;
-    color: #000000;
-  }
-
-  .dark h4 {
-    color: #ffffff;
-  }
-
-  h6 {
-    @apply text-center;
-    font-family: 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Helvetica', 'Arial', sans-serif;
-    font-weight: 600;
-  }
-
-  hr {
-    @apply py-8 border-4;
-    border-color: #000000;
-  }
-
-  .dark hr {
-    border-color: #ffffff;
-  }
-
-  blockquote {
-    @apply border-l-8 ml-8 pl-6 py-4;
-    font-family: 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Helvetica', 'Arial', sans-serif;
-    font-weight: 600;
-    font-style: normal;
-    font-size: 20px;
-    line-height: 1.4;
-    quotes: none;
-    border-color: #000000;
-    background-color: #f5f5f5;
-    color: #000000;
-  }
-
-  .dark blockquote {
-    border-color: #ffffff;
-    background-color: #171717;
-    color: #ffffff;
-  }
-
-  blockquote::before,
-  blockquote::after {
-    content: none !important;
-  }
-
-  blockquote p::before,
-  blockquote p::after {
-    content: none !important;
   }
 
   /* Utilitarian button styles */
@@ -499,37 +308,6 @@
     color: #000000;
   }
 
-  /* Code styles - keep monospace for code */
-  code {
-    @apply px-2 py-1 border-2;
-    font-family: 'JetBrains Mono', 'SF Mono', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
-    font-weight: 500;
-    background-color: #f5f5f5;
-    color: #000000;
-    border-color: #000000;
-  }
-
-  .dark code {
-    background-color: #171717;
-    color: #ffffff;
-    border-color: #ffffff;
-  }
-
-  pre {
-    @apply p-4 border-4 overflow-x-auto;
-    font-family: 'JetBrains Mono', 'SF Mono', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
-    font-weight: 500;
-    background-color: #f5f5f5;
-    color: #000000;
-    border-color: #000000;
-  }
-
-  .dark pre {
-    background-color: #171717;
-    color: #ffffff;
-    border-color: #ffffff;
-  }
-
   /* Image styles - show in full color by default */
   img {
     transition: all 0.2s ease;
@@ -549,5 +327,216 @@
 
   .hover\:bg-black:hover * {
     color: #ffffff !important;
+  }
+
+  /* Prose utility class for content-rich sections */
+  .prose {
+    /* Paragraph styles */
+    & p {
+      @apply pl-4 pr-4 mx-auto leading-relaxed my-6;
+      font-family: 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Helvetica', 'Arial', sans-serif;
+      font-weight: 500;
+      font-size: 17px;
+      line-height: 1.5;
+      color: #000000;
+    }
+
+    .dark & p {
+      color: #ffffff;
+    }
+
+    @media (min-width: 1024px) {
+      & p {
+        @apply w-11/12;
+        font-size: 18px;
+      }
+    }
+
+    /* List styles */
+    & ul,
+    & ol {
+      @apply pl-4 pr-4 mx-auto leading-relaxed my-6;
+      font-family: 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Helvetica', 'Arial', sans-serif;
+      font-weight: 500;
+      font-size: 17px;
+      line-height: 1.5;
+      color: #000000;
+    }
+
+    .dark & ul,
+    .dark & ol {
+      color: #ffffff;
+    }
+
+    @media (min-width: 1024px) {
+      & ul,
+      & ol {
+        @apply w-11/12;
+        font-size: 18px;
+      }
+    }
+
+    & li {
+      @apply ml-6 mb-2;
+    }
+
+    /* Heading styles */
+    & h1 {
+      font-family: 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Helvetica', 'Arial', sans-serif;
+      @apply text-4xl lg:text-6xl leading-none p-6 border-b-4 w-full;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: -0.02em;
+      color: #000000;
+      border-color: #000000;
+    }
+
+    .dark & h1 {
+      color: #ffffff;
+      border-color: #ffffff;
+    }
+
+    & h2 {
+      font-family: 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Helvetica', 'Arial', sans-serif;
+      @apply text-3xl lg:text-5xl p-4;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: -0.01em;
+      line-height: 1.1;
+      color: #000000;
+    }
+
+    .dark & h2 {
+      color: #ffffff;
+    }
+
+    & h3 {
+      font-family: 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Helvetica', 'Arial', sans-serif;
+      @apply text-2xl lg:text-4xl ml-8 mt-6 p-2;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: -0.01em;
+      color: #000000;
+    }
+
+    .dark & h3 {
+      color: #ffffff;
+    }
+
+    & h4 {
+      font-family: 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Helvetica', 'Arial', sans-serif;
+      @apply text-xl lg:text-3xl ml-8 mt-4 p-2;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #000000;
+    }
+
+    .dark & h4 {
+      color: #ffffff;
+    }
+
+    & h6 {
+      @apply text-center;
+      font-family: 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Helvetica', 'Arial', sans-serif;
+      font-weight: 600;
+    }
+
+    /* Horizontal rule */
+    & hr {
+      @apply py-8 border-4;
+      border-color: #000000;
+    }
+
+    .dark & hr {
+      border-color: #ffffff;
+    }
+
+    /* Blockquote */
+    & blockquote {
+      @apply border-l-8 ml-8 pl-6 py-4;
+      font-family: 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Helvetica', 'Arial', sans-serif;
+      font-weight: 600;
+      font-style: normal;
+      font-size: 20px;
+      line-height: 1.4;
+      quotes: none;
+      border-color: #000000;
+      background-color: #f5f5f5;
+      color: #000000;
+    }
+
+    .dark & blockquote {
+      border-color: #ffffff;
+      background-color: #171717;
+      color: #ffffff;
+    }
+
+    & blockquote::before,
+    & blockquote::after {
+      content: none !important;
+    }
+
+    & blockquote p::before,
+    & blockquote p::after {
+      content: none !important;
+    }
+
+    /* Code styles */
+    & code {
+      @apply px-2 py-1 border-2;
+      font-family: 'JetBrains Mono', 'SF Mono', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
+      font-weight: 500;
+      background-color: #f5f5f5;
+      color: #000000;
+      border-color: #000000;
+    }
+
+    .dark & code {
+      background-color: #171717;
+      color: #ffffff;
+      border-color: #ffffff;
+    }
+
+    & pre {
+      @apply p-4 border-4 overflow-x-auto;
+      font-family: 'JetBrains Mono', 'SF Mono', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
+      font-weight: 500;
+      background-color: #f5f5f5;
+      color: #000000;
+      border-color: #000000;
+    }
+
+    .dark & pre {
+      background-color: #171717;
+      color: #ffffff;
+      border-color: #ffffff;
+    }
+
+    /* Link styles within prose */
+    & a {
+      color: #000000;
+      text-decoration: none;
+      transition: color 0.1s ease;
+      font-weight: 600;
+    }
+
+    .dark & a {
+      color: #ffffff;
+    }
+
+    & a:not(.block):not([class*="block"]):not(.no-underline):not([class*="no-underline"]) {
+      border-bottom: 3px solid #000000;
+      padding-bottom: 2px;
+    }
+
+    .dark & a:not(.block):not([class*="block"]):not(.no-underline):not([class*="no-underline"]) {
+      border-bottom: 3px solid #ffffff;
+    }
+
+    & a:not(.block):not([class*="block"]):not(.no-underline):not([class*="no-underline"]):hover {
+      background-color: #00605E;
+      color: #ffffff;
+      border-bottom: 3px solid #00605E;
+    }
   }
 }

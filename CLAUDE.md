@@ -64,3 +64,10 @@ This is a personal website built with React Router 7, TypeScript, and deployed o
 - ALWAYS prefer editing existing files to creating new ones
 - NEVER proactively create documentation files (*.md) or README files unless explicitly requested
 - Never save working files, text/mds and tests to the root folder
+
+## Active Technologies
+- TypeScript 5.x (strict mode enabled), React 19, Node.js 22+ + React Router 7 (v7.9.0), Tailwind CSS 4, Vite 6, AWS Architec (001-modernize-website)
+- Redis (ioredis) for server-side state, LocalStorage for client persistence, S3 for compiled MDX/images (001-modernize-website)
+
+## Recent Changes
+- 001-modernize-website: Added TypeScript 5.x (strict mode enabled), React 19, Node.js 22+ + React Router 7 (v7.9.0), Tailwind CSS 4, Vite 6, AWS Architec
