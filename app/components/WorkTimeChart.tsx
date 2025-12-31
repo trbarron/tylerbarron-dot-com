@@ -25,6 +25,7 @@ const WorkTimeChart = ({ data }: WorkTimeChartProps) => {
             {/* Chart container */}
             <div className="relative px-4 min-w-[600px]">
                 {/* Y-axis labels */}
+                {/* eslint-disable react/forbid-dom-props */}
                 <div className="absolute left-0 top-0 flex flex-col justify-between text-[10px] text-gray-500" style={{ height: `${chartHeight}px` }}>
                     <span>{Math.round(maxCount)}m</span>
                     <span>{Math.round(maxCount * 0.75)}m</span>
@@ -32,10 +33,12 @@ const WorkTimeChart = ({ data }: WorkTimeChartProps) => {
                     <span>{Math.round(maxCount * 0.25)}m</span>
                     <span>0m</span>
                 </div>
-                
+                {/* eslint-enable react/forbid-dom-props */}
+
                 {/* Bars container */}
                 <div className="ml-12">
-                    <div 
+                    {/* eslint-disable react/forbid-dom-props */}
+                    <div
                         className="flex items-end border-l border-b border-gray-300 pl-1"
                         style={{ height: `${chartHeight}px` }}
                     >
@@ -54,7 +57,7 @@ const WorkTimeChart = ({ data }: WorkTimeChartProps) => {
                                                 {count.toFixed(0)}m
                                             </div>
                                             {/* Bar itself */}
-                                            <div 
+                                            <div
                                                 className="w-full bg-[#2E3532] rounded-t transition-all duration-300 group-hover:bg-[#3f4a45]"
                                                 style={{ height: `${barHeightPx}px` }}
                                             />
@@ -68,6 +71,7 @@ const WorkTimeChart = ({ data }: WorkTimeChartProps) => {
                             );
                         })}
                     </div>
+                    {/* eslint-enable react/forbid-dom-props */}
                 </div>
             </div>
             

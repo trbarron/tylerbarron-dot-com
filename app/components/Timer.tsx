@@ -49,10 +49,12 @@ const Timer = memo(function Timer({ timeRemaining: initialTime }: TimerProps) {
   return (
     <div className="w-full">
       <div className="relative h-4 bg-gray-200  rounded-full overflow-hidden border border-black ">
-        <div 
-          className="absolute h-full bg-accent"
+        {/* eslint-disable react/forbid-dom-props */}
+        <div
+          className="absolute h-full bg-accent transition-all"
           style={{ width: `${progress}%` }}
         />
+        {/* eslint-enable react/forbid-dom-props */}
       </div>
       <div className="mt-1 text-sm text-black  text-center font-neo font-bold">
         {displayTime.toFixed(1)}s
