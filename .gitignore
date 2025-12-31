@@ -2,13 +2,40 @@ node_modules
 
 /.cache
 /build
+/dist
 .env
+.env.*
+!.env.example
 /public/build
 /public/assets
 /public/static.json
 /public/compiled-posts
 /server/*
 !/server/package.json
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing
+/coverage
+/test-results
+/playwright-report
+/.eslintcache
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Backup files
+*.bak
+*.backup
+*.tmp
+*~
 
 # Claude Flow generated files
 .claude/settings.local.json

@@ -172,7 +172,7 @@ export default function PizzaLocationMap() {
             opacity={0.3}
             onMouseEnter={() => setHoveredScore(point)}
             onMouseLeave={() => setHoveredScore(null)}
-            style={{ cursor: 'pointer' }}
+            className="cursor-pointer"
           />
         );
       });
@@ -203,7 +203,7 @@ export default function PizzaLocationMap() {
             opacity={0.8}
             onMouseEnter={() => setHoveredLocation(location)}
             onMouseLeave={() => setHoveredLocation(null)}
-            style={{ cursor: 'pointer' }}
+            className="cursor-pointer"
           />
         );
       });

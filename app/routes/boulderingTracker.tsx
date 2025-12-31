@@ -5,18 +5,18 @@ import Article from "../components/Article.js";
 
 const BoulderingTracker = () => {
   const VideoComponent = ({ src, caption }: { src: string; caption?: string }) => (
-    <div style={{margin: '20px 0', textAlign: 'center'}}>
-      <div className="video-container" style={{position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', maxWidth: '100%', margin: '0 auto'}}>
-        <iframe 
-          style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%'}}
+    <div className="my-5 text-center">
+      <div className="relative pb-[56.25%] h-0 overflow-hidden max-w-full mx-auto">
+        <iframe
+          className="absolute top-0 left-0 w-full h-full"
           src={src}
           title={caption || "Video"}
-          frameBorder="0" 
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+          frameBorder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen>
         </iframe>
       </div>
-      {caption && <p style={{fontStyle: 'italic', marginTop: '10px'}}>{caption}</p>}
+      {caption && <p className="italic mt-2.5">{caption}</p>}
     </div>
   );
 

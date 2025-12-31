@@ -200,6 +200,7 @@ export default function ChecoLiveTracker() {
 
                                                 return (
                                                     <>
+                                                        {/* eslint-disable react/forbid-dom-props */}
                                                         <div
                                                             className="bg-black flex items-center justify-center text-white font-bold text-xl transition-all duration-500"
                                                             style={{ width: `${checoPercent}%` }}
@@ -212,6 +213,7 @@ export default function ChecoLiveTracker() {
                                                         >
                                                             {tuniPercent > 15 && `${tuniPercent.toFixed(0)}%`}
                                                         </div>
+                                                        {/* eslint-enable react/forbid-dom-props */}
                                                     </>
                                                 );
                                             })()}

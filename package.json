@@ -15,6 +15,9 @@
     "analyze:deps": "cd server && npx npm-check -u",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:visual": "playwright test",
+    "test:visual:baseline": "playwright test --update-snapshots",
+    "test:visual:update": "playwright test --update-snapshots",
     "test:deploy": "echo '\n🧪 Simulating Lambda Deployment\n' && npm run build:arc:server && npm run build:arc:deps && echo '\n📊 Size Analysis:' && echo 'Lambda Handler: '$(du -sh server/index.mjs 2>/dev/null | awk '{print $1}' || echo 'Not built') && echo 'SSR Build: '$(du -sh server/build 2>/dev/null | awk '{print $1}' || echo 'Not built') && echo 'Dependencies: '$(du -sh server/node_modules 2>/dev/null | awk '{print $1}' || echo 'Not installed') && echo 'TOTAL: '$(du -sh server 2>/dev/null | awk '{print $1}' || echo 'Not built') && echo '\n✅ Images in Lambda: '$(find server -name '*.jpg' -o -name '*.png' -o -name '*.gif' 2>/dev/null | grep -v node_modules | wc -l | tr -d ' ')' (should be 0)' && echo '✅ Ready to deploy!\n'",
     "format": "prettier --write .",
     "dev": "react-router dev",
@@ -41,6 +44,7 @@
   },
   "devDependencies": {
     "@architect/architect": "^11.1.0",
+    "@playwright/test": "^1.57.0",
     "@react-router/dev": "^7.9.0",
     "@react-router/node": "^7.9.0",
     "@tailwindcss/typography": "^0.5.15",

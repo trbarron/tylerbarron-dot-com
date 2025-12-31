@@ -50,6 +50,19 @@ module.exports = {
         "jsx-a11y/no-noninteractive-element-interactions": "off",
         "import/no-named-as-default": "off",
         "react/prop-types": "off",
+        // Modernization rules: forbid inline styles
+        "react/forbid-dom-props": ["error", {
+          "forbid": [{
+            "propName": "style",
+            "message": "Use Tailwind utility classes instead of inline styles"
+          }]
+        }],
+        // File size limits
+        "max-lines": ["warn", {
+          "max": 500,
+          "skipBlankLines": true,
+          "skipComments": true
+        }],
       },
     },
 

@@ -179,10 +179,9 @@ export default function Chessboard({
 
   return (
     <div className="w-full max-w-2xl mx-auto">
-      <div 
-        ref={ref} 
-        className="aspect-square w-full"
-        style={{ minHeight: isClient ? 'auto' : '400px' }}
+      <div
+        ref={ref}
+        className={`aspect-square w-full ${!isClient ? 'min-h-[400px]' : ''}`}
       />
     </div>
   );
