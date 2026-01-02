@@ -553,5 +553,17 @@
       color: #ffffff;
       border-bottom: 3px solid #00605E;
     }
+
+    /* Mark element styling for blog posts */
+    & mark {
+      display: block;
+      margin-left: 4rem;
+      padding-left: 0.5rem;
+      padding-top: 0.2rem;
+      padding-bottom: 0.2rem;
+      background-color: var(--color-accent);
+      color: #ffffff;
+      font-weight: 500;
+    }
   }
 }

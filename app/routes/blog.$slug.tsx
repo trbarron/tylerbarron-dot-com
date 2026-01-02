@@ -6,26 +6,16 @@ import * as ReactDOM from 'react-dom';
 import * as jsxRuntime from 'react/jsx-runtime';
 import { Navbar } from "../components/Navbar.js";
 import Footer from "../components/Footer.js";
-import Mark from "../components/Mark.js";
 
 // Inline MDX component evaluator (replaces getMDXComponent from mdx-bundler/client)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function getMDXComponent(code: string, components?: Record<string, React.ComponentType<any>>) {
+function getMDXComponent(code: string) {
   const scope = {
     React,
     ReactDOM,
     _jsx_runtime: jsxRuntime,
   };
   const fn = new Function(...Object.keys(scope), code);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const MDXModule = fn(...Object.values(scope)) as any;
-
-  // Return a wrapper that applies component substitutions
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return function MDXContent(props: any) {
-    const Component = MDXModule.default;
-    return <Component {...props} components={{ ...components, ...props.components }} />;
-  };
+  return fn(...Object.values(scope)).default;
 }
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
@@ -83,13 +73,8 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
 export default function BlogPost() {
   const { code, frontmatter } = useLoaderData<typeof loader>();
 
-  // Custom components for MDX
-  const components = useMemo(() => ({
-    mark: Mark,
-  }), []);
-
   // Use getMDXComponent from mdx-bundler/client
-  const Component = useMemo(() => getMDXComponent(code, components), [code, components]);
+  const Component = useMemo(() => getMDXComponent(code), [code]);
 
   return (
     <div className="min-h-screen bg-white  font-neo">
