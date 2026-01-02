@@ -9,17 +9,20 @@ import Footer from "../components/Footer.js";
 import Mark from "../components/Mark.js";
 
 // Inline MDX component evaluator (replaces getMDXComponent from mdx-bundler/client)
-function getMDXComponent(code: string, components?: Record<string, React.ComponentType<unknown>>) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getMDXComponent(code: string, components?: Record<string, React.ComponentType<any>>) {
   const scope = {
     React,
     ReactDOM,
     _jsx_runtime: jsxRuntime,
   };
   const fn = new Function(...Object.keys(scope), code);
-  const MDXModule = fn(...Object.values(scope));
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const MDXModule = fn(...Object.values(scope)) as any;
 
   // Return a wrapper that applies component substitutions
-  return function MDXContent(props: Record<string, unknown>) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return function MDXContent(props: any) {
     const Component = MDXModule.default;
     return <Component {...props} components={{ ...components, ...props.components }} />;
   };
