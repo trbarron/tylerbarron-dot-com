@@ -6,6 +6,7 @@ import * as ReactDOM from 'react-dom';
 import * as jsxRuntime from 'react/jsx-runtime';
 import { Navbar } from "../components/Navbar.js";
 import Footer from "../components/Footer.js";
+import Mark from "../components/Mark.js";
 
 // Inline MDX component evaluator (replaces getMDXComponent from mdx-bundler/client)
 function getMDXComponent(code: string) {
@@ -76,6 +77,11 @@ export default function BlogPost() {
   // Use getMDXComponent from mdx-bundler/client
   const Component = useMemo(() => getMDXComponent(code), [code]);
 
+  // Custom components for MDX
+  const components = {
+    mark: Mark,
+  };
+
   return (
     <div className="min-h-screen bg-white  font-neo">
       <Navbar />
@@ -120,7 +126,7 @@ export default function BlogPost() {
                           prose-th:bg-black  prose-th:text-white prose-th:border prose-th:border-black  prose-th:font-bold prose-th:uppercase
                           prose-td:border prose-td:border-black  prose-td:px-2 prose-td:py-1
                           ">
-            <Component />
+            <Component components={components} />
           </div>
         </article>
         
