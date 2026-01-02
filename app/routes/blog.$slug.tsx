@@ -9,7 +9,7 @@ import Footer from "../components/Footer.js";
 import Mark from "../components/Mark.js";
 
 // Inline MDX component evaluator (replaces getMDXComponent from mdx-bundler/client)
-function getMDXComponent(code: string, components?: Record<string, React.ComponentType<any>>) {
+function getMDXComponent(code: string, components?: Record<string, React.ComponentType<unknown>>) {
   const scope = {
     React,
     ReactDOM,
@@ -19,7 +19,7 @@ function getMDXComponent(code: string, components?: Record<string, React.Compone
   const MDXModule = fn(...Object.values(scope));
 
   // Return a wrapper that applies component substitutions
-  return function MDXContent(props: any) {
+  return function MDXContent(props: Record<string, unknown>) {
     const Component = MDXModule.default;
     return <Component {...props} components={{ ...components, ...props.components }} />;
   };
