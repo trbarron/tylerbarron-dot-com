@@ -324,6 +324,7 @@
 
   /* Prose utility class for content-rich sections */
   .prose {
+
     /* Paragraph styles */
     & p {
       @apply pl-4 pr-4 mx-auto leading-relaxed my-6;
@@ -362,6 +363,7 @@
     }
 
     @media (min-width: 1024px) {
+
       & ul,
       & ol {
         @apply w-11/12;
@@ -370,7 +372,27 @@
     }
 
     & li {
-      @apply ml-6 mb-2;
+      @apply ml-8 mb-2;
+      list-style-position: outside;
+    }
+
+    & ul>li {
+      list-style-type: disc;
+    }
+
+    & ol>li {
+      list-style-type: decimal;
+    }
+
+    & ul>li::marker,
+    & ol>li::marker {
+      color: #000000;
+      font-weight: 700;
+    }
+
+    .dark & ul>li::marker,
+    .dark & ol>li::marker {
+      color: #ffffff;
     }
 
     /* Heading styles */

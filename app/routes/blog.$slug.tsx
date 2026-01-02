@@ -9,14 +9,20 @@ import Footer from "../components/Footer.js";
 import Mark from "../components/Mark.js";
 
 // Inline MDX component evaluator (replaces getMDXComponent from mdx-bundler/client)
-function getMDXComponent(code: string) {
+function getMDXComponent(code: string, components?: Record<string, React.ComponentType<any>>) {
   const scope = {
     React,
     ReactDOM,
     _jsx_runtime: jsxRuntime,
   };
   const fn = new Function(...Object.keys(scope), code);
-  return fn(...Object.values(scope)).default;
+  const MDXModule = fn(...Object.values(scope));
+
+  // Return a wrapper that applies component substitutions
+  return function MDXContent(props: any) {
+    const Component = MDXModule.default;
+    return <Component {...props} components={{ ...components, ...props.components }} />;
+  };
 }
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
@@ -74,13 +80,13 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
 export default function BlogPost() {
   const { code, frontmatter } = useLoaderData<typeof loader>();
 
-  // Use getMDXComponent from mdx-bundler/client
-  const Component = useMemo(() => getMDXComponent(code), [code]);
-
   // Custom components for MDX
-  const components = {
+  const components = useMemo(() => ({
     mark: Mark,
-  };
+  }), []);
+
+  // Use getMDXComponent from mdx-bundler/client
+  const Component = useMemo(() => getMDXComponent(code, components), [code, components]);
 
   return (
     <div className="min-h-screen bg-white  font-neo">
@@ -126,7 +132,7 @@ export default function BlogPost() {
                           prose-th:bg-black  prose-th:text-white prose-th:border prose-th:border-black  prose-th:font-bold prose-th:uppercase
                           prose-td:border prose-td:border-black  prose-td:px-2 prose-td:py-1
                           ">
-            <Component components={components} />
+            <Component />
           </div>
         </article>
         
