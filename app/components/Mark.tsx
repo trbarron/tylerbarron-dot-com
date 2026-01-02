@@ -10,7 +10,7 @@ interface MarkProps {
  */
 export default function Mark({ children }: MarkProps) {
   return (
-    <mark className="ml-12 inline-block bg-green-300">
+    <mark className="ml-12 block !bg-green-300">
       {children}
     </mark>
   );
