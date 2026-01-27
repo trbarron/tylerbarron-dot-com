@@ -77,7 +77,7 @@ export default function BlogPost() {
   const Component = useMemo(() => getMDXComponent(code), [code]);
 
   return (
-    <div className="min-h-screen bg-white  font-neo">
+    <div className="min-h-screen font-neo relative z-10">
       <Navbar />
       <div className="container mx-auto px-4 py-8">
         <article className="max-w-4xl mx-auto mb-8">

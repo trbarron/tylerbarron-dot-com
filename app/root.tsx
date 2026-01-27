@@ -67,6 +67,11 @@ export default function App() {
         )}
       </head>
       <body>
+        {/* Dichroic glass background effect */}
+        <div className="dichroic-bg" aria-hidden="true" />
+        <div className="dichroic-shimmer" aria-hidden="true" />
+        <div className="dichroic-white" aria-hidden="true" />
+
         <Outlet />
         <ScrollRestoration />
         <Scripts />

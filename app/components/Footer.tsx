@@ -5,7 +5,7 @@ const git = getImageUrl('Global/git.svg');
 const email = getImageUrl('Global/email.svg');
 export default function Footer() {
   return (
-    <footer className="bg-white  border-t-4 border-black  py-8">
+    <footer className="border-t-4 border-black py-8">
       <div className="container mx-auto px-4">
         <div className="flex flex-wrap items-center justify-center">
           <div className="w-full px-4 mx-auto text-center">
