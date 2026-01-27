@@ -7,7 +7,6 @@
   --spacing-xl: 49rem;
 
   --color-accent: #171717;
-  --color-accent-light: #008B87;
 
   --color-gray-100: #f5f5f5;
   --color-gray-200: #e5e5e5;
@@ -31,14 +30,14 @@
     border-color: #000000;
   }
 
-  /* Blue-green text selection */
+  /* Text selection - dark accent */
   ::selection {
-    background-color: var(--color-accent-light);
+    background-color: var(--color-accent);
     color: #ffffff;
   }
 
   ::-moz-selection {
-    background-color: var(--color-accent-light);
+    background-color: var(--color-accent);
     color: #ffffff;
   }
 }
@@ -82,8 +81,8 @@
 
   /* Footer social links - override button styling */
   footer a[type="button"]:hover {
-    background-color: #00605E !important;
-    color: inherit !important;
+    background-color: var(--color-accent) !important;
+    color: #ffffff !important;
   }
 
   /* Input styles */
@@ -412,9 +411,9 @@
     }
 
     & a:not(.block):not([class*="block"]):not(.no-underline):not([class*="no-underline"]):hover {
-      background-color: #00605E;
+      background-color: var(--color-accent);
       color: #ffffff;
-      border-bottom: 3px solid #00605E;
+      border-bottom: 3px solid var(--color-accent);
     }
 
     /* Mark element styling for blog posts */
