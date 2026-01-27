@@ -12,7 +12,7 @@ interface Post {
 export async function loader(): Promise<{ posts: Post[] }> {
   // Use ARC_ENV (automatically set by Architect) to detect production
   const isProduction = process.env.ARC_ENV === 'production';
-  
+
   if (isProduction) {
     // In production, fetch pre-compiled JSON files from S3
     const region = 'us-west-2'; // Hardcode since it matches app.arc
@@ -65,7 +65,7 @@ export async function loader(): Promise<{ posts: Post[] }> {
       import('fs/promises'),
       import('path')
     ]);
-    
+
     const postsPath = path.join(process.cwd(), 'posts');
     try {
       const files = await fs.readdir(postsPath);
@@ -183,7 +183,7 @@ export default function Index() {
 
   return (
     <main className="min-h-screen relative font-neo z-10">
-      <section className="w-full py-16 top-0 z-10 flex items-center justify-center border-b-4 border-black">
+      <section className="w-full py-16 top-0 z-10 flex items-center justify-center border-b-4 border-black bg-white">
         <div className="text-center">
           <div className="text-5xl md:text-6xl xl:text-7xl text-black font-neo font-extrabold tracking-tighter">
             BARRON WASTELAND
