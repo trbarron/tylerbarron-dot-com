@@ -10,6 +10,7 @@ import {
 } from "react-router";
 import { useEffect } from "react";
 import styles from './styles/index.css?url';
+import DichroicBackground from './components/DichroicBackground';
 
 export async function loader() {
   return {
@@ -67,6 +68,9 @@ export default function App() {
         )}
       </head>
       <body>
+        {/* WebGL Dichroic glass background effect */}
+        <DichroicBackground />
+
         <Outlet />
         <ScrollRestoration />
         <Scripts />

@@ -6,8 +6,7 @@
 
   --spacing-xl: 49rem;
 
-  --color-accent: #00605E;
-  --color-accent-light: #008B87;
+  --color-accent: #171717;
 
   --color-gray-100: #f5f5f5;
   --color-gray-200: #e5e5e5;
@@ -23,29 +22,22 @@
     line-height: 1.3;
     font-weight: 500;
     font-size: 16px;
-  }
-
-  .dark body {
-    background-color: #000000;
-    color: #ffffff;
+    position: relative;
+    min-height: 100vh;
   }
 
   * {
     border-color: #000000;
   }
 
-  .dark * {
-    border-color: #ffffff;
-  }
-
-  /* Blue-green text selection */
+  /* Text selection - dark accent */
   ::selection {
-    background-color: var(--color-accent-light);
+    background-color: var(--color-accent);
     color: #ffffff;
   }
 
   ::-moz-selection {
-    background-color: var(--color-accent-light);
+    background-color: var(--color-accent);
     color: #ffffff;
   }
 }
@@ -78,20 +70,9 @@
     border-color: #000000;
   }
 
-  .dark button {
-    background-color: #000000;
-    color: #ffffff;
-    border-color: #ffffff;
-  }
-
   button:hover {
     background-color: #000000;
     color: #ffffff;
-  }
-
-  .dark button:hover {
-    background-color: #ffffff;
-    color: #000000;
   }
 
   button:disabled {
@@ -100,8 +81,8 @@
 
   /* Footer social links - override button styling */
   footer a[type="button"]:hover {
-    background-color: #00605E !important;
-    color: inherit !important;
+    background-color: var(--color-accent) !important;
+    color: #ffffff !important;
   }
 
   /* Input styles */
@@ -116,27 +97,12 @@
     border-color: #000000;
   }
 
-  .dark input,
-  .dark textarea,
-  .dark select {
-    background-color: #000000;
-    color: #ffffff;
-    border-color: #ffffff;
-  }
-
   input:focus,
   textarea:focus,
   select:focus {
     @apply outline-none ring-0;
     background-color: #f5f5f5;
     border-color: #000000;
-  }
-
-  .dark input:focus,
-  .dark textarea:focus,
-  .dark select:focus {
-    background-color: #171717;
-    border-color: #ffffff;
   }
 
   /* Range slider styles */
@@ -185,19 +151,9 @@
     border-color: #000000;
   }
 
-  .dark input[type="radio"] {
-    background-color: #000000;
-    border-color: #ffffff;
-  }
-
   input[type="radio"]:checked {
     background-color: #000000;
     border-color: #000000;
-  }
-
-  .dark input[type="radio"]:checked {
-    background-color: #ffffff;
-    border-color: #ffffff;
   }
 
   input[type="radio"]:checked::after {
@@ -210,10 +166,6 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-  }
-
-  .dark input[type="radio"]:checked::after {
-    background-color: #000000;
   }
 
   /* Checkbox styles */
@@ -232,19 +184,9 @@
     border-color: #000000;
   }
 
-  .dark input[type="checkbox"] {
-    background-color: #000000;
-    border-color: #ffffff;
-  }
-
   input[type="checkbox"]:checked {
     background-color: #000000;
     border-color: #000000;
-  }
-
-  .dark input[type="checkbox"]:checked {
-    background-color: #ffffff;
-    border-color: #ffffff;
   }
 
   input[type="checkbox"]:checked::after {
@@ -259,10 +201,6 @@
     line-height: 1;
   }
 
-  .dark input[type="checkbox"]:checked::after {
-    color: #000000;
-  }
-
   /* Table styles */
   table {
     @apply border-collapse border-4 w-full;
@@ -272,20 +210,10 @@
     border-color: #000000;
   }
 
-  .dark table {
-    background-color: #171717;
-    border-color: #ffffff;
-  }
-
   th,
   td {
     @apply border-2 px-4 py-2 text-left;
     border-color: #000000;
-  }
-
-  .dark th,
-  .dark td {
-    border-color: #ffffff;
   }
 
   th {
@@ -294,11 +222,6 @@
     letter-spacing: 0.05em;
     background-color: #000000;
     color: #ffffff;
-  }
-
-  .dark th {
-    background-color: #ffffff;
-    color: #000000;
   }
 
   /* Image styles - show in full color by default */
@@ -335,10 +258,6 @@
       color: #000000;
     }
 
-    .dark & p {
-      color: #ffffff;
-    }
-
     @media (min-width: 1024px) {
       & p {
         @apply w-11/12;
@@ -355,11 +274,6 @@
       font-size: 17px;
       line-height: 1.5;
       color: #000000;
-    }
-
-    .dark & ul,
-    .dark & ol {
-      color: #ffffff;
     }
 
     @media (min-width: 1024px) {
@@ -390,11 +304,6 @@
       font-weight: 700;
     }
 
-    .dark & ul>li::marker,
-    .dark & ol>li::marker {
-      color: #ffffff;
-    }
-
     /* Heading styles */
     & h1 {
       font-family: var(--font-neo);
@@ -404,11 +313,6 @@
       letter-spacing: -0.02em;
       color: #000000;
       border-color: #000000;
-    }
-
-    .dark & h1 {
-      color: #ffffff;
-      border-color: #ffffff;
     }
 
     & h2 {
@@ -421,10 +325,6 @@
       color: #000000;
     }
 
-    .dark & h2 {
-      color: #ffffff;
-    }
-
     & h3 {
       font-family: var(--font-neo);
       @apply text-2xl lg:text-4xl ml-8 mt-6 p-2;
@@ -434,20 +334,12 @@
       color: #000000;
     }
 
-    .dark & h3 {
-      color: #ffffff;
-    }
-
     & h4 {
       font-family: var(--font-neo);
       @apply text-xl lg:text-3xl ml-8 mt-4 p-2;
       font-weight: 700;
       text-transform: uppercase;
       color: #000000;
-    }
-
-    .dark & h4 {
-      color: #ffffff;
     }
 
     & h6 {
@@ -462,10 +354,6 @@
       border-color: #000000;
     }
 
-    .dark & hr {
-      border-color: #ffffff;
-    }
-
     /* Blockquote */
     & blockquote {
       @apply border-l-8 ml-8 pl-6 py-4;
@@ -478,12 +366,6 @@
       border-color: #000000;
       background-color: #f5f5f5;
       color: #000000;
-    }
-
-    .dark & blockquote {
-      border-color: #ffffff;
-      background-color: #171717;
-      color: #ffffff;
     }
 
     & blockquote::before,
@@ -506,12 +388,6 @@
       border-color: #000000;
     }
 
-    .dark & code {
-      background-color: #171717;
-      color: #ffffff;
-      border-color: #ffffff;
-    }
-
     & pre {
       @apply p-4 border-4 overflow-x-auto;
       font-family: var(--font-mono);
@@ -519,12 +395,6 @@
       background-color: #f5f5f5;
       color: #000000;
       border-color: #000000;
-    }
-
-    .dark & pre {
-      background-color: #171717;
-      color: #ffffff;
-      border-color: #ffffff;
     }
 
     /* Link styles within prose */
@@ -535,23 +405,15 @@
       font-weight: 600;
     }
 
-    .dark & a {
-      color: #ffffff;
-    }
-
     & a:not(.block):not([class*="block"]):not(.no-underline):not([class*="no-underline"]) {
       border-bottom: 3px solid #000000;
       padding-bottom: 2px;
     }
 
-    .dark & a:not(.block):not([class*="block"]):not(.no-underline):not([class*="no-underline"]) {
-      border-bottom: 3px solid #ffffff;
-    }
-
     & a:not(.block):not([class*="block"]):not(.no-underline):not([class*="no-underline"]):hover {
-      background-color: #00605E;
+      background-color: var(--color-accent);
       color: #ffffff;
-      border-bottom: 3px solid #00605E;
+      border-bottom: 3px solid var(--color-accent);
     }
 
     /* Mark element styling for blog posts */
