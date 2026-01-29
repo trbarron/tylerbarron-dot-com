@@ -79,8 +79,8 @@ export default function BlogPost() {
   return (
     <div className="min-h-screen font-neo relative z-10">
       <Navbar />
-      <div className="container mx-auto px-4 py-8">
-        <article className="max-w-4xl mx-auto mb-8">
+      <div className="py-8">
+        <article className="max-w-4xl mx-auto mb-8 bg-white/95 backdrop-blur-sm px-6 lg:px-12 py-8">
           <header className="mb-8 pb-8">
             <h1 className="text-5xl lg:text-6xl font-extrabold text-black  mb-6 font-neo tracking-tight leading-none text-center">
               {frontmatter.title.toUpperCase()}
@@ -124,11 +124,8 @@ export default function BlogPost() {
           </div>
         </article>
         
-        {/* Footer section with reduced spacing */}
-        <div className="mt-12">
-          <Footer />
-        </div>
       </div>
+      <Footer />
     </div>
   );
 }
