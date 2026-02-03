@@ -1,0 +1,32 @@
+---
+title: "DJ Workflow Automation"
+date: 2026-02-02
+---
+
+### The Problem
+
+Being a 30 something who works from home, I find myself constantly listening to DJ mixes on YouTube. This has inspired me to get into DJing myself, which was on my [2026 Goals](/blog/2026Goals). Because of how I discover music, I often have screenshots of track names, and the tracks are often not on Spotify or Apple Music yet. This prompted me to want to build a tool to take a track name and easily turn it into a local file I could use in my DJing setup. This is what led to the creation of this project to do exactly that.
+
+### What It Does
+
+It's a Discord bot that handles the searching, downloading, and organization of a track. Send a message like `!dl Daft Punk - Around the World`, and it will:
+
+- **Download the audio** from YouTube via `yt-dlp`
+- **Analyze the track** to extract BPM, musical key, and energy profile
+- **Organize automatically** into BPM-range folders (e.g., 120-125 BPM) on my local NAS
+
+The discord bot also supports searching your library, listing songs by BPM range, and checking queue status.
+
+<img src="/images/djWorkflowAutomation.png" alt="djWorkflowAutomation" />
+
+### The Details
+
+This runs on a Raspberry Pi Zero 2 W with music stored on a NAS. It runs as a discord bot and is triggered by a message in a specific channel, which gave an easy way to give access to it on the go and from home
+
+tools used:
+- **py-cord** for the Discord bot interface
+- **yt-dlp** for YouTube downloads
+- **aubio** for BPM and key detection
+- **SQLite** for tracking the library and preventing duplicates
+
+You can check out the full project on [GitHub](https://github.com/trbarron/dj-automation-workflow).

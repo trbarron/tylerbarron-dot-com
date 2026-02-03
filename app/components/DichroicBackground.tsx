@@ -76,50 +76,38 @@ const fragmentShaderSource = `
     float aspect = u_resolution.x / u_resolution.y;
     vec2 uvAspect = vec2(uv.x * aspect, uv.y);
 
-    // Get caustic intensity at this point
-    float caustic = causticPattern(uvAspect, t);
-
-    // Sample caustic at slightly offset positions for RGB separation
-    // Very subtle offsets for delicate chromatic fringing
+    // Sample caustic at multiple offsets for holographic interference effect
     float offsetAmount = 0.02;
     vec2 dir = vec2(cos(t * 1.2), sin(t * 0.3)); // Slowly rotating offset direction
 
-    float causticR = causticPattern(uvAspect + dir * offsetAmount * 0.0, t);
-    float causticG = causticPattern(uvAspect + dir * offsetAmount * 1.0, t);
-    float causticB = causticPattern(uvAspect + dir * offsetAmount * 2.0, t);
+    float caustic1 = causticPattern(uvAspect, t);
+    float caustic2 = causticPattern(uvAspect + dir * offsetAmount, t);
+    float caustic3 = causticPattern(uvAspect + dir * offsetAmount * 2.0, t);
+
+    // Create edges from each layer
+    float edge1 = smoothstep(0.4, 0.6, caustic1);
+    float edge2 = smoothstep(0.4, 0.6, caustic2);
+    float edge3 = smoothstep(0.4, 0.6, caustic3);
+
+    // Combine layers for holographic interference - differences create the effect
+    float interference = abs(edge1 - edge2);
+    interference *= 0.5; // Scale down
+
+    // Also add base caustic pattern
+    float baseCaustic = (edge1 + edge2 + edge3) / 3.0;
 
     // Start with pure white
     vec3 color = vec3(1.0);
 
-    // Very subtle chromatic aberration at caustic edges only
-    // This creates thin rainbow fringes where light "catches"
-    float edgeIntensity = 0.28; // Keep it subtle
+    // Apply grayscale interference pattern
+    float intensity = 1.0;
+    color -= vec3(baseCaustic * intensity * 0.5 + interference * intensity);
 
-    // Where caustics differ between channels, we get color fringing
-    float rEdge = smoothstep(0.4, 0.6, causticR);
-    float gEdge = smoothstep(0.4, 0.6, causticG);
-    float bEdge = smoothstep(0.4, 0.6, causticB);
+    // Keep background white with subtle gray interference
+    color = clamp(color, 0.6, 1.0);
 
-    // Subtract to create the chromatic effect (subtle darkening of channels)
-    color.r -= (gEdge - rEdge) * edgeIntensity;
-    color.g -= (bEdge - gEdge) * edgeIntensity * 0.5;
-    color.b -= (rEdge - bEdge) * edgeIntensity;
-
-    // Add very faint caustic brightening (like light focusing through glass)
-    float brightSpot = pow(caustic, 2.0) * 0.03;
-    color += brightSpot;
-
-    // Optional: very subtle overall tint in caustic areas
-    // Gives a hint of that dichroic color-shift quality
-    float tintStrength = caustic * 0.04;
-    vec3 warmTint = vec3(1.0, 0.98, 0.95);
-    vec3 coolTint = vec3(0.95, 0.98, 1.0);
-    float tintMix = sin(uv.x * 3.14159 + t * 0.1) * 0.5 + 0.5;
-    vec3 tint = mix(warmTint, coolTint, tintMix);
-    color = mix(color, tint, tintStrength);
-
-    // Keep everything very close to white
-    color = clamp(color, 0.52, 1.0);
+    // invert the color
+    color = vec3(1.6) - color;
 
     gl_FragColor = vec4(color, 1.0);
   }
