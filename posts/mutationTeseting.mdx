@@ -4,9 +4,9 @@ date: 2026-02-19
 ---
 
 ### What is Mutation Testing
-Imagine we have a codebase. We write tests and they cover the code. You get a high code coverage report and feel great. However, if you don't have the correct assertions, you don't have the safety you'd hope for. 
+Imagine we have a codebase. We write tests and they cover the code. You get a high code coverage and feel great. However if you don't have the correct assertions, you don't have the safety you'd hope for. 
 
-Mutation testing tries to address this problem. It measures the test suite by introducing small code changes ("mutants") and checking whether your tests catch them. Each mutant is a small modification — changing `>` to `>=`, swapping a parameter for `None`, altering arithmetic, etc. If your tests still pass after one of these changes, that mutant "survived," and it means your tests didn't actually verify that behavior.
+Mutation testing tries to address this problem. It measures the test suite by introducing small code changes ("mutants") and checking whether your tests catch them. Each mutant is a small modification: changing `>` to `>=`, swapping a parameter for `None`, altering arithmetic, etc. If your tests still pass after one of these changes, that mutant "survived," and it means your tests didn't actually verify the behavior.
 
 This sounded interesting enough so I _had_ to try it out.
 
@@ -20,27 +20,27 @@ I used [mutmut](https://mutmut.readthedocs.io/), the most popular Python mutatio
 4. Press `r` to rerun the mutant and see if you successfully managed to kill it.
 ```
 
-This worked and helped me find some interesting oversights in my code. The scale was a problem. In my small app, [cat finder](/cat-finder), there were 468 mutants, of which 156 of which survived. This was too much to manually investigate.
+This worked and helped me find some interesting oversights in my code. The problem was scale. In my small app, [cat tracker](/cat-tracker), there were 468 mutants, of which 156 survived. This was too much to manually investigate.
 
 ### Most Survivors Don't Matter
-The stickiest part of the workflow is step 3: "Find a mutant you want to work on...". Lots of the surviving mutants are just noise -- for example if you change a print() I really don't want tests for that.
+The stickiest part of the workflow is step 3: "Find a mutant you want to work on...". Lots of the surviving mutants are just noise -- for example if you change a `print()` I really don't want tests for that.
 
-What I wanted was a way to triage these survivors.
+What I wanted was a way to more efficiently triage these survivors.
 
 #### Enter the LLM stage
 
 This led to an automation that could go through hundreds of tests and take the relevant code, the mutation, and our metrics for whether it's worth changing. 
 
-The [script](https://github.com/trbarron/cat_finder/blob/mutation-testing/mutation_testing/analyze_survived_mutants.py) (`analyze_survived_mutants.py`) does this: 
+The [script](https://github.com/trbarron/cat_finder/blob/mutation-testing/mutation_testing/analyze_survived_mutants.py) (`analyze_survived_mutants.py`) does just this. For each mutant, it
 1. Runs `mutmut show` to get the diff
 2. Pulls a snippet of the surrounding source code for context
 3. Looks up which tests exercised that code 
 4. Reads the content of those test files
 5. Bundles everything into a prompt with guidelines and sends it to an LLM
 
-These guidelines are important. They tell the LLM to only suggest a test if the mutation changes something that would result in an externally visible side effect. It should ignore mutants that produces equivalent behavior.
+It tell the LLM to only suggest a test if the mutation changes something that would result in an externally visible side effect. It should ignore mutants that produces equivalent behavior.
 
-The new workflow looks like this:
+This changes the workflow to look like this:
 
 1. Run `mutmut` with `mutmut run`
 2. Save the list of surviving mutant names to a file (`mutmut_results.txt`)
@@ -61,6 +61,6 @@ It surfaces real gaps. It will test for things that you hadn't thought of and it
 The signal : noise ratio sucks. Even with adding tooling to the triage section, it takes a long time to go through each test. There is room for improvement here.
 
 #### Should you use it?
-For code that has good test coverage and is critical to your system, mutation testing is a valuable exercise. It rattles your code in ways you hadn't thought to and it'll find gaps that coverage metrics hide.
+For code that has good test coverage and is critical to your system, mutation testing seems like a valuable exercise. It rattles your code in ways you hadn't thought to and it'll find gaps.
 
 I like it as a way to periodically audit your tests. For this it is something I plan on doing, along with improving the triage process.
