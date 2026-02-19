@@ -1,0 +1,66 @@
+---
+title: "Mutation Testing"
+date: 2026-02-19
+---
+
+### What is Mutation Testing
+Imagine we have a codebase. We write tests and they cover the code. You get a high code coverage report and feel great. However, if you don't have the correct assertions, you don't have the safety you'd hope for. 
+
+Mutation testing tries to address this problem. It measures the test suite by introducing small code changes ("mutants") and checking whether your tests catch them. Each mutant is a small modification — changing `>` to `>=`, swapping a parameter for `None`, altering arithmetic, etc. If your tests still pass after one of these changes, that mutant "survived," and it means your tests didn't actually verify that behavior.
+
+This sounded interesting enough so I _had_ to try it out.
+
+### Suggested workflow
+I used [mutmut](https://mutmut.readthedocs.io/), the most popular Python mutation testing framework. Their suggested workflow is straightforward:
+
+```
+1. Run mutmut with mutmut run
+2. Show the mutants with mutmut browse
+3. Find a mutant you want to work on and write a test to try to kill it.
+4. Press `r` to rerun the mutant and see if you successfully managed to kill it.
+```
+
+This worked and helped me find some interesting oversights in my code. The scale was a problem. In my small app, [cat finder](/cat-finder), there were 468 mutants, of which 156 of which survived. This was too much to manually investigate.
+
+### Most Survivors Don't Matter
+The stickiest part of the workflow is step 3: "Find a mutant you want to work on...". Lots of the surviving mutants are just noise -- for example if you change a print() I really don't want tests for that.
+
+What I wanted was a way to triage these survivors.
+
+#### Enter the LLM stage
+
+This led to an automation that could go through hundreds of tests and take the relevant code, the mutation, and our metrics for whether it's worth changing. 
+
+The [script](https://github.com/trbarron/cat_finder/blob/mutation-testing/mutation_testing/analyze_survived_mutants.py) (`analyze_survived_mutants.py`) does this: 
+1. Runs `mutmut show` to get the diff
+2. Pulls a snippet of the surrounding source code for context
+3. Looks up which tests exercised that code 
+4. Reads the content of those test files
+5. Bundles everything into a prompt with guidelines and sends it to an LLM
+
+These guidelines are important. They tell the LLM to only suggest a test if the mutation changes something that would result in an externally visible side effect. It should ignore mutants that produces equivalent behavior.
+
+The new workflow looks like this:
+
+1. Run `mutmut` with `mutmut run`
+2. Save the list of surviving mutant names to a file (`mutmut_results.txt`)
+3. Run `analyze_survived_mutants.py` against the survived mutants, generating a report
+4. If you agree that it should have a test, put the output's Agent Prompt into your coding agent and let it write the test
+5. Confirm the kill
+
+The report from Step 3 has a section per mutant. Here is what an entry looks like:
+![[Pasted image 20260219125507.png]]
+
+The agent prompt is specific enough that you can paste it directly into Claude and it'll produce a working test.
+
+### What I learned
+This is super interesting, right? This still raises a ton of questions -- a lot of which I don't know the answer to. Here is what I do know after this:
+
+It surfaces real gaps. It will test for things that you hadn't thought of and it will show you cases that you should protect against.
+
+The signal : noise ratio sucks. Even with adding tooling to the triage section, it takes a long time to go through each test. There is room for improvement here.
+
+#### Should you use it?
+For code that has good test coverage and is critical to your system, mutation testing is a valuable exercise. It rattles your code in ways you hadn't thought to and it'll find gaps that coverage metrics hide.
+
+I like it as a way to periodically audit your tests. For this it is something I plan on doing, along with improving the triage process.
