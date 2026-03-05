@@ -3,64 +3,59 @@ title: "Mutation Testing"
 date: 2026-02-19
 ---
 
-### What is Mutation Testing
-Imagine we have a codebase. We write tests and they cover the code. You get a high code coverage and feel great. However if you don't have the correct assertions, you don't have the safety you'd hope for. 
+### The Problem with Code Coverage
 
-Mutation testing tries to address this problem. It measures the test suite by introducing small code changes ("mutants") and checking whether your tests catch them. Each mutant is a small modification: changing `>` to `>=`, swapping a parameter for `None`, altering arithmetic, etc. If your tests still pass after one of these changes, that mutant "survived," and it means your tests didn't actually verify the behavior.
+You write tests. You get high code coverage. You feel great. But code coverage only tells you what code ran - not whether your tests actually verified anything. You could hit every line and still have assertions that would pass no matter what the code did.
 
-This sounded interesting enough so I _had_ to try it out.
+Mutation testing attempts to address this. It introduces small code changes ("mutants"): swapping `>` to `>=`, replacing a parameter with `None`, etc and it checks whether your tests catch them. If your tests still pass after one of these changes, that mutant "survived," meaning your tests didn't verify that behavior.
 
-### Suggested workflow
-I used [mutmut](https://mutmut.readthedocs.io/), the most popular Python mutation testing framework. Their suggested workflow is straightforward:
+I'd been running [mutmut](https://mutmut.readthedocs.io/) on my small app, [cat tracker](/cat-tracker). It worked, but my problem was scale. 468 mutants were generated, 156 survived. The old workflow was manual: browse the mutants, pick one, write a test, rerun. Most survivors were noise and would require me to filter them out
+
+### What Meta Did
+
+While I was looking into this I found a paper Meta published with their approach: [Mutation-Guided LLM-based Test Generation](https://engineering.fb.com/2025/02/05/security/revolutionizing-software-testing-llm-powered-bug-catchers-meta-ach/). Their system, ACH (Automated Compliance Hardening), closes the loop entirely. Mutate code, have an LLM decide if the mutation matters, have an LLM write the test, verify the test kills the mutant, repeat. Pretty cool
+
+### The Closed Loop
+
+To accomplish this I built [mutation-agent](https://github.com/trbarron/mutation-agent), a tool that automates the full pipeline. Here's what it does:
 
 ```
-1. Run mutmut with mutmut run
-2. Show the mutants with mutmut browse
-3. Find a mutant you want to work on and write a test to try to kill it.
-4. Press `r` to rerun the mutant and see if you successfully managed to kill it.
+Mutate → Triage → If valid, Generate Test → Verify → (loop) Fix → Verify → ... → If successful, Commit
 ```
 
-This worked and helped me find some interesting oversights in my code. The problem was scale. In my small app, [cat tracker](/cat-tracker), there were 468 mutants, of which 156 survived. This was too much to manually investigate.
+**Step 1: Mutate** Run a mutation engine against the source file. I support two: [mutmut](https://github.com/boxed/mutmut) for fast, rule-based mutations and [mutahunter](https://github.com/codeintegrity-ai/mutahunter) for LLM-powered semantic mutations that produce more realistic bugs.
 
-### Most Survivors Don't Matter
-The stickiest part of the workflow is step 3: "Find a mutant you want to work on...". Lots of the surviving mutants are just noise -- for example if you change a `print()` I really don't want tests for that.
+**Step 2: Triage** Where we filter out the noise. Each survived mutant's diff, surrounding source code, and the existing test file gets sent to an LLM. Mutants that are worth killing (they're real oversights) should pass as "interesting surviving mutants".
 
-What I wanted was a way to more efficiently triage these survivors.
+**Step 3: Generate** For each mutant that passes triage, the LLM gets the source file, existing tests, mutation diff, and specific instructions: write a test that passes against the original code and fails against the mutant.
 
-#### Enter the LLM stage
+**Step 4: Verify** First, pytest runs against the original code to verify it passes. Then the source file is swapped with the mutant, and pytest runs again to check to see that the test must fail. If both are successful the mutant is killed.
 
-This led to an automation that could go through hundreds of tests and take the relevant code, the mutation, and our metrics for whether it's worth changing. 
+**Step 5: Self-correct** If the verification fails we attempt to fix it. This then repeats steps 4-5 up to five times. If it fails then we roll back and don't change the code.
 
-The [script](https://github.com/trbarron/cat_finder/blob/mutation-testing/mutation_testing/analyze_survived_mutants.py) (`analyze_survived_mutants.py`) does just this. For each mutant, it
-1. Runs `mutmut show` to get the diff
-2. Pulls a snippet of the surrounding source code for context
-3. Looks up which tests exercised that code 
-4. Reads the content of those test files
-5. Bundles everything into a prompt with guidelines and sends it to an LLM
+**Step 6: Commit** If this works we can create a PR that describes what took place and what it addresses.
 
-It tell the LLM to only suggest a test if the mutation changes something that would result in an externally visible side effect. It should ignore mutants that produces equivalent behavior.
+### Using It
 
-This changes the workflow to look like this:
+The tool is at [mutation-agent](https://github.com/trbarron/mutation-agent). Point it at any Python file with an existing test file:
 
-1. Run `mutmut` with `mutmut run`
-2. Save the list of surviving mutant names to a file (`mutmut_results.txt`)
-3. Run `analyze_survived_mutants.py` against the survived mutants, generating a report
-4. If you agree that it should have a test, put the output's Agent Prompt into your coding agent and let it write the test
-5. Confirm the kill
+```bash
+pip install -e .
+export OPENAI_API_KEY=sk-...
 
-The report from Step 3 has a section per mutant. Here is what an entry looks like:
-<img src="/images/mutationTesting.png" alt="Mutation Testing" className="mx-auto" />
+# Interactive — approve each test
+python -m mutation_agent --source-file my_module.py --test-file test_my_module.py
 
-The agent prompt is specific enough that you can paste it directly into Claude and it'll produce a working test.
+# Fully automated — generates, verifies, creates PR
+python -m mutation_agent --source-file my_module.py --test-file test_my_module.py --auto
+```
 
-### What I learned
-This is super interesting, right? This still raises a ton of questions -- a lot of which I don't know the answer to. Here is what I do know after this:
+It works with any Python project. The prompts are generic — no project-specific knowledge baked in. The LLM reads your source code and existing tests and figures out what to mock and assert.
 
-It surfaces real gaps. It will test for things that you hadn't thought of and it will show you cases that you should protect against.
+### Should You Use It?
 
-The signal : noise ratio sucks. Even with adding tooling to the triage section, it takes a long time to go through each test. There is room for improvement here.
+For code that has decent test coverage and is important to your system this is a powerful tool. It finds real gaps in your code. 
 
-#### Should you use it?
-For code that has good test coverage and is critical to your system, mutation testing seems like a valuable exercise. It rattles your code in ways you hadn't thought to and it'll find gaps.
+The cost is low. A full run against a small module costs maybe a dollar in API calls and takes maybe a few hours. 
 
-I like it as a way to periodically audit your tests. For this it is something I plan on doing, along with improving the triage process.
+The signal:noise ratio is still a bit annoying and could be improved with a better triage step. After all this I plan on using it as a periodic audit on code bases to help my testing. 
