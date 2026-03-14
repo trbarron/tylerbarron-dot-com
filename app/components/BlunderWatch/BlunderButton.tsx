@@ -54,21 +54,19 @@ export function BlunderButton({ onFlag, disabled, lastFlagResult, isPreGame = fa
         {buttonText}
       </button>
 
-      {/* Mobile fixed button — always visible, thumb-friendly, ≥ 64pt tap target */}
-      <div className="md:hidden fixed bottom-6 left-0 right-0 z-50 flex justify-center px-6">
-        <button
-          onClick={() => !isDisabled && onFlag()}
-          disabled={isDisabled}
-          className={`
-            w-full max-w-sm border-4 px-6 min-h-16 font-neo font-black text-xl uppercase tracking-wide
-            transition-all duration-100 shadow-[4px_4px_0px_rgba(0,0,0,0.3)]
-            ${bgClass}
-          `}
-          aria-label={isPreGame ? 'Start the game' : 'Flag this move as a blunder'}
-        >
-          {buttonText}
-        </button>
-      </div>
+      {/* Mobile: inline button (not fixed) to avoid overlap/scroll issues */}
+      <button
+        onClick={() => !isDisabled && onFlag()}
+        disabled={isDisabled}
+        className={`
+          md:hidden w-full border-4 px-6 min-h-16 font-neo font-black text-xl uppercase tracking-wide
+          transition-all duration-100 mt-4
+          ${bgClass}
+        `}
+        aria-label={isPreGame ? 'Start the game' : 'Flag this move as a blunder'}
+      >
+        {buttonText}
+      </button>
     </>
   );
 }

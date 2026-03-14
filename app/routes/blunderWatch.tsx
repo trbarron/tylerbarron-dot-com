@@ -287,7 +287,56 @@ export default function BlunderWatch() {
               {/* Pregame + Playing: same grid layout */}
               {(playback.phase === 'pregame' || playback.phase === 'playing') && (
                 <div className="grid gap-x-4 grid-cols-1 md:grid-cols-5">
-                  <div className="col-span-1 md:col-span-4">
+                  {/* Sidebar — on mobile renders first (above board); on desktop, right column */}
+                  <div className="col-span-1 md:col-span-1 md:order-2 mb-3 md:mb-0">
+                    {playback.phase === 'pregame' ? (
+                      <div className="bg-white border-4 border-black p-3 flex flex-row md:flex-col md:h-full gap-3 md:gap-0">
+                        {/* Matchup — horizontal on mobile, stacked on desktop */}
+                        <div className="flex items-center gap-3 md:block md:text-center md:mb-3">
+                          <p className="hidden md:block font-neo text-xs uppercase tracking-widest text-gray-500 mb-2">Matchup</p>
+                          <div className="flex items-center gap-2 md:justify-center">
+                            <div className="w-4 h-4 bg-white border-2 border-black flex-shrink-0" />
+                            <span className="font-neo font-bold text-sm">{game.whiteElo}</span>
+                          </div>
+                          <span className="font-neo text-gray-400 text-xs md:block md:my-1">vs</span>
+                          <div className="flex items-center gap-2 md:justify-center">
+                            <div className="w-4 h-4 bg-black flex-shrink-0" />
+                            <span className="font-neo font-bold text-sm">{game.blackElo}</span>
+                          </div>
+                        </div>
+
+                        {/* Blunder count */}
+                        <div className="md:border-t-2 md:border-black md:pt-3 md:mb-3 flex-shrink-0 ml-auto md:ml-0">
+                          <div className="bg-yellow-400 border-2 border-black px-3 py-1 md:px-2 md:py-2 text-center">
+                            <span className="font-neo font-black text-sm md:text-2xl md:leading-none">{game.blunderCount}</span>
+                            <span className="font-neo text-xs md:block md:mt-1"> blunders</span>
+                          </div>
+                        </div>
+
+                        {/* Progress placeholder — desktop only */}
+                        <div className="hidden md:block mt-auto">
+                          <div className="border-2 border-black h-2 bg-gray-100">
+                            <div className="h-full bg-black" />
+                          </div>
+                          <p className="font-neo text-xs text-gray-400 text-center mt-1 whitespace-nowrap">
+                            {game.moves.length} moves
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <ScoreBug
+                        score={playback.liveScore}
+                        blundersCaught={playback.flags.filter(f => game.blunderIndices.includes(f.moveIndex)).length}
+                        blundersTotal={game.blunderCount}
+                        falsePositives={playback.flags.filter(f => !game.blunderIndices.includes(f.moveIndex)).length}
+                        moveIndex={playback.currentMoveIndex}
+                        totalMoves={game.moves.length}
+                      />
+                    )}
+                  </div>
+
+                  {/* Board + button — on desktop, left column */}
+                  <div className="col-span-1 md:col-span-4 md:order-1">
                     {/* Top bar with FF slot always allocated */}
                     <div className={`mb-3 flex items-center justify-between border-2 border-black px-4 py-2 ${
                       playback.phase === 'pregame'
@@ -322,51 +371,6 @@ export default function BlunderWatch() {
                       lastFlagResult={playback.lastFlagResult}
                       isPreGame={playback.phase === 'pregame'}
                     />
-                  </div>
-
-                  <div className="col-span-1 md:col-span-1 pt-2 md:pt-0">
-                    {playback.phase === 'pregame' ? (
-                      <div className="bg-white border-4 border-black p-3 h-full flex flex-col">
-                        {/* Matchup */}
-                        <div className="text-center mb-3">
-                          <p className="font-neo text-xs uppercase tracking-widest text-gray-500 mb-2">Matchup</p>
-                          <div className="flex items-center justify-center gap-2">
-                            <div className="w-4 h-4 bg-white border-2 border-black flex-shrink-0" />
-                            <span className="font-neo font-bold text-sm">{game.whiteElo}</span>
-                          </div>
-                          <p className="font-neo text-gray-400 text-xs my-1">vs</p>
-                          <div className="flex items-center justify-center gap-2">
-                            <div className="w-4 h-4 bg-black flex-shrink-0" />
-                            <span className="font-neo font-bold text-sm">{game.blackElo}</span>
-                          </div>
-                        </div>
-
-                        {/* Blunder count */}
-                        <div className="border-t-2 border-black pt-3 mb-3">
-                          <div className="bg-yellow-400 border-2 border-black px-2 py-2 text-center">
-                            <p className="font-neo font-black text-2xl leading-none">{game.blunderCount}</p>
-                            <p className="font-neo text-xs mt-1">blunders</p>
-                          </div>
-                        </div>
-
-                        {/* Progress placeholder to match ScoreBug height */}
-                        <div className="mt-auto border-2 border-black h-2 bg-gray-100">
-                          <div className="h-full bg-black" />
-                        </div>
-                        <p className="font-neo text-xs text-gray-400 text-center mt-1 whitespace-nowrap">
-                          {game.moves.length} moves
-                        </p>
-                      </div>
-                    ) : (
-                      <ScoreBug
-                        score={playback.liveScore}
-                        blundersCaught={playback.flags.filter(f => game.blunderIndices.includes(f.moveIndex)).length}
-                        blundersTotal={game.blunderCount}
-                        falsePositives={playback.flags.filter(f => !game.blunderIndices.includes(f.moveIndex)).length}
-                        moveIndex={playback.currentMoveIndex}
-                        totalMoves={game.moves.length}
-                      />
-                    )}
                   </div>
                 </div>
               )}
