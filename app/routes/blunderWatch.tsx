@@ -466,7 +466,7 @@ export default function BlunderWatch() {
         <Article title="About Blunder Watch" subtitle="">
         <Subarticle subtitle="Overview">
             <p>Blunder Watch plays back a real chess game from Lichess and challenges you to spot the blunders as they happen. Everyone gets the same game each day and competes on a shared leaderboard.</p>
-            <p className="mt-2"><strong>Scoring:</strong> React within 0.5s for 100 points, 1s for 90, 2s for 80. Miss a blunder and you score nothing. False positives cost 30 points.</p>
+            <p className="mt-2"><strong>Scoring:</strong> React within 0.5s for 100 points, 1s for 90, 2.5s for 80. Miss a blunder and you score nothing. False positives cost 30 points.</p>
           </Subarticle>
           <Subarticle subtitle="Game Selection">
             <p>Games are sourced from Lichess and pre-analyzed with Stockfish at depth 20. I use Lichess' <a href='https://github.com/lichess-org/lila/blob/cf9e10df24b767b3bc5ee3d88c45437ac722025d/modules/analyse/src/main/Advice.scala#L52'>definition of a blunder</a>. Each game has 3-6 blunders.</p>
@@ -480,7 +480,7 @@ export default function BlunderWatch() {
         initialUsername={username}
         onSubmit={handleUsernameSubmit}
         onCancel={handleGuestScore}
-        cancelLabel="Skip (as guest)"
+        cancelLabel="Skip"
       />
     </div>
   );
