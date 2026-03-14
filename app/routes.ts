@@ -7,6 +7,7 @@ export default [
   route("healthcheck", "routes/healthcheck.tsx"),
 
   // Kebab-case routes (preferred)
+  route("blunder-watch", "routes/blunderWatch.tsx"),
   route("bouldering-tracker", "routes/boulderingTracker.tsx"),
   route("camel-up-cup", "routes/camelUpCup.tsx"),
   route("cat-tracker", "routes/catTracker._index.tsx"),
@@ -46,5 +47,10 @@ export default [
   route("api/chesserGuesser/puzzles", "routes/api/chesserGuesser/puzzles.ts"),
   route("api/chesserGuesser/submit", "routes/api/chesserGuesser/submit.ts"),
   route("api/chesserGuesser/leaderboard", "routes/api/chesserGuesser/leaderboard.ts"),
+
+  // API routes for Blunder Watch
+  route("api/blunderWatch/game", "routes/api/blunderWatch/game.ts"),
+  route("api/blunderWatch/submit", "routes/api/blunderWatch/submit.ts"),
+  route("api/blunderWatch/leaderboard", "routes/api/blunderWatch/leaderboard.ts"),
 ] satisfies RouteConfig;
 

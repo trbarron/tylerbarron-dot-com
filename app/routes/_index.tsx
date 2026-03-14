@@ -107,6 +107,11 @@ const links = [
     description: "Can you tell who is winning the chess game?"
   },
   {
+    to: "/blunder-watch",
+    title: "Blunder Watch",
+    description: "Spot the blunders as a chess game plays out"
+  },
+  {
     to: "/collaborative-checkmate",
     title: "Collaborative Checkmate",
     description: "Play chess with your friends"

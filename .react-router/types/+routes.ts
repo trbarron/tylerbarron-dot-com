@@ -25,6 +25,9 @@ type Pages = {
   "/healthcheck": {
     params: {};
   };
+  "/blunder-watch": {
+    params: {};
+  };
   "/bouldering-tracker": {
     params: {};
   };
@@ -130,12 +133,21 @@ type Pages = {
   "/api/chesserGuesser/leaderboard": {
     params: {};
   };
+  "/api/blunderWatch/game": {
+    params: {};
+  };
+  "/api/blunderWatch/submit": {
+    params: {};
+  };
+  "/api/blunderWatch/leaderboard": {
+    params: {};
+  };
 };
 
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/blog/:slug" | "/favicon.ico" | "/healthcheck" | "/bouldering-tracker" | "/camel-up-cup" | "/cat-tracker" | "/cat-tracker/blog" | "/chesser-guesser" | "/collaborative-checkmate" | "/collaborative-checkmate/:gameId/:playerId" | "/generative-art" | "/pizza-rating" | "/the-riddler" | "/boulderingTracker" | "/BoulderingTracker" | "/camelUpCup" | "/CamelUpCup" | "/catTracker" | "/CatTracker" | "/catTracker/blog" | "/CatTracker/Blog" | "/chesserGuesser" | "/collaborativeCheckmate" | "/collaborativeCheckmate/:gameId/:playerId" | "/generativeArt" | "/GenerativeArt" | "/pizzaRating" | "/PizzaRating" | "/theRiddler" | "/TheRiddler" | "/set" | "/Set" | "/SSBM" | "/api/chesserGuesser/puzzles" | "/api/chesserGuesser/submit" | "/api/chesserGuesser/leaderboard";
+    page: "/" | "/blog/:slug" | "/favicon.ico" | "/healthcheck" | "/blunder-watch" | "/bouldering-tracker" | "/camel-up-cup" | "/cat-tracker" | "/cat-tracker/blog" | "/chesser-guesser" | "/collaborative-checkmate" | "/collaborative-checkmate/:gameId/:playerId" | "/generative-art" | "/pizza-rating" | "/the-riddler" | "/boulderingTracker" | "/BoulderingTracker" | "/camelUpCup" | "/CamelUpCup" | "/catTracker" | "/CatTracker" | "/catTracker/blog" | "/CatTracker/Blog" | "/chesserGuesser" | "/collaborativeCheckmate" | "/collaborativeCheckmate/:gameId/:playerId" | "/generativeArt" | "/GenerativeArt" | "/pizzaRating" | "/PizzaRating" | "/theRiddler" | "/TheRiddler" | "/set" | "/Set" | "/SSBM" | "/api/chesserGuesser/puzzles" | "/api/chesserGuesser/submit" | "/api/chesserGuesser/leaderboard" | "/api/blunderWatch/game" | "/api/blunderWatch/submit" | "/api/blunderWatch/leaderboard";
   };
   "routes/_index.tsx": {
     id: "routes/_index";
@@ -152,6 +164,10 @@ type RouteFiles = {
   "routes/healthcheck.tsx": {
     id: "routes/healthcheck";
     page: "/healthcheck";
+  };
+  "routes/blunderWatch.tsx": {
+    id: "routes/blunderWatch";
+    page: "/blunder-watch";
   };
   "routes/boulderingTracker.tsx": {
     id: "routes/boulderingTracker";
@@ -267,6 +283,18 @@ type RouteFiles = {
     id: "routes/api/chesserGuesser/leaderboard";
     page: "/api/chesserGuesser/leaderboard";
   };
+  "routes/api/blunderWatch/game.ts": {
+    id: "routes/api/blunderWatch/game";
+    page: "/api/blunderWatch/game";
+  };
+  "routes/api/blunderWatch/submit.ts": {
+    id: "routes/api/blunderWatch/submit";
+    page: "/api/blunderWatch/submit";
+  };
+  "routes/api/blunderWatch/leaderboard.ts": {
+    id: "routes/api/blunderWatch/leaderboard";
+    page: "/api/blunderWatch/leaderboard";
+  };
 };
 
 type RouteModules = {
@@ -275,6 +303,7 @@ type RouteModules = {
   "routes/blog.$slug": typeof import("./app/routes/blog.$slug.tsx");
   "routes/favicon[.]ico": typeof import("./app/routes/favicon[.]ico.ts");
   "routes/healthcheck": typeof import("./app/routes/healthcheck.tsx");
+  "routes/blunderWatch": typeof import("./app/routes/blunderWatch.tsx");
   "routes/boulderingTracker": typeof import("./app/routes/boulderingTracker.tsx");
   "routes/camelUpCup": typeof import("./app/routes/camelUpCup.tsx");
   "routes/catTracker._index": typeof import("./app/routes/catTracker._index.tsx");
@@ -308,4 +337,7 @@ type RouteModules = {
   "routes/api/chesserGuesser/puzzles": typeof import("./app/routes/api/chesserGuesser/puzzles.ts");
   "routes/api/chesserGuesser/submit": typeof import("./app/routes/api/chesserGuesser/submit.ts");
   "routes/api/chesserGuesser/leaderboard": typeof import("./app/routes/api/chesserGuesser/leaderboard.ts");
+  "routes/api/blunderWatch/game": typeof import("./app/routes/api/blunderWatch/game.ts");
+  "routes/api/blunderWatch/submit": typeof import("./app/routes/api/blunderWatch/submit.ts");
+  "routes/api/blunderWatch/leaderboard": typeof import("./app/routes/api/blunderWatch/leaderboard.ts");
 };
