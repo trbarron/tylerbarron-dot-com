@@ -284,67 +284,27 @@ export default function BlunderWatch() {
 
           {game && !alreadyPlayed && (
             <div className="pb-6">
-              {/* Pre-game and Playing: unified board layout */}
-              {/* Pre-game: full-width layout */}
-              {playback.phase === 'pregame' && (
-                <>
-                  {/* Matchup + blunder count bar */}
-                  <div className="mb-3 flex items-center justify-between border-2 border-black px-4 py-3 bg-white">
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center gap-2">
-                        <div className="w-5 h-5 bg-white border-2 border-black flex-shrink-0" />
-                        <span className="font-neo font-bold text-sm text-black">{game.whiteElo}</span>
-                      </div>
-                      <span className="font-neo text-gray-400 text-xs">vs</span>
-                      <div className="flex items-center gap-2">
-                        <div className="w-5 h-5 bg-black flex-shrink-0" />
-                        <span className="font-neo font-bold text-sm text-black">{game.blackElo}</span>
-                      </div>
-                    </div>
-                    <div className="bg-yellow-400 border-2 border-black px-3 py-1 text-center">
-                      <span className="font-neo font-black text-sm">{game.blunderCount}</span>
-                      <span className="font-neo text-xs"> White blunders</span>
-                    </div>
-                  </div>
-
-                  {/* Top bar with FF slot always allocated */}
-                  <div className="mb-3 flex items-center justify-between border-2 border-black px-4 py-2 bg-white text-black">
-                    <span className="font-neo font-bold text-xs uppercase">Ready</span>
-                    <span className="font-neo text-xs font-bold tracking-wide invisible">⏩ Fast forward</span>
-                    <span className="font-neo text-xs opacity-60">{game.moves.length} moves</span>
-                  </div>
-
-                  <GameBoard
-                    initialFen={initialFen}
-                    moves={game.moves}
-                    currentMoveIndex={playback.currentMoveIndex}
-                    orientation={orientation}
-                    isFastForward={false}
-                  />
-
-                  <BlunderButton
-                    onFlag={handleStartGame}
-                    disabled={false}
-                    lastFlagResult={null}
-                    isPreGame={true}
-                  />
-                </>
-              )}
-
-              {/* Playing: board + ScoreBug sidebar */}
-              {playback.phase === 'playing' && (
+              {/* Pregame + Playing: same grid layout */}
+              {(playback.phase === 'pregame' || playback.phase === 'playing') && (
                 <div className="grid gap-x-4 grid-cols-1 md:grid-cols-5">
                   <div className="col-span-1 md:col-span-4">
                     {/* Top bar with FF slot always allocated */}
                     <div className={`mb-3 flex items-center justify-between border-2 border-black px-4 py-2 ${
-                      currentTurn === 'White' ? 'bg-white text-black' : 'bg-black text-white'
+                      playback.phase === 'pregame'
+                        ? 'bg-white text-black'
+                        : currentTurn === 'White' ? 'bg-white text-black' : 'bg-black text-white'
                     }`}>
-                      <span className="font-neo font-bold text-xs uppercase">{currentTurn} to move</span>
+                      <span className="font-neo font-bold text-xs uppercase">
+                        {playback.phase === 'pregame' ? 'Ready' : `${currentTurn} to move`}
+                      </span>
                       <span className={`font-neo text-xs font-bold tracking-wide ${playback.isFastForward ? 'opacity-100' : 'invisible'}`}>
                         ⏩ Fast forward
                       </span>
                       <span className="font-neo text-xs opacity-60">
-                        Move {Math.max(0, playback.currentMoveIndex + 1)} / {game.moves.length}
+                        {playback.phase === 'pregame'
+                          ? `${game.moves.length} moves`
+                          : `Move ${Math.max(0, playback.currentMoveIndex + 1)} / ${game.moves.length}`
+                        }
                       </span>
                     </div>
 
@@ -353,25 +313,60 @@ export default function BlunderWatch() {
                       moves={game.moves}
                       currentMoveIndex={playback.currentMoveIndex}
                       orientation={orientation}
-                      isFastForward={playback.isFastForward}
+                      isFastForward={playback.phase === 'playing' && playback.isFastForward}
                     />
 
                     <BlunderButton
-                      onFlag={playback.flagCurrentMove}
-                      disabled={playback.hasFlaggedCurrentMove || playback.currentMoveIndex < 0}
+                      onFlag={playback.phase === 'pregame' ? handleStartGame : playback.flagCurrentMove}
+                      disabled={playback.phase === 'playing' && (playback.hasFlaggedCurrentMove || playback.currentMoveIndex < 0)}
                       lastFlagResult={playback.lastFlagResult}
+                      isPreGame={playback.phase === 'pregame'}
                     />
                   </div>
 
                   <div className="col-span-1 md:col-span-1 pt-2 md:pt-0">
-                    <ScoreBug
-                      score={playback.liveScore}
-                      blundersCaught={playback.flags.filter(f => game.blunderIndices.includes(f.moveIndex)).length}
-                      blundersTotal={game.blunderCount}
-                      falsePositives={playback.flags.filter(f => !game.blunderIndices.includes(f.moveIndex)).length}
-                      moveIndex={playback.currentMoveIndex}
-                      totalMoves={game.moves.length}
-                    />
+                    {playback.phase === 'pregame' ? (
+                      <div className="bg-white border-4 border-black p-3 h-full flex flex-col">
+                        {/* Matchup */}
+                        <div className="text-center mb-3">
+                          <p className="font-neo text-xs uppercase tracking-widest text-gray-500 mb-2">Matchup</p>
+                          <div className="flex items-center justify-center gap-2">
+                            <div className="w-4 h-4 bg-white border-2 border-black flex-shrink-0" />
+                            <span className="font-neo font-bold text-sm">{game.whiteElo}</span>
+                          </div>
+                          <p className="font-neo text-gray-400 text-xs my-1">vs</p>
+                          <div className="flex items-center justify-center gap-2">
+                            <div className="w-4 h-4 bg-black flex-shrink-0" />
+                            <span className="font-neo font-bold text-sm">{game.blackElo}</span>
+                          </div>
+                        </div>
+
+                        {/* Blunder count */}
+                        <div className="border-t-2 border-black pt-3 mb-3">
+                          <div className="bg-yellow-400 border-2 border-black px-2 py-2 text-center">
+                            <p className="font-neo font-black text-2xl leading-none">{game.blunderCount}</p>
+                            <p className="font-neo text-xs mt-1">blunders</p>
+                          </div>
+                        </div>
+
+                        {/* Progress placeholder to match ScoreBug height */}
+                        <div className="mt-auto border-2 border-black h-2 bg-gray-100">
+                          <div className="h-full bg-black" />
+                        </div>
+                        <p className="font-neo text-xs text-gray-400 text-center mt-1 whitespace-nowrap">
+                          {game.moves.length} moves
+                        </p>
+                      </div>
+                    ) : (
+                      <ScoreBug
+                        score={playback.liveScore}
+                        blundersCaught={playback.flags.filter(f => game.blunderIndices.includes(f.moveIndex)).length}
+                        blundersTotal={game.blunderCount}
+                        falsePositives={playback.flags.filter(f => !game.blunderIndices.includes(f.moveIndex)).length}
+                        moveIndex={playback.currentMoveIndex}
+                        totalMoves={game.moves.length}
+                      />
+                    )}
                   </div>
                 </div>
               )}
