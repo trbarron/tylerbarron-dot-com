@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useLoaderData, ScrollRestoration, type LinksFunction } from 'react-router';
 import { getRedisClient } from '~/utils/redis.server';
 import { computePacing } from '~/utils/blunderWatch/pacing';
@@ -150,7 +150,8 @@ export default function BlunderWatch() {
     }
 
     submitScore();
-  }, [playback.phase, username, game]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- isSubmitting/submitResult/submitError are guards, not triggers
+  }, [playback.phase, username, game, submitScore]);
 
   const handleUsernameSubmit = (newUsername: string) => {
     setUsername(newUsername);
@@ -180,7 +181,7 @@ export default function BlunderWatch() {
     setShowUsernameModal(false);
   };
 
-  const submitScore = async (overrideUsername?: string) => {
+  const submitScore = useCallback(async (overrideUsername?: string) => {
     if (!game) return;
     const submittingAs = overrideUsername ?? username;
     if (!submittingAs) return;
@@ -245,7 +246,7 @@ export default function BlunderWatch() {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [game, username, today, playback.flags]);
 
   const handleStartGame = () => {
     playback.startGame();

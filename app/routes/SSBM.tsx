@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Lightbox from "yet-another-react-lightbox";
+import LightboxComponent from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 
 const boxxRender = getImageUrl('SSBM/boxxRender.jpg');
@@ -139,7 +139,7 @@ const SSBM = () => {
         </Article>
       </main>
       <Footer />
-      <Lightbox
+      <LightboxComponent
         open={open}
         close={() => setOpen(false)}
         slides={allPhotos}

@@ -156,7 +156,7 @@ export default function ChesserGuesserUnlimited() {
     if (gameMode === 'daily' && dailyPuzzles.length === 0) {
       loadDailyPuzzles();
     }
-  }, [gameMode]);
+  }, [gameMode, dailyPuzzles.length, loadDailyPuzzles]);
 
   // Update current puzzle for daily mode
   useEffect(() => {
@@ -177,9 +177,9 @@ export default function ChesserGuesserUnlimited() {
       setIsReviewMode(false);
       setReviewPuzzleIndex(0);
     }
-  }, [gameMode]);
+  }, [gameMode, isReviewMode]);
 
-  const loadDailyPuzzles = async () => {
+  const loadDailyPuzzles = useCallback(async () => {
     try {
       setIsDailyLoading(true);
       setDailyError(null);
@@ -253,7 +253,7 @@ export default function ChesserGuesserUnlimited() {
 
       setIsDailyLoading(false);
     }
-  };
+  }, [dailyGameState, username]);
 
   const handleSliderChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSliderValue(Number(event.target.value));
@@ -318,7 +318,7 @@ export default function ChesserGuesserUnlimited() {
     }
   };
 
-  async function submitGuess() {
+  const submitGuess = useCallback(async () => {
     if (isSubmitting) return;
 
     setIsSubmitting(true);
@@ -328,9 +328,9 @@ export default function ChesserGuesserUnlimited() {
     } else {
       await submitDailyGuess();
     }
-  }
+  }, [isSubmitting, gameMode, submitEndlessGuess, submitDailyGuess]);
 
-  async function submitEndlessGuess() {
+  const submitEndlessGuess = useCallback(async () => {
     let correctSide = false;
     if (loaderData.evalScore > 20 && sliderValue > 0) {
       correctSide = true;
@@ -374,9 +374,9 @@ export default function ChesserGuesserUnlimited() {
     }
 
     navigate(".", { replace: true });
-  }
+  }, [loaderData.evalScore, sliderValue, streak, maxStreak, loaderData.randomFEN, navigate]);
 
-  async function submitDailyGuess() {
+  const submitDailyGuess = useCallback(async () => {
     if (!dailyGameState || currentPuzzleIndex >= dailyPuzzles.length) {
       setIsSubmitting(false);
       return;
@@ -443,15 +443,15 @@ export default function ChesserGuesserUnlimited() {
         };
         const updated = [newEntry, ...prev];
         // For daily mode, keep only the 4 puzzles from today
-        const dailyPuzzles = updated.filter(p => p.mode === 'daily').slice(0, 4);
-        const endlessPuzzles = updated.filter(p => p.mode === 'endless');
-        return [...dailyPuzzles, ...endlessPuzzles];
+        const dailyPuzzlesHistory = updated.filter(p => p.mode === 'daily').slice(0, 4);
+        const endlessPuzzlesHistory = updated.filter(p => p.mode === 'endless');
+        return [...dailyPuzzlesHistory, ...endlessPuzzlesHistory];
       });
 
       // Move to next puzzle or finish
       if (!isLastPuzzle) {
         setTimeout(() => {
-          setCurrentPuzzleIndex(currentPuzzleIndex + 1);
+          setCurrentPuzzleIndex(prev => prev + 1);
           setSliderValue(0); // Reset slider for next puzzle
           setIsSubmitting(false);
         }, 1500);
@@ -465,7 +465,7 @@ export default function ChesserGuesserUnlimited() {
       alert(error instanceof Error ? error.message : 'Failed to submit score. Please try again.');
       setIsSubmitting(false);
     }
-  }
+  }, [dailyGameState, currentPuzzleIndex, dailyPuzzles, sliderValue, username]);
 
 
 

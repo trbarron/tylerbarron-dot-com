@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Lightbox from "yet-another-react-lightbox";
+import LightboxComponent from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 
 const eventTwo = getImageUrl('CamelUpCup/eventTwo.jpg');
@@ -79,7 +79,7 @@ const CamelUpCup = () => {
         </Article>
       </main>
       <Footer />
-      <Lightbox
+      <LightboxComponent
         open={open}
         close={() => setOpen(false)}
         slides={photos}

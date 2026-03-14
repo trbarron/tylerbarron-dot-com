@@ -1,6 +1,6 @@
 // Daily leaderboard for Blunder Watch — adapted from ChesserGuesser/Leaderboard.tsx
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { LeaderboardEntry } from '~/utils/blunderWatch/types';
 
 interface LeaderboardProps {
@@ -22,13 +22,7 @@ export function Leaderboard({ currentUsername, date }: LeaderboardProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchLeaderboard();
-    const interval = setInterval(fetchLeaderboard, 60_000);
-    return () => clearInterval(interval);
-  }, [date, currentUsername]);
-
-  const fetchLeaderboard = async () => {
+  const fetchLeaderboard = useCallback(async () => {
     try {
       if (leaderboard.length === 0) setIsLoading(true);
       setError(null);
@@ -49,7 +43,13 @@ export function Leaderboard({ currentUsername, date }: LeaderboardProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [date, currentUsername, leaderboard.length]);
+
+  useEffect(() => {
+    fetchLeaderboard();
+    const interval = setInterval(fetchLeaderboard, 60_000);
+    return () => clearInterval(interval);
+  }, [fetchLeaderboard]);
 
   return (
     <div className="bg-white border-4 border-black">

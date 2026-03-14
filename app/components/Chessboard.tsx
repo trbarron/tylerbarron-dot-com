@@ -1,9 +1,10 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useCallback } from 'react';
 import { Chessground } from 'chessground';
 import { Chess } from 'chess.js';
 import type { Api } from 'chessground/api';
 import type { Config } from 'chessground/config';
-import type { Color } from 'chessground/types';
+import type { Color, Key, Piece } from 'chessground/types';
+import type { DrawShape } from 'chessground/draw';
 
 interface ChessboardProps {
   initialFen?: string;
@@ -17,7 +18,7 @@ interface ChessboardProps {
   animationDuration?: number;
   highlightMoves?: boolean;
   lastMove?: [string, string];
-  autoShapes?: any[];
+  autoShapes?: DrawShape[];
   draggable?: boolean | {
     enabled?: boolean;
     showGhost?: boolean;
@@ -35,9 +36,9 @@ interface ChessboardProps {
     visible?: boolean;
     defaultSnapToValidMove?: boolean;
     eraseOnClick?: boolean;
-    onChange?: (shapes: any[]) => void;
-    shapes?: any[];
-    autoShapes?: any[];
+    onChange?: (shapes: DrawShape[]) => void;
+    shapes?: DrawShape[];
+    autoShapes?: DrawShape[];
   };
   ref?: React.RefObject<HTMLDivElement | Api>;
 }
@@ -79,15 +80,13 @@ export default function Chessboard({
     setIsClient(true);
   }, []);
 
-  const calcMovable = () => {
+  const calcMovable = useCallback(() => {
     if (viewOnly || !movable) return { free: false, dests: new Map() };
 
     const dests = new Map();
     SQUARES.forEach(s => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const ms = chess.moves({ square: s as any, verbose: true });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if (ms.length) dests.set(s as any, ms.map(m => m.to as any));
+      const ms = chess.moves({ square: s as Key, verbose: true });
+      if (ms.length) dests.set(s as Key, ms.map(m => m.to as Key));
     });
     
     return {
@@ -95,9 +94,9 @@ export default function Chessboard({
       dests,
       color: playableColor
     };
-  };
+  }, [chess, movable, playableColor, viewOnly]);
 
-  const handleMove = (orig: string, dest: string) => {
+  const handleMove = useCallback((orig: string, dest: string) => {
     try {
       const move = chess.move({ from: orig, to: dest });
       if (move) {
@@ -107,8 +106,7 @@ export default function Chessboard({
           fen: newFen,
           turnColor: chess.turn() === 'w' ? 'white' : 'black',
           movable: calcMovable(),
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          lastMove: highlightMoves ? [orig as any, dest as any] : undefined
+          lastMove: highlightMoves ? [orig as Key, dest as Key] : undefined
         });
 
         onMove?.(orig, dest, newFen);
@@ -116,7 +114,7 @@ export default function Chessboard({
     } catch (error) {
       console.error('Invalid move:', error);
     }
-  };
+  }, [calcMovable, chess, highlightMoves, onMove]);
 
   useEffect(() => {
     if (!isClient || !ref.current || cgRef.current) return;
@@ -125,11 +123,10 @@ export default function Chessboard({
       fen: chess.fen(),
       orientation,
       viewOnly,
-      lastMove: lastMove as any,
+      lastMove: lastMove as Key[],
       movable: calcMovable(),
       events: {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        move: handleMove as any,
+        move: handleMove as (orig: Key, dest: Key, capturedPiece?: Piece) => void,
         ...events
       },
       animation: {
@@ -151,7 +148,7 @@ export default function Chessboard({
         enabled: allowDrawing,
         autoShapes: autoShapes,
         ...drawable
-      } as any,
+      },
       selectable: selectable
     };
 
@@ -170,7 +167,7 @@ export default function Chessboard({
     };
   }, [isClient, chess, viewOnly, movable, allowDrawing, playableColor, orientation, 
       animated, animationDuration, highlightMoves, lastMove, autoShapes, draggable, events, 
-      drawable, selectable]);
+      drawable, selectable, calcMovable, handleMove, externalRef, ref]);
 
   // Update board if initialFen changes
   useEffect(() => {
@@ -179,11 +176,11 @@ export default function Chessboard({
       cgRef.current.set({
         fen: chess.fen(),
         movable: calcMovable(),
-        lastMove: lastMove as any,
-        drawable: { autoShapes } as any
+        lastMove: lastMove as Key[],
+        drawable: { autoShapes }
       });
     }
-  }, [initialFen, chess, viewOnly, movable, playableColor, lastMove, autoShapes]);
+  }, [initialFen, chess, viewOnly, movable, playableColor, lastMove, autoShapes, calcMovable]);
 
   return (
     <div className="w-full max-w-2xl mx-auto">

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import Lightbox from 'yet-another-react-lightbox';
+import LightboxComponent from 'yet-another-react-lightbox';
 import 'yet-another-react-lightbox/styles.css';
 
 interface Photo {
@@ -113,7 +113,7 @@ export default function PhotoGallery({
       )}
 
       {lightbox && (
-        <Lightbox
+        <LightboxComponent
           open={isOpen}
           close={() => setIsOpen(false)}
           slides={slides}

@@ -1,7 +1,7 @@
 // Leaderboard Display Component
 // Shows top players and user's rank
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { LeaderboardEntry } from "~/utils/chesserGuesser/types";
 
 interface LeaderboardProps {
@@ -19,14 +19,7 @@ export function Leaderboard({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchLeaderboard();
-    // Refresh every 60 seconds
-    const interval = setInterval(fetchLeaderboard, 60000);
-    return () => clearInterval(interval);
-  }, [date, currentUsername]);
-
-  const fetchLeaderboard = async () => {
+  const fetchLeaderboard = useCallback(async () => {
     try {
       if (leaderboard.length === 0) {
         setIsLoading(true);
@@ -51,7 +44,14 @@ export function Leaderboard({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [date, currentUsername, leaderboard.length]);
+
+  useEffect(() => {
+    fetchLeaderboard();
+    // Refresh every 60 seconds
+    const interval = setInterval(fetchLeaderboard, 60000);
+    return () => clearInterval(interval);
+  }, [fetchLeaderboard]);
 
   const getMedalEmoji = (rank: number): string => {
     if (rank === 1) return '🥇';
