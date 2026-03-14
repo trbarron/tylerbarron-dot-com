@@ -1,6 +1,4 @@
 // GET /api/blunderWatch/leaderboard?date=YYYY-MM-DD&limit=50&username=player123
-//
-// Higher score = better rank. ZREVRANGE returns members in descending score order.
 
 import type { LoaderFunctionArgs } from 'react-router';
 import { getRedisClient } from '~/utils/redis.server';
@@ -24,7 +22,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const redis = getRedisClient();
     const leaderboardKey = `blunderWatch:leaderboard:${date}`;
 
-    // ZREVRANGE: highest score first (best rank first)
     const topUsers = await redis.zrevrange(leaderboardKey, 0, limit - 1, 'WITHSCORES');
 
     const leaderboard: LeaderboardEntry[] = [];
@@ -44,7 +41,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
       });
     }
 
-    // If username provided and not in the returned slice, fetch their rank separately
     let userRank: LeaderboardEntry | null = null;
     if (usernameParam) {
       const rankRaw = await redis.zrevrank(leaderboardKey, usernameParam);

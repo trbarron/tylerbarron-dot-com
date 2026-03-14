@@ -1,12 +1,17 @@
 // Server-side pacing schedule computation.
 // Returns an array where pacing[i] = ms to display move i before advancing.
-// Blunder indices are NOT sent raw to the client — only the derived pacing array is.
+// Blunder indices are also sent to the client for live feedback, but the pacing
+// array is what drives playback timing so blunder proximity stays opaque.
 
 const OPENING_MS = 1000;    // moves 0–17 (first 9 full moves)
 const MIDGAME_MS = 2000;
 const FAST_MS = 400;
 const QUIET_STREAK_THRESHOLD = 10; // consecutive non-blunder moves before fast-forward kicks in
-const RESUME_BEFORE_BLUNDER = 2;   // exit fast-forward this many moves before the next blunder
+
+// Pseudo-random 2–5 based on blunder index — deterministic per game, not leaked to client
+function resumeBeforeBlunder(blunderIndex: number): number {
+  return 2 + (blunderIndex * 31 + 7) % 4;
+}
 
 export function computePacing(moveCount: number, blunderIndices: number[]): number[] {
   const blunderSet = new Set(blunderIndices);
@@ -21,6 +26,7 @@ export function computePacing(moveCount: number, blunderIndices: number[]): numb
     // Find the next blunder after this move
     const nextBlunder = blunderIndices.find(b => b > i);
     const distToNextBlunder = nextBlunder !== undefined ? nextBlunder - i : Infinity;
+    const runway = nextBlunder !== undefined ? resumeBeforeBlunder(nextBlunder) : 2;
 
     if (isBlunder) {
       consecutiveNonBlunder = 0;
@@ -29,12 +35,12 @@ export function computePacing(moveCount: number, blunderIndices: number[]): numb
       consecutiveNonBlunder++;
 
       // Exit fast-forward when approaching the next blunder
-      if (distToNextBlunder <= RESUME_BEFORE_BLUNDER) {
+      if (distToNextBlunder <= runway) {
         inFastForward = false;
       }
 
       // Enter fast-forward after a long quiet streak (but not if a blunder is imminent)
-      if (consecutiveNonBlunder >= QUIET_STREAK_THRESHOLD && distToNextBlunder > RESUME_BEFORE_BLUNDER) {
+      if (consecutiveNonBlunder >= QUIET_STREAK_THRESHOLD && distToNextBlunder > runway) {
         inFastForward = true;
       }
     }

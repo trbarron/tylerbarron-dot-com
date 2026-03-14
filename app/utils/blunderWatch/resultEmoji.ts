@@ -20,7 +20,6 @@ export function buildResultEmoji(blunderResults: BlunderResult[]): string {
 export function buildShareText(
   gameNumber: number,
   totalScore: number,
-  maxScore: number,
   blunderResults: BlunderResult[],
   falsePositives: number,
   blundersCaught: number,
@@ -28,10 +27,10 @@ export function buildShareText(
   const emoji = buildResultEmoji(blunderResults);
   const blunderCount = blunderResults.length;
   const lines = [
-    `Blunder Watch #${gameNumber} — ${totalScore}/${maxScore}`,
+    `Blunder Watch #${gameNumber} — ${totalScore} pts`,
     emoji,
     `${blunderCount} blunders | ${blundersCaught} caught | ${falsePositives} false positive${falsePositives !== 1 ? 's' : ''}`,
-    'tylerbarron.com/blunder-watch',
+    'tylerbarron.com/blunderWatch',
   ];
   return lines.join('\n');
 }

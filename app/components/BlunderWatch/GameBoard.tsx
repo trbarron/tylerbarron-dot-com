@@ -90,17 +90,6 @@ export function GameBoard({ initialFen, moves, currentMoveIndex, orientation, is
 
   return (
     <div className="w-full">
-      {/* Fast-forward indicator */}
-      <div className={`h-1 mb-2 transition-colors duration-300 ${isFastForward ? 'bg-yellow-400' : 'bg-transparent'}`} />
-
-      {isFastForward && (
-        <div className="mb-2 text-center">
-          <span className="font-neo text-xs uppercase tracking-widest text-yellow-600 font-bold">
-            Fast-forward
-          </span>
-        </div>
-      )}
-
       {/* Board */}
       <div className={`w-full max-w-2xl mx-auto border-4 transition-colors duration-300 ${isFastForward ? 'border-yellow-400' : 'border-black'}`}>
         <div

@@ -8,7 +8,6 @@ import Article from '~/components/Article';
 import { Subarticle } from '~/components/Subarticle';
 import { UsernameModal } from '~/components/ChesserGuesser/UsernameModal';
 
-import { PreGameScreen } from '~/components/BlunderWatch/PreGameScreen';
 import { GameBoard } from '~/components/BlunderWatch/GameBoard';
 import { BlunderButton } from '~/components/BlunderWatch/BlunderButton';
 import { ScoreBug } from '~/components/BlunderWatch/ScoreBug';
@@ -206,7 +205,6 @@ export default function BlunderWatch() {
     playback.startGame();
   };
 
-  const maxScore = game ? game.blunderCount * 100 : 0;
   const orientation = getOrientation(game);
   const initialFen = STARTING_FEN;
 
@@ -245,30 +243,70 @@ export default function BlunderWatch() {
           {alreadyPlayed && !submitResult && game && (
             <div className="bg-yellow-50 border-4 border-black p-4 mb-4 text-center">
               <p className="font-neo font-bold text-black uppercase">You already played today!</p>
-              <p className="font-neo text-sm text-gray-600 mt-1">Check the leaderboard below to see how you ranked.</p>
             </div>
           )}
 
           {game && !alreadyPlayed && (
             <div className="pb-6">
-              {/* Pre-game — full width, centered */}
+              {/* Pre-game and Playing: unified board layout */}
+              {/* Pre-game: full-width layout */}
               {playback.phase === 'pregame' && (
-                <PreGameScreen
-                  whiteElo={game.whiteElo}
-                  blackElo={game.blackElo}
-                  blunderCount={game.blunderCount}
-                  onStart={handleStartGame}
-                />
+                <>
+                  {/* Matchup + blunder count bar */}
+                  <div className="mb-3 flex items-center justify-between border-2 border-black px-4 py-3 bg-white">
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 bg-white border-2 border-black flex-shrink-0" />
+                        <span className="font-neo font-bold text-sm text-black">{game.whiteElo}</span>
+                      </div>
+                      <span className="font-neo text-gray-400 text-xs">vs</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 bg-black flex-shrink-0" />
+                        <span className="font-neo font-bold text-sm text-black">{game.blackElo}</span>
+                      </div>
+                    </div>
+                    <div className="bg-yellow-400 border-2 border-black px-3 py-1 text-center">
+                      <span className="font-neo font-black text-sm">{game.blunderCount}</span>
+                      <span className="font-neo text-xs"> White blunders</span>
+                    </div>
+                  </div>
+
+                  {/* Top bar with FF slot always allocated */}
+                  <div className="mb-3 flex items-center justify-between border-2 border-black px-4 py-2 bg-white text-black">
+                    <span className="font-neo font-bold text-xs uppercase">Ready</span>
+                    <span className="font-neo text-xs font-bold tracking-wide invisible">⏩ Fast forward</span>
+                    <span className="font-neo text-xs opacity-60">{game.moves.length} moves</span>
+                  </div>
+
+                  <GameBoard
+                    initialFen={initialFen}
+                    moves={game.moves}
+                    currentMoveIndex={playback.currentMoveIndex}
+                    orientation={orientation}
+                    isFastForward={false}
+                  />
+
+                  <BlunderButton
+                    onFlag={handleStartGame}
+                    disabled={false}
+                    lastFlagResult={null}
+                    isPreGame={true}
+                  />
+                </>
               )}
 
-              {/* Playing — board + sidebar grid */}
+              {/* Playing: board + ScoreBug sidebar */}
               {playback.phase === 'playing' && (
                 <div className="grid gap-x-4 grid-cols-1 md:grid-cols-5">
                   <div className="col-span-1 md:col-span-4">
+                    {/* Top bar with FF slot always allocated */}
                     <div className={`mb-3 flex items-center justify-between border-2 border-black px-4 py-2 ${
                       currentTurn === 'White' ? 'bg-white text-black' : 'bg-black text-white'
                     }`}>
                       <span className="font-neo font-bold text-xs uppercase">{currentTurn} to move</span>
+                      <span className={`font-neo text-xs font-bold tracking-wide ${playback.isFastForward ? 'opacity-100' : 'invisible'}`}>
+                        ⏩ Fast forward
+                      </span>
                       <span className="font-neo text-xs opacity-60">
                         Move {Math.max(0, playback.currentMoveIndex + 1)} / {game.moves.length}
                       </span>
@@ -292,7 +330,6 @@ export default function BlunderWatch() {
                   <div className="col-span-1 md:col-span-1 pt-2 md:pt-0">
                     <ScoreBug
                       score={playback.liveScore}
-                      maxScore={maxScore}
                       blundersCaught={playback.flags.filter(f => game.blunderIndices.includes(f.moveIndex)).length}
                       blundersTotal={game.blunderCount}
                       falsePositives={playback.flags.filter(f => !game.blunderIndices.includes(f.moveIndex)).length}
@@ -303,7 +340,7 @@ export default function BlunderWatch() {
                 </div>
               )}
 
-              {/* Finished — full width, centered */}
+              {/* Finished */}
               {playback.phase === 'finished' && (
                 <>
                   <div className={`mb-3 flex items-center justify-center border-2 border-black px-4 py-2 ${
@@ -326,7 +363,6 @@ export default function BlunderWatch() {
 
                   <ResultsScreen
                     gameNumber={game.gameNumber}
-                    maxScore={maxScore}
                     result={submitResult}
                     isSubmitting={isSubmitting}
                     submitError={submitError}
@@ -356,7 +392,7 @@ export default function BlunderWatch() {
         <Article title="About Blunder Watch" subtitle="">
         <Subarticle subtitle="Overview">
             <p>Blunder Watch plays back a real chess game from Lichess and challenges you to spot the blunders as they happen. Everyone gets the same game each day and competes on a shared leaderboard.</p>
-            <p className="mt-2"><strong>Scoring:</strong> React within 0.5s for 100 points, 1s for 75, 2s for 50. Miss a blunder and you score nothing. False positives cost 30 points.</p>
+            <p className="mt-2"><strong>Scoring:</strong> React within 0.5s for 100 points, 1s for 90, 2s for 80. Miss a blunder and you score nothing. False positives cost 30 points.</p>
           </Subarticle>
           <Subarticle subtitle="Game Selection">
             <p>Games are sourced from Lichess and pre-analyzed with Stockfish at depth 20. A move is tagged as a blunder when the evaluation swings ≥ 2.0 pawns against the side that just played. Each daily game contains 7–10 blunders.</p>

@@ -4,8 +4,8 @@ import type { Flag, BlunderResult, BlunderOutcome, ScoreResult } from './types';
 import { buildResultEmoji } from './resultEmoji';
 
 const POINTS_FAST = 100;   // ≤ 500ms
-const POINTS_MEDIUM = 75;  // 501–1000ms
-const POINTS_SLOW = 50;    // 1001–2000ms
+const POINTS_MEDIUM = 90;  // 501–1000ms
+const POINTS_SLOW = 80;    // 1001–2000ms
 const PENALTY_FP = 30;     // false positive deduction
 
 function reactionToOutcome(ms: number): BlunderOutcome {

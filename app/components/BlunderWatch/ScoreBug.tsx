@@ -2,7 +2,6 @@
 
 interface ScoreBugProps {
   score: number;
-  maxScore: number;
   blundersCaught: number;
   blundersTotal: number;
   falsePositives: number;
@@ -12,7 +11,6 @@ interface ScoreBugProps {
 
 export function ScoreBug({
   score,
-  maxScore,
   blundersCaught,
   blundersTotal,
   falsePositives,
@@ -27,7 +25,6 @@ export function ScoreBug({
       <div className="text-center mb-3">
         <p className="font-neo text-xs uppercase tracking-widest text-gray-500 mb-1">Score</p>
         <p className="font-neo font-black text-3xl text-black leading-none">{score}</p>
-        <p className="font-neo text-xs text-gray-400 mt-1">/ {maxScore} max</p>
       </div>
 
       {/* Stats */}

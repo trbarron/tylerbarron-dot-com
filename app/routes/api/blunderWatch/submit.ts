@@ -75,7 +75,6 @@ export async function action({ request }: ActionFunctionArgs) {
     // Server-side score calculation — ignores any client-side score claims
     const result = calculateScore(validFlags, blunderIndices, evals);
     const gameNumber = parseInt(gameId.replace('bw-', ''), 10);
-    const maxScore = blunderIndices.length * 100;
 
     const submission = {
       username,
@@ -86,7 +85,6 @@ export async function action({ request }: ActionFunctionArgs) {
       falsePositives: result.falsePositives,
       resultEmoji: result.resultEmoji,
       gameNumber,
-      maxScore,
       timestamp: Date.now(),
     };
 
@@ -103,10 +101,8 @@ export async function action({ request }: ActionFunctionArgs) {
       return Response.json({ error: 'You already submitted for today.' }, { status: 409 });
     }
 
-    // Update leaderboard ZSET — higher score = better rank, stored as positive value
+    // Update leaderboard ZSET — higher score = better rank
     const leaderboardKey = `blunderWatch:leaderboard:${date}`;
-    // Tie-break: encode timestamp into score fractional part so earlier timestamps rank higher
-    // Score = totalScore * 1e9 + (1e9 - timestamp_offset) — keeps Redis sort reliable
     const tieBreakScore = result.totalScore * 1e9 + (1e9 - (Date.now() % 1e9));
     await redis.zadd(leaderboardKey, tieBreakScore, username);
     await redis.expire(leaderboardKey, TTL_7_DAYS);
@@ -116,7 +112,6 @@ export async function action({ request }: ActionFunctionArgs) {
     await redis.setex(summaryKey, TTL_7_DAYS, JSON.stringify(submission));
 
     // Get user's rank (1-based)
-    // ZREVRANK gives 0-based rank in descending order
     const rankRaw = await redis.zrevrank(leaderboardKey, username);
     const rank = rankRaw !== null ? rankRaw + 1 : null;
     const totalPlayers = await redis.zcard(leaderboardKey);

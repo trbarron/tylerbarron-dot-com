@@ -1,10 +1,4 @@
 // GET /api/blunderWatch/game?date=YYYY-MM-DD
-//
-// Returns today's game. Games are pre-loaded into Redis via load_games.py.
-// The pacing schedule is computed server-side and included so the client
-// can drive playback timing without knowing raw blunder indices.
-// (Blunder indices ARE returned for live client-side feedback; the submit
-//  endpoint re-validates them server-side to prevent score tampering.)
 
 import type { LoaderFunctionArgs } from 'react-router';
 import { getRedisClient } from '~/utils/redis.server';
@@ -35,12 +29,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
 
     const stored = JSON.parse(raw);
-
-    // Compute pacing server-side so the client drives timing without guessing blunder positions
     const pacing = computePacing(stored.moves.length, stored.blunderIndices);
 
-    // Return full game data. Blunder indices are included for live feedback;
-    // the submit route re-validates independently.
     return Response.json(
       {
         gameNumber: stored.gameId ? parseInt(stored.gameId.replace('bw-', ''), 10) : 0,

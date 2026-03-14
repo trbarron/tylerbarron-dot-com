@@ -6,7 +6,6 @@ import { buildShareText } from '~/utils/blunderWatch/resultEmoji';
 
 interface ResultsScreenProps {
   gameNumber: number;
-  maxScore: number;
   result: SubmitResponse | null;
   isSubmitting: boolean;
   submitError: string | null;
@@ -15,7 +14,6 @@ interface ResultsScreenProps {
 
 export function ResultsScreen({
   gameNumber,
-  maxScore,
   result,
   isSubmitting,
   submitError,
@@ -28,7 +26,6 @@ export function ResultsScreen({
     const text = buildShareText(
       gameNumber,
       result.totalScore,
-      maxScore,
       result.blunderResults,
       result.falsePositives,
       result.blundersCaught,
@@ -66,8 +63,7 @@ export function ResultsScreen({
       {/* Header */}
       <div className="bg-black text-white px-6 py-4 text-center">
         <p className="font-neo text-xs uppercase tracking-widest mb-1">Game #{gameNumber} Complete</p>
-        <p className="font-neo font-black text-5xl text-white">{result.totalScore}</p>
-        <p className="font-neo text-sm text-gray-400">/ {maxScore} points</p>
+        <p className="font-neo font-black text-5xl text-white">{result.totalScore}<span className="text-lg text-gray-400 ml-1">pts</span></p>
       </div>
 
       {/* Emoji result — copy target */}

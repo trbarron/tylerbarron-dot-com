@@ -99,7 +99,7 @@ export function usePlayback(game: BlunderWatchGame | null): PlaybackState & Play
     setHasFlaggedCurrentMove(true);
 
     if (isBlunder) {
-      const points = reactionTimeMs <= 500 ? 100 : reactionTimeMs <= 1000 ? 75 : 50;
+      const points = reactionTimeMs <= 500 ? 100 : reactionTimeMs <= 1000 ? 90 : 80;
       setLiveScore(prev => prev + points);
       setLastFlagResult('correct');
     } else {
