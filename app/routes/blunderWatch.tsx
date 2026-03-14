@@ -469,7 +469,7 @@ export default function BlunderWatch() {
             <p className="mt-2"><strong>Scoring:</strong> React within 0.5s for 100 points, 1s for 90, 2s for 80. Miss a blunder and you score nothing. False positives cost 30 points.</p>
           </Subarticle>
           <Subarticle subtitle="Game Selection">
-            <p>Games are sourced from Lichess and pre-analyzed with Stockfish at depth 20. A move is tagged as a blunder when the evaluation swings ≥ 2.0 pawns against the side that just played. Each daily game contains 7–10 blunders.</p>
+            <p>Games are sourced from Lichess and pre-analyzed with Stockfish at depth 20. I use Lichess' <a href='https://github.com/lichess-org/lila/blob/cf9e10df24b767b3bc5ee3d88c45437ac722025d/modules/analyse/src/main/Advice.scala#L52'>definition of a blunder</a>. Each game has 3-6 blunders.</p>
           </Subarticle>
         </Article>
       </main>
