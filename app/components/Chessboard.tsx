@@ -35,9 +35,9 @@ interface ChessboardProps {
     visible?: boolean;
     defaultSnapToValidMove?: boolean;
     eraseOnClick?: boolean;
-    onChange?: (shapes: unknown[]) => void;
-    shapes?: unknown[];
-    autoShapes?: unknown[];
+    onChange?: (shapes: any[]) => void;
+    shapes?: any[];
+    autoShapes?: any[];
   };
   ref?: React.RefObject<HTMLDivElement | Api>;
 }
@@ -151,7 +151,7 @@ export default function Chessboard({
         enabled: allowDrawing,
         autoShapes: autoShapes,
         ...drawable
-      },
+      } as any,
       selectable: selectable
     };
 
@@ -180,7 +180,7 @@ export default function Chessboard({
         fen: chess.fen(),
         movable: calcMovable(),
         lastMove: lastMove as any,
-        drawable: { autoShapes }
+        drawable: { autoShapes } as any
       });
     }
   }, [initialFen, chess, viewOnly, movable, playableColor, lastMove, autoShapes]);
