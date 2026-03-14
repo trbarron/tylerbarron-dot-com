@@ -85,6 +85,7 @@ export default function BlunderWatch() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [alreadyPlayed, setAlreadyPlayed] = useState(false);
   const [scrollToLeaderboard, setScrollToLeaderboard] = useState(false);
+  const [showHowToPlay, setShowHowToPlay] = useState(false);
 
   const today = getTodayDateString();
 
@@ -96,6 +97,15 @@ export default function BlunderWatch() {
     const storedResult = loadResult(today);
     if (storedResult && game) {
       setAlreadyPlayed(true);
+    }
+
+    // Show how-to-play for first-time visitors
+    try {
+      if (!localStorage.getItem('blunderWatch:howToPlayDismissed')) {
+        setShowHowToPlay(true);
+      }
+    } catch {
+      // Ignore storage errors
     }
   }, [today, game]);
 
@@ -205,6 +215,15 @@ export default function BlunderWatch() {
     playback.startGame();
   };
 
+  const dismissHowToPlay = () => {
+    setShowHowToPlay(false);
+    try {
+      localStorage.setItem('blunderWatch:howToPlayDismissed', '1');
+    } catch {
+      // Ignore storage errors
+    }
+  };
+
   const orientation = getOrientation(game);
   const initialFen = STARTING_FEN;
 
@@ -230,6 +249,23 @@ export default function BlunderWatch() {
       <ScrollRestoration getKey={loc => loc.pathname} />
       <main className="flex-grow">
         <Article title="Blunder Watch" subtitle="">
+
+          {/* How to play — dismissable, shown once for new visitors */}
+          {showHowToPlay && (
+            <div className="bg-white border-4 border-black p-4 mb-4 relative">
+              <button
+                onClick={dismissHowToPlay}
+                className="absolute top-2 right-3 font-neo font-bold text-gray-400 hover:text-black text-lg leading-none"
+                aria-label="Dismiss"
+              >
+                &times;
+              </button>
+              <p className="font-neo font-bold text-black text-sm uppercase mb-2">How to play</p>
+              <p className="font-neo text-sm text-gray-700 pr-6">
+                The game plays out automatically in front of you. Press the button (or <kbd className="bg-black text-white px-1 font-mono text-xs">Space</kbd>) whenever White blunders — a mistake that swings the eval by 2+ pawns. The faster you react, the more points you earn. False positives cost you 30 points.
+              </p>
+            </div>
+          )}
 
           {/* Error state — no game today */}
           {error && (
