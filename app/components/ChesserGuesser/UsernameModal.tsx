@@ -8,9 +8,16 @@ interface UsernameModalProps {
   initialUsername?: string;
   onSubmit: (username: string) => void;
   onCancel: () => void;
+  cancelLabel?: string;
 }
 
-export function UsernameModal({ isOpen, initialUsername = '', onSubmit, onCancel }: UsernameModalProps) {
+export function UsernameModal({ 
+  isOpen, 
+  initialUsername = '', 
+  onSubmit, 
+  onCancel,
+  cancelLabel = 'Cancel'
+}: UsernameModalProps) {
   const [username, setUsername] = useState(initialUsername);
   const [error, setError] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -98,7 +105,7 @@ export function UsernameModal({ isOpen, initialUsername = '', onSubmit, onCancel
                 onClick={onCancel}
                 className="bg-white  text-black  border-2 border-black  px-4 py-3 font-neo font-bold uppercase tracking-wide hover:bg-gray-100  transition-colors"
               >
-                Cancel
+                {cancelLabel}
               </button>
               <button
                 type="submit"

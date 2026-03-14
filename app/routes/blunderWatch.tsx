@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLoaderData, ScrollRestoration, type LinksFunction } from 'react-router';
 import { getRedisClient } from '~/utils/redis.server';
 import { computePacing } from '~/utils/blunderWatch/pacing';
+import { calculateScore } from '~/utils/blunderWatch/scoring';
 import { Navbar } from '~/components/Navbar';
 import Footer from '~/components/Footer';
 import Article from '~/components/Article';
@@ -159,6 +160,26 @@ export default function BlunderWatch() {
     submitScore(newUsername);
   };
 
+  const handleGuestScore = () => {
+    if (!game) return;
+    const result = calculateScore(playback.flags, game.blunderIndices, game.evals);
+    setSubmitResult({
+      ...result,
+      rank: null,
+      totalPlayers: 0,
+    });
+    // Persist result locally so "already played" state survives page refresh
+    saveResult({
+      date: today,
+      score: result.totalScore,
+      blundersCaught: result.blundersCaught,
+      falsePositives: result.falsePositives,
+      resultEmoji: result.resultEmoji,
+      gameNumber: game.gameNumber,
+    });
+    setShowUsernameModal(false);
+  };
+
   const submitScore = async (overrideUsername?: string) => {
     if (!game) return;
     const submittingAs = overrideUsername ?? username;
@@ -186,7 +207,14 @@ export default function BlunderWatch() {
           if (stored) {
             setAlreadyPlayed(true);
           }
-          setSubmitError(body.error || 'Already submitted for today.');
+          // Calculate local results so they can see the blunders anyway
+          const localResult = calculateScore(playback.flags, game.blunderIndices, game.evals);
+          setSubmitResult({
+            ...localResult,
+            rank: null,
+            totalPlayers: 0,
+          });
+          setSubmitError(null);
           return;
         }
         throw new Error(body.error || 'Submission failed.');
@@ -205,7 +233,15 @@ export default function BlunderWatch() {
         gameNumber: game.gameNumber,
       });
     } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : 'Submission failed.');
+      console.error('Submission failed, showing local results:', err);
+      // Even on failure, calculate local results so they can see the blunders
+      const localResult = calculateScore(playback.flags, game.blunderIndices, game.evals);
+      setSubmitResult({
+        ...localResult,
+        rank: null,
+        totalPlayers: 0,
+      });
+      setSubmitError(null); // Clear error since we're showing results
     } finally {
       setIsSubmitting(false);
     }
@@ -443,10 +479,8 @@ export default function BlunderWatch() {
         isOpen={showUsernameModal}
         initialUsername={username}
         onSubmit={handleUsernameSubmit}
-        onCancel={() => {
-          setShowUsernameModal(false);
-          setSubmitError('Score not submitted — no username entered.');
-        }}
+        onCancel={handleGuestScore}
+        cancelLabel="Skip (as guest)"
       />
     </div>
   );
