@@ -3,6 +3,7 @@
 
 import { Suspense, lazy } from 'react';
 import { Chess } from 'chess.js';
+import type { Key } from 'chessground/types';
 import type { BlunderResult } from '~/utils/blunderWatch/types';
 
 const Chessboard = lazy(() => import('~/components/Chessboard'));
@@ -52,8 +53,8 @@ export function BlunderReplay({ moves, initialFen, blunderResults }: BlunderRepl
         {blunderResults.map((result, i) => {
           const { fen, lastMove } = getBlunderMove(initialFen, moves, result.moveIndex);
           const autoShapes = lastMove ? [{
-            orig: lastMove[0],
-            dest: lastMove[1],
+            orig: lastMove[0] as Key,
+            dest: lastMove[1] as Key,
             brush: 'red', // red arrow for blunders
           }] : [];
           const fullMoveNumber = Math.floor(result.moveIndex / 2) + 1;

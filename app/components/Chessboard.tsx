@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import { Chessground } from 'chessground';
-import { Chess } from 'chess.js';
+import { Chess, type Square } from 'chess.js';
 import type { Api } from 'chessground/api';
 import type { Config } from 'chessground/config';
 import type { Color, Key, Piece } from 'chessground/types';
@@ -85,8 +85,8 @@ export default function Chessboard({
 
     const dests = new Map();
     SQUARES.forEach(s => {
-      const ms = chess.moves({ square: s as Key, verbose: true });
-      if (ms.length) dests.set(s as Key, ms.map(m => m.to as Key));
+      const ms = chess.moves({ square: s as Square, verbose: true });
+      if (ms.length) dests.set(s, ms.map(m => m.to));
     });
     
     return {

@@ -139,48 +139,6 @@ export default function BlunderWatch() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [playback]);
 
-  // Submit flags once playback finishes
-  useEffect(() => {
-    if (playback.phase !== 'finished' || isSubmitting || submitResult || submitError) return;
-    if (!game) return;
-
-    if (!username) {
-      setShowUsernameModal(true);
-      return;
-    }
-
-    submitScore();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- isSubmitting/submitResult/submitError are guards, not triggers
-  }, [playback.phase, username, game, submitScore]);
-
-  const handleUsernameSubmit = (newUsername: string) => {
-    setUsername(newUsername);
-    saveUsername(newUsername);
-    setShowUsernameModal(false);
-    // Now that we have a username, submit the score
-    submitScore(newUsername);
-  };
-
-  const handleGuestScore = () => {
-    if (!game) return;
-    const result = calculateScore(playback.flags, game.blunderIndices, game.evals);
-    setSubmitResult({
-      ...result,
-      rank: null,
-      totalPlayers: 0,
-    });
-    // Persist result locally so "already played" state survives page refresh
-    saveResult({
-      date: today,
-      score: result.totalScore,
-      blundersCaught: result.blundersCaught,
-      falsePositives: result.falsePositives,
-      resultEmoji: result.resultEmoji,
-      gameNumber: game.gameNumber,
-    });
-    setShowUsernameModal(false);
-  };
-
   const submitScore = useCallback(async (overrideUsername?: string) => {
     if (!game) return;
     const submittingAs = overrideUsername ?? username;
@@ -247,6 +205,48 @@ export default function BlunderWatch() {
       setIsSubmitting(false);
     }
   }, [game, username, today, playback.flags]);
+
+  // Submit flags once playback finishes
+  useEffect(() => {
+    if (playback.phase !== 'finished' || isSubmitting || submitResult || submitError) return;
+    if (!game) return;
+
+    if (!username) {
+      setShowUsernameModal(true);
+      return;
+    }
+
+    submitScore();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- isSubmitting/submitResult/submitError are guards, not triggers
+  }, [playback.phase, username, game, submitScore]);
+
+  const handleUsernameSubmit = (newUsername: string) => {
+    setUsername(newUsername);
+    saveUsername(newUsername);
+    setShowUsernameModal(false);
+    // Now that we have a username, submit the score
+    submitScore(newUsername);
+  };
+
+  const handleGuestScore = () => {
+    if (!game) return;
+    const result = calculateScore(playback.flags, game.blunderIndices, game.evals);
+    setSubmitResult({
+      ...result,
+      rank: null,
+      totalPlayers: 0,
+    });
+    // Persist result locally so "already played" state survives page refresh
+    saveResult({
+      date: today,
+      score: result.totalScore,
+      blundersCaught: result.blundersCaught,
+      falsePositives: result.falsePositives,
+      resultEmoji: result.resultEmoji,
+      gameNumber: game.gameNumber,
+    });
+    setShowUsernameModal(false);
+  };
 
   const handleStartGame = () => {
     playback.startGame();

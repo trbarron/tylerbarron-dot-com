@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLoaderData, ScrollRestoration, type LinksFunction } from "react-router";
 import { Chess } from 'chess.js';
 import { Navbar } from "~/components/Navbar";
@@ -151,34 +151,6 @@ export default function ChesserGuesserUnlimited() {
     }
   }, [loaderData.randomFEN, gameMode]);
 
-  // Load daily puzzles when switching to daily mode
-  useEffect(() => {
-    if (gameMode === 'daily' && dailyPuzzles.length === 0) {
-      loadDailyPuzzles();
-    }
-  }, [gameMode, dailyPuzzles.length, loadDailyPuzzles]);
-
-  // Update current puzzle for daily mode
-  useEffect(() => {
-    if (gameMode === 'daily' && dailyPuzzles.length > 0 && currentPuzzleIndex < dailyPuzzles.length) {
-      const puzzle = dailyPuzzles[currentPuzzleIndex];
-      setChess(new Chess(puzzle.fen));
-      setFen(puzzle.fen);
-      setBoardOrientation(getCurrentPlayer(puzzle.fen).toLowerCase() as "white" | "black");
-      setCurrentTurn(getCurrentPlayer(puzzle.fen));
-      setSliderValue(0);
-      setIsSubmitting(false);
-    }
-  }, [gameMode, dailyPuzzles, currentPuzzleIndex]);
-
-  // Exit review mode when switching game modes
-  useEffect(() => {
-    if (isReviewMode) {
-      setIsReviewMode(false);
-      setReviewPuzzleIndex(0);
-    }
-  }, [gameMode, isReviewMode]);
-
   const loadDailyPuzzles = useCallback(async () => {
     try {
       setIsDailyLoading(true);
@@ -255,6 +227,34 @@ export default function ChesserGuesserUnlimited() {
     }
   }, [dailyGameState, username]);
 
+  // Load daily puzzles when switching to daily mode
+  useEffect(() => {
+    if (gameMode === 'daily' && dailyPuzzles.length === 0) {
+      loadDailyPuzzles();
+    }
+  }, [gameMode, dailyPuzzles.length, loadDailyPuzzles]);
+
+  // Update current puzzle for daily mode
+  useEffect(() => {
+    if (gameMode === 'daily' && dailyPuzzles.length > 0 && currentPuzzleIndex < dailyPuzzles.length) {
+      const puzzle = dailyPuzzles[currentPuzzleIndex];
+      setChess(new Chess(puzzle.fen));
+      setFen(puzzle.fen);
+      setBoardOrientation(getCurrentPlayer(puzzle.fen).toLowerCase() as "white" | "black");
+      setCurrentTurn(getCurrentPlayer(puzzle.fen));
+      setSliderValue(0);
+      setIsSubmitting(false);
+    }
+  }, [gameMode, dailyPuzzles, currentPuzzleIndex]);
+
+  // Exit review mode when switching game modes
+  useEffect(() => {
+    if (isReviewMode) {
+      setIsReviewMode(false);
+      setReviewPuzzleIndex(0);
+    }
+  }, [gameMode, isReviewMode]);
+
   const handleSliderChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSliderValue(Number(event.target.value));
   };
@@ -317,18 +317,6 @@ export default function ChesserGuesserUnlimited() {
       alert(`Could not copy. FEN: ${fen}`);
     }
   };
-
-  const submitGuess = useCallback(async () => {
-    if (isSubmitting) return;
-
-    setIsSubmitting(true);
-
-    if (gameMode === 'endless') {
-      await submitEndlessGuess();
-    } else {
-      await submitDailyGuess();
-    }
-  }, [isSubmitting, gameMode, submitEndlessGuess, submitDailyGuess]);
 
   const submitEndlessGuess = useCallback(async () => {
     let correctSide = false;
@@ -466,6 +454,18 @@ export default function ChesserGuesserUnlimited() {
       setIsSubmitting(false);
     }
   }, [dailyGameState, currentPuzzleIndex, dailyPuzzles, sliderValue, username]);
+
+  const submitGuess = useCallback(async () => {
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+
+    if (gameMode === 'endless') {
+      await submitEndlessGuess();
+    } else {
+      await submitDailyGuess();
+    }
+  }, [isSubmitting, gameMode, submitEndlessGuess, submitDailyGuess]);
 
 
 
