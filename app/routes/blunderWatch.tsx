@@ -221,41 +221,29 @@ export default function BlunderWatch() {
           )}
 
           {game && !alreadyPlayed && (
-            <div className="pb-6 mx-auto grid gap-x-4 grid-cols-1 md:grid-cols-5 -mx-2 md:mx-2">
-              {/* Main column */}
-              <div className="col-span-1 md:col-span-4">
-                {playback.phase === 'pregame' && (
-                  <PreGameScreen
-                    whiteElo={game.whiteElo}
-                    blackElo={game.blackElo}
-                    blunderCount={game.blunderCount}
-                    onStart={handleStartGame}
-                  />
-                )}
+            <div className="pb-6">
+              {/* Pre-game — full width, centered */}
+              {playback.phase === 'pregame' && (
+                <PreGameScreen
+                  whiteElo={game.whiteElo}
+                  blackElo={game.blackElo}
+                  blunderCount={game.blunderCount}
+                  onStart={handleStartGame}
+                />
+              )}
 
-                {(playback.phase === 'playing' || playback.phase === 'finished') && (
-                  <>
-                    {/* Turn indicator */}
-                    {playback.phase === 'finished' ? (
-                      <div className={`mb-3 flex items-center justify-center border-2 border-black px-4 py-2 ${
-                        isCheckmate
-                          ? checkmateWinner === 'White' ? 'bg-white text-black' : 'bg-black text-white'
-                          : 'bg-gray-100 text-black'
-                      }`}>
-                        <span className="font-neo font-bold text-xs uppercase">
-                          {isCheckmate ? `Checkmate — ${checkmateWinner} wins` : 'Game over'}
-                        </span>
-                      </div>
-                    ) : (
-                      <div className={`mb-3 flex items-center justify-between border-2 border-black px-4 py-2 ${
-                        currentTurn === 'White' ? 'bg-white text-black' : 'bg-black text-white'
-                      }`}>
-                        <span className="font-neo font-bold text-xs uppercase">{currentTurn} to move</span>
-                        <span className="font-neo text-xs opacity-60">
-                          Move {Math.max(0, playback.currentMoveIndex + 1)} / {game.moves.length}
-                        </span>
-                      </div>
-                    )}
+              {/* Playing — board + sidebar grid */}
+              {playback.phase === 'playing' && (
+                <div className="grid gap-x-4 grid-cols-1 md:grid-cols-5">
+                  <div className="col-span-1 md:col-span-4">
+                    <div className={`mb-3 flex items-center justify-between border-2 border-black px-4 py-2 ${
+                      currentTurn === 'White' ? 'bg-white text-black' : 'bg-black text-white'
+                    }`}>
+                      <span className="font-neo font-bold text-xs uppercase">{currentTurn} to move</span>
+                      <span className="font-neo text-xs opacity-60">
+                        Move {Math.max(0, playback.currentMoveIndex + 1)} / {game.moves.length}
+                      </span>
+                    </div>
 
                     <GameBoard
                       initialFen={initialFen}
@@ -265,52 +253,64 @@ export default function BlunderWatch() {
                       isFastForward={playback.isFastForward}
                     />
 
-                    {/* Blunder button — only during active playback */}
-                    {playback.phase === 'playing' && (
-                      <BlunderButton
-                        onFlag={playback.flagCurrentMove}
-                        disabled={playback.hasFlaggedCurrentMove || playback.currentMoveIndex < 0}
-                        lastFlagResult={playback.lastFlagResult}
-                      />
-                    )}
-                  </>
-                )}
-
-                {/* Results */}
-                {playback.phase === 'finished' && (
-                  <>
-                    <ResultsScreen
-                      gameNumber={game.gameNumber}
-                      maxScore={maxScore}
-                      result={submitResult}
-                      isSubmitting={isSubmitting}
-                      submitError={submitError}
-                      onViewLeaderboard={() => setScrollToLeaderboard(true)}
+                    <BlunderButton
+                      onFlag={playback.flagCurrentMove}
+                      disabled={playback.hasFlaggedCurrentMove || playback.currentMoveIndex < 0}
+                      lastFlagResult={playback.lastFlagResult}
                     />
-                    {submitResult && (
-                      <BlunderReplay
-                        moves={game.moves}
-                        initialFen={initialFen}
-                        blunderResults={submitResult.blunderResults}
-                      />
-                    )}
-                  </>
-                )}
-              </div>
+                  </div>
 
-              {/* Sidebar */}
-              {playback.phase === 'playing' && (
-                <div className="col-span-1 md:col-span-1 py-2 md:py-0">
-                  <ScoreBug
-                    score={playback.liveScore}
-                    maxScore={maxScore}
-                    blundersCaught={playback.flags.filter(f => game.blunderIndices.includes(f.moveIndex)).length}
-                    blundersTotal={game.blunderCount}
-                    falsePositives={playback.flags.filter(f => !game.blunderIndices.includes(f.moveIndex)).length}
-                    moveIndex={playback.currentMoveIndex}
-                    totalMoves={game.moves.length}
-                  />
+                  <div className="col-span-1 md:col-span-1 pt-2 md:pt-0">
+                    <ScoreBug
+                      score={playback.liveScore}
+                      maxScore={maxScore}
+                      blundersCaught={playback.flags.filter(f => game.blunderIndices.includes(f.moveIndex)).length}
+                      blundersTotal={game.blunderCount}
+                      falsePositives={playback.flags.filter(f => !game.blunderIndices.includes(f.moveIndex)).length}
+                      moveIndex={playback.currentMoveIndex}
+                      totalMoves={game.moves.length}
+                    />
+                  </div>
                 </div>
+              )}
+
+              {/* Finished — full width, centered */}
+              {playback.phase === 'finished' && (
+                <>
+                  <div className={`mb-3 flex items-center justify-center border-2 border-black px-4 py-2 ${
+                    isCheckmate
+                      ? checkmateWinner === 'White' ? 'bg-white text-black' : 'bg-black text-white'
+                      : 'bg-gray-100 text-black'
+                  }`}>
+                    <span className="font-neo font-bold text-xs uppercase">
+                      {isCheckmate ? `Checkmate — ${checkmateWinner} wins` : 'Game over'}
+                    </span>
+                  </div>
+
+                  <GameBoard
+                    initialFen={initialFen}
+                    moves={game.moves}
+                    currentMoveIndex={playback.currentMoveIndex}
+                    orientation={orientation}
+                    isFastForward={playback.isFastForward}
+                  />
+
+                  <ResultsScreen
+                    gameNumber={game.gameNumber}
+                    maxScore={maxScore}
+                    result={submitResult}
+                    isSubmitting={isSubmitting}
+                    submitError={submitError}
+                    onViewLeaderboard={() => setScrollToLeaderboard(true)}
+                  />
+                  {submitResult && (
+                    <BlunderReplay
+                      moves={game.moves}
+                      initialFen={initialFen}
+                      blunderResults={submitResult.blunderResults}
+                    />
+                  )}
+                </>
               )}
             </div>
           )}
