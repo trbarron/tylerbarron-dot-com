@@ -13,12 +13,16 @@ interface BlunderReplayProps {
   blunderResults: BlunderResult[];
 }
 
-function fenAfterMoves(initialFen: string, moves: string[], upToIndex: number): string {
+function getBlunderMove(initialFen: string, moves: string[], moveIndex: number): { fen: string; lastMove: [string, string] | undefined } {
   const chess = new Chess(initialFen);
-  for (let i = 0; i <= upToIndex && i < moves.length; i++) {
-    chess.move(moves[i]);
+  let lastMove: [string, string] | undefined;
+  for (let i = 0; i <= moveIndex && i < moves.length; i++) {
+    const move = chess.move(moves[i]);
+    if (i === moveIndex && move) {
+      lastMove = [move.from, move.to];
+    }
   }
-  return chess.fen();
+  return { fen: chess.fen(), lastMove };
 }
 
 function formatEval(cp: number): string {
@@ -46,7 +50,12 @@ export function BlunderReplay({ moves, initialFen, blunderResults }: BlunderRepl
       </div>
       <div className="divide-y-2 divide-black">
         {blunderResults.map((result, i) => {
-          const fen = fenAfterMoves(initialFen, moves, result.moveIndex);
+          const { fen, lastMove } = getBlunderMove(initialFen, moves, result.moveIndex);
+          const autoShapes = lastMove ? [{
+            orig: lastMove[0],
+            dest: lastMove[1],
+            brush: 'red', // red arrow for blunders
+          }] : [];
           const fullMoveNumber = Math.floor(result.moveIndex / 2) + 1;
           const sideLabel = result.moveIndex % 2 === 0 ? 'White' : 'Black';
           const evalSwing = result.evalAfter - result.evalBefore;
@@ -61,6 +70,8 @@ export function BlunderReplay({ moves, initialFen, blunderResults }: BlunderRepl
                   <Chessboard
                     key={fen}
                     initialFen={fen}
+                    lastMove={lastMove}
+                    autoShapes={autoShapes}
                     movable={false}
                     viewOnly
                     allowDrawing={false}

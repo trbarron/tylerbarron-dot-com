@@ -116,6 +116,32 @@ piece.fading {
   z-index: 2;
 }
 
+.cg-wrap .cg-shapes g {
+  stroke-width: 0.1px;
+  stroke-linecap: round;
+  fill: none;
+}
+
+.cg-wrap .cg-shapes [brush="red"] {
+  stroke: rgba(255, 0, 0, 1);
+  fill: rgba(255, 0, 0, 1);
+}
+
+.cg-wrap .cg-shapes [brush="green"] {
+  stroke: rgba(0, 255, 0, 1);
+  fill: rgba(0, 255, 0, 1);
+}
+
+.cg-wrap .cg-shapes [brush="blue"] {
+  stroke: rgba(0, 0, 255, 1);
+  fill: rgba(0, 0, 255, 1);
+}
+
+.cg-wrap .cg-shapes [brush="yellow"] {
+  stroke: rgba(255, 255, 0, 1);
+  fill: rgba(255, 255, 0, 1);
+}
+
 .cg-wrap .cg-custom-svgs {
   /* over piece.anim = 8, but under piece.dragging = 11 */
   z-index: 9;

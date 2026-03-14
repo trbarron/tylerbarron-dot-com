@@ -16,6 +16,8 @@ interface ChessboardProps {
   animated?: boolean;
   animationDuration?: number;
   highlightMoves?: boolean;
+  lastMove?: [string, string];
+  autoShapes?: any[];
   draggable?: boolean | {
     enabled?: boolean;
     showGhost?: boolean;
@@ -56,6 +58,8 @@ export default function Chessboard({
   animated = true,
   animationDuration = 200,
   highlightMoves = true,
+  lastMove,
+  autoShapes = [],
   draggable = true,
   selectable = {},
   events = {},
@@ -121,6 +125,7 @@ export default function Chessboard({
       fen: chess.fen(),
       orientation,
       viewOnly,
+      lastMove: lastMove as any,
       movable: calcMovable(),
       events: {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -142,9 +147,10 @@ export default function Chessboard({
         ...draggable,
         enabled: draggable.enabled && !viewOnly && !!movable
       },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      drawable: (drawable as any) || {
+      drawable: {
         enabled: allowDrawing,
+        autoShapes: autoShapes,
+        ...drawable
       },
       selectable: selectable
     };
@@ -163,7 +169,7 @@ export default function Chessboard({
       }
     };
   }, [isClient, chess, viewOnly, movable, allowDrawing, playableColor, orientation, 
-      animated, animationDuration, highlightMoves, draggable, events, 
+      animated, animationDuration, highlightMoves, lastMove, autoShapes, draggable, events, 
       drawable, selectable]);
 
   // Update board if initialFen changes
@@ -172,10 +178,12 @@ export default function Chessboard({
       chess.load(initialFen);
       cgRef.current.set({
         fen: chess.fen(),
-        movable: calcMovable()
+        movable: calcMovable(),
+        lastMove: lastMove as any,
+        drawable: { autoShapes }
       });
     }
-  }, [initialFen, chess, viewOnly, movable, playableColor]);
+  }, [initialFen, chess, viewOnly, movable, playableColor, lastMove, autoShapes]);
 
   return (
     <div className="w-full max-w-2xl mx-auto">

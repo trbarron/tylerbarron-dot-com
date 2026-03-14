@@ -3,10 +3,11 @@
 // Uses the pre-computed pacing[] array from the game data for timing,
 // so blunder proximity logic stays server-side.
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import type { BlunderWatchGame, Flag, GamePhase } from '~/utils/blunderWatch/types';
 
 const INITIAL_PAUSE_MS = 1500; // How long to show the starting position before move 1
+const FAST_FORWARD_MS = 400;   // Speed when fast-forwarding
 
 export interface PlaybackState {
   phase: GamePhase;
@@ -51,6 +52,13 @@ export function usePlayback(game: BlunderWatchGame | null): PlaybackState & Play
     setCurrentMoveIndex(prev => prev + 1);
   }, []);
 
+  const lastBlunderIndex = useMemo(() => {
+    if (!game || game.blunderIndices.length === 0) return -1;
+    return Math.max(...game.blunderIndices);
+  }, [game]);
+
+  const isPostBlunder = game !== null && currentMoveIndex > lastBlunderIndex;
+
   // Drive the timer whenever currentMoveIndex or phase changes
   useEffect(() => {
     if (phase !== 'playing' || !game) return;
@@ -65,7 +73,9 @@ export function usePlayback(game: BlunderWatchGame | null): PlaybackState & Play
     const delay =
       currentMoveIndex === -1
         ? INITIAL_PAUSE_MS
-        : (game.pacing[currentMoveIndex] ?? 2000);
+        : isPostBlunder
+          ? FAST_FORWARD_MS
+          : (game.pacing[currentMoveIndex] ?? 2000);
 
     const onFinish = () => {
       // If this was a blunder move and it wasn't flagged, mark it as missed
@@ -84,13 +94,13 @@ export function usePlayback(game: BlunderWatchGame | null): PlaybackState & Play
     timerRef.current = setTimeout(onFinish, delay);
 
     return clearTimer;
-  }, [currentMoveIndex, phase, game, advance]);
+  }, [currentMoveIndex, phase, game, advance, isPostBlunder]);
 
   // Derived fast-forward state
   const isFastForward =
     game !== null &&
     currentMoveIndex >= 0 &&
-    (game.pacing[currentMoveIndex] ?? 2000) <= 400;
+    ((game.pacing[currentMoveIndex] ?? 2000) <= 400 || isPostBlunder);
 
   const startGame = useCallback(() => {
     setPhase('playing');
