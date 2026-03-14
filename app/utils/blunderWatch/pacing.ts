@@ -57,9 +57,15 @@ export function computePacing(moveCount: number, blunderIndices: number[]): numb
       ms = MIDGAME_MS;
     }
 
-    // White moves display 50% longer so players have more time to react
-    if (!inFastForward && isWhiteMove) {
-      ms = Math.round(ms * 1.5);
+    // White moves display longer so players have more time to react.
+    // White: +500ms on top of 1.5x scaling.
+    // Black: -250ms.
+    if (!inFastForward) {
+      if (isWhiteMove) {
+        ms = Math.round(ms * 1.5) + 500;
+      } else {
+        ms = ms - 250;
+      }
     }
 
     pacing.push(ms);

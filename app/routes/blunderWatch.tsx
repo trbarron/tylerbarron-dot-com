@@ -329,6 +329,7 @@ export default function BlunderWatch() {
                         blundersCaught={playback.flags.filter(f => game.blunderIndices.includes(f.moveIndex)).length}
                         blundersTotal={game.blunderCount}
                         falsePositives={playback.flags.filter(f => !game.blunderIndices.includes(f.moveIndex)).length}
+                        blundersMissed={playback.blundersMissed}
                         moveIndex={playback.currentMoveIndex}
                         totalMoves={game.moves.length}
                       />
@@ -363,6 +364,7 @@ export default function BlunderWatch() {
                       currentMoveIndex={playback.currentMoveIndex}
                       orientation={orientation}
                       isFastForward={playback.phase === 'playing' && playback.isFastForward}
+                      missedBlunderAt={playback.missedBlunderAt}
                     />
 
                     <BlunderButton
@@ -394,6 +396,7 @@ export default function BlunderWatch() {
                     currentMoveIndex={playback.currentMoveIndex}
                     orientation={orientation}
                     isFastForward={playback.isFastForward}
+                    missedBlunderAt={playback.missedBlunderAt}
                   />
 
                   <ResultsScreen

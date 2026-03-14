@@ -14,16 +14,27 @@ interface GameBoardProps {
   currentMoveIndex: number; // -1 = initial position, 0+ = after that move played
   orientation: 'white' | 'black';
   isFastForward: boolean;
+  missedBlunderAt?: number;
 }
 
-export function GameBoard({ initialFen, moves, currentMoveIndex, orientation, isFastForward }: GameBoardProps) {
+export function GameBoard({ initialFen, moves, currentMoveIndex, orientation, isFastForward, missedBlunderAt }: GameBoardProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const cgRef = useRef<Api | undefined>(undefined);
   const chessRef = useRef(new Chess(initialFen));
   const prevIndexRef = useRef(-1);
   const [isClient, setIsClient] = useState(false);
+  const [isFlashingRed, setIsFlashingRed] = useState(false);
 
   useEffect(() => { setIsClient(true); }, []);
+
+  // Flash red on missed blunder
+  useEffect(() => {
+    if (missedBlunderAt && missedBlunderAt > 0) {
+      setIsFlashingRed(true);
+      const timer = setTimeout(() => setIsFlashingRed(false), 500);
+      return () => clearTimeout(timer);
+    }
+  }, [missedBlunderAt]);
 
   // Initialise Chessground once
   useEffect(() => {
@@ -91,7 +102,13 @@ export function GameBoard({ initialFen, moves, currentMoveIndex, orientation, is
   return (
     <div className="w-full">
       {/* Board */}
-      <div className={`w-full max-w-2xl mx-auto border-4 transition-colors duration-300 ${isFastForward ? 'border-yellow-400' : 'border-black'}`}>
+      <div className={`w-full max-w-2xl mx-auto border-4 transition-colors duration-300 ${
+        isFlashingRed
+          ? 'border-red-500'
+          : isFastForward
+            ? 'border-yellow-400'
+            : 'border-black'
+      }`}>
         <div
           ref={containerRef}
           className={`aspect-square w-full ${!isClient ? 'min-h-[300px] bg-gray-100' : ''}`}

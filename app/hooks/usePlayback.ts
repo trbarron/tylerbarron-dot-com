@@ -13,6 +13,8 @@ export interface PlaybackState {
   currentMoveIndex: number;   // -1 = pre-first-move, 0+ = after that move was played
   isFastForward: boolean;
   hasFlaggedCurrentMove: boolean;
+  missedBlunderAt: number;     // timestamp of last missed blunder
+  blundersMissed: number;      // count of blunders missed
   flags: Flag[];
   liveScore: number;
   lastFlagResult: 'correct' | 'false_positive' | null;
@@ -27,12 +29,15 @@ export function usePlayback(game: BlunderWatchGame | null): PlaybackState & Play
   const [phase, setPhase] = useState<GamePhase>('pregame');
   const [currentMoveIndex, setCurrentMoveIndex] = useState(-1);
   const [hasFlaggedCurrentMove, setHasFlaggedCurrentMove] = useState(false);
+  const [missedBlunderAt, setMissedBlunderAt] = useState(0);
+  const [blundersMissed, setBlundersMissed] = useState(0);
   const [flags, setFlags] = useState<Flag[]>([]);
   const [liveScore, setLiveScore] = useState(0);
   const [lastFlagResult, setLastFlagResult] = useState<'correct' | 'false_positive' | null>(null);
 
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const moveDisplayedAtRef = useRef<number>(0);
+  const hasFlaggedRef = useRef(false);
 
   const clearTimer = () => {
     if (timerRef.current !== null) {
@@ -53,6 +58,7 @@ export function usePlayback(game: BlunderWatchGame | null): PlaybackState & Play
 
     moveDisplayedAtRef.current = Date.now();
     setHasFlaggedCurrentMove(false);
+    hasFlaggedRef.current = false;
     setLastFlagResult(null);
 
     const isLastMove = currentMoveIndex === game.moves.length - 1;
@@ -61,11 +67,21 @@ export function usePlayback(game: BlunderWatchGame | null): PlaybackState & Play
         ? INITIAL_PAUSE_MS
         : (game.pacing[currentMoveIndex] ?? 2000);
 
-    if (isLastMove) {
-      timerRef.current = setTimeout(() => setPhase('finished'), delay);
-    } else {
-      timerRef.current = setTimeout(advance, delay);
-    }
+    const onFinish = () => {
+      // If this was a blunder move and it wasn't flagged, mark it as missed
+      if (currentMoveIndex >= 0 && game.blunderIndices.includes(currentMoveIndex) && !hasFlaggedRef.current) {
+        setMissedBlunderAt(Date.now());
+        setBlundersMissed(prev => prev + 1);
+      }
+
+      if (isLastMove) {
+        setPhase('finished');
+      } else {
+        advance();
+      }
+    };
+
+    timerRef.current = setTimeout(onFinish, delay);
 
     return clearTimer;
   }, [currentMoveIndex, phase, game, advance]);
@@ -82,6 +98,9 @@ export function usePlayback(game: BlunderWatchGame | null): PlaybackState & Play
     setFlags([]);
     setLiveScore(0);
     setHasFlaggedCurrentMove(false);
+    hasFlaggedRef.current = false;
+    setMissedBlunderAt(0);
+    setBlundersMissed(0);
     setLastFlagResult(null);
   }, []);
 
@@ -97,6 +116,7 @@ export function usePlayback(game: BlunderWatchGame | null): PlaybackState & Play
     const newFlag: Flag = { moveIndex: currentMoveIndex, reactionTimeMs };
     setFlags(prev => [...prev, newFlag]);
     setHasFlaggedCurrentMove(true);
+    hasFlaggedRef.current = true;
 
     if (isBlunder) {
       const points = reactionTimeMs <= 500 ? 100 : reactionTimeMs <= 1000 ? 90 : 80;
@@ -113,6 +133,8 @@ export function usePlayback(game: BlunderWatchGame | null): PlaybackState & Play
     currentMoveIndex,
     isFastForward,
     hasFlaggedCurrentMove,
+    missedBlunderAt,
+    blundersMissed,
     flags,
     liveScore,
     lastFlagResult,

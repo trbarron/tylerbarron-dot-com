@@ -5,6 +5,7 @@ interface ScoreBugProps {
   blundersCaught: number;
   blundersTotal: number;
   falsePositives: number;
+  blundersMissed: number;
   moveIndex: number;
   totalMoves: number;
 }
@@ -14,6 +15,7 @@ export function ScoreBug({
   blundersCaught,
   blundersTotal,
   falsePositives,
+  blundersMissed,
   moveIndex,
   totalMoves,
 }: ScoreBugProps) {
@@ -25,6 +27,7 @@ export function ScoreBug({
       <div className="flex md:hidden items-center gap-3">
         <p className="font-neo font-black text-2xl text-black leading-none">{score}<span className="text-xs text-gray-400 ml-1">pts</span></p>
         <span className="font-neo text-xs text-gray-500 uppercase">Caught <span className="font-bold text-black">{blundersCaught}/{blundersTotal}</span></span>
+        <span className="font-neo text-xs text-gray-500 uppercase">Missed <span className={`font-bold ${blundersMissed > 0 ? 'text-red-600' : 'text-black'}`}>{blundersMissed}</span></span>
         <span className="font-neo text-xs text-gray-500 uppercase">FP <span className={`font-bold ${falsePositives > 0 ? 'text-red-600' : 'text-black'}`}>{falsePositives}</span></span>
       </div>
 
@@ -38,6 +41,12 @@ export function ScoreBug({
           <div className="flex items-center justify-between">
             <span className="font-neo text-xs text-gray-500 uppercase">Caught</span>
             <span className="font-neo font-bold text-sm text-black whitespace-nowrap">{blundersCaught}/{blundersTotal}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="font-neo text-xs text-gray-500 uppercase">Missed</span>
+            <span className={`font-neo font-bold text-sm whitespace-nowrap ${blundersMissed > 0 ? 'text-red-600' : 'text-black'}`}>
+              {blundersMissed}
+            </span>
           </div>
           <div className="flex items-center justify-between">
             <span className="font-neo text-xs text-gray-500 uppercase">False pos.</span>
