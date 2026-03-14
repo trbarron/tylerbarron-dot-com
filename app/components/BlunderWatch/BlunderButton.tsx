@@ -21,18 +21,6 @@ export function BlunderButton({ onFlag, disabled, lastFlagResult }: BlunderButto
     return () => clearTimeout(timer);
   }, [lastFlagResult]);
 
-  // Space key listener
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.code === 'Space' && !disabled) {
-        e.preventDefault();
-        onFlag();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onFlag, disabled]);
-
   const bgClass =
     feedback === 'correct' ? 'bg-green-500 border-green-700 text-white' :
     feedback === 'false_positive' ? 'bg-red-500 border-red-700 text-white' :

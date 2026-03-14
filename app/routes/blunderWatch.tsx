@@ -100,6 +100,35 @@ export default function BlunderWatch() {
     }
   }, [today, game]);
 
+  // Prevent spacebar from scrolling the page and trigger game flag
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Space') {
+        const target = e.target as HTMLElement;
+        if (
+          target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.tagName === 'BUTTON' ||
+          target.isContentEditable
+        ) {
+          return;
+        }
+        e.preventDefault();
+
+        // If playing, spacebar triggers the blunder flag
+        if (
+          playback.phase === 'playing' &&
+          playback.currentMoveIndex >= 0 &&
+          !playback.hasFlaggedCurrentMove
+        ) {
+          playback.flagCurrentMove();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [playback]);
+
   // Submit flags once playback finishes
   useEffect(() => {
     if (playback.phase !== 'finished' || isSubmitting || submitResult || submitError) return;
