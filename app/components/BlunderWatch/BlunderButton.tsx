@@ -1,6 +1,6 @@
 // The primary input during playback — large fixed button on mobile, Space key on desktop.
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 type FeedbackState = 'idle' | 'correct' | 'false_positive';
 
