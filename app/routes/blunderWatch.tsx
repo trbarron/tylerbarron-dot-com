@@ -409,6 +409,10 @@ export default function BlunderWatch() {
                       disabled={playback.phase === 'playing' && (playback.hasFlaggedCurrentMove || playback.currentMoveIndex < 0)}
                       lastFlagResult={playback.lastFlagResult}
                       isPreGame={playback.phase === 'pregame'}
+                      moveTimeMs={game && playback.currentMoveIndex >= 0 ? game.pacing[playback.currentMoveIndex] : undefined}
+                      moveKey={playback.currentMoveIndex}
+                      isWhiteMove={playback.currentMoveIndex >= 0 && playback.currentMoveIndex % 2 === 0}
+                      isFastForward={playback.isFastForward}
                     />
                   </div>
                 </div>
