@@ -120,6 +120,10 @@ export function usePlayback(game: BlunderWatchGame | null): PlaybackState & Play
     // Silently ignore presses during Black's move (odd ply index)
     if (currentMoveIndex % 2 !== 0) return;
 
+    // Silently ignore presses during fast-forward (cutscene)
+    const isFF = (game.pacing[currentMoveIndex] ?? 2000) <= 400 || currentMoveIndex > lastBlunderIndex;
+    if (isFF) return;
+
     const reactionTimeMs = Math.max(0, Date.now() - moveDisplayedAtRef.current);
     const isBlunder = game.blunderIndices.includes(currentMoveIndex);
 
@@ -136,7 +140,7 @@ export function usePlayback(game: BlunderWatchGame | null): PlaybackState & Play
       setLiveScore(prev => prev - 30);
       setLastFlagResult('false_positive');
     }
-  }, [phase, hasFlaggedCurrentMove, currentMoveIndex, game]);
+  }, [phase, hasFlaggedCurrentMove, currentMoveIndex, game, lastBlunderIndex]);
 
   return {
     phase,
