@@ -54,7 +54,7 @@ export const loader = async () => {
       blunderIndices: stored.blunderIndices,
       evals: stored.evals,
       pacing,
-      ...(stored.lichessUrl ? { lichessUrl: stored.lichessUrl } : {}),
+      ...(stored.gameUrl ? { gameUrl: stored.gameUrl } : {}),
     };
     return Response.json({ game });
   } catch (err) {
@@ -447,7 +447,7 @@ export default function BlunderWatch() {
                     isSubmitting={isSubmitting}
                     submitError={submitError}
                     onViewLeaderboard={() => setScrollToLeaderboard(true)}
-                    lichessUrl={game.lichessUrl}
+                    gameUrl={game.gameUrl}
                   />
                   {submitResult && (
                     <BlunderReplay

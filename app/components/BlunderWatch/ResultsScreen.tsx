@@ -10,7 +10,7 @@ interface ResultsScreenProps {
   isSubmitting: boolean;
   submitError: string | null;
   onViewLeaderboard: () => void;
-  lichessUrl?: string;
+  gameUrl?: string;
 }
 
 export function ResultsScreen({
@@ -19,7 +19,7 @@ export function ResultsScreen({
   isSubmitting,
   submitError,
   onViewLeaderboard,
-  lichessUrl,
+  gameUrl,
 }: ResultsScreenProps) {
   const [copied, setCopied] = useState(false);
 
@@ -115,9 +115,9 @@ export function ResultsScreen({
         >
           View Leaderboard
         </button>
-        {lichessUrl && (
+        {gameUrl && (
           <a
-            href={lichessUrl}
+            href={gameUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="w-full border-4 border-black px-4 py-3 font-neo font-bold uppercase text-sm bg-white text-black hover:bg-black hover:text-white transition-colors text-center"
