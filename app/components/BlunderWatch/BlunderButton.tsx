@@ -47,13 +47,34 @@ function TimerBar({ durationMs, moveKey }: { durationMs: number; moveKey: number
 export function BlunderButton({ onFlag, disabled, lastFlagResult, isPreGame = false, moveTimeMs, moveKey = 0, isWhiteMove = true, isFastForward = false }: BlunderButtonProps) {
   const [feedback, setFeedback] = useState<FeedbackState>('idle');
 
+  // Use a ref for the timer so advancing to the next move (which resets lastFlagResult to null)
+  // doesn't cancel the in-progress flash via effect cleanup.
+  const flashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   // Flash feedback when a flag result comes in
   useEffect(() => {
     if (!lastFlagResult) return;
+
+    // Clear any existing timer before starting a new one
+    if (flashTimerRef.current) {
+      clearTimeout(flashTimerRef.current);
+    }
+
     setFeedback(lastFlagResult === 'correct' ? 'correct' : 'false_positive');
-    const timer = setTimeout(() => setFeedback('idle'), 600);
-    return () => clearTimeout(timer);
+    flashTimerRef.current = setTimeout(() => {
+      setFeedback('idle');
+      flashTimerRef.current = null;
+    }, 600);
   }, [lastFlagResult]);
+
+  // Clean up timer on unmount only
+  useEffect(() => {
+    return () => {
+      if (flashTimerRef.current) {
+        clearTimeout(flashTimerRef.current);
+      }
+    };
+  }, []);
 
   // During Black's move or fast-forward, show active style but no text/timer (cutscene)
   const isInactive = !isPreGame && (!isWhiteMove || isFastForward);
