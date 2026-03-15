@@ -1,6 +1,6 @@
 // The primary input during playback — large fixed button on mobile, Space key on desktop.
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 type FeedbackState = 'idle' | 'correct' | 'false_positive';
 
@@ -46,14 +46,25 @@ function TimerBar({ durationMs, moveKey }: { durationMs: number; moveKey: number
 
 export function BlunderButton({ onFlag, disabled, lastFlagResult, isPreGame = false, moveTimeMs, moveKey = 0, isWhiteMove = true, isFastForward = false }: BlunderButtonProps) {
   const [feedback, setFeedback] = useState<FeedbackState>('idle');
+  const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Flash feedback when a flag result comes in
+  // Flash feedback when a flag result comes in.
+  // Use a ref for the timer so advancing to the next move (which resets lastFlagResult
+  // to null) doesn't cancel the in-progress flash via effect cleanup.
   useEffect(() => {
     if (!lastFlagResult) return;
+    if (feedbackTimerRef.current !== null) clearTimeout(feedbackTimerRef.current);
     setFeedback(lastFlagResult === 'correct' ? 'correct' : 'false_positive');
-    const timer = setTimeout(() => setFeedback('idle'), 600);
-    return () => clearTimeout(timer);
+    feedbackTimerRef.current = setTimeout(() => {
+      setFeedback('idle');
+      feedbackTimerRef.current = null;
+    }, 600);
   }, [lastFlagResult]);
+
+  // Clear timer on unmount
+  useEffect(() => () => {
+    if (feedbackTimerRef.current !== null) clearTimeout(feedbackTimerRef.current);
+  }, []);
 
   // During Black's move or fast-forward, show active style but no text/timer (cutscene)
   const isInactive = !isPreGame && (!isWhiteMove || isFastForward);
