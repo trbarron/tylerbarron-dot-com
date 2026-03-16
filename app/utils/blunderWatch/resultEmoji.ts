@@ -30,7 +30,7 @@ export function buildShareText(
     `Blunder Watch #${gameNumber} — ${totalScore} pts`,
     emoji,
     `${blunderCount} blunders | ${blundersCaught} caught | ${falsePositives} false positive${falsePositives !== 1 ? 's' : ''}`,
-    'tylerbarron.com/blunderWatch',
+    'tylerbarron.com/blunder-watch',
   ];
   return lines.join('\n');
 }
