@@ -43,7 +43,7 @@ export const loader = async () => {
       return Response.json({ game: null, error: `No game scheduled for ${today}. Check back soon!` });
     }
     const stored = JSON.parse(raw);
-    const pacing = computePacing(stored.moves.length, stored.blunderIndices);
+    const pacing = computePacing(stored.moves.length);
     const game: BlunderWatchGame = {
       gameNumber: parseInt(stored.gameId.replace('bw-', ''), 10),
       date: stored.date,
@@ -443,11 +443,11 @@ export default function BlunderWatch() {
 
                   <ResultsScreen
                     gameNumber={game.gameNumber}
+                    gameUrl={game.gameUrl}
                     result={submitResult}
                     isSubmitting={isSubmitting}
                     submitError={submitError}
                     onViewLeaderboard={() => setScrollToLeaderboard(true)}
-                    gameUrl={game.gameUrl}
                   />
                   {submitResult && (
                     <BlunderReplay

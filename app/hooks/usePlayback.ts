@@ -96,11 +96,8 @@ export function usePlayback(game: BlunderWatchGame | null): PlaybackState & Play
     return clearTimer;
   }, [currentMoveIndex, phase, game, advance, isPostBlunder]);
 
-  // Derived fast-forward state
-  const isFastForward =
-    game !== null &&
-    currentMoveIndex >= 0 &&
-    ((game.pacing[currentMoveIndex] ?? 2000) <= 400 || isPostBlunder);
+  // Fast-forward only after all blunders are done
+  const isFastForward = isPostBlunder;
 
   const startGame = useCallback(() => {
     setPhase('playing');

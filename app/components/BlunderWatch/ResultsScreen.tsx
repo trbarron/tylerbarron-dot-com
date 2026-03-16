@@ -6,20 +6,20 @@ import { buildShareText } from '~/utils/blunderWatch/resultEmoji';
 
 interface ResultsScreenProps {
   gameNumber: number;
+  gameUrl?: string;
   result: SubmitResponse | null;
   isSubmitting: boolean;
   submitError: string | null;
   onViewLeaderboard: () => void;
-  gameUrl?: string;
 }
 
 export function ResultsScreen({
   gameNumber,
+  gameUrl,
   result,
   isSubmitting,
   submitError,
   onViewLeaderboard,
-  gameUrl,
 }: ResultsScreenProps) {
   const [copied, setCopied] = useState(false);
 
@@ -63,8 +63,8 @@ export function ResultsScreen({
   return (
     <div className="bg-white border-4 border-black">
       {/* Header */}
-      <div className="bg-black text-white px-6 py-4 text-center">
-        <p className="font-neo text-xs uppercase tracking-widest mb-1">Game #{gameNumber} Complete</p>
+      <div className="bg-black px-6 py-4 text-center">
+        <p className="font-neo text-xs uppercase tracking-widest mb-1 text-white">Game #{gameNumber} Complete</p>
         <p className="font-neo font-black text-5xl text-white">{result.totalScore}<span className="text-lg text-gray-400 ml-1">pts</span></p>
       </div>
 
@@ -109,12 +109,6 @@ export function ResultsScreen({
 
       {/* Actions */}
       <div className="p-4 flex flex-col gap-3">
-        <button
-          onClick={onViewLeaderboard}
-          className="w-full border-4 border-black px-4 py-3 font-neo font-bold uppercase text-sm bg-white text-black hover:bg-black hover:text-white transition-colors"
-        >
-          View Leaderboard
-        </button>
         {gameUrl && (
           <a
             href={gameUrl}
@@ -125,6 +119,12 @@ export function ResultsScreen({
             Analyze on Lichess
           </a>
         )}
+        <button
+          onClick={onViewLeaderboard}
+          className="w-full border-4 border-black px-4 py-3 font-neo font-bold uppercase text-sm bg-white text-black hover:bg-black hover:text-white transition-colors"
+        >
+          View Leaderboard
+        </button>
       </div>
     </div>
   );

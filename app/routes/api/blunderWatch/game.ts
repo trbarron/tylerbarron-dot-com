@@ -29,7 +29,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
 
     const stored = JSON.parse(raw);
-    const pacing = computePacing(stored.moves.length, stored.blunderIndices);
+    const pacing = computePacing(stored.moves.length);
 
     return Response.json(
       {
