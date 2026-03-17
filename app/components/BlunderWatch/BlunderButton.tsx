@@ -47,9 +47,12 @@ function TimerBar({ durationMs, moveKey }: { durationMs: number; moveKey: number
 export function BlunderButton({ onFlag, disabled, lastFlagResult, isPreGame = false, moveTimeMs, moveKey = 0, isWhiteMove = true, isFastForward = false }: BlunderButtonProps) {
   const [feedback, setFeedback] = useState<FeedbackState>('idle');
 
-  // Flash feedback when a flag result comes in
+  // Flash feedback when a flag result comes in, reset when it clears (next move)
   useEffect(() => {
-    if (!lastFlagResult) return;
+    if (!lastFlagResult) {
+      setFeedback('idle');
+      return;
+    }
     setFeedback(lastFlagResult === 'correct' ? 'correct' : 'false_positive');
     const timer = setTimeout(() => setFeedback('idle'), 600);
     return () => clearTimeout(timer);
