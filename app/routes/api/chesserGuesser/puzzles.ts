@@ -5,6 +5,7 @@ import type { LoaderFunctionArgs } from "react-router";
 import { getRedisClient } from "~/utils/redis.server";
 import { getTodayDateString } from "~/utils/chesserGuesser/seededRandom";
 import type { ChessPuzzle, DailyPuzzleSet } from "~/utils/chesserGuesser/types";
+import { rateLimitMiddleware } from "~/utils/chesserGuesser/rateLimit.server";
 
 const REDIS_KEY_PREFIX = 'chesserGuesser:dailyPuzzles:';
 const TTL_7_DAYS = 7 * 24 * 60 * 60; // 7 days in seconds
@@ -20,54 +21,54 @@ const TTL_7_DAYS = 7 * 24 * 60 * 60; // 7 days in seconds
  *
  * This ensures deterministic daily puzzles without modifying the Lambda
  */
-async function fetchDailyPuzzles(): Promise<ChessPuzzle[]> {
-  const puzzles: ChessPuzzle[] = [];
-
-  // Fetch 4 puzzles sequentially to ensure we get valid ones
-  for (let i = 0; i < 4; i++) {
-    let retries = 3;
-    while (retries > 0) {
-      try {
-        const response = await fetch(
-          'https://f73vgbj1jk.execute-api.us-west-2.amazonaws.com/prod/chesserGuesser',
-          {
-            signal: AbortSignal.timeout(10000), // 10 second timeout
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error(`Failed to fetch puzzle ${i}: ${response.status}`);
+/**
+ * Fetch a single puzzle with retries
+ */
+async function fetchSinglePuzzle(index: number): Promise<ChessPuzzle> {
+  let retries = 3;
+  while (retries > 0) {
+    try {
+      const response = await fetch(
+        'https://f73vgbj1jk.execute-api.us-west-2.amazonaws.com/prod/chesserGuesser',
+        {
+          signal: AbortSignal.timeout(10000), // 10 second timeout
         }
+      );
 
-        const data = await response.json();
-        const parsedBody = JSON.parse(data.body);
-
-        puzzles.push({
-          fen: parsedBody.fen,
-          eval: parseInt(parsedBody.eval, 10),
-        });
-
-        break; // Success, move to next puzzle
-      } catch (error) {
-        retries--;
-        console.error(`Error fetching puzzle ${i} (${3 - retries}/3):`, error);
-
-        if (retries === 0) {
-          // Use a fallback puzzle if all retries fail
-          console.error(`Failed to fetch puzzle ${i} after 3 retries, using fallback`);
-          puzzles.push({
-            fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
-            eval: 0,
-          });
-        } else {
-          // Wait a bit before retrying
-          await new Promise(resolve => setTimeout(resolve, 500));
-        }
+      if (!response.ok) {
+        throw new Error(`Failed to fetch puzzle ${index}: ${response.status}`);
       }
+
+      const data = await response.json();
+      const parsedBody = JSON.parse(data.body);
+
+      return {
+        fen: parsedBody.fen,
+        eval: parseInt(parsedBody.eval, 10),
+      };
+    } catch (error) {
+      retries--;
+      console.error(`Error fetching puzzle ${index} (${3 - retries}/3):`, error);
+
+      if (retries === 0) {
+        console.error(`Failed to fetch puzzle ${index} after 3 retries, using fallback`);
+        return {
+          fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+          eval: 0,
+        };
+      }
+      // Wait a bit before retrying
+      await new Promise(resolve => setTimeout(resolve, 500));
     }
   }
 
-  return puzzles;
+  // Unreachable, but satisfies TypeScript
+  return { fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', eval: 0 };
+}
+
+async function fetchDailyPuzzles(): Promise<ChessPuzzle[]> {
+  // Fetch all 4 puzzles in parallel since they're independent
+  return Promise.all([0, 1, 2, 3].map(i => fetchSinglePuzzle(i)));
 }
 
 /**
@@ -123,6 +124,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
         { error: 'Invalid date format. Use YYYY-MM-DD.' },
         { status: 400 }
       );
+    }
+
+    // Check rate limit
+    const rateLimited = await rateLimitMiddleware(request, 'puzzles');
+    if (rateLimited) {
+      return Response.json(rateLimited.error, {
+        status: 429,
+        headers: rateLimited.headers,
+      });
     }
 
     const puzzleSet = await getDailyPuzzles(dateString);

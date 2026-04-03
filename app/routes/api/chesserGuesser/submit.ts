@@ -6,6 +6,7 @@ import type { ActionFunctionArgs } from "react-router";
 import { getRedisClient } from "~/utils/redis.server";
 import { calculatePuzzleScore } from "~/utils/chesserGuesser/puzzleSelection";
 import { getTodayDateString } from "~/utils/chesserGuesser/seededRandom";
+import { rateLimitMiddleware } from "~/utils/chesserGuesser/rateLimit.server";
 
 const TTL_7_DAYS = 7 * 24 * 60 * 60; // 7 days in seconds
 
@@ -27,7 +28,7 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     const body = await request.json();
-    const { username, date, puzzleIndex, guess, actualEval } = body;
+    const { username, date, puzzleIndex, guess } = body;
 
     // Validate inputs
     if (!validateUsername(username)) {
@@ -52,16 +53,46 @@ export async function action({ request }: ActionFunctionArgs) {
       );
     }
 
-    if (typeof guess !== 'number' || typeof actualEval !== 'number') {
+    if (typeof guess !== 'number') {
       return Response.json(
-        { error: 'Invalid guess or actualEval. Must be numbers.' },
+        { error: 'Invalid guess. Must be a number.' },
         { status: 400 }
       );
     }
 
+    // Check rate limit (cooldown between submissions)
+    const rateLimited = await rateLimitMiddleware(request, 'submission', username);
+    if (rateLimited) {
+      return Response.json(rateLimited.error, {
+        status: 429,
+        headers: rateLimited.headers,
+      });
+    }
+
     const redis = getRedisClient();
 
-    // Calculate score
+    // Look up the authoritative eval from cached daily puzzles in Redis
+    // Never trust client-supplied actualEval to prevent score manipulation
+    const puzzleCacheKey = `chesserGuesser:dailyPuzzles:${dateString}`;
+    const cachedPuzzles = await redis.get(puzzleCacheKey);
+    if (!cachedPuzzles) {
+      return Response.json(
+        { error: 'Daily puzzles not found. Please refresh and try again.' },
+        { status: 404 }
+      );
+    }
+
+    const dailyPuzzleSet = JSON.parse(cachedPuzzles);
+    if (!dailyPuzzleSet.puzzles || !dailyPuzzleSet.puzzles[puzzleIndex]) {
+      return Response.json(
+        { error: 'Puzzle not found for this index.' },
+        { status: 404 }
+      );
+    }
+
+    const actualEval = dailyPuzzleSet.puzzles[puzzleIndex].eval;
+
+    // Calculate score using server-verified eval
     const score = calculatePuzzleScore(guess, actualEval);
 
     // Store individual submission atomically (prevents race condition)
@@ -105,10 +136,12 @@ export async function action({ request }: ActionFunctionArgs) {
     );
 
     // Calculate total score by summing all individual puzzle scores from Redis
+    const puzzleKeys = Array.from({ length: 4 }, (_, i) =>
+      `chesserGuesser:submission:${dateString}:${username}:${i}`
+    );
+    const puzzleResults = await redis.mget(...puzzleKeys);
     let totalScore = 0;
-    for (let i = 0; i < 4; i++) {
-      const puzzleSubmissionKey = `chesserGuesser:submission:${dateString}:${username}:${i}`;
-      const puzzleData = await redis.get(puzzleSubmissionKey);
+    for (const puzzleData of puzzleResults) {
       if (puzzleData) {
         const puzzle = JSON.parse(puzzleData);
         totalScore += puzzle.score;

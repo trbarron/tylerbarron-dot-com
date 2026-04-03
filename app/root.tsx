@@ -13,9 +13,10 @@ import styles from './styles/index.css?url';
 import DichroicBackground from './components/DichroicBackground';
 
 export async function loader() {
-  return {
-    gaTrackingId: process.env.GA_TRACKING_ID || null,
-  };
+  const rawId = process.env.GA_TRACKING_ID || null;
+  // Validate GA tracking ID format to prevent XSS via dangerouslySetInnerHTML
+  const gaTrackingId = rawId && /^(G|UA|GT)-[A-Za-z0-9-]+$/.test(rawId) ? rawId : null;
+  return { gaTrackingId };
 }
 
 export const links: LinksFunction = () => [

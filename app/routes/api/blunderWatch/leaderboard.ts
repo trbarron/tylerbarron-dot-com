@@ -24,22 +24,27 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     const topUsers = await redis.zrevrange(leaderboardKey, 0, limit - 1, 'WITHSCORES');
 
-    const leaderboard: LeaderboardEntry[] = [];
+    // Batch-fetch all summaries in one round trip
+    const usernames: string[] = [];
     for (let i = 0; i < topUsers.length; i += 2) {
-      const username = topUsers[i];
-      const summaryKey = `blunderWatch:summary:${date}:${username}`;
-      const summaryRaw = await redis.get(summaryKey);
-      const summary = summaryRaw ? JSON.parse(summaryRaw) : null;
+      usernames.push(topUsers[i]);
+    }
 
-      leaderboard.push({
-        rank: Math.floor(i / 2) + 1,
+    const summaryKeys = usernames.map(u => `blunderWatch:summary:${date}:${u}`);
+    const summaryResults = summaryKeys.length > 0 ? await redis.mget(...summaryKeys) : [];
+
+    const leaderboard: LeaderboardEntry[] = usernames.map((username, idx) => {
+      const summaryRaw = summaryResults[idx];
+      const summary = summaryRaw ? JSON.parse(summaryRaw) : null;
+      return {
+        rank: idx + 1,
         username,
         score: summary?.score ?? 0,
         blundersCaught: summary?.blundersCaught ?? 0,
         falsePositives: summary?.falsePositives ?? 0,
         timestamp: summary?.timestamp ?? 0,
-      });
-    }
+      };
+    });
 
     let userRank: LeaderboardEntry | null = null;
     if (usernameParam) {

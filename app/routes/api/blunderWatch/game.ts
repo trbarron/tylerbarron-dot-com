@@ -39,8 +39,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
         blackElo: stored.blackElo,
         moves: stored.moves,
         blunderCount: stored.blunderIndices.length,
-        blunderIndices: stored.blunderIndices,
-        evals: stored.evals,
+        // Note: blunderIndices and evals are intentionally omitted from
+        // this public endpoint to prevent cheating. The submit endpoint
+        // looks them up server-side from Redis.
         pacing,
       },
       {

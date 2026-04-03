@@ -5,6 +5,7 @@ import type { LoaderFunctionArgs } from "react-router";
 import { getRedisClient } from "~/utils/redis.server";
 import { getTodayDateString } from "~/utils/chesserGuesser/seededRandom";
 import type { LeaderboardEntry } from "~/utils/chesserGuesser/types";
+import { rateLimitMiddleware } from "~/utils/chesserGuesser/rateLimit.server";
 
 /**
  * Get leaderboard for a specific date
@@ -35,6 +36,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
       );
     }
 
+    // Check rate limit
+    const rateLimited = await rateLimitMiddleware(request, 'leaderboard');
+    if (rateLimited) {
+      return Response.json(rateLimited.error, {
+        status: 429,
+        headers: rateLimited.headers,
+      });
+    }
+
     const redis = getRedisClient();
     const leaderboardKey = `chesserGuesser:leaderboard:${dateString}`;
 
@@ -46,29 +56,34 @@ export async function loader({ request }: LoaderFunctionArgs) {
       'WITHSCORES'
     );
 
-    // Parse results into leaderboard entries
-    const leaderboard: LeaderboardEntry[] = [];
+    // Parse usernames and scores from ZRANGE result
+    const usernames: string[] = [];
+    const scores: number[] = [];
     for (let i = 0; i < topUsers.length; i += 2) {
-      const username = topUsers[i];
-      const score = parseInt(topUsers[i + 1], 10);
+      usernames.push(topUsers[i]);
+      scores.push(parseInt(topUsers[i + 1], 10));
+    }
 
-      // Get puzzles completed for this user
-      const completedKey = `chesserGuesser:completed:${dateString}:${username}`;
-      const completed = parseInt((await redis.get(completedKey)) || '0', 10);
+    // Batch-fetch completed counts and summaries in two round trips instead of 2N
+    const completedKeys = usernames.map(u => `chesserGuesser:completed:${dateString}:${u}`);
+    const summaryKeys = usernames.map(u => `chesserGuesser:summary:${dateString}:${u}`);
+    const [completedResults, summaryResults] = await Promise.all([
+      completedKeys.length > 0 ? redis.mget(...completedKeys) : [],
+      summaryKeys.length > 0 ? redis.mget(...summaryKeys) : [],
+    ]);
 
-      // Get summary for timestamp
-      const summaryKey = `chesserGuesser:summary:${dateString}:${username}`;
-      const summaryData = await redis.get(summaryKey);
+    const leaderboard: LeaderboardEntry[] = usernames.map((username, idx) => {
+      const completed = parseInt(completedResults[idx] || '0', 10);
+      const summaryData = summaryResults[idx];
       const timestamp = summaryData ? JSON.parse(summaryData).lastUpdated : 0;
-
-      leaderboard.push({
-        rank: Math.floor(i / 2) + 1,
+      return {
+        rank: idx + 1,
         username,
-        score,
+        score: scores[idx],
         completedPuzzles: completed,
         timestamp,
-      });
-    }
+      };
+    });
 
     // If username provided, also get their rank if not in top N
     let userRank: LeaderboardEntry | null = null;

@@ -14,6 +14,16 @@ export function getRedisClient(): Redis {
     return redis;
   }
 
+  // Clean up stale connection before creating a new one
+  if (redis) {
+    try {
+      redis.disconnect();
+    } catch {
+      // Ignore errors during cleanup of stale connection
+    }
+    redis = null;
+  }
+
   // Get Redis connection details from environment variables
   // These should match the Collaborative Checkmate server configuration
   const redisUrl = process.env.REDIS_URL || process.env.REDIS_TLS_URL;

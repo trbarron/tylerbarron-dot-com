@@ -8,11 +8,10 @@ export async function processMdx(source: string) {
   const result = await bundleMDX({
     source,
     mdxOptions(options) {
-      options.remarkPlugins = [...(options.remarkPlugins ?? []), remarkMath];
-      options.rehypePlugins = [...(options.rehypePlugins ?? []), rehypeKatex];
-      options.remarkPlugins = [...(options.remarkPlugins ?? []), remarkGfm];
+      options.remarkPlugins = [...(options.remarkPlugins ?? []), remarkMath, remarkGfm];
       options.rehypePlugins = [
         ...(options.rehypePlugins ?? []),
+        rehypeKatex,
         [rehypeImgSize, { dir: "public" }]
       ];
       return options;
