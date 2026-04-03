@@ -556,8 +556,8 @@ export default function ChesserGuesserUnlimited() {
             />
           )}
 
-          <div className="pb-6 mx-auto grid gap-x-4 grid-cols-1 md:grid-cols-5 md:ml-auto -mx-2 md:mx-2">
-            <div className="w-100% col-span-1 md:col-span-4">
+          <div className="pb-6 mx-auto grid gap-x-4 grid-cols-1 md:grid-cols-5 md:ml-auto -mx-2 md:mx-2 overflow-hidden">
+            <div className="w-full col-span-1 md:col-span-4">
               <GameBoard
                 mode={gameMode}
                 fen={displayFen}
@@ -580,7 +580,7 @@ export default function ChesserGuesserUnlimited() {
             </div>
 
             {/* Sidebar */}
-            <div className="justify-center text-center grid gap-y-3 h-auto md:h-full md:grid-cols-1 w-full grid-cols-3 col-span-1 md:col-span-1 gap-x-4 py-2 md:py-0">
+            <div className="justify-center text-center grid gap-y-3 h-auto md:h-full md:grid-cols-1 w-full grid-cols-1 sm:grid-cols-3 col-span-1 md:col-span-1 md:min-w-[160px] gap-x-4 py-2 md:py-0">
               {/* Last Round Info / Review Puzzle Info - First on mobile */}
               <ScoreDisplay
                 gameMode={gameMode}
@@ -604,7 +604,7 @@ export default function ChesserGuesserUnlimited() {
 
               {/* Daily Progress Tracker (only in daily mode) */}
               {gameMode === 'daily' && (
-                <div className="col-span-3 md:col-span-1">
+                <div className="col-span-1 sm:col-span-3 md:col-span-1">
                   <DailyProgressTracker
                     currentPuzzle={currentPuzzleIndex}
                     completedPuzzles={dailyGameState?.attempts.length || 0}
@@ -616,7 +616,7 @@ export default function ChesserGuesserUnlimited() {
 
               {/* Endless Progress Tracker (only in endless mode) */}
               {gameMode === 'endless' && (
-                <div className="col-span-3 md:col-span-1">
+                <div className="col-span-1 sm:col-span-3 md:col-span-1">
                   <EndlessProgressTracker
                     streak={streak}
                     gamesPlayed={getEndlessCount()}

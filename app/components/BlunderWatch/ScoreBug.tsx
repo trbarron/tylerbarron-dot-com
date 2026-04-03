@@ -24,7 +24,7 @@ export function ScoreBug({
   return (
     <div className="bg-white border-4 border-black p-3 h-full flex flex-row md:flex-col">
       {/* Mobile: single-row matching pregame sidebar height */}
-      <div className="flex md:hidden items-center gap-3">
+      <div className="flex md:hidden items-center gap-2 flex-wrap">
         <p className="font-neo font-black text-2xl text-black leading-none">{score}<span className="text-xs text-gray-400 ml-1">pts</span></p>
         <span className="font-neo text-xs text-gray-500 uppercase">Caught <span className="font-bold text-black">{blundersCaught}/{blundersTotal}</span></span>
         <span className="font-neo text-xs text-gray-500 uppercase">Missed <span className={`font-bold ${blundersMissed > 0 ? 'text-red-600' : 'text-black'}`}>{blundersMissed}</span></span>

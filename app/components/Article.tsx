@@ -8,7 +8,7 @@ interface ArticleProps {
 }
 
 export default function Article({ title, subtitle, styleModifier = "", children }: ArticleProps) {
-    const modifiedClassName = "relative flex flex-col min-w-0 break-words bg-white  w-full border-4 border-black  lg:w-8/12 lg:mx-auto px-6 " + styleModifier;
+    const modifiedClassName = "relative flex flex-col min-w-0 break-words bg-white  w-full border-4 border-black  lg:w-8/12 lg:mx-auto px-6 overflow-x-hidden " + styleModifier;
 
     return (
         <section className="relative container mx-auto px-4 my-12 font-mono">

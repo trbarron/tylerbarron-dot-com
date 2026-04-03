@@ -14,7 +14,7 @@ export function EndlessProgressTracker({
     maxStreak
 }: EndlessProgressTrackerProps) {
     return (
-        <div className="bg-white  border-4 border-black  mb-4">
+        <div className="bg-white  border-4 border-black">
             {/* Header */}
             <div className="border-b-2 border-accent py-2 inline-flex items-center justify-center text-sm md:text-md font-neo font-bold uppercase text-black  w-full">
                 Endless Mode
@@ -25,7 +25,7 @@ export function EndlessProgressTracker({
                 <div className="font-neo text-3xl md:text-4xl font-bold text-black ">
                     {streak}
                 </div>
-                <div className="font-neo text-xs uppercase text-gray-600 ">
+                <div className="font-neo text-xs uppercase text-gray-600 whitespace-nowrap">
                     Current Streak
                 </div>
             </div>
@@ -35,7 +35,7 @@ export function EndlessProgressTracker({
                 <div className="font-neo text-3xl md:text-4xl font-bold text-black ">
                     {maxStreak}
                 </div>
-                <div className="font-neo text-xs uppercase text-gray-600 ">
+                <div className="font-neo text-xs uppercase text-gray-600 whitespace-nowrap">
                     Best Streak
                 </div>
             </div>
@@ -45,7 +45,7 @@ export function EndlessProgressTracker({
                 <div className="font-neo text-xl font-bold text-black ">
                     {gamesPlayed}
                 </div>
-                <div className="font-neo text-[10px] uppercase text-gray-600 ">
+                <div className="font-neo text-[10px] uppercase text-gray-600 whitespace-nowrap">
                     Rounds Played
                 </div>
             </div>

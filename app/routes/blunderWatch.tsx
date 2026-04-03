@@ -377,21 +377,21 @@ export default function BlunderWatch() {
                   {/* Board + button — on desktop, left column */}
                   <div className="col-span-1 md:col-span-4 md:order-1">
                     {/* Top bar with FF slot always allocated */}
-                    <div className={`mb-3 flex items-center justify-between border-2 border-black px-4 py-2 ${
+                    <div className={`mb-3 flex items-center justify-between border-2 border-black px-3 md:px-4 py-2 gap-2 overflow-hidden ${
                       playback.phase === 'pregame'
                         ? 'bg-white text-black'
                         : currentTurn === 'White' ? 'bg-white text-black' : 'bg-black text-white'
                     }`}>
-                      <span className="font-neo font-bold text-xs uppercase">
+                      <span className="font-neo font-bold text-xs uppercase whitespace-nowrap">
                         {playback.phase === 'pregame' ? 'Ready' : `${currentTurn} to move`}
                       </span>
-                      <span className={`font-neo text-xs font-bold tracking-wide ${playback.isFastForward ? 'opacity-100' : 'invisible'}`}>
-                        ⏩ Fast forward
+                      <span className={`font-neo text-xs font-bold tracking-wide whitespace-nowrap hidden sm:inline ${playback.isFastForward ? 'opacity-100' : 'invisible'}`}>
+                        FF
                       </span>
-                      <span className="font-neo text-xs opacity-60">
+                      <span className="font-neo text-xs opacity-60 whitespace-nowrap">
                         {playback.phase === 'pregame'
                           ? `${game.moves.length} moves`
-                          : `Move ${Math.max(0, playback.currentMoveIndex + 1)} / ${game.moves.length}`
+                          : `${Math.max(0, playback.currentMoveIndex + 1)} / ${game.moves.length}`
                         }
                       </span>
                     </div>

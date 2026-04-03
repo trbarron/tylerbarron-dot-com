@@ -72,7 +72,7 @@ export default function ScoreDisplay({
     : Math.abs(lastEval - lastSlider).toFixed(2);
 
   return (
-    <div className="bg-white border-4 border-black overflow-hidden w-full col-span-3 md:col-span-1">
+    <div className="bg-white border-4 border-black overflow-hidden w-full col-span-1 sm:col-span-3 md:col-span-1">
       {/* Header */}
       <div className="w-full border-b-2 border-accent py-2 flex flex-col items-center justify-center font-neo font-bold uppercase text-black bg-white">
         <span className="text-xs md:text-sm">{getHeaderText()}</span>
@@ -103,11 +103,11 @@ export default function ScoreDisplay({
         {/* Stats - shown in both modes */}
         <div className="grid grid-cols-2 gap-2 text-xs">
           <div className="text-left">
-            <div className="text-gray-600 uppercase text-[10px]">Your Guess</div>
+            <div className="text-gray-600 uppercase text-[10px] whitespace-nowrap">Your Guess</div>
             <div className="font-bold text-sm">{yourGuess}</div>
           </div>
           <div className="text-right">
-            <div className="text-gray-600 uppercase text-[10px]">Actual</div>
+            <div className="text-gray-600 uppercase text-[10px] whitespace-nowrap">Actual</div>
             <div className="font-bold text-sm">{actualEval}</div>
           </div>
         </div>
@@ -153,7 +153,7 @@ export default function ScoreDisplay({
             onClick={onToggleReview}
             className="w-full mt-2 px-3 py-2 bg-black text-white font-bold text-xs hover:bg-accent transition-colors"
           >
-            View All Puzzles →
+            View All →
           </button>
         )}
       </div>

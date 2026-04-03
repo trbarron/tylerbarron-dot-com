@@ -17,7 +17,7 @@ export function DailyProgressTracker({
   const puzzles = [0, 1, 2, 3];
 
   return (
-    <div className="bg-white  border-4 border-black  mb-4">
+    <div className="bg-white  border-4 border-black">
       {/* Header */}
       <div className="border-b-2 border-accent py-2 inline-flex items-center justify-center text-sm md:text-md font-neo font-bold uppercase text-black  w-full">
         Progress

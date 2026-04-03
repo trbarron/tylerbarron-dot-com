@@ -65,7 +65,7 @@ export function ResultsScreen({
       {/* Header */}
       <div className="bg-black px-6 py-4 text-center">
         <p className="font-neo text-xs uppercase tracking-widest mb-1 text-white">Game #{gameNumber} Complete</p>
-        <p className="font-neo font-black text-5xl text-white">{result.totalScore}<span className="text-lg text-gray-400 ml-1">pts</span></p>
+        <p className="font-neo font-black text-4xl md:text-5xl text-white">{result.totalScore}<span className="text-lg text-gray-400 ml-1">pts</span></p>
       </div>
 
       {/* Emoji result — copy target */}
