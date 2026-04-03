@@ -13,7 +13,7 @@ import styles from './styles/index.css?url';
 import DichroicBackground from './components/DichroicBackground';
 
 export async function loader() {
-  const rawId = process.env.GA_TRACKING_ID || null;
+  const rawId = process.env.GA_TRACKING_ID?.trim() || null;
   // Validate GA tracking ID format to prevent XSS via dangerouslySetInnerHTML
   const gaTrackingId = rawId && /^(G|UA|GT)-[A-Za-z0-9-]+$/.test(rawId) ? rawId : null;
   return { gaTrackingId };
@@ -34,11 +34,14 @@ export default function App() {
   const location = useLocation();
 
   useEffect(() => {
-    if (gaTrackingId?.length) {
+    if (gaTrackingId) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (window as any).gtag?.("config", gaTrackingId, {
-        page_path: location.pathname + location.search,
-      });
+      const gtag = (window as any).gtag;
+      if (typeof gtag === "function") {
+        gtag("config", gaTrackingId, {
+          page_path: location.pathname + location.search,
+        });
+      }
     }
   }, [location, gaTrackingId]);
 
@@ -54,14 +57,15 @@ export default function App() {
           <>
             <script async src={`https://www.googletagmanager.com/gtag/js?id=${gaTrackingId}`} />
             <script
-              async
               id="gtag-init"
               dangerouslySetInnerHTML={{
                 __html: `
                   window.dataLayer = window.dataLayer || [];
-                  function gtag(){dataLayer.push(arguments);}
+                  window.gtag = function(){dataLayer.push(arguments);}
                   gtag('js', new Date());
-                  gtag('config', '${gaTrackingId}');
+                  gtag('config', '${gaTrackingId}', {
+                    send_page_view: false
+                  });
                 `,
               }}
             />
