@@ -3,14 +3,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import type { LeaderboardEntry } from "~/utils/chesserGuesser/types";
-
-interface LeaderboardProps {
-  currentUsername?: string;
-  date?: string;
-}
-
-import { useState, useEffect, useCallback } from "react";
-import type { LeaderboardEntry } from "~/utils/chesserGuesser/types";
 import Skeleton from "~/components/Skeleton";
 
 interface LeaderboardProps {
@@ -23,7 +15,6 @@ export function Leaderboard({
   date
 }: LeaderboardProps) {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
-  const [userRank, setUserRank] = useState<LeaderboardEntry | null>(null);
   const [totalPlayers, setTotalPlayers] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +34,6 @@ export function Leaderboard({
 
       const data = await response.json();
       setLeaderboard(data.leaderboard || []);
-      setUserRank(data.userRank || null);
       setTotalPlayers(data.totalPlayers || 0);
     } catch (err) {
       console.error('Error fetching leaderboard:', err);
@@ -55,7 +45,6 @@ export function Leaderboard({
 
   useEffect(() => {
     fetchLeaderboard();
-    // Refresh every 60 seconds
     const interval = setInterval(fetchLeaderboard, 60000);
     return () => clearInterval(interval);
   }, [fetchLeaderboard]);
@@ -69,12 +58,10 @@ export function Leaderboard({
 
   return (
     <div className="bg-white border-4 border-black">
-      {/* Header */}
       <div className="bg-black text-white py-3 px-4 font-neo font-extrabold uppercase tracking-tighter text-lg border-b-4 border-black">
         LEADERBOARD
       </div>
 
-      {/* Content */}
       <div className="max-h-[500px] overflow-y-auto">
         {isLoading ? (
           <div className="p-4 space-y-3">
@@ -87,16 +74,15 @@ export function Leaderboard({
             ))}
           </div>
         ) : error ? (
-          <div className="p-8 text-center font-neo font-bold text-red-600 uppercase italic">
+          <div className="p-8 text-center font-neo font-bold text-black uppercase">
             {error}
           </div>
         ) : leaderboard.length === 0 ? (
-          <div className="p-8 text-center font-neo font-bold text-gray-400 uppercase">
+          <div className="p-8 text-center font-neo font-bold text-black opacity-50 uppercase">
             No scores yet today.<br />Be the first!
           </div>
         ) : (
           <>
-            {/* Leaderboard Entries */}
             {leaderboard.map((entry, index) => {
               const isCurrentUser = entry.username === currentUsername;
               const medal = getMedalEmoji(entry.rank);
@@ -107,7 +93,7 @@ export function Leaderboard({
                   className={`
                     border-b-2 border-black p-3 font-neo
                     ${isCurrentUser
-                      ? 'bg-black text-white'
+                      ? 'bg-gray-100 border-l-4 border-l-black text-black'
                       : 'bg-white text-black'
                     }
                   `}
@@ -117,13 +103,13 @@ export function Leaderboard({
                       <span className={`font-extrabold w-10 flex-shrink-0 text-lg ${entry.rank <= 3 ? 'scale-110' : 'opacity-50'}`}>
                         {medal || `#${entry.rank}`}
                       </span>
-                      <span className={`truncate font-bold text-lg tracking-tight ${isCurrentUser ? '' : ''}`}>
+                      <span className="truncate font-bold text-lg tracking-tight">
                         {entry.username.toUpperCase()}
                         {isCurrentUser && ' (YOU)'}
                       </span>
                     </div>
                     <div className="flex items-center gap-3 flex-shrink-0">
-                      <span className={`font-black text-xl min-w-16 text-right ${isCurrentUser ? 'text-white' : 'text-black'}`} title="Total Difference">
+                      <span className="font-black text-xl min-w-16 text-right text-black" title="Total Difference">
                         {entry.score}
                       </span>
                     </div>
@@ -132,7 +118,6 @@ export function Leaderboard({
               );
             })}
 
-            {/* Footer Summary */}
             <div className="p-3 text-center font-neo font-black text-sm uppercase bg-gray-100 border-t-2 border-black">
               {totalPlayers} {totalPlayers === 1 ? 'player' : 'players'} competing today
             </div>
