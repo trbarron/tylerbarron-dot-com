@@ -23,7 +23,7 @@ export default function Card({
   onClick,
 }: CardProps) {
   const baseClasses = 'bg-white border-4 border-black p-6 mb-4';
-  const interactiveClass = onClick ? 'cursor-pointer hover:bg-gray-50 transition-colors' : '';
+  const interactiveClass = onClick ? 'cursor-pointer hover:bg-gray-100 transition-all duration-100' : '';
 
   return (
     <div

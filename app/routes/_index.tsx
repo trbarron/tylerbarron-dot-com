@@ -188,45 +188,45 @@ export default function Index() {
 
   return (
     <main className="min-h-screen relative font-neo z-10">
-      <section className="w-full py-16 top-0 z-10 flex items-center justify-center border-b-4 border-black bg-white">
-        <div className="text-center">
-          <div className="text-5xl md:text-6xl xl:text-7xl text-black font-neo font-extrabold tracking-tighter">
+      <section className="w-full py-20 top-0 z-10 flex items-center justify-center border-b-4 border-black bg-white/95 backdrop-blur-sm">
+        <div className="text-center px-4">
+          <h1 className="text-5xl md:text-7xl xl:text-8xl text-black font-neo font-extrabold tracking-tighter">
             BARRON WASTELAND
-          </div>
-          <div className="text-black text-xl xl:text-2xl font-neo font-semibold mt-2 tracking-wide">
+          </h1>
+          <p className="text-black text-xl xl:text-2xl font-neo font-semibold mt-4 tracking-wide opacity-80 uppercase">
             FOOD FOR THOUGHT // IDEAS FOR EATING
-          </div>
+          </p>
         </div>
       </section>
 
-      <section className="w-full flex items-center justify-center py-12">
-        <div className="flex flex-col items-center w-full max-w-4xl">
-          <h2 className="text-black text-4xl font-neo font-extrabold mb-8 border-b-2 border-accent pb-2 tracking-tight">PROJECTS</h2>
+      <section className="w-full flex items-center justify-center py-20">
+        <div className="flex flex-col items-center w-full max-w-5xl">
+          <h2 className="text-4xl lg:text-5xl font-neo font-extrabold mb-12 border-b-8 border-black pb-2 tracking-tighter uppercase text-black bg-white px-4">PROJECTS</h2>
           <div className="w-full px-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {allProjects.map(({ to, title, description }) => (
-                <div key={to} className="border-2 border-black bg-white/80 backdrop-blur-sm hover:bg-accent group">
-                  <Link to={to} className="block p-4 no-underline hover:no-underline h-full">
-                    <div className="font-neo font-bold text-lg text-black group-hover:text-white tracking-wide">{title.toUpperCase()}</div>
-                    <div className="font-neo text-sm mt-1 opacity-75 text-black group-hover:text-white group-hover:opacity-100 font-medium">{description}</div>
+                <div key={to} className="border-4 border-black bg-white/90 backdrop-blur-sm hover:bg-black group transition-all duration-100">
+                  <Link to={to} className="block p-6 no-underline hover:no-underline h-full">
+                    <div className="font-neo font-bold text-xl text-black group-hover:text-white tracking-wide">{title.toUpperCase()}</div>
+                    <div className="font-neo text-sm mt-2 opacity-75 text-black group-hover:text-white group-hover:opacity-100 font-medium">{description}</div>
                   </Link>
                 </div>
               ))}
             </div>
           </div>
 
-          <h2 className="text-black text-4xl font-neo font-extrabold mb-8 mt-16 border-b-2 border-accent pb-2 tracking-tight">WRITING</h2>
-          <ul className="w-full space-y-4 px-8">
+          <h2 className="text-4xl lg:text-5xl font-neo font-extrabold mb-12 mt-24 border-b-8 border-black pb-2 tracking-tighter uppercase text-black bg-white px-4">WRITING</h2>
+          <ul className="w-full space-y-6 px-8">
             {posts.filter((post: Post) => post.type !== 'project').map((post: Post) => (
-              <li key={post.slug} className="border-2 border-black bg-white/80 backdrop-blur-sm hover:bg-accent group">
-                <Link to={`/blog/${post.slug}`} className="block p-4 no-underline hover:no-underline">
-                  <div className="font-neo font-bold text-lg text-black group-hover:text-white tracking-wide">{post.title.toUpperCase()}</div>
+              <li key={post.slug} className="border-4 border-black bg-white/90 backdrop-blur-sm hover:bg-black group transition-all duration-100">
+                <Link to={`/blog/${post.slug}`} className="block p-6 no-underline hover:no-underline">
+                  <div className="font-neo font-bold text-xl text-black group-hover:text-white tracking-wide">{post.title.toUpperCase()}</div>
                   {post.subtitle && (
-                    <div className="font-neo text-base mt-1 text-black group-hover:text-white opacity-80 group-hover:opacity-100 font-medium">
+                    <div className="font-neo text-base mt-2 text-black group-hover:text-white opacity-80 group-hover:opacity-100 font-medium">
                       {post.subtitle}
                     </div>
                   )}
-                  <div className="font-neo text-sm mt-1 opacity-75 text-black group-hover:text-white group-hover:opacity-100 font-medium">
+                  <div className="font-neo text-sm mt-2 opacity-75 text-black group-hover:text-white group-hover:opacity-100 font-medium">
                     {new Date(post.date).toLocaleDateString('en-US', {
                       year: 'numeric',
                       month: 'long',
@@ -239,9 +239,7 @@ export default function Index() {
           </ul>
         </div>
       </section>
-      <div className="border-t-4 border-black">
-        <Footer />
-      </div>
+      <Footer />
     </main>
   );
 }

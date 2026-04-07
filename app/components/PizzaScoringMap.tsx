@@ -274,16 +274,25 @@ export default function PizzaLocationMap() {
   };
 
   if (loading) {
-    return <div className="w-full p-6">Loading location data...</div>;
+    return (
+      <div className="w-full bg-white border-4 border-black p-8 text-center mt-4">
+        <p className="font-neo font-bold text-black uppercase tracking-widest animate-pulse">Loading location data…</p>
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="w-full p-6 text-red-500">{error}</div>;
+    return (
+      <div className="w-full bg-white border-4 border-red-600 p-6 mt-4">
+        <p className="font-neo font-bold text-red-600 uppercase mb-2 tracking-widest">Failed to Load Map</p>
+        <p className="font-neo text-red-600 font-bold text-sm uppercase">{error}</p>
+      </div>
+    );
   }
 
   return (
-    <div className="w-full h-full bg-white rounded-lg shadow">
-      <div className="p-4">
+    <div className="w-full h-full bg-white border-4 border-black mt-4">
+      <div className="p-4 md:p-6">
       <MapControls
   showReviews={showReviews}
   setShowReviews={setShowReviews}
@@ -293,14 +302,14 @@ export default function PizzaLocationMap() {
   setScoreFilter={setScoreFilter}
 />
 
-        <div className="h-2/4 max-h-[800px] relative bg-gray-100 border rounded-lg">
+        <div className="h-[50vh] max-h-[800px] relative bg-white border-4 border-black overflow-hidden">
           <svg
             width="100%"
             height="100%"
             viewBox={`0 0 ${width} ${height}`}
             preserveAspectRatio="xMidYMid meet"
           >
-            <rect width={width} height={height} fill="#f8f9fa" />
+            <rect width={width} height={height} fill="#f5f5f5" />
             {renderStates()}
             {renderPizzaScoreHeatmap()}
             {renderReviewPoints()}
@@ -308,28 +317,35 @@ export default function PizzaLocationMap() {
           </svg>
         </div>
 
-        <div className="mt-4 grid gap-6">
+        <div className="mt-8 grid gap-8 border-t-4 border-black pt-6">
           <div>
-            <div className="text-lg font-semibold mb-2">Background</div>
-            <div className="text-sm space-y-1">
-              <div>This map reveals America&apos;s best pizza regions through Domino&apos;s Pizza ratings.</div>
+            <div className="text-xl font-black font-neo uppercase tracking-tighter text-black mb-3">Background</div>
+            <div className="text-sm md:text-base font-neo font-medium text-black space-y-2">
+              <div>This map reveals America's best pizza regions through Domino's Pizza ratings.</div>
               <div>The methodology builds on three assumptions:</div>
-              <div>1. Domino&apos;s pizza is Domino&apos;s pizza. It is highly standardized nationwide, making it a reliable control variable</div>
-              <div>2. Pizza shop employees are constant enough that they impact the ratings in a standardized way</div>
-              <div className="pb-2">3. As a result of (1) and (2), the differentiating factor for the reviews is not the pizza but the competitors in the area. The better the local pizza is, the worse Domino&apos;s will be rated</div>
-              <div className="pb-2">My Pizza Score inverts Domino&apos;s Google Maps ratings: lower Domino&apos;s ratings suggest higher-quality local pizza alternatives. This creates a proxy measure for regional pizza - areas where Domino&apos;s struggles are areas where local pizzerias are best</div>
+              <div className="pl-4">1. Domino's pizza is Domino's pizza. It is highly standardized nationwide, making it a reliable control variable.</div>
+              <div className="pl-4">2. Pizza shop employees are constant enough that they impact the ratings in a standardized way.</div>
+              <div className="pl-4 pb-2">3. As a result of (1) and (2), the differentiating factor for the reviews is not the pizza but the competitors in the area. The better the local pizza is, the worse Domino's will be rated.</div>
+              <div className="pb-2">My Pizza Score inverts Domino's Google Maps ratings: lower Domino's ratings suggest higher-quality local pizza alternatives. This creates a proxy measure for regional pizza - areas where Domino's struggles are areas where local pizzerias are best.</div>
             </div>
-            <div>
-              <div className="text-lg font-semibold mb-2">Statistics</div>
-              <div className="text-sm space-y-1">
-                <div>Total Locations Sampled: {reviewData.length}</div>
-                <div>
-                  Average Rating:{" "}
-                  {(reviewData.reduce((sum, loc) => sum + loc.rating, 0) / reviewData.length).toFixed(2)}
+            <div className="mt-8">
+              <div className="text-xl font-black font-neo uppercase tracking-tighter text-black mb-4">Statistics</div>
+              <div className="text-sm md:text-base font-neo font-medium text-black space-y-3">
+                <div className="flex justify-between border-b-2 border-black/10 pb-1">
+                  <span className="uppercase font-bold tracking-widest opacity-60 text-[10px] md:text-xs">Total Locations Sampled</span>
+                  <span className="font-black text-lg md:text-xl tracking-tighter">{reviewData.length.toLocaleString()}</span>
                 </div>
-                <div>
-                  Total Reviews:{" "}
+                <div className="flex justify-between border-b-2 border-black/10 pb-1">
+                  <span className="uppercase font-bold tracking-widest opacity-60 text-[10px] md:text-xs">Average Rating</span>
+                  <span className="font-black text-lg md:text-xl tracking-tighter">
+                  {(reviewData.reduce((sum, loc) => sum + loc.rating, 0) / reviewData.length).toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex justify-between border-b-2 border-black/10 pb-1">
+                  <span className="uppercase font-bold tracking-widest opacity-60 text-[10px] md:text-xs">Total Reviews</span>
+                  <span className="font-black text-lg md:text-xl tracking-tighter">
                   {reviewData.reduce((sum, loc) => sum + loc.total_ratings, 0).toLocaleString()}
+                  </span>
                 </div>
               </div>
             </div>

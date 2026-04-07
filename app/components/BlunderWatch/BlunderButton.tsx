@@ -39,7 +39,7 @@ function TimerBar({ durationMs, moveKey }: { durationMs: number; moveKey: number
 
   return (
     <div className="absolute bottom-0 left-0 right-0 h-1.5">
-      <div ref={barRef} className="h-full bg-gray-400" />
+      <div ref={barRef} className="h-full bg-black opacity-30" />
     </div>
   );
 }
@@ -62,19 +62,19 @@ export function BlunderButton({ onFlag, disabled, lastFlagResult, isPreGame = fa
   const isInactive = !isPreGame && (!isWhiteMove || isFastForward);
 
   const bgClass =
-    isPreGame ? 'bg-black border-black text-white hover:bg-gray-800' :
-    feedback === 'correct' ? 'bg-green-500 border-green-700 text-white' :
-    feedback === 'false_positive' ? 'bg-red-500 border-red-700 text-white' :
-    disabled ? 'bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed' :
-    'bg-black border-black text-white hover:bg-gray-800 active:scale-95';
+    isPreGame ? 'bg-black border-black text-white hover:bg-white hover:text-black' :
+    feedback === 'correct' ? 'bg-black border-black text-white' :
+    feedback === 'false_positive' ? 'bg-gray-200 border-black text-black' :
+    disabled ? 'bg-gray-200 border-gray-200 text-gray-700 cursor-not-allowed' :
+    'bg-black border-black text-white hover:bg-white hover:text-black active:scale-[0.98]';
 
   const buttonText =
-    isPreGame ? 'Start Game' :
-    feedback === 'correct' ? 'Blunder!' :
-    feedback === 'false_positive' ? 'Not a blunder' :
-    disabled ? 'Already flagged' :
+    isPreGame ? 'START GAME' :
+    feedback === 'correct' ? 'BLUNDER!' :
+    feedback === 'false_positive' ? 'NOT A BLUNDER' :
+    disabled ? 'ALREADY FLAGGED' :
     isInactive ? '\u00A0' :
-    'Blunder';
+    'BLUNDER';
 
   const isDisabled = !isPreGame && disabled;
   const showTimer = !isPreGame && !disabled && !isInactive && moveTimeMs != null && moveTimeMs > 0;
@@ -87,7 +87,7 @@ export function BlunderButton({ onFlag, disabled, lastFlagResult, isPreGame = fa
         disabled={isDisabled}
         className={`
           relative overflow-hidden
-          hidden md:block w-full border-4 px-6 py-5 font-neo font-black text-xl uppercase tracking-wide
+          hidden md:block w-full border-4 px-6 py-5 font-neo font-black text-xl uppercase tracking-tighter
           transition-all duration-100 mt-4
           ${bgClass}
         `}
@@ -103,7 +103,7 @@ export function BlunderButton({ onFlag, disabled, lastFlagResult, isPreGame = fa
         disabled={isDisabled}
         className={`
           relative overflow-hidden
-          md:hidden w-full border-4 px-6 min-h-16 font-neo font-black text-xl uppercase tracking-wide
+          md:hidden w-full border-4 px-6 min-h-[4rem] font-neo font-black text-xl uppercase tracking-tighter
           transition-all duration-100 mt-4
           ${bgClass}
         `}

@@ -7,8 +7,12 @@ interface SubarticleProps {
 
 export function Subarticle({ children, subtitle }: SubarticleProps) {
   return (
-    <section className="my-4 prose">
-      {subtitle && <h2 className="text-2xl mb-4 ml-6 font-bold text-black border-b-2 border-accent pb-2 uppercase font-neo">{subtitle}</h2>}
+    <section className="my-8 prose">
+      {subtitle && (
+        <h3 className="text-2xl lg:text-3xl mb-6 ml-4 lg:ml-8 font-extrabold text-black border-l-8 border-black pl-4 uppercase font-neo">
+          {subtitle}
+        </h3>
+      )}
       <div className="bg-white overflow-hidden break-words">
         {children}
       </div>

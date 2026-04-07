@@ -43,17 +43,17 @@ export function ResultsScreen({
 
   if (isSubmitting) {
     return (
-      <div className="bg-white border-4 border-black p-8 text-center">
-        <p className="font-neo font-bold text-black uppercase">Submitting score…</p>
+      <div className="bg-white border-4 border-black p-8 text-center mt-4">
+        <p className="font-neo font-bold text-black uppercase tracking-widest animate-pulse">Submitting score…</p>
       </div>
     );
   }
 
   if (submitError) {
     return (
-      <div className="bg-red-50 border-4 border-red-500 p-6">
-        <p className="font-neo font-bold text-red-700 uppercase mb-2">Submission Error</p>
-        <p className="font-neo text-red-600 text-sm">{submitError}</p>
+      <div className="bg-gray-100 border-4 border-black p-6 mt-4">
+        <p className="font-neo font-bold text-black uppercase mb-2 tracking-widest">Submission Error</p>
+        <p className="font-neo text-black font-bold text-sm uppercase">{submitError}</p>
       </div>
     );
   }
@@ -61,69 +61,69 @@ export function ResultsScreen({
   if (!result) return null;
 
   return (
-    <div className="bg-white border-4 border-black">
+    <div className="bg-white border-4 border-black mt-4">
       {/* Header */}
-      <div className="bg-black px-6 py-4 text-center">
-        <p className="font-neo text-xs uppercase tracking-widest mb-1 text-white">Game #{gameNumber} Complete</p>
-        <p className="font-neo font-black text-4xl md:text-5xl text-white">{result.totalScore}<span className="text-lg text-gray-400 ml-1">pts</span></p>
+      <div className="bg-black px-6 py-6 text-center border-b-4 border-black">
+        <p className="font-neo text-xs uppercase tracking-widest mb-1 text-white opacity-60">Game #{gameNumber} Complete</p>
+        <p className="font-neo font-black text-4xl md:text-5xl text-white leading-none whitespace-nowrap">{result.totalScore} <span className="text-xl text-white opacity-60">pts</span></p>
       </div>
 
       {/* Emoji result — copy target */}
-      <div className="px-6 py-4 text-center border-b-2 border-black">
-        <p className="text-2xl tracking-widest mb-3 select-all">{result.resultEmoji}</p>
+      <div className="px-6 py-6 text-center border-b-4 border-black bg-gray-100">
+        <p className="text-3xl tracking-widest mb-4 select-all">{result.resultEmoji}</p>
         <button
           onClick={handleShare}
-          className="w-full border-4 border-black px-4 py-3 font-neo font-black uppercase text-base bg-black text-white hover:bg-white hover:text-black transition-colors"
+          className="w-full border-4 border-black px-4 py-4 font-neo font-black uppercase text-lg bg-black text-white hover:bg-white hover:text-black transition-all duration-100"
         >
-          {copied ? 'Copied!' : 'Copy Results'}
+          {copied ? 'COPIED!' : 'COPY RESULTS'}
         </button>
       </div>
 
       {/* Stats grid */}
-      <div className="grid grid-cols-3 divide-x-2 divide-black border-b-2 border-black">
+      <div className="grid grid-cols-3 divide-x-4 divide-black border-b-4 border-black">
         <div className="p-4 text-center">
-          <p className="font-neo font-black text-2xl text-green-700">{result.blundersCaught}</p>
-          <p className="font-neo text-xs uppercase text-gray-500">Caught</p>
+          <p className="font-neo font-black text-3xl tracking-tighter text-black">{result.blundersCaught}</p>
+          <p className="font-neo text-[10px] uppercase font-bold tracking-widest text-black opacity-60 mt-1">Caught</p>
         </div>
         <div className="p-4 text-center">
-          <p className="font-neo font-black text-2xl text-gray-400">{result.blundersMissed}</p>
-          <p className="font-neo text-xs uppercase text-gray-500">Missed</p>
+          <p className="font-neo font-black text-3xl tracking-tighter text-black opacity-50">{result.blundersMissed}</p>
+          <p className="font-neo text-[10px] uppercase font-bold tracking-widest text-black opacity-60 mt-1">Missed</p>
         </div>
         <div className="p-4 text-center">
-          <p className={`font-neo font-black text-2xl ${result.falsePositives > 0 ? 'text-red-600' : 'text-black'}`}>
+          <p className={`font-neo font-black text-3xl tracking-tighter ${result.falsePositives > 0 ? 'text-black opacity-50' : 'text-black'}`}>
             {result.falsePositives}
           </p>
-          <p className="font-neo text-xs uppercase text-gray-500">False pos.</p>
+          <p className="font-neo text-[10px] uppercase font-bold tracking-widest text-black opacity-60 mt-1">False pos.</p>
         </div>
       </div>
 
       {/* Rank */}
       {result.rank !== null && (
-        <div className="px-6 py-3 text-center border-b-2 border-black bg-yellow-50">
-          <p className="font-neo text-sm text-black">
-            You ranked <span className="font-black">#{result.rank}</span> of{' '}
-            <span className="font-black">{result.totalPlayers}</span> players today
+        <div className="px-6 py-4 text-center border-b-4 border-black bg-white">
+          <p className="font-neo text-sm font-bold uppercase tracking-wide text-black">
+            You ranked <span className="font-black text-lg mx-1">#{result.rank}</span> of{' '}
+            <span className="font-black text-lg mx-1">{result.totalPlayers}</span> players today
           </p>
         </div>
       )}
 
       {/* Actions */}
-      <div className="p-4 flex flex-col gap-3">
+      <div className="p-6 flex flex-col gap-4">
         {gameUrl && (
           <a
             href={gameUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full border-4 border-black px-4 py-3 font-neo font-bold uppercase text-sm bg-white text-black hover:bg-black hover:text-white transition-colors text-center"
+            className="w-full border-4 border-black px-4 py-4 font-neo font-black uppercase text-sm bg-white text-black hover:bg-black hover:text-white transition-all duration-100 text-center"
           >
-            Analyze on Lichess
+            ANALYZE ON LICHESS
           </a>
         )}
         <button
           onClick={onViewLeaderboard}
-          className="w-full border-4 border-black px-4 py-3 font-neo font-bold uppercase text-sm bg-white text-black hover:bg-black hover:text-white transition-colors"
+          className="w-full border-4 border-black px-4 py-4 font-neo font-black uppercase text-sm bg-white text-black hover:bg-black hover:text-white transition-all duration-100"
         >
-          View Leaderboard
+          VIEW LEADERBOARD
         </button>
       </div>
     </div>

@@ -8,19 +8,23 @@ interface ArticleProps {
 }
 
 export default function Article({ title, subtitle, styleModifier = "", children }: ArticleProps) {
-    const modifiedClassName = "relative flex flex-col min-w-0 break-words bg-white  w-full border-4 border-black  lg:w-8/12 lg:mx-auto px-6 overflow-x-hidden " + styleModifier;
+    const modifiedClassName = "relative flex flex-col min-w-0 break-words bg-white/95 backdrop-blur-sm w-full border-4 border-black lg:max-w-4xl lg:mx-auto px-6 overflow-x-hidden " + styleModifier;
 
     return (
-        <section className="relative container mx-auto px-4 my-12 font-mono">
+        <section className="relative container mx-auto px-4 my-12 font-neo">
             <div className={modifiedClassName}>
-                <div className="mt-4">
-                    <h3 className="text-3xl lg:text-4xl leading-tight text-black  font-bold font-mono">
-                        {title.toUpperCase()}
-                    </h3>
-                    <h2 className="text-xl lg:text-2xl text-black  pb-2 font-mono">
-                        {subtitle.toUpperCase()}
-                    </h2>
-                </div>
+                {title && (
+                    <div className="mt-8 mb-4 border-b-4 border-black pb-4">
+                        <h1 className="text-4xl lg:text-6xl tracking-tighter text-black font-extrabold font-neo">
+                            {title.toUpperCase()}
+                        </h1>
+                        {subtitle && (
+                          <h2 className="text-xl lg:text-2xl text-black mt-2 font-bold opacity-80 uppercase">
+                              {subtitle}
+                          </h2>
+                        )}
+                    </div>
+                )}
                 <div className="prose">
                     {children}
                 </div>

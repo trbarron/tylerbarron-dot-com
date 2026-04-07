@@ -282,7 +282,7 @@ export default function BlunderWatch() {
     : 'White';
 
   return (
-    <div className="bg-black bg-fixed min-h-screen flex flex-col">
+    <div className="bg-fixed min-h-screen flex flex-col">
       <Navbar />
       <ScrollRestoration getKey={loc => loc.pathname} />
       <main className="flex-grow">
@@ -290,33 +290,33 @@ export default function BlunderWatch() {
 
           {/* How to play — dismissable, shown once for new visitors */}
           {showHowToPlay && (
-            <div className="bg-white border-4 border-black p-4 mb-4 relative">
+            <div className="bg-white border-4 border-black p-6 mb-6 relative">
               <button
                 onClick={dismissHowToPlay}
-                className="absolute top-2 right-3 font-neo font-bold text-gray-400 hover:text-black text-lg leading-none"
+                className="absolute top-2 right-4 font-neo font-black text-black hover:bg-black hover:text-white text-2xl leading-none transition-all duration-100 px-1"
                 aria-label="Dismiss"
               >
                 &times;
               </button>
-              <p className="font-neo font-bold text-black text-sm uppercase mb-2">How to play</p>
-              <p className="font-neo text-sm text-gray-700 pr-6">
-                The game plays out automatically in front of you. Press the button (or <kbd className="bg-black text-white px-1 font-mono text-xs">Space</kbd>) whenever White blunders — a mistake that swings the eval by 2+ pawns. The faster you react, the more points you earn. False positives cost you 30 points.
+              <p className="font-neo font-extrabold text-black text-sm uppercase mb-3 tracking-widest">How to play</p>
+              <p className="font-neo text-base font-medium text-black pr-8">
+                The game plays out automatically in front of you. Press the button (or <kbd className="bg-black text-white px-2 py-0.5 border-2 border-black font-mono text-xs font-bold uppercase">Space</kbd>) whenever White blunders — a mistake that swings the eval by 2+ pawns. The faster you react, the more points you earn. False positives cost you 30 points.
               </p>
             </div>
           )}
 
           {/* Error state — no game today */}
           {error && (
-            <div className="bg-red-50 border-4 border-red-500 p-6 mb-4">
-              <p className="font-neo font-bold text-red-700 uppercase mb-1">No Game Available</p>
-              <p className="font-neo text-red-600 text-sm">{error}</p>
+            <div className="bg-gray-100 border-4 border-black p-6 mb-6">
+              <p className="font-neo font-extrabold text-black uppercase mb-2 tracking-widest">No Game Available</p>
+              <p className="font-neo font-bold text-black text-sm uppercase">{error}</p>
             </div>
           )}
 
           {/* Already played today */}
           {alreadyPlayed && !submitResult && game && (
-            <div className="bg-yellow-50 border-4 border-black p-4 mb-4 text-center">
-              <p className="font-neo font-bold text-black uppercase">You already played today!</p>
+            <div className="bg-gray-100 border-4 border-black p-6 mb-6 text-center">
+              <p className="font-neo font-black text-black uppercase tracking-widest text-lg">You already played today!</p>
             </div>
           )}
 
@@ -328,35 +328,35 @@ export default function BlunderWatch() {
                   {/* Sidebar — on mobile renders first (above board); on desktop, right column */}
                   <div className="col-span-1 md:col-span-1 md:order-2 mb-3 md:mb-0">
                     {playback.phase === 'pregame' ? (
-                      <div className="bg-white border-4 border-black p-3 flex flex-row md:flex-col md:h-full gap-3 md:gap-0">
+                      <div className="bg-white border-4 border-black p-3 md:p-4 flex flex-row flex-wrap md:flex-col md:h-full gap-2 md:gap-0 justify-between items-center md:items-stretch">
                         {/* Matchup — horizontal on mobile, stacked on desktop */}
-                        <div className="flex items-center gap-3 md:block md:text-center md:mb-3">
-                          <p className="hidden md:block font-neo text-xs uppercase tracking-widest text-gray-500 mb-2">Matchup</p>
+                        <div className="flex items-center gap-2 md:gap-4 md:block md:text-center md:mb-6">
+                          <p className="hidden md:block font-neo text-[10px] font-extrabold uppercase tracking-widest text-black opacity-60 mb-3">Matchup</p>
                           <div className="flex items-center gap-2 md:justify-center">
-                            <div className="w-4 h-4 bg-white border-2 border-black flex-shrink-0" />
-                            <span className="font-neo font-bold text-sm">{game.whiteElo}</span>
+                            <div className="w-4 h-4 md:w-5 md:h-5 bg-white border-2 border-black flex-shrink-0" />
+                            <span className="font-neo font-black text-base md:text-lg">{game.whiteElo}</span>
                           </div>
-                          <span className="font-neo text-gray-400 text-xs md:block md:my-1">vs</span>
+                          <span className="font-neo text-black opacity-20 font-black text-lg md:text-xl md:block md:my-2">VS</span>
                           <div className="flex items-center gap-2 md:justify-center">
-                            <div className="w-4 h-4 bg-black flex-shrink-0" />
-                            <span className="font-neo font-bold text-sm">{game.blackElo}</span>
+                            <div className="w-4 h-4 md:w-5 md:h-5 bg-black flex-shrink-0" />
+                            <span className="font-neo font-black text-base md:text-lg">{game.blackElo}</span>
                           </div>
                         </div>
 
                         {/* Blunder count */}
-                        <div className="md:border-t-2 md:border-black md:pt-3 md:mb-3 flex-shrink-0 ml-auto md:ml-0">
-                          <div className="bg-yellow-400 border-2 border-black px-3 py-1 md:px-2 md:py-2 text-center">
-                            <span className="font-neo font-black text-sm md:text-2xl md:leading-none">{game.blunderCount}</span>
-                            <span className="font-neo text-xs md:block md:mt-1"> blunders</span>
+                        <div className="md:border-t-4 md:border-black md:pt-6 md:mb-6 flex-shrink-0 mt-2 sm:mt-0">
+                          <div className="bg-gray-100 border-4 border-black px-3 py-1.5 md:px-3 md:py-4 text-center">
+                            <span className="font-neo font-black text-xl md:text-4xl md:leading-none tracking-tighter">{game.blunderCount}</span>
+                            <span className="font-neo text-[10px] md:text-xs font-bold uppercase tracking-wider md:block md:mt-2 ml-1 md:ml-0">blunders</span>
                           </div>
                         </div>
 
                         {/* Progress placeholder — desktop only */}
                         <div className="hidden md:block mt-auto">
-                          <div className="border-2 border-black h-2 bg-gray-100">
+                          <div className="border-4 border-black h-3 bg-gray-100">
                             <div className="h-full bg-black" />
                           </div>
-                          <p className="font-neo text-xs text-gray-400 text-center mt-1 whitespace-nowrap">
+                          <p className="font-neo text-[10px] font-extrabold text-black opacity-60 text-center mt-2 uppercase tracking-widest whitespace-nowrap">
                             {game.moves.length} moves
                           </p>
                         </div>
@@ -377,20 +377,20 @@ export default function BlunderWatch() {
                   {/* Board + button — on desktop, left column */}
                   <div className="col-span-1 md:col-span-4 md:order-1">
                     {/* Top bar with FF slot always allocated */}
-                    <div className={`mb-3 flex items-center justify-between border-2 border-black px-3 md:px-4 py-2 gap-2 overflow-hidden ${
+                    <div className={`mb-4 flex items-center justify-between border-4 border-black px-4 md:px-6 py-3 gap-2 overflow-hidden ${
                       playback.phase === 'pregame'
                         ? 'bg-white text-black'
                         : currentTurn === 'White' ? 'bg-white text-black' : 'bg-black text-white'
                     }`}>
-                      <span className="font-neo font-bold text-xs uppercase whitespace-nowrap">
-                        {playback.phase === 'pregame' ? 'Ready' : `${currentTurn} to move`}
+                      <span className="font-neo font-black text-sm uppercase whitespace-nowrap tracking-wide">
+                        {playback.phase === 'pregame' ? 'READY' : `${currentTurn} TO MOVE`}
                       </span>
-                      <span className={`font-neo text-xs font-bold tracking-wide whitespace-nowrap hidden sm:inline ${playback.isFastForward ? 'opacity-100' : 'invisible'}`}>
+                      <span className={`font-neo text-sm font-black tracking-widest whitespace-nowrap hidden sm:inline ${playback.isFastForward ? 'opacity-100' : 'invisible'}`}>
                         FF
                       </span>
-                      <span className="font-neo text-xs opacity-60 whitespace-nowrap">
+                      <span className="font-neo text-xs font-bold uppercase tracking-widest opacity-60 whitespace-nowrap">
                         {playback.phase === 'pregame'
-                          ? `${game.moves.length} moves`
+                          ? `${game.moves.length} MOVES`
                           : `${Math.max(0, playback.currentMoveIndex + 1)} / ${game.moves.length}`
                         }
                       </span>
@@ -422,13 +422,13 @@ export default function BlunderWatch() {
               {/* Finished */}
               {playback.phase === 'finished' && (
                 <>
-                  <div className={`mb-3 flex items-center justify-center border-2 border-black px-4 py-2 ${
+                  <div className={`mb-4 flex items-center justify-center border-4 border-black px-6 py-4 ${
                     isCheckmate
                       ? checkmateWinner === 'White' ? 'bg-white text-black' : 'bg-black text-white'
                       : 'bg-gray-100 text-black'
                   }`}>
-                    <span className="font-neo font-bold text-xs uppercase">
-                      {isCheckmate ? `Checkmate — ${checkmateWinner} wins` : 'Game over'}
+                    <span className="font-neo font-black text-sm uppercase tracking-widest">
+                      {isCheckmate ? `CHECKMATE — ${checkmateWinner} WINS` : 'GAME OVER'}
                     </span>
                   </div>
 

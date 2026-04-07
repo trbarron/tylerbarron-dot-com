@@ -72,28 +72,28 @@ export default function ScoreDisplay({
     : Math.abs(lastEval - lastSlider).toFixed(2);
 
   return (
-    <div className="bg-white border-4 border-black overflow-hidden w-full col-span-1 sm:col-span-3 md:col-span-1">
+    <div className="bg-white border-4 border-black w-full">
       {/* Header */}
-      <div className="w-full border-b-2 border-accent py-2 flex flex-col items-center justify-center font-neo font-bold uppercase text-black bg-white">
-        <span className="text-xs md:text-sm">{getHeaderText()}</span>
+      <div className="bg-black text-white py-2 px-4 font-neo font-extrabold uppercase tracking-tighter text-sm border-b-4 border-black text-center">
+        {getHeaderText()}
       </div>
 
       {/* Content */}
-      <div className="p-3 md:p-4 bg-white text-black font-neo space-y-2">
+      <div className="p-4 bg-white text-black font-neo space-y-4">
         {/* Navigation buttons in review mode */}
         {isReviewMode && reviewPuzzle && (
-          <div className="flex gap-1 mb-2">
+          <div className="flex gap-2">
             <button
               onClick={() => onNavigateReview('next', filteredHistory)}
               disabled={reviewPuzzleIndex === filteredHistory.length - 1}
-              className="flex-1 px-1 py-1 bg-black text-white text-[10px] md:text-xs font-bold disabled:opacity-30"
+              className="flex-1 px-2 py-1 bg-white text-black border-2 border-black text-xs font-black uppercase hover:bg-black hover:text-white transition-all disabled:opacity-30 disabled:hover:bg-white disabled:hover:text-black"
             >
               ← Old
             </button>
             <button
               onClick={() => onNavigateReview('prev', filteredHistory)}
               disabled={reviewPuzzleIndex === 0}
-              className="flex-1 px-1 py-1 bg-black text-white text-[10px] md:text-xs font-bold disabled:opacity-30"
+              className="flex-1 px-2 py-1 bg-white text-black border-2 border-black text-xs font-black uppercase hover:bg-black hover:text-white transition-all disabled:opacity-30 disabled:hover:bg-white disabled:hover:text-black"
             >
               New →
             </button>
@@ -101,48 +101,48 @@ export default function ScoreDisplay({
         )}
 
         {/* Stats - shown in both modes */}
-        <div className="grid grid-cols-2 gap-2 text-xs">
-          <div className="text-left">
-            <div className="text-gray-600 uppercase text-[10px] whitespace-nowrap">Your Guess</div>
-            <div className="font-bold text-sm">{yourGuess}</div>
+        <div className="space-y-3">
+          <div className="flex justify-between items-baseline border-b-2 border-black/5 pb-1">
+            <div className="text-black font-extrabold uppercase text-[10px] tracking-wider opacity-60">Your Guess</div>
+            <div className="font-black text-lg tracking-tighter leading-none">{yourGuess}</div>
           </div>
-          <div className="text-right">
-            <div className="text-gray-600 uppercase text-[10px] whitespace-nowrap">Actual</div>
-            <div className="font-bold text-sm">{actualEval}</div>
+          <div className="flex justify-between items-baseline border-b-2 border-black/5 pb-1">
+            <div className="text-black font-extrabold uppercase text-[10px] tracking-wider opacity-60">Actual</div>
+            <div className="font-black text-lg tracking-tighter leading-none">{actualEval}</div>
           </div>
         </div>
 
         {/* Difference */}
-        <div className="border-t-2 border-gray-200 pt-2">
-          <div className="text-gray-600 uppercase text-[10px]">Difference</div>
-          <div className="font-bold text-lg text-accent">{difference}</div>
+        <div className="border-t-4 border-black pt-2">
+          <div className="text-black font-extrabold uppercase text-[10px] tracking-widest opacity-60">Difference</div>
+          <div className="font-black text-3xl tracking-tighter text-black leading-tight">{difference}</div>
         </div>
 
         {/* Showing count indicator in review mode */}
         {isReviewMode && totalCount > displayLimit && (
-          <div className="text-center text-gray-600 text-[10px] pt-1">
+          <div className="text-center text-black font-bold text-[10px] uppercase opacity-40">
             (Showing last {displayLimit} of {totalCount})
           </div>
         )}
 
         {/* Copy FEN and Exit Review buttons in review mode */}
         {isReviewMode && reviewPuzzle && (
-          <div className="space-y-1 mt-2">
+          <div className="space-y-2 pt-2">
             <button
               onClick={() => onCopyFEN(reviewPuzzle.fen)}
-              className={`w-full px-2 py-1 text-[10px] font-bold transition-colors ${
+              className={`w-full px-4 py-2 text-xs font-black uppercase border-2 border-black transition-all ${
                 copyFeedback
-                  ? 'bg-green-600 text-white'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  ? 'bg-black text-white'
+                  : 'bg-white text-black hover:bg-black hover:text-white'
               }`}
             >
-              {copyFeedback ? 'FEN Copied' : 'Copy FEN'}
+              {copyFeedback ? 'FEN COPIED' : 'COPY FEN'}
             </button>
             <button
               onClick={onToggleReview}
-              className="w-full px-3 py-2 bg-accent text-white font-bold text-xs hover:bg-black transition-colors"
+              className="w-full px-4 py-3 bg-black text-white font-black text-xs uppercase hover:bg-white hover:text-black border-2 border-black transition-all"
             >
-              Exit Review
+              EXIT REVIEW
             </button>
           </div>
         )}
@@ -151,9 +151,9 @@ export default function ScoreDisplay({
         {totalCount > 0 && !isReviewMode && (
           <button
             onClick={onToggleReview}
-            className="w-full mt-2 px-3 py-2 bg-black text-white font-bold text-xs hover:bg-accent transition-colors"
+            className="w-full mt-2 px-4 py-3 bg-black text-white font-black text-xs uppercase hover:bg-white hover:text-black border-2 border-black transition-all"
           >
-            View All →
+            VIEW ALL
           </button>
         )}
       </div>

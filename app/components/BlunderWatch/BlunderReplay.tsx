@@ -34,10 +34,10 @@ function formatEval(cp: number): string {
 
 function outcomeLabel(result: BlunderResult): { label: string; className: string } {
   switch (result.outcome) {
-    case 'caught_fast':   return { label: `✓ Great (+${result.points}pts)`,  className: 'text-green-700 bg-green-50 border-green-400' };
-    case 'caught_medium': return { label: `✓ Good (+${result.points}pts)`,   className: 'text-yellow-700 bg-yellow-50 border-yellow-400' };
-    case 'caught_slow':   return { label: `✓ Okay (+${result.points}pts)`,   className: 'text-orange-700 bg-orange-50 border-orange-400' };
-    case 'missed':        return { label: '✗ Missed',                         className: 'text-gray-600 bg-gray-50 border-gray-300' };
+    case 'caught_fast':   return { label: `✓ Great (+${result.points}pts)`,  className: 'bg-black text-white border-black' };
+    case 'caught_medium': return { label: `✓ Good (+${result.points}pts)`,   className: 'bg-white text-black border-black' };
+    case 'caught_slow':   return { label: `✓ Okay (+${result.points}pts)`,   className: 'bg-white text-black border-black opacity-70' };
+    case 'missed':        return { label: '✗ Missed',                         className: 'bg-gray-100 text-black border-black opacity-60' };
   }
 }
 
@@ -87,9 +87,9 @@ export function BlunderReplay({ moves, initialFen, blunderResults }: BlunderRepl
                 <p className="font-neo font-bold text-black text-sm mb-1">
                   Move {fullMoveNumber} — {sideLabel} blundered
                 </p>
-                <p className="font-mono text-xs text-gray-600 mb-2">
+                <p className="font-mono text-xs text-gray-700 mb-2">
                   {formatEval(result.evalBefore)} → {formatEval(result.evalAfter)}&nbsp;
-                  <span className={evalSwing > 0 ? 'text-green-600' : 'text-red-600'}>
+                  <span className="opacity-60">
                     ({evalSwing > 0 ? '+' : ''}{(evalSwing / 100).toFixed(2)})
                   </span>
                 </p>
@@ -97,7 +97,7 @@ export function BlunderReplay({ moves, initialFen, blunderResults }: BlunderRepl
                   {label}
                 </div>
                 {result.reactionTimeMs !== undefined && (
-                  <p className="font-neo text-xs text-gray-400 mt-1">
+                  <p className="font-neo text-xs text-black opacity-40 mt-1">
                     Reaction: {(result.reactionTimeMs / 1000).toFixed(2)}s
                   </p>
                 )}

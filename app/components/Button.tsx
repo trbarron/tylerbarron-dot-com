@@ -30,25 +30,24 @@ export default function Button({
   type = 'button',
 }: ButtonProps) {
   const variantClasses = {
-    primary: 'bg-black text-white hover:bg-gray-800',
-    secondary: 'bg-white text-black border-4 border-black hover:bg-gray-100',
-    danger: 'bg-red-500 text-white hover:bg-red-600',
+    primary: 'bg-white text-black border-4 border-black hover:bg-black hover:text-white',
+    secondary: 'bg-black text-white border-4 border-black hover:bg-white hover:text-black',
   };
 
   const sizeClasses = {
     sm: 'px-3 py-1 text-sm',
-    md: 'px-4 py-2 text-base',
-    lg: 'px-6 py-3 text-lg',
+    md: 'px-6 py-3 text-base',
+    lg: 'px-8 py-4 text-lg',
   };
 
-  const baseClasses = 'font-bold font-neo transition-colors disabled:opacity-50 disabled:cursor-not-allowed';
+  const baseClasses = 'font-bold font-neo uppercase tracking-wider transition-all duration-100 disabled:bg-gray-200 disabled:text-gray-500 disabled:border-gray-300 disabled:cursor-not-allowed';
 
   return (
     <button
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
+      className={`${baseClasses} ${variantClasses[variant === 'danger' ? 'primary' : variant]} ${sizeClasses[size]} ${className}`}
     >
       {children}
     </button>

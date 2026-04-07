@@ -9,6 +9,15 @@ interface LeaderboardProps {
   date?: string;
 }
 
+import { useState, useEffect, useCallback } from "react";
+import type { LeaderboardEntry } from "~/utils/chesserGuesser/types";
+import Skeleton from "~/components/Skeleton";
+
+interface LeaderboardProps {
+  currentUsername?: string;
+  date?: string;
+}
+
 export function Leaderboard({
   currentUsername,
   date
@@ -21,9 +30,7 @@ export function Leaderboard({
 
   const fetchLeaderboard = useCallback(async () => {
     try {
-      if (leaderboard.length === 0) {
-        setIsLoading(true);
-      }
+      setIsLoading(true);
       setError(null);
 
       const params = new URLSearchParams();
@@ -44,7 +51,7 @@ export function Leaderboard({
     } finally {
       setIsLoading(false);
     }
-  }, [date, currentUsername, leaderboard.length]);
+  }, [date, currentUsername]);
 
   useEffect(() => {
     fetchLeaderboard();
@@ -61,96 +68,76 @@ export function Leaderboard({
   };
 
   return (
-    <div className="bg-white  border-4 border-black ">
+    <div className="bg-white border-4 border-black">
       {/* Header */}
-      <div className="border-b-2 border-accent py-2 inline-flex items-center justify-center text-sm md:text-md font-neo font-bold uppercase text-black  w-full">
-        Leaderboard
+      <div className="bg-black text-white py-3 px-4 font-neo font-extrabold uppercase tracking-tighter text-lg border-b-4 border-black">
+        LEADERBOARD
       </div>
 
       {/* Content */}
-      <div>
-        <div className="max-h-[500px] overflow-y-auto">
-          {isLoading ? (
-            <div className="p-4 text-center font-neo text-sm text-gray-600 ">
-              Loading...
-            </div>
-          ) : error ? (
-            <div className="p-4 text-center font-neo text-sm text-red-600 ">
-              {error}
-            </div>
-          ) : leaderboard.length === 0 ? (
-            <div className="p-4 text-center font-neo text-sm text-gray-600 ">
-              No scores yet today.<br />Be the first!
-            </div>
-          ) : (
-            <>
-              {/* Leaderboard Entries */}
-              {leaderboard.map((entry, index) => {
-                const isCurrentUser = entry.username === currentUsername;
-                const medal = getMedalEmoji(entry.rank);
-
-                return (
-                  <div
-                    key={`${entry.username}-${index}`}
-                    className={`
-                      border-b border-black  p-2 font-neo text-xs
-                      ${isCurrentUser
-                        ? 'bg-yellow-100 '
-                        : 'bg-white '
-                      }
-                    `}
-                  >
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-2 flex-1 min-w-0">
-                        <span className={`font-bold w-8 flex-shrink-0 ${entry.rank <= 3 ? 'text-md' : ''}`}>
-                          {medal || `#${entry.rank}`}
-                        </span>
-                        <span className={`truncate ${isCurrentUser ? 'font-bold' : ''} text-black `}>
-                          {entry.username}
-                          {isCurrentUser && ' (You)'}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-3 flex-shrink-0">
-
-                        <span className={`font-bold min-w-12 text-right ${isCurrentUser ? 'text-black ' : 'text-accent'}`} title="Total Difference">
-                          {entry.score}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-
-              {/* User Rank (if outside top 50) */}
-              {userRank && (
-                <>
-                  <div className="border-b-2 border-black "></div>
-                  <div className="bg-yellow-100  border-b border-black  p-2 font-neo text-xs">
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold w-8">#{userRank.rank}</span>
-                        <span className="font-bold text-black ">
-                          {userRank.username} (You)
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-3">
-
-                        <span className="font-bold text-black  min-w-12 text-right" title="Total Difference">
-                          {userRank.score}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </>
-              )}
-
-              {/* Footer */}
-              <div className="p-2 text-center font-neo text-xs text-gray-600  bg-gray-50 ">
-                {totalPlayers} {totalPlayers === 1 ? 'player' : 'players'} today
+      <div className="max-h-[500px] overflow-y-auto">
+        {isLoading ? (
+          <div className="p-4 space-y-3">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="flex items-center gap-4 h-8">
+                <Skeleton variant="rect" className="w-8 h-full" />
+                <Skeleton variant="rect" className="flex-1 h-full" />
+                <Skeleton variant="rect" className="w-16 h-full" />
               </div>
-            </>
-          )}
-        </div>
+            ))}
+          </div>
+        ) : error ? (
+          <div className="p-8 text-center font-neo font-bold text-red-600 uppercase italic">
+            {error}
+          </div>
+        ) : leaderboard.length === 0 ? (
+          <div className="p-8 text-center font-neo font-bold text-gray-400 uppercase">
+            No scores yet today.<br />Be the first!
+          </div>
+        ) : (
+          <>
+            {/* Leaderboard Entries */}
+            {leaderboard.map((entry, index) => {
+              const isCurrentUser = entry.username === currentUsername;
+              const medal = getMedalEmoji(entry.rank);
+
+              return (
+                <div
+                  key={`${entry.username}-${index}`}
+                  className={`
+                    border-b-2 border-black p-3 font-neo
+                    ${isCurrentUser
+                      ? 'bg-black text-white'
+                      : 'bg-white text-black'
+                    }
+                  `}
+                >
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <span className={`font-extrabold w-10 flex-shrink-0 text-lg ${entry.rank <= 3 ? 'scale-110' : 'opacity-50'}`}>
+                        {medal || `#${entry.rank}`}
+                      </span>
+                      <span className={`truncate font-bold text-lg tracking-tight ${isCurrentUser ? '' : ''}`}>
+                        {entry.username.toUpperCase()}
+                        {isCurrentUser && ' (YOU)'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3 flex-shrink-0">
+                      <span className={`font-black text-xl min-w-16 text-right ${isCurrentUser ? 'text-white' : 'text-black'}`} title="Total Difference">
+                        {entry.score}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Footer Summary */}
+            <div className="p-3 text-center font-neo font-black text-sm uppercase bg-gray-100 border-t-2 border-black">
+              {totalPlayers} {totalPlayers === 1 ? 'player' : 'players'} competing today
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

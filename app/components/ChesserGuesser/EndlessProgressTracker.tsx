@@ -14,38 +14,38 @@ export function EndlessProgressTracker({
     maxStreak
 }: EndlessProgressTrackerProps) {
     return (
-        <div className="bg-white  border-4 border-black">
+        <div className="bg-white border-4 border-black">
             {/* Header */}
-            <div className="border-b-2 border-accent py-2 inline-flex items-center justify-center text-sm md:text-md font-neo font-bold uppercase text-black  w-full">
+            <div className="bg-black text-white py-2 px-4 font-neo font-extrabold uppercase tracking-tighter text-sm border-b-4 border-black text-center">
                 Endless Mode
             </div>
 
             {/* Streak Display */}
-            <div className="p-4 text-center border-b-2 border-black ">
-                <div className="font-neo text-3xl md:text-4xl font-bold text-black ">
+            <div className="p-4 text-center border-b-4 border-black">
+                <div className="font-neo text-4xl font-black text-black tracking-tighter">
                     {streak}
                 </div>
-                <div className="font-neo text-xs uppercase text-gray-600 whitespace-nowrap">
+                <div className="font-neo text-[10px] uppercase text-black font-extrabold tracking-widest mt-1">
                     Current Streak
                 </div>
             </div>
 
             {/* Max Streak */}
-            <div className="p-4 text-center border-b-2 border-black">
-                <div className="font-neo text-3xl md:text-4xl font-bold text-black ">
+            <div className="p-4 text-center border-b-4 border-black">
+                <div className="font-neo text-4xl font-black text-black tracking-tighter">
                     {maxStreak}
                 </div>
-                <div className="font-neo text-xs uppercase text-gray-600 whitespace-nowrap">
+                <div className="font-neo text-[10px] uppercase text-black font-extrabold tracking-widest mt-1">
                     Best Streak
                 </div>
             </div>
 
             {/* Games Played */}
-            <div className="p-4 text-center">
-                <div className="font-neo text-xl font-bold text-black ">
+            <div className="p-4 text-center bg-gray-100">
+                <div className="font-neo text-2xl font-black text-black ">
                     {gamesPlayed}
                 </div>
-                <div className="font-neo text-[10px] uppercase text-gray-600 whitespace-nowrap">
+                <div className="font-neo text-[10px] uppercase text-black font-extrabold tracking-widest mt-1">
                     Rounds Played
                 </div>
             </div>
