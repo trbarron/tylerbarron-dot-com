@@ -98,15 +98,15 @@ export default function App() {
   const location = useLocation();
 
   useEffect(() => {
-    if (gaTrackingId) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const gtag = (window as any).gtag;
-      if (typeof gtag === "function") {
-        gtag("config", gaTrackingId, {
-          page_path: location.pathname + location.search,
-        });
-      }
-    }
+    if (!gaTrackingId) return;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const gtag = (window as any).gtag;
+    if (typeof gtag !== "function") return;
+    // GA4 SPA page view — fires on initial mount and every navigation
+    gtag("event", "page_view", {
+      page_location: window.location.href,
+      page_title: document.title,
+    });
   }, [location, gaTrackingId]);
 
   return (
