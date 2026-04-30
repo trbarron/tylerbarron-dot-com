@@ -1,0 +1,40 @@
+---
+title: Barron Squares
+date: 2026-04-16
+---
+
+I submitted to *FiveThirtyEight*'s **Riddler Express** a puzzle where every row *and* every column had to obey the same rule: the leftmost digit times the rightmost digit equals the two-digit number in the middle — e.g. `6 · 7 = 42`. This would read off as `6, 4, 2, 7` Here's a 4×4 example:
+
+```
+6 │ 4 2 │ 7
+──┼─────┼──
+4 │ 2 0 │ 5
+8 │ 4 8 │ 6
+──┼─────┼──
+8 │ 6 4 │ 8
+```
+
+Rows: `6·7=42`, `4·5=20`, `8·6=48`, `8·8=64`. Columns: `6·8=48`, `4·6=24`, `2·4=08`, `7·8=56`. I call these **Barron Squares**. There is a generalization: a *Barron Square of order k* is a `4k × 4k` matrix where every row and column satisfies
+
+> the k-digit number on the left, times the k-digit number on the right, equals the 2k-digit number in the middle.
+
+The question "how many exist at each order" ends up being a mildly fun exercise.
+
+## What we know
+
+| Object | Count | How |
+|---|---|---|
+| Order-1 (4×4) | **118** | Exhaustive — all `9⁴ = 6,561` corner quadruples, under a second in Python |
+| Order-2 (8×8) | **1,248** | Parallel C search, ~50 hours on 12 cores. Independently re-verified by a second, structurally different C program (~161 CPU-hours) and spot-checked with the Z3 SMT solver |
+| 4×4×4 Barron Cube | **0** | Exhaustive over `9⁸ ≈ 43 million` vertex octuplets |
+| Order-4 (16×16) | 0 in 500,000 random trials | Random probing |
+
+Two structural theorems fell out of staring at the 1,248 order-2 squares: an *endpoint pairing* dichotomy between inner rows and columns, and, as a corollary, the fact that the inner 4×4 center of every 8×8 Barron Square is a symmetric matrix. Both hold for all 1,248 squares. Proving the dichotomy algebraically (rather than by computer enumeration) is the top open question.
+
+## Read more
+
+- **Paper:** [18-page PDF](/artifacts/barron_squares.pdf) — full proofs, enumeration details, and open questions
+- **Code and data:** [github.com/trbarron/barron-squares](https://github.com/trbarron/barron-squares) — C/Python search, all 118 and 1,248 squares as JSON
+- The sequence `(118, 1248, …)` will be submitted to OEIS (I'm excited)
+
+If you find a third term I'd love to hear about it.
