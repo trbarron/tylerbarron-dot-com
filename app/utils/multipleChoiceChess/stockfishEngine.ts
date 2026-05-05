@@ -23,24 +23,25 @@ interface PendingAnalysis {
 const INIT_TIMEOUT_MS = 45000;
 const ANALYZE_TIMEOUT_BUFFER_MS = 8000;
 
-function createStockfishWorker(): Worker {
+function createStockfishWorker(): { worker: Worker; cleanup: () => void } {
   // Workers can't be created directly from a cross-origin URL, so bootstrap a
   // same-origin blob worker that importScripts the CDN-hosted Stockfish JS.
-  // Stockfish reads its location hash to resolve the wasm path: #<wasm-url>,worker
+  // Stockfish reads location.hash for the wasm path: hash format is `#<wasm-url>`.
+  // Do NOT append `,worker` — it short-circuits Stockfish's `||` entry chain
+  // before the ternary that actually wires up onmessage and instantiates wasm,
+  // leaving the worker silent.
   const bootstrapSource = `importScripts(${JSON.stringify(WORKER_URL)});`;
   const blob = new Blob([bootstrapSource], { type: 'application/javascript' });
   const blobUrl = URL.createObjectURL(blob);
-  const workerUrl = `${blobUrl}#${encodeURIComponent(WASM_URL)},worker`;
+  const workerUrl = `${blobUrl}#${encodeURIComponent(WASM_URL)}`;
 
-  try {
-    return new Worker(workerUrl);
-  } finally {
-    URL.revokeObjectURL(blobUrl);
-  }
+  const worker = new Worker(workerUrl);
+  return { worker, cleanup: () => URL.revokeObjectURL(blobUrl) };
 }
 
 class StockfishEngine {
   private worker: Worker | null = null;
+  private cleanupBlob: (() => void) | null = null;
   private state: EngineState = 'uninitialized';
   private initResolve: (() => void) | null = null;
   private initReject: ((err: Error) => void) | null = null;
@@ -61,7 +62,9 @@ class StockfishEngine {
       this.initReject = (err) => { clearTimeout(timeoutId); reject(err); };
 
       try {
-        this.worker = createStockfishWorker();
+        const { worker, cleanup } = createStockfishWorker();
+        this.worker = worker;
+        this.cleanupBlob = cleanup;
         this.worker.onmessage = this.handleMessage.bind(this);
         this.worker.onerror = (e) => {
           this.state = 'error';
@@ -145,6 +148,8 @@ class StockfishEngine {
     this.worker?.postMessage('quit');
     this.worker?.terminate();
     this.worker = null;
+    this.cleanupBlob?.();
+    this.cleanupBlob = null;
     this.state = 'uninitialized';
     this.pending = null;
   }
