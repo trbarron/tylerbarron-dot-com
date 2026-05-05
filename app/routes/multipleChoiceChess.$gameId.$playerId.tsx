@@ -313,7 +313,7 @@ export default function MultipleChoiceChessGame() {
   const orientation = color;
 
   const shareUrl = typeof window !== 'undefined'
-    ? `${window.location.origin}/multipleChoiceChess/${gameId}`
+    ? `${window.location.origin}/multiple-choice-chess/${gameId}`
     : '';
 
   const copyLink = () => navigator.clipboard?.writeText(shareUrl);
@@ -447,7 +447,7 @@ export default function MultipleChoiceChessGame() {
           blackScore={gameState.black_score}
           whiteMoves={gameState.white_moves}
           blackMoves={gameState.black_moves}
-          onPlayAgain={() => navigate('/multipleChoiceChess')}
+          onPlayAgain={() => navigate('/multiple-choice-chess')}
         />
       )}
     </div>

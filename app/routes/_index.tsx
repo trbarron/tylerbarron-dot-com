@@ -117,7 +117,7 @@ const links = [
     description: "Play chess with your friends"
   },
   {
-    to: "/multipleChoiceChess",
+    to: "/multiple-choice-chess",
     title: "Multiple Choice Chess",
     description: "Pick the best move from four engine-generated options"
   },
