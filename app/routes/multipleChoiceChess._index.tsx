@@ -96,9 +96,6 @@ export default function MultipleChoiceChessLobby() {
             <h1 className="font-neo text-3xl font-extrabold uppercase leading-none tracking-tight md:text-4xl">
               Multiple<br/>Choice Chess
             </h1>
-            <div className="mt-4 flex gap-1 font-neo text-2xl text-white/80">
-              <span>♔</span><span>♕</span><span>♖</span><span>♗</span><span>♘</span><span>♙</span>
-            </div>
           </div>
 
           <div className="p-8">
