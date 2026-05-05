@@ -67,3 +67,7 @@ claude-flow
 hive-mind-prompt-*.txt
 
 .DS_Store
+
+# Stockfish WASM files (copied to public/ by Vite plugin at build time)
+public/stockfish-18-lite-single.js
+public/stockfish-18-lite-single.wasm

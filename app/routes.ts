@@ -52,5 +52,15 @@ export default [
   route("api/blunderWatch/game", "routes/api/blunderWatch/game.ts"),
   route("api/blunderWatch/submit", "routes/api/blunderWatch/submit.ts"),
   route("api/blunderWatch/leaderboard", "routes/api/blunderWatch/leaderboard.ts"),
+
+  // Multiple Choice Chess
+  route("multiple-choice-chess", "routes/multipleChoiceChess._index.tsx"),
+  route("multiple-choice-chess/:gameId/:playerId", "routes/multipleChoiceChess.$gameId.$playerId.tsx"),
+  route("api/multipleChoiceChess/create", "routes/api/multipleChoiceChess/create.ts"),
+  route("api/multipleChoiceChess/join", "routes/api/multipleChoiceChess/join.ts"),
+  route("api/multipleChoiceChess/state", "routes/api/multipleChoiceChess/state.ts"),
+  route("api/multipleChoiceChess/move", "routes/api/multipleChoiceChess/move.ts"),
+  route("api/multipleChoiceChess/resign", "routes/api/multipleChoiceChess/resign.ts"),
+  route("api/multipleChoiceChess/available", "routes/api/multipleChoiceChess/available.ts"),
 ] satisfies RouteConfig;
 

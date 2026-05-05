@@ -117,6 +117,11 @@ const links = [
     description: "Play chess with your friends"
   },
   {
+    to: "/multiple-choice-chess",
+    title: "Multiple Choice Chess",
+    description: "Pick the best move from four engine-generated options"
+  },
+  {
     to: "/pizza-rating",
     title: "National Pizza Ratings",
     description: "Using Domino's to find the best pizza"

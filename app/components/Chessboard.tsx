@@ -43,6 +43,9 @@ interface ChessboardProps {
   ref?: React.RefObject<HTMLDivElement | Api>;
 }
 
+const STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+const normalizeFen = (fen: string) => fen === 'start' ? STARTING_FEN : fen;
+
 // Generate chess squares (a1 through h8)
 const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 const RANKS = ['1', '2', '3', '4', '5', '6', '7', '8'];
@@ -68,7 +71,7 @@ export default function Chessboard({
   ref: externalRef
 }: ChessboardProps) {
   const internalRef = useRef<HTMLDivElement>(null);
-  const [chess] = useState(new Chess(initialFen));
+  const [chess] = useState(new Chess(normalizeFen(initialFen)));
   const cgRef = useRef<Api>();
   const [isClient, setIsClient] = useState(false);
 
@@ -169,18 +172,22 @@ export default function Chessboard({
       animated, animationDuration, highlightMoves, lastMove, autoShapes, draggable, events, 
       drawable, selectable, calcMovable, handleMove, externalRef, ref]);
 
-  // Update board if initialFen changes
+  // Update board if initialFen or lastMove changes
   useEffect(() => {
     if (cgRef.current) {
-      chess.load(initialFen);
+      chess.load(normalizeFen(initialFen));
       cgRef.current.set({
         fen: chess.fen(),
         movable: calcMovable(),
         lastMove: lastMove as Key[],
-        drawable: { autoShapes }
       });
     }
-  }, [initialFen, chess, viewOnly, movable, playableColor, lastMove, autoShapes, calcMovable]);
+  }, [initialFen, chess, viewOnly, movable, playableColor, lastMove, calcMovable]);
+
+  // Update arrow shapes independently so hover doesn't reload the FEN
+  useEffect(() => {
+    cgRef.current?.set({ drawable: { autoShapes } });
+  }, [autoShapes]);
 
   return (
     <div className="w-full max-w-2xl mx-auto">
