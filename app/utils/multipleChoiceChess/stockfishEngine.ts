@@ -4,6 +4,7 @@
 import { parseMultiPV, type CandidateMove, shuffle } from "./moveParser";
 
 const WORKER_URL = 'https://externalwebsiteassets.s3.us-west-2.amazonaws.com/stockfish-18-lite-single.js';
+const WASM_URL = 'https://externalwebsiteassets.s3.us-west-2.amazonaws.com/stockfish-18-lite-single.wasm';
 
 type EngineState = 'uninitialized' | 'ready' | 'analyzing' | 'error';
 
@@ -20,20 +21,17 @@ const ANALYZE_TIMEOUT_BUFFER_MS = 8000;
 
 function createStockfishWorker(): Worker {
   // Bootstrap as a same-origin blob worker, then load Stockfish from S3.
-  // We must override locateFile so wasm resolves against S3 (not blob: URL).
-  const workerBaseUrl = new URL('.', WORKER_URL).toString();
+  // This Stockfish build expects worker location hash as: #<wasm-url>,worker
+  // so it can resolve the wasm path correctly.
   const bootstrapSource = `
-    self.Module = self.Module || {};
-    self.Module.locateFile = function(path) {
-      return new URL(path, ${JSON.stringify(workerBaseUrl)}).toString();
-    };
     importScripts(${JSON.stringify(WORKER_URL)});
   `;
   const blob = new Blob([bootstrapSource], { type: 'application/javascript' });
   const blobUrl = URL.createObjectURL(blob);
+  const workerUrl = `${blobUrl}#${encodeURIComponent(WASM_URL)},worker`;
 
   try {
-    return new Worker(blobUrl);
+    return new Worker(workerUrl);
   } finally {
     URL.revokeObjectURL(blobUrl);
   }
