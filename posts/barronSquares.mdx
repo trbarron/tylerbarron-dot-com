@@ -26,8 +26,8 @@ The question "how many exist at each order" ends up being a mildly fun exercise.
 |---|---|---|
 | Order-1 (4×4) | **118** | Exhaustive — all `9⁴ = 6,561` corner quadruples, under a second in Python |
 | Order-2 (8×8) | **1,248** | Parallel C search, ~50 hours on 12 cores. Independently re-verified by a second, structurally different C program (~161 CPU-hours) and spot-checked with the Z3 SMT solver |
-| 4×4×4 Barron Cube | **0** | Exhaustive over `9⁸ ≈ 43 million` vertex octuplets |
 | Order-4 (16×16) | 0 in 500,000 random trials | Random probing |
+| 4×4×4 Barron Cube | **0** | Exhaustive over `9⁸ ≈ 43 million` vertex octuplets |
 
 Two structural theorems fell out of staring at the 1,248 order-2 squares: an *endpoint pairing* dichotomy between inner rows and columns, and, as a corollary, the fact that the inner 4×4 center of every 8×8 Barron Square is a symmetric matrix. Both hold for all 1,248 squares. Proving the dichotomy algebraically (rather than by computer enumeration) is the top open question.
 
