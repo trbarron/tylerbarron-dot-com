@@ -1,10 +1,9 @@
 // Stockfish engine wrapper — runs the lite single-threaded WASM build as a Web Worker.
-// Engine assets are loaded from external static hosting.
+// Engine assets are emitted by Vite into the static asset bucket and served via CloudFront.
 
 import { parseMultiPV, type CandidateMove, shuffle } from "./moveParser";
-
-const WORKER_URL = 'https://externalwebsiteassets.s3.us-west-2.amazonaws.com/stockfish-18-lite-single.js';
-const WASM_URL = 'https://externalwebsiteassets.s3.us-west-2.amazonaws.com/stockfish-18-lite-single.wasm';
+import workerSrcUrl from "stockfish/bin/stockfish-18-lite-single.js?url";
+import wasmSrcUrl from "stockfish/bin/stockfish-18-lite-single.wasm?url";
 
 type EngineState = 'uninitialized' | 'ready' | 'analyzing' | 'error';
 
@@ -20,21 +19,10 @@ const INIT_TIMEOUT_MS = 45000;
 const ANALYZE_TIMEOUT_BUFFER_MS = 8000;
 
 function createStockfishWorker(): Worker {
-  // Bootstrap as a same-origin blob worker, then load Stockfish from S3.
-  // This Stockfish build expects worker location hash as: #<wasm-url>,worker
-  // so it can resolve the wasm path correctly.
-  const bootstrapSource = `
-    importScripts(${JSON.stringify(WORKER_URL)});
-  `;
-  const blob = new Blob([bootstrapSource], { type: 'application/javascript' });
-  const blobUrl = URL.createObjectURL(blob);
-  const workerUrl = `${blobUrl}#${encodeURIComponent(WASM_URL)},worker`;
-
-  try {
-    return new Worker(workerUrl);
-  } finally {
-    URL.revokeObjectURL(blobUrl);
-  }
+  // Stockfish reads its location hash to resolve the wasm path: #<wasm-url>,worker
+  const wasmAbsoluteUrl = new URL(wasmSrcUrl, self.location.href).href;
+  const workerUrl = `${workerSrcUrl}#${encodeURIComponent(wasmAbsoluteUrl)},worker`;
+  return new Worker(workerUrl);
 }
 
 class StockfishEngine {
