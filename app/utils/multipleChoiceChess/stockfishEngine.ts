@@ -1,5 +1,5 @@
 // Stockfish engine wrapper — runs the lite single-threaded WASM build as a Web Worker.
-// The JS and WASM files are served from /public via the Vite copy plugin.
+// Engine assets are loaded from external static hosting.
 
 import { parseMultiPV, type CandidateMove, shuffle } from "./moveParser";
 
@@ -20,7 +20,15 @@ const ANALYZE_TIMEOUT_BUFFER_MS = 8000;
 
 function createStockfishWorker(): Worker {
   // Bootstrap as a same-origin blob worker, then load Stockfish from S3.
-  const bootstrapSource = `importScripts(${JSON.stringify(WORKER_URL)});`;
+  // We must override locateFile so wasm resolves against S3 (not blob: URL).
+  const workerBaseUrl = new URL('.', WORKER_URL).toString();
+  const bootstrapSource = `
+    self.Module = self.Module || {};
+    self.Module.locateFile = function(path) {
+      return new URL(path, ${JSON.stringify(workerBaseUrl)}).toString();
+    };
+    importScripts(${JSON.stringify(WORKER_URL)});
+  `;
   const blob = new Blob([bootstrapSource], { type: 'application/javascript' });
   const blobUrl = URL.createObjectURL(blob);
 
