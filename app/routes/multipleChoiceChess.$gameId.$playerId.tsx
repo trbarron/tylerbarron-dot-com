@@ -123,7 +123,7 @@ export default function MultipleChoiceChessGame() {
 
     try {
       const engine = getEngine();
-      let moves = await engine.analyze(fen, getThinkTime());
+      const moves = await engine.analyze(fen, getThinkTime());
 
       if (moves.length === 0) {
         throw new Error('Engine returned no moves');
