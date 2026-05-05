@@ -1,7 +1,32 @@
 import { reactRouter } from "@react-router/dev/vite";
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 import { execSync } from "child_process";
+import { copyFileSync, mkdirSync } from "fs";
+import { resolve } from "path";
+
+// Copy Stockfish WASM files to public/ so they can be served as static assets.
+// The engine JS file dynamically loads the matching .wasm from the same URL path.
+function copyStockfish(): Plugin {
+  const files = [
+    'stockfish-18-lite-single.js',
+    'stockfish-18-lite-single.wasm',
+  ];
+  const copy = () => {
+    const bin = resolve('node_modules/stockfish/bin');
+    const pub = resolve('public');
+    mkdirSync(pub, { recursive: true });
+    for (const f of files) {
+      try {
+        copyFileSync(resolve(bin, f), resolve(pub, f));
+      } catch {
+        // Non-fatal: warn only if the file is genuinely missing
+        console.warn(`[copy-stockfish] Could not copy ${f}`);
+      }
+    }
+  };
+  return { name: 'copy-stockfish', buildStart: copy, configureServer: copy };
+}
 
 // Get git version info at build time
 function getGitVersion() {
@@ -27,6 +52,7 @@ function getGitVersion() {
 
 export default defineConfig({
   plugins: [
+    copyStockfish(),
     reactRouter(),
     tsconfigPaths(),
   ],
