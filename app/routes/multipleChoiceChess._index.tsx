@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router";
 import { Navbar } from "~/components/Navbar";
 import Footer from "~/components/Footer";
@@ -44,14 +44,14 @@ export default function MultipleChoiceChessLobby() {
       const res = await fetch('/api/multipleChoiceChess/create', { method: 'POST' });
       if (!res.ok) throw new Error('Failed to create game');
       const data = await res.json();
-      navigate(`/multipleChoiceChess/${data.game_id}/${data.player_id}`);
+      navigate(`/multiple-choice-chess/${data.game_id}/${data.player_id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
       setIsJoining(false);
     }
   };
 
-  const joinByCode = async (code: string) => {
+  const joinByCode = useCallback(async (code: string) => {
     const trimmed = code.trim().toLowerCase();
     if (!trimmed) return;
     setIsJoining(true);
@@ -67,12 +67,19 @@ export default function MultipleChoiceChessLobby() {
         throw new Error(data.error ?? 'Failed to join game');
       }
       const data = await res.json();
-      navigate(`/multipleChoiceChess/${data.game_id}/${data.player_id}`);
+      navigate(`/multiple-choice-chess/${data.game_id}/${data.player_id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
       setIsJoining(false);
     }
-  };
+  }, [navigate]);
+
+  useEffect(() => {
+    const joinCode = new URLSearchParams(window.location.search).get('join');
+    if (!joinCode) return;
+    setGameCode(joinCode);
+    void joinByCode(joinCode);
+  }, [joinByCode]);
 
   const quickMatch = async () => {
     setIsJoining(true);
@@ -88,7 +95,7 @@ export default function MultipleChoiceChessLobby() {
         throw new Error(data.error ?? 'No available games');
       }
       const data = await res.json();
-      navigate(`/multipleChoiceChess/${data.game_id}/${data.player_id}`);
+      navigate(`/multiple-choice-chess/${data.game_id}/${data.player_id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No available games. Create one instead.');
       setIsJoining(false);
@@ -203,7 +210,6 @@ export default function MultipleChoiceChessLobby() {
           <ul className="space-y-2 font-neo text-black">
             <li>• On each turn you choose from four engine-generated moves</li>
             <li>• The options are the 1st, 2nd, 4th, and 6th best moves — shown in random order</li>
-            <li>• After picking, you see which rank you chose (green = best, red = 6th)</li>
             <li>• Score: 4 pts for best, 3 for 2nd, 2 for 4th, 1 for 6th</li>
             <li>• You can win the chess game while losing on move quality — and vice versa</li>
           </ul>

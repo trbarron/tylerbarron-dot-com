@@ -12,6 +12,14 @@ export interface GameState {
   black_score: number;
   white_moves: number;
   black_moves: number;
+  white_rank_1: number;
+  white_rank_2: number;
+  white_rank_4: number;
+  white_rank_6: number;
+  black_rank_1: number;
+  black_rank_2: number;
+  black_rank_4: number;
+  black_rank_6: number;
   status: 'waiting' | 'active' | 'complete';
   result: 'white' | 'black' | 'draw' | '';
   result_reason: string;
@@ -53,6 +61,14 @@ function parseGame(data: Record<string, string>): GameState {
     black_score: Number(data.black_score),
     white_moves: Number(data.white_moves),
     black_moves: Number(data.black_moves),
+    white_rank_1: Number(data.white_rank_1 ?? 0),
+    white_rank_2: Number(data.white_rank_2 ?? 0),
+    white_rank_4: Number(data.white_rank_4 ?? 0),
+    white_rank_6: Number(data.white_rank_6 ?? 0),
+    black_rank_1: Number(data.black_rank_1 ?? 0),
+    black_rank_2: Number(data.black_rank_2 ?? 0),
+    black_rank_4: Number(data.black_rank_4 ?? 0),
+    black_rank_6: Number(data.black_rank_6 ?? 0),
     status: data.status as 'waiting' | 'active' | 'complete',
     result: data.result as 'white' | 'black' | 'draw' | '',
     result_reason: data.result_reason,
@@ -77,6 +93,14 @@ export async function createGame(gameId: string, playerId: string): Promise<Game
     black_score: 0,
     white_moves: 0,
     black_moves: 0,
+    white_rank_1: 0,
+    white_rank_2: 0,
+    white_rank_4: 0,
+    white_rank_6: 0,
+    black_rank_1: 0,
+    black_rank_2: 0,
+    black_rank_4: 0,
+    black_rank_6: 0,
     status: 'waiting',
     result: '',
     result_reason: '',
@@ -96,6 +120,14 @@ export async function createGame(gameId: string, playerId: string): Promise<Game
     black_score: '0',
     white_moves: '0',
     black_moves: '0',
+    white_rank_1: '0',
+    white_rank_2: '0',
+    white_rank_4: '0',
+    white_rank_6: '0',
+    black_rank_1: '0',
+    black_rank_2: '0',
+    black_rank_4: '0',
+    black_rank_6: '0',
     status: state.status,
     result: '',
     result_reason: '',
@@ -146,6 +178,14 @@ export interface MoveUpdate {
   blackScore: number;
   whiteMoves: number;
   blackMoves: number;
+  whiteRank1: number;
+  whiteRank2: number;
+  whiteRank4: number;
+  whiteRank6: number;
+  blackRank1: number;
+  blackRank2: number;
+  blackRank4: number;
+  blackRank6: number;
   status: 'active' | 'complete';
   result: 'white' | 'black' | 'draw' | '';
   resultReason: string;
@@ -165,6 +205,14 @@ export async function applyMove(gameId: string, update: MoveUpdate): Promise<voi
     black_score: String(update.blackScore),
     white_moves: String(update.whiteMoves),
     black_moves: String(update.blackMoves),
+    white_rank_1: String(update.whiteRank1),
+    white_rank_2: String(update.whiteRank2),
+    white_rank_4: String(update.whiteRank4),
+    white_rank_6: String(update.whiteRank6),
+    black_rank_1: String(update.blackRank1),
+    black_rank_2: String(update.blackRank2),
+    black_rank_4: String(update.blackRank4),
+    black_rank_6: String(update.blackRank6),
     status: update.status,
     result: update.result,
     result_reason: update.resultReason,

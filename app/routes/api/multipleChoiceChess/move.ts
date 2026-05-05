@@ -6,6 +6,21 @@ import {
 } from "~/utils/multipleChoiceChess/gameState.server";
 import { pointsForRank } from "~/utils/multipleChoiceChess/scoring";
 
+function incrementRankCounts(
+  rank: number,
+  rank1: number,
+  rank2: number,
+  rank4: number,
+  rank6: number,
+) {
+  return {
+    rank1: rank1 + (rank === 1 ? 1 : 0),
+    rank2: rank2 + (rank === 2 ? 1 : 0),
+    rank4: rank4 + (rank === 4 ? 1 : 0),
+    rank6: rank6 + (rank === 6 ? 1 : 0),
+  };
+}
+
 export async function action({ request }: ActionFunctionArgs) {
   if (request.method !== 'POST') {
     return Response.json({ error: 'Method not allowed' }, { status: 405 });
@@ -51,8 +66,9 @@ export async function action({ request }: ActionFunctionArgs) {
     const to = move.slice(2, 4);
     const promotion = move.length === 5 ? move[4] : undefined;
 
-    const result = chess.move({ from, to, promotion });
-    if (!result) {
+    try {
+      chess.move({ from, to, promotion });
+    } catch {
       return Response.json({ error: 'Illegal move' }, { status: 400 });
     }
 
@@ -64,6 +80,34 @@ export async function action({ request }: ActionFunctionArgs) {
     const newBlackScore = game.black_score + (isBlack ? points : 0);
     const newWhiteMoves = game.white_moves + (isWhite ? 1 : 0);
     const newBlackMoves = game.black_moves + (isBlack ? 1 : 0);
+    const whiteRanks = isWhite
+      ? incrementRankCounts(
+          rank,
+          game.white_rank_1,
+          game.white_rank_2,
+          game.white_rank_4,
+          game.white_rank_6,
+        )
+      : {
+          rank1: game.white_rank_1,
+          rank2: game.white_rank_2,
+          rank4: game.white_rank_4,
+          rank6: game.white_rank_6,
+        };
+    const blackRanks = isBlack
+      ? incrementRankCounts(
+          rank,
+          game.black_rank_1,
+          game.black_rank_2,
+          game.black_rank_4,
+          game.black_rank_6,
+        )
+      : {
+          rank1: game.black_rank_1,
+          rank2: game.black_rank_2,
+          rank4: game.black_rank_4,
+          rank6: game.black_rank_6,
+        };
 
     // Determine game over
     let status: 'active' | 'complete' = 'active';
@@ -94,6 +138,14 @@ export async function action({ request }: ActionFunctionArgs) {
       blackScore: newBlackScore,
       whiteMoves: newWhiteMoves,
       blackMoves: newBlackMoves,
+      whiteRank1: whiteRanks.rank1,
+      whiteRank2: whiteRanks.rank2,
+      whiteRank4: whiteRanks.rank4,
+      whiteRank6: whiteRanks.rank6,
+      blackRank1: blackRanks.rank1,
+      blackRank2: blackRanks.rank2,
+      blackRank4: blackRanks.rank4,
+      blackRank6: blackRanks.rank6,
       status,
       result: gameResult,
       resultReason,

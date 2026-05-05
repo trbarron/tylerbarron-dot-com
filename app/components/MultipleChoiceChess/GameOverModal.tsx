@@ -4,10 +4,14 @@ interface GameOverModalProps {
   result: 'white' | 'black' | 'draw';
   reason: string;
   myColor: 'white' | 'black';
-  whiteScore: number;
-  blackScore: number;
-  whiteMoves: number;
-  blackMoves: number;
+  whiteRank1: number;
+  whiteRank2: number;
+  whiteRank4: number;
+  whiteRank6: number;
+  blackRank1: number;
+  blackRank2: number;
+  blackRank4: number;
+  blackRank6: number;
   onPlayAgain: () => void;
 }
 
@@ -23,20 +27,30 @@ export default function GameOverModal({
   result,
   reason,
   myColor,
-  whiteScore,
-  blackScore,
-  whiteMoves,
-  blackMoves,
+  whiteRank1,
+  whiteRank2,
+  whiteRank4,
+  whiteRank6,
+  blackRank1,
+  blackRank2,
+  blackRank4,
+  blackRank6,
   onPlayAgain,
 }: GameOverModalProps) {
   const didWin = result === myColor;
   const isDraw = result === 'draw';
 
-  const myScore = myColor === 'white' ? whiteScore : blackScore;
-  const oppScore = myColor === 'white' ? blackScore : whiteScore;
-  const myMoves = myColor === 'white' ? whiteMoves : blackMoves;
-  const oppMoves = myColor === 'white' ? blackMoves : whiteMoves;
+  const myRanks = myColor === 'white'
+    ? { rank1: whiteRank1, rank2: whiteRank2, rank4: whiteRank4, rank6: whiteRank6 }
+    : { rank1: blackRank1, rank2: blackRank2, rank4: blackRank4, rank6: blackRank6 };
+  const oppRanks = myColor === 'white'
+    ? { rank1: blackRank1, rank2: blackRank2, rank4: blackRank4, rank6: blackRank6 }
+    : { rank1: whiteRank1, rank2: whiteRank2, rank4: whiteRank4, rank6: whiteRank6 };
 
+  const myScore = (myRanks.rank1 * 1) + (myRanks.rank2 * 2) + (myRanks.rank4 * 4) + (myRanks.rank6 * 6);
+  const oppScore = (oppRanks.rank1 * 1) + (oppRanks.rank2 * 2) + (oppRanks.rank4 * 4) + (oppRanks.rank6 * 6);
+  const myMoves = myRanks.rank1 + myRanks.rank2 + myRanks.rank4 + myRanks.rank6;
+  const oppMoves = oppRanks.rank1 + oppRanks.rank2 + oppRanks.rank4 + oppRanks.rank6;
   const myAcc = accuracy(myScore, myMoves);
   const oppAcc = accuracy(oppScore, oppMoves);
 
@@ -53,7 +67,12 @@ export default function GameOverModal({
         <div className="grid grid-cols-2 divide-x-4 divide-black p-0">
           <div className="p-5">
             <div className="text-xs font-bold uppercase text-gray-500">You ({myColor})</div>
-            <div className="mt-1 text-4xl font-extrabold">{myScore} pts</div>
+            <div className="mt-2 space-y-1 text-sm text-gray-700">
+              <div>#1 picks: <span className="font-bold text-black">{myRanks.rank1}</span></div>
+              <div>#2 picks: <span className="font-bold text-black">{myRanks.rank2}</span></div>
+              <div>#4 picks: <span className="font-bold text-black">{myRanks.rank4}</span></div>
+              <div>#6 picks: <span className="font-bold text-black">{myRanks.rank6}</span></div>
+            </div>
             <div className="mt-1 text-sm text-gray-600">{myAcc}% accuracy</div>
             <div className="text-xs text-gray-400">{myMoves} moves</div>
           </div>
@@ -61,7 +80,12 @@ export default function GameOverModal({
             <div className="text-xs font-bold uppercase text-gray-500">
               Opponent ({myColor === 'white' ? 'black' : 'white'})
             </div>
-            <div className="mt-1 text-4xl font-extrabold">{oppScore} pts</div>
+            <div className="mt-2 space-y-1 text-sm text-gray-700">
+              <div>#1 picks: <span className="font-bold text-black">{oppRanks.rank1}</span></div>
+              <div>#2 picks: <span className="font-bold text-black">{oppRanks.rank2}</span></div>
+              <div>#4 picks: <span className="font-bold text-black">{oppRanks.rank4}</span></div>
+              <div>#6 picks: <span className="font-bold text-black">{oppRanks.rank6}</span></div>
+            </div>
             <div className="mt-1 text-sm text-gray-600">{oppAcc}% accuracy</div>
             <div className="text-xs text-gray-400">{oppMoves} moves</div>
           </div>

@@ -12,7 +12,11 @@ interface PendingAnalysis {
   reject: (err: Error) => void;
   lines: string[];
   fen: string;
+  timeoutId: ReturnType<typeof setTimeout>;
 }
+
+const INIT_TIMEOUT_MS = 45000;
+const ANALYZE_TIMEOUT_BUFFER_MS = 8000;
 
 class StockfishEngine {
   private worker: Worker | null = null;
@@ -23,26 +27,44 @@ class StockfishEngine {
 
   async init(): Promise<void> {
     if (this.state === 'ready') return;
-    if (this.state === 'analyzing') return;
 
     return new Promise((resolve, reject) => {
-      this.initResolve = resolve;
-      this.initReject = reject;
+      const timeoutId = setTimeout(() => {
+        this.state = 'error';
+        this.initResolve = null;
+        this.initReject = null;
+        reject(new Error('Engine init timed out'));
+      }, INIT_TIMEOUT_MS);
+
+      this.initResolve = () => { clearTimeout(timeoutId); resolve(); };
+      this.initReject = (err) => { clearTimeout(timeoutId); reject(err); };
 
       try {
         this.worker = new Worker(WORKER_URL);
         this.worker.onmessage = this.handleMessage.bind(this);
         this.worker.onerror = (e) => {
           this.state = 'error';
-          this.initReject?.(new Error(`Engine worker error: ${e.message}`));
+          const err = new Error(`Engine worker error: ${e.message || 'unknown'}`);
+          this.initReject?.(err);
           this.initReject = null;
+          this.initResolve = null;
+          this.failPending(err);
         };
         this.worker.postMessage('uci');
       } catch (err) {
+        clearTimeout(timeoutId);
         this.state = 'error';
         reject(err instanceof Error ? err : new Error(String(err)));
       }
     });
+  }
+
+  private failPending(err: Error) {
+    if (this.pending) {
+      clearTimeout(this.pending.timeoutId);
+      this.pending.reject(err);
+      this.pending = null;
+    }
   }
 
   private handleMessage(event: MessageEvent<string>) {
@@ -66,7 +88,8 @@ class StockfishEngine {
       }
 
       if (line.startsWith('bestmove')) {
-        const { resolve, lines, fen } = this.pending;
+        const { resolve, lines, fen, timeoutId } = this.pending;
+        clearTimeout(timeoutId);
         this.pending = null;
         this.state = 'ready';
 
@@ -84,7 +107,12 @@ class StockfishEngine {
     this.state = 'analyzing';
 
     return new Promise((resolve, reject) => {
-      this.pending = { resolve, reject, lines: [], fen };
+      const timeoutId = setTimeout(() => {
+        this.failPending(new Error('Engine analysis timed out'));
+        this.state = 'ready';
+      }, movetime + ANALYZE_TIMEOUT_BUFFER_MS);
+
+      this.pending = { resolve, reject, lines: [], fen, timeoutId };
 
       this.worker?.postMessage('setoption name MultiPV value 6');
       this.worker?.postMessage(`position fen ${fen}`);
