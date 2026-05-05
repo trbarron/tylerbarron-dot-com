@@ -3,7 +3,7 @@
 
 import { parseMultiPV, type CandidateMove, shuffle } from "./moveParser";
 
-const WORKER_URL = '/stockfish-18-lite-single.js';
+const WORKER_URL = 'https://externalwebsiteassets.s3.us-west-2.amazonaws.com/stockfish-18-lite-single.js';
 
 type EngineState = 'uninitialized' | 'ready' | 'analyzing' | 'error';
 
