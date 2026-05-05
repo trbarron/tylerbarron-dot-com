@@ -18,6 +18,19 @@ interface PendingAnalysis {
 const INIT_TIMEOUT_MS = 45000;
 const ANALYZE_TIMEOUT_BUFFER_MS = 8000;
 
+function createStockfishWorker(): Worker {
+  // Bootstrap as a same-origin blob worker, then load Stockfish from S3.
+  const bootstrapSource = `importScripts(${JSON.stringify(WORKER_URL)});`;
+  const blob = new Blob([bootstrapSource], { type: 'application/javascript' });
+  const blobUrl = URL.createObjectURL(blob);
+
+  try {
+    return new Worker(blobUrl);
+  } finally {
+    URL.revokeObjectURL(blobUrl);
+  }
+}
+
 class StockfishEngine {
   private worker: Worker | null = null;
   private state: EngineState = 'uninitialized';
@@ -40,7 +53,7 @@ class StockfishEngine {
       this.initReject = (err) => { clearTimeout(timeoutId); reject(err); };
 
       try {
-        this.worker = new Worker(WORKER_URL);
+        this.worker = createStockfishWorker();
         this.worker.onmessage = this.handleMessage.bind(this);
         this.worker.onerror = (e) => {
           this.state = 'error';
