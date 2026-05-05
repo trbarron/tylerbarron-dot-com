@@ -103,7 +103,7 @@ export default function MultipleChoiceChessLobby() {
 
           <div className="p-8">
             <p className="mb-6 font-neo text-black">
-              Pick from four engine moves each turn — the 1st, 2nd, 4th, and 6th best, shuffled. Better choices earn more points. You can win the board and lose on quality, or vice versa.
+              Pick from four engine moves each turn — the 1st, 2nd, 4th, and 6th best, shuffled. No time controls.
             </p>
 
             {error && (
@@ -117,7 +117,7 @@ export default function MultipleChoiceChessLobby() {
               disabled={isJoining}
               className="w-full border-4 border-black bg-black px-6 py-4 font-neo text-lg font-extrabold uppercase tracking-wide text-white hover:bg-white hover:text-black disabled:opacity-50"
             >
-              {isJoining ? 'Starting…' : 'Create New Game →'}
+              {isJoining ? 'Starting…' : 'Create New Game'}
             </button>
           </div>
         </div>
@@ -139,7 +139,7 @@ export default function MultipleChoiceChessLobby() {
           <div className="p-4">
             {availableGames.length === 0 && (
               <p className="py-8 text-center font-neo text-sm text-gray-500">
-                No open games yet. Create one and share the URL.
+                No open games yet
               </p>
             )}
 
