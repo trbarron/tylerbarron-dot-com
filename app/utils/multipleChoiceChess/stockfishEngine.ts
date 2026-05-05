@@ -1,9 +1,14 @@
 // Stockfish engine wrapper — runs the lite single-threaded WASM build as a Web Worker.
-// Engine assets are emitted by Vite into the static asset bucket and served via CloudFront.
+// Engine assets are loaded from unpkg's CDN. The 7.3 MB WASM exceeds API Gateway's
+// 6 MB Lambda response cap, so it can't be served from our own origin without
+// bypassing the Lambda; jsDelivr rejects the package for being >150 MB across
+// its WASM variants, so unpkg is the path that works.
 
 import { parseMultiPV, type CandidateMove, shuffle } from "./moveParser";
-import workerSrcUrl from "stockfish/bin/stockfish-18-lite-single.js?url";
-import wasmSrcUrl from "stockfish/bin/stockfish-18-lite-single.wasm?url";
+
+const STOCKFISH_VERSION = '18.0.7';
+const WORKER_URL = `https://unpkg.com/stockfish@${STOCKFISH_VERSION}/bin/stockfish-18-lite-single.js`;
+const WASM_URL = `https://unpkg.com/stockfish@${STOCKFISH_VERSION}/bin/stockfish-18-lite-single.wasm`;
 
 type EngineState = 'uninitialized' | 'ready' | 'analyzing' | 'error';
 
@@ -19,10 +24,19 @@ const INIT_TIMEOUT_MS = 45000;
 const ANALYZE_TIMEOUT_BUFFER_MS = 8000;
 
 function createStockfishWorker(): Worker {
+  // Workers can't be created directly from a cross-origin URL, so bootstrap a
+  // same-origin blob worker that importScripts the CDN-hosted Stockfish JS.
   // Stockfish reads its location hash to resolve the wasm path: #<wasm-url>,worker
-  const wasmAbsoluteUrl = new URL(wasmSrcUrl, self.location.href).href;
-  const workerUrl = `${workerSrcUrl}#${encodeURIComponent(wasmAbsoluteUrl)},worker`;
-  return new Worker(workerUrl);
+  const bootstrapSource = `importScripts(${JSON.stringify(WORKER_URL)});`;
+  const blob = new Blob([bootstrapSource], { type: 'application/javascript' });
+  const blobUrl = URL.createObjectURL(blob);
+  const workerUrl = `${blobUrl}#${encodeURIComponent(WASM_URL)},worker`;
+
+  try {
+    return new Worker(workerUrl);
+  } finally {
+    URL.revokeObjectURL(blobUrl);
+  }
 }
 
 class StockfishEngine {

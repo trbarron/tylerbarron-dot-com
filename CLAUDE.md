@@ -93,5 +93,16 @@ This is a personal website built with React Router 7, TypeScript, and deployed o
 - Unit tests: Vitest (`npm test`)
 - Always maintain existing test coverage
 
+## Deployment Architecture Notes
+
+### Lambda + API Gateway: everything goes through the Lambda
+Despite `app.arc` declaring `@static folder public fingerprint true`, no CloudFront behavior currently routes static paths to the static S3 bucket. Every request hits API Gateway → Lambda. `server.ts` (lines ~31–65) detects `/assets/`, `/fonts/`, `/images/` paths, reads from `build/client/` on disk, base64-encodes, and returns. The static bucket (`tbwebsiteremixproduction-staticbucket-*`) does receive the files but nothing in front of CloudFront routes traffic to it.
+
+### Lambda response size cap is 6 MB (effectively ~4.5 MB raw)
+API Gateway rejects Lambda responses larger than 6 MB. Because the handler base64-encodes binary assets (~1.33× expansion), the practical raw-file limit is ~4.5 MB. Symptom of going over: HTTP 500 with body `{"message":"Internal Server Error"}` and `apigw-requestid` header. The Stockfish WASM (7.3 MB) hit this — now offloaded to unpkg CDN; see `app/utils/multipleChoiceChess/stockfishEngine.ts`.
+
+### When cutting Lambda size: the real win is bypassing it for static assets
+The Lambda bundle itself is ~500 KB; the weight comes from `build/client/` being read at runtime. To genuinely shrink the deploy and remove the response-size constraint, configure CloudFront behaviors so `/assets/*`, `/fonts/*`, `/images/*` route directly to the static S3 bucket (already populated by `build:arc:assets`) and only dynamic routes hit the Lambda. The `@ballatech/react-router7-preset-aws` preset doesn't currently set this up — would require Architect/CloudFormation customization.
+
 ## Recent Changes
 - 001-modernize-website: Standardized Tailwind CSS patterns, decomposed large routes, unified typography system, enforced code standards via ESLint
