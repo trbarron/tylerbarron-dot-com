@@ -92,6 +92,7 @@ export default function MultipleChoiceChessGame() {
   const [linkCopied, setLinkCopied] = useState(false);
   const [moveHistory, setMoveHistory] = useState<MoveHistoryEntry[]>([]);
   const [viewingMoveIndex, setViewingMoveIndex] = useState<number | null>(null);
+  const [modalDismissed, setModalDismissed] = useState(false);
 
   const pollRef = useRef<NodeJS.Timeout | null>(null);
   const myColor = useRef<'white' | 'black' | null>(null);
@@ -516,11 +517,19 @@ export default function MultipleChoiceChessGame() {
               </Suspense>
 
               {viewingMoveIndex !== null && (
-                <div className="mt-3 flex justify-between items-center">
+                <div className="mt-3 flex justify-between items-center gap-2 flex-wrap">
                   <div className="border-2 border-black px-3 py-1 font-neo text-sm font-bold uppercase text-gray-600">
                     Move {viewingMoveIndex + 1} of {moveHistory.length}
                   </div>
                   <div className="flex gap-2">
+                    <a
+                      href={`https://lichess.org/analysis?fen=${encodeURIComponent(moveHistory[viewingMoveIndex]?.fenAfter ?? '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="border-2 border-black px-3 py-1 font-neo text-sm font-bold uppercase hover:bg-black hover:text-white active:bg-black active:text-white"
+                    >
+                      Lichess ↗
+                    </a>
                     <button
                       onClick={() => setViewingMoveIndex(Math.max(0, viewingMoveIndex - 1))}
                       disabled={viewingMoveIndex === 0}
@@ -590,7 +599,7 @@ export default function MultipleChoiceChessGame() {
       </main>
       <Footer />
 
-      {phase === 'game_over' && gameState?.status === 'complete' && (
+      {phase === 'game_over' && gameState?.status === 'complete' && !modalDismissed && (
         <GameOverModal
           result={gameState.result as 'white' | 'black' | 'draw'}
           reason={gameState.result_reason}
@@ -605,6 +614,10 @@ export default function MultipleChoiceChessGame() {
           blackRank6={gameState.black_rank_6}
           moveHistory={moveHistory}
           onPlayAgain={() => navigate('/multiple-choice-chess')}
+          onReview={() => {
+            setModalDismissed(true);
+            setViewingMoveIndex(moveHistory.length > 0 ? moveHistory.length - 1 : null);
+          }}
         />
       )}
     </div>

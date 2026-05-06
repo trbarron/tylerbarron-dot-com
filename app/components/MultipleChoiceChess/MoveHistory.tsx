@@ -8,10 +8,10 @@ const RANK_LABELS: Record<number, string> = {
 };
 
 const RANK_COLORS: Record<number, string> = {
-  1: 'bg-green-100 text-green-800 border-green-400',
-  2: 'bg-yellow-100 text-yellow-800 border-yellow-400',
-  4: 'bg-orange-100 text-orange-800 border-orange-400',
-  6: 'bg-red-100 text-red-800 border-red-400',
+  1: 'bg-white text-black border-black',
+  2: 'bg-gray-200 text-gray-900 border-gray-500',
+  4: 'bg-gray-600 text-white border-gray-800',
+  6: 'bg-black text-white border-black',
 };
 
 interface MoveHistoryProps {
