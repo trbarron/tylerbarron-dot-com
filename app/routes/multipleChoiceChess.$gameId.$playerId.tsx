@@ -6,6 +6,7 @@ import Footer from "~/components/Footer";
 import Article from "~/components/Article";
 import EngineStatus from "~/components/MultipleChoiceChess/EngineStatus";
 import MoveChoices from "~/components/MultipleChoiceChess/MoveChoices";
+import MoveHistory from "~/components/MultipleChoiceChess/MoveHistory";
 import GameOverModal from "~/components/MultipleChoiceChess/GameOverModal";
 import { getEngine, getThinkTime } from "~/utils/multipleChoiceChess/stockfishEngine";
 import type { CandidateMove } from "~/utils/multipleChoiceChess/moveParser";
@@ -27,6 +28,15 @@ export const links: LinksFunction = () => [
 export const loader = async ({ params }: { params: { gameId?: string; playerId?: string } }) => {
   return Response.json({ gameId: params.gameId, playerId: params.playerId });
 };
+
+export interface MoveHistoryEntry {
+  color: 'white' | 'black';
+  san: string;
+  uci: string;
+  rank: number; // 1, 2, 4, 6
+  fenBefore: string; // FEN before this move (for lichess analysis)
+  fenAfter: string;  // FEN after this move
+}
 
 type Phase =
   | 'loading_engine'
@@ -80,6 +90,8 @@ export default function MultipleChoiceChessGame() {
   const [error, setError] = useState<string | null>(null);
   const [lastMove, setLastMove] = useState<[string, string] | undefined>(undefined);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [moveHistory, setMoveHistory] = useState<MoveHistoryEntry[]>([]);
+  const [viewingMoveIndex, setViewingMoveIndex] = useState<number | null>(null);
 
   const pollRef = useRef<NodeJS.Timeout | null>(null);
   const myColor = useRef<'white' | 'black' | null>(null);
@@ -201,6 +213,18 @@ export default function MultipleChoiceChessGame() {
       // engine-generated moves should always be legal; fall through to server
     }
 
+    // Track move in history
+    setMoveHistory(prev => [...prev, {
+      color: myColor.current ?? gs.turn,
+      san: move.san,
+      uci: move.uci,
+      rank: move.rank,
+      fenBefore: gs.fen,
+      fenAfter: optimisticFen,
+    }]);
+    // Return to live position when making a move
+    setViewingMoveIndex(null);
+
     try {
       const res = await fetch('/api/multipleChoiceChess/move', {
         method: 'POST',
@@ -216,9 +240,10 @@ export default function MultipleChoiceChessGame() {
 
       if (!res.ok) {
         const data = await res.json();
-        // Roll back optimistic update
+        // Roll back optimistic update and history entry
         setGameState(gs);
         setLastMove(undefined);
+        setMoveHistory(prev => prev.slice(0, -1));
         throw new Error(data.error ?? 'Move rejected');
       }
 
@@ -242,13 +267,41 @@ export default function MultipleChoiceChessGame() {
     }
   }, []);
 
-  const handleOpponentMove = useCallback((gs: GameState) => {
+  const handleOpponentMove = useCallback((gs: GameState, prevFen: string) => {
     stopPolling();
 
     if (gs.last_move) {
       const from = gs.last_move.slice(0, 2) as `${string}${string}`;
       const to = gs.last_move.slice(2, 4) as `${string}${string}`;
       setLastMove([from, to]);
+
+      // Compute SAN from prevFen + opponent UCI
+      try {
+        const chess = new Chess(prevFen);
+        const promotion = gs.last_move.length === 5 ? gs.last_move[4] : undefined;
+        const moveResult = chess.move({ from, to, promotion });
+        // The player who just moved: gs.turn is next player, so the mover is the opposite
+        const movedColor: 'white' | 'black' = gs.turn === 'white' ? 'black' : 'white';
+        setMoveHistory(prev => [...prev, {
+          color: movedColor,
+          san: moveResult.san,
+          uci: gs.last_move,
+          rank: gs.last_move_rank,
+          fenBefore: prevFen,
+          fenAfter: gs.fen,
+        }]);
+      } catch {
+        // If SAN computation fails, still show the move as UCI
+        const movedColor: 'white' | 'black' = gs.turn === 'white' ? 'black' : 'white';
+        setMoveHistory(prev => [...prev, {
+          color: movedColor,
+          san: gs.last_move,
+          uci: gs.last_move,
+          rank: gs.last_move_rank,
+          fenBefore: prevFen,
+          fenAfter: gs.fen,
+        }]);
+      }
     }
 
     setTimeout(() => {
@@ -281,6 +334,7 @@ export default function MultipleChoiceChessGame() {
       }
 
       if (gs.last_updated > lastUpdated && gs.status !== 'waiting') {
+        const prevFen = gameState?.fen ?? gs.fen;
         setGameState(gs);
         setLastUpdated(gs.last_updated);
         if (gs.status === 'complete') {
@@ -289,7 +343,7 @@ export default function MultipleChoiceChessGame() {
           return;
         }
         if (isMyTurn(gs)) {
-          handleOpponentMove(gs);
+          handleOpponentMove(gs, prevFen);
         }
       }
     }, POLL_INTERVAL);
@@ -358,7 +412,19 @@ export default function MultipleChoiceChessGame() {
 
   const color = gameState ? (getMyColor(gameState) ?? 'white') : 'white';
 
-  const hoverShapes = hoveredUci
+  // When viewing history, show that position; otherwise show live board
+  const displayedFen = viewingMoveIndex !== null
+    ? moveHistory[viewingMoveIndex]?.fenAfter ?? (gameState?.fen ?? 'start')
+    : (gameState?.fen ?? 'start');
+
+  const displayedLastMove: [string, string] | undefined = viewingMoveIndex !== null
+    ? [
+        moveHistory[viewingMoveIndex]?.uci.slice(0, 2) ?? '',
+        moveHistory[viewingMoveIndex]?.uci.slice(2, 4) ?? '',
+      ] as [string, string]
+    : lastMove;
+
+  const hoverShapes = hoveredUci && viewingMoveIndex === null
     ? [{ orig: hoveredUci.slice(0, 2) as Key, dest: hoveredUci.slice(2, 4) as Key, brush: 'blue' }]
     : [];
 
@@ -400,7 +466,7 @@ export default function MultipleChoiceChessGame() {
                 />
                 <button
                   onClick={copyLink}
-                  className="border-2 border-black px-3 py-1 font-neo text-sm font-bold uppercase hover:bg-black hover:text-white"
+                  className="border-2 border-black px-3 py-1 font-neo text-sm font-bold uppercase hover:bg-black hover:text-white active:bg-black active:text-white"
                 >
                   {linkCopied ? 'Copied!' : 'Copy'}
                 </button>
@@ -417,24 +483,53 @@ export default function MultipleChoiceChessGame() {
                 </div>
               }>
                 <Chessboard
-                  initialFen={gameState?.fen ?? 'start'}
+                  initialFen={displayedFen}
                   orientation={color}
                   viewOnly={true}
-                  lastMove={lastMove}
+                  lastMove={displayedLastMove}
                   highlightMoves={true}
                   movable={false}
                   autoShapes={hoverShapes}
                 />
               </Suspense>
 
-              {gameState?.status === 'active' && phase !== 'game_over' && (
+              {viewingMoveIndex !== null && (
+                <div className="mt-3 flex justify-between items-center">
+                  <div className="border-2 border-black px-3 py-1 font-neo text-sm font-bold uppercase text-gray-600">
+                    Move {viewingMoveIndex + 1} of {moveHistory.length}
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setViewingMoveIndex(Math.max(0, viewingMoveIndex - 1))}
+                      disabled={viewingMoveIndex === 0}
+                      className="border-2 border-black px-3 py-1 font-neo text-sm font-bold uppercase disabled:opacity-40 hover:bg-black hover:text-white active:bg-black active:text-white"
+                    >
+                      ←
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (viewingMoveIndex < moveHistory.length - 1) {
+                          setViewingMoveIndex(viewingMoveIndex + 1);
+                        } else {
+                          setViewingMoveIndex(null);
+                        }
+                      }}
+                      className="border-2 border-black px-3 py-1 font-neo text-sm font-bold uppercase hover:bg-black hover:text-white active:bg-black active:text-white"
+                    >
+                      {viewingMoveIndex < moveHistory.length - 1 ? '→' : '↓ Live'}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {gameState?.status === 'active' && phase !== 'game_over' && viewingMoveIndex === null && (
                 <div className="mt-3 flex justify-between items-center">
                   <div className="border-2 border-black px-3 py-1 font-neo text-sm font-bold uppercase text-gray-600">
                     {gameState.turn === color ? 'Your turn' : "Opponent's turn"}
                   </div>
                   <button
                     onClick={handleResign}
-                    className="border-2 border-black px-3 py-1 font-neo text-sm font-bold uppercase text-gray-600 hover:bg-red-100 hover:text-red-700 hover:border-red-500"
+                    className="border-2 border-black px-3 py-1 font-neo text-sm font-bold uppercase text-gray-600 hover:bg-red-100 hover:text-red-700 hover:border-red-500 active:bg-red-100 active:text-red-700"
                   >
                     Resign
                   </button>
@@ -449,7 +544,7 @@ export default function MultipleChoiceChessGame() {
                 <EngineStatus phase="opponent" />
               )}
 
-              {(phase === 'my_choosing' || phase === 'submitting') && candidates.length > 0 && (
+              {(phase === 'my_choosing' || phase === 'submitting') && candidates.length > 0 && viewingMoveIndex === null && (
                 <div>
                   <MoveChoices
                     moves={candidates}
@@ -460,6 +555,13 @@ export default function MultipleChoiceChessGame() {
                   />
                 </div>
               )}
+
+              <MoveHistory
+                history={moveHistory}
+                viewingIndex={viewingMoveIndex}
+                onSelectMove={setViewingMoveIndex}
+                isGameActive={gameState?.status === 'active'}
+              />
             </div>
           </div>
         </Article>
@@ -479,6 +581,7 @@ export default function MultipleChoiceChessGame() {
           blackRank2={gameState.black_rank_2}
           blackRank4={gameState.black_rank_4}
           blackRank6={gameState.black_rank_6}
+          moveHistory={moveHistory}
           onPlayAgain={() => navigate('/multiple-choice-chess')}
         />
       )}
