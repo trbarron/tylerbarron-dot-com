@@ -9,7 +9,7 @@
     "build:arc:assets": "mkdir -p public && cp -r build/client/* public/",
     "build:arc:server": "mkdir -p server && NODE_ENV=production npx esbuild server.ts --platform=node --target=node22 --format=esm --bundle --minify --tree-shaking=true --outfile=server/index.mjs '--external:@aws-sdk/*' --external:aws-sdk '--external:@react-router/*' --external:react --external:react-dom '--external:./build/*' && mkdir -p server/build/server && cp -r build/server/* server/build/server/ && cp build/server/index.js server/build/server/index.js 2>/dev/null || true",
     "build:arc:deps": "cd server && npm install --production --no-optional --no-audit --no-fund",
-    "compile:mdx": "node scripts/compile-mdx.mjs",
+    "compile:mdx": "node --env-file-if-exists=.env scripts/compile-mdx.mjs",
     "analyze": "node scripts/analyze-bundle.mjs",
     "deploy:images": "node --env-file=.env scripts/upload-images-to-s3.mjs",
     "analyze:deps": "cd server && npx npm-check -u",

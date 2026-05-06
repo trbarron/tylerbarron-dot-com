@@ -10,6 +10,18 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+// Bake the production CDN base into compiled MDX so /images/* and /fonts/*
+// references resolve directly to S3/CloudFront instead of routing through Lambda.
+const CDN_BASE = (process.env.VITE_CDN_URL || process.env.CDN_URL || '')
+  .replace(/\/$/, '')
+  .replace(/\/images$/, '');
+
+function rewriteAssetSrcs(code) {
+  if (!CDN_BASE) return code;
+  // Matches src:"/images/... or src:"/fonts/... in the bundled JSX output.
+  return code.replace(/src:"\/(images|fonts)\//g, `src:"${CDN_BASE}/$1/`);
+}
+
 async function processMdx(source) {
   const result = await bundleMDX({
     source,
@@ -24,7 +36,7 @@ async function processMdx(source) {
       return options;
     },
   });
-  return result;
+  return { ...result, code: rewriteAssetSrcs(result.code) };
 }
 
 async function compileAllMdx() {

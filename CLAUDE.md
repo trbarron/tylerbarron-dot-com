@@ -95,14 +95,21 @@ This is a personal website built with React Router 7, TypeScript, and deployed o
 
 ## Deployment Architecture Notes
 
-### Lambda + API Gateway: everything goes through the Lambda
-Despite `app.arc` declaring `@static folder public fingerprint true`, no CloudFront behavior currently routes static paths to the static S3 bucket. Every request hits API Gateway → Lambda. `server.ts` (lines ~31–65) detects `/assets/`, `/fonts/`, `/images/` paths, reads from `build/client/` on disk, base64-encodes, and returns. The static bucket (`tbwebsiteremixproduction-staticbucket-*`) does receive the files but nothing in front of CloudFront routes traffic to it.
+### Lambda zip: SSR build + handler + prod node_modules only
+The deployed Lambda (`server/`) is ~35 MB, of which ~34 MB is `node_modules` (`@aws-sdk` and `@smithy` alone are ~18 MB). It does NOT contain `build/client/` — images/fonts are not bundled. The static-file fallback in `server.ts` only fires under `arc sandbox` (it's gated on `ARC_ENV !== 'production'`).
+
+### Static assets are served from S3 directly
+`/images/*` (and `/fonts/*`) resolve to `VITE_CDN_URL` / `CDN_URL` — currently `https://remix-website-writing-posts.s3.us-west-2.amazonaws.com`. Two mechanisms keep paths off the Lambda:
+1. **Compiled MDX**: `scripts/compile-mdx.mjs` rewrites `src:"/images/..."` → `src:"${CDN_BASE}/images/..."` at build time (env loaded via `--env-file-if-exists=.env`).
+2. **App code**: use `app/utils/cdn.ts` (`getImageUrl`, `image`) — never hardcode `/images/...` in TSX.
+
+Anything that still ships a raw `/images/...` path to the browser will hit the Lambda and 404.
 
 ### Lambda response size cap is 6 MB (effectively ~4.5 MB raw)
 API Gateway rejects Lambda responses larger than 6 MB. Because the handler base64-encodes binary assets (~1.33× expansion), the practical raw-file limit is ~4.5 MB. Symptom of going over: HTTP 500 with body `{"message":"Internal Server Error"}` and `apigw-requestid` header. The Stockfish WASM (7.3 MB) hit this — now offloaded to unpkg CDN; see `app/utils/multipleChoiceChess/stockfishEngine.ts`.
 
-### When cutting Lambda size: the real win is bypassing it for static assets
-The Lambda bundle itself is ~500 KB; the weight comes from `build/client/` being read at runtime. To genuinely shrink the deploy and remove the response-size constraint, configure CloudFront behaviors so `/assets/*`, `/fonts/*`, `/images/*` route directly to the static S3 bucket (already populated by `build:arc:assets`) and only dynamic routes hit the Lambda. The `@ballatech/react-router7-preset-aws` preset doesn't currently set this up — would require Architect/CloudFormation customization.
+### When cutting Lambda size further: target node_modules
+With static assets already off-Lambda, the remaining bloat is server `node_modules`. Top offenders: `@aws-sdk` (10 MB) + `@smithy` (7.7 MB), then `react-dom` (4.4 MB) and `react-router` (4 MB). The esbuild step in `build:arc:server` already externalizes `@aws-sdk/*` from `index.mjs`, but they're still installed by `build:arc:deps` because the AWS preset/server code requires them at runtime. Pruning unused AWS SDK clients (only `client-s3` and `client-dynamodb` are used) would be the next big win.
 
 ## Recent Changes
 - 001-modernize-website: Standardized Tailwind CSS patterns, decomposed large routes, unified typography system, enforced code standards via ESLint
