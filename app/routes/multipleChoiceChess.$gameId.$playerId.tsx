@@ -392,12 +392,13 @@ export default function MultipleChoiceChessGame() {
   useEffect(() => {
     if (moveHistory.length === 0) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'ArrowDown') return;
       const target = e.target as HTMLElement | null;
       if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return;
       e.preventDefault();
       setViewingMoveIndex(prev => {
         const lastIdx = moveHistory.length - 1;
+        if (e.key === 'ArrowDown') return null;
         if (e.key === 'ArrowLeft') {
           if (prev === null) return lastIdx;
           return Math.max(0, prev - 1);

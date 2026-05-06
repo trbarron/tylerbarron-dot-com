@@ -86,16 +86,8 @@ export default function MoveHistory({
 
   return (
     <div className="border-4 border-black bg-white font-neo">
-      <div className="flex items-center justify-between border-b-2 border-black px-3 py-2">
+      <div className="border-b-2 border-black px-3 py-2">
         <span className="text-xs font-bold uppercase tracking-wide">Move History</span>
-        {viewingIndex !== null && (
-          <button
-            onClick={() => onSelectMove(null)}
-            className="border-2 border-black px-2 py-0.5 text-xs font-bold uppercase hover:bg-black hover:text-white active:bg-black active:text-white"
-          >
-            ↓ Live
-          </button>
-        )}
       </div>
 
       <div className="max-h-64 overflow-y-auto">
