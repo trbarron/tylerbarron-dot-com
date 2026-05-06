@@ -6,7 +6,7 @@ function renderSan(san: string) {
   return (
     <>
       {san.slice(0, idx)}
-      <span className="text-sm align-middle">x</span>
+      <span className="text-base align-middle">x</span>
       {san.slice(idx + 1)}
     </>
   );
@@ -40,17 +40,20 @@ export default function MoveChoices({
             onClick={() => !disabled && !hasPicked && onPick(move)}
             onMouseEnter={() => !hasPicked && onHover?.(move.uci)}
             onMouseLeave={() => !hasPicked && onHover?.(null)}
+            onTouchStart={() => !hasPicked && onHover?.(move.uci)}
+            onTouchEnd={() => !hasPicked && onHover?.(null)}
+            onTouchCancel={() => !hasPicked && onHover?.(null)}
             disabled={disabled || hasPicked}
             className={[
-              'border-4 border-black px-4 py-4 font-neo font-extrabold uppercase tracking-wide transition-colors',
+              'touch-manipulation border-4 border-black px-4 py-5 font-neo font-extrabold uppercase tracking-wide transition-colors',
               isPicked
                 ? 'bg-black text-white'
                 : hasPicked
                   ? 'bg-white text-gray-400 border-gray-300'
-                  : 'bg-white text-black hover:bg-black hover:text-white',
+                  : 'bg-white text-black hover:bg-black hover:text-white active:bg-black active:text-white',
             ].join(' ')}
           >
-            <span className="text-xl">{renderSan(move.san)}</span>
+            <span className="text-2xl leading-none">{renderSan(move.san)}</span>
           </button>
         );
       })}
