@@ -1,16 +1,5 @@
 import type { CandidateMove } from "~/utils/multipleChoiceChess/moveParser";
-
-function renderSan(san: string) {
-  const idx = san.indexOf('x');
-  if (idx === -1) return san;
-  return (
-    <>
-      {san.slice(0, idx)}
-      <span className="text-base align-middle">x</span>
-      {san.slice(idx + 1)}
-    </>
-  );
-}
+import SanText from "./SanText";
 
 interface MoveChoicesProps {
   moves: CandidateMove[];
@@ -53,7 +42,9 @@ export default function MoveChoices({
                   : 'bg-white text-black hover:bg-black hover:text-white active:bg-black active:text-white',
             ].join(' ')}
           >
-            <span className="text-2xl leading-none">{renderSan(move.san)}</span>
+            <span className="text-2xl leading-none">
+              <SanText san={move.san} captureClassName="text-base align-middle" />
+            </span>
           </button>
         );
       })}

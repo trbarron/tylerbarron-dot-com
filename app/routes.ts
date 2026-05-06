@@ -61,6 +61,7 @@ export default [
   route("api/multipleChoiceChess/state", "routes/api/multipleChoiceChess/state.ts"),
   route("api/multipleChoiceChess/move", "routes/api/multipleChoiceChess/move.ts"),
   route("api/multipleChoiceChess/resign", "routes/api/multipleChoiceChess/resign.ts"),
+  route("api/multipleChoiceChess/claimWin", "routes/api/multipleChoiceChess/claimWin.ts"),
   route("api/multipleChoiceChess/available", "routes/api/multipleChoiceChess/available.ts"),
 ] satisfies RouteConfig;
 

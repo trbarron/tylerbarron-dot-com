@@ -12,6 +12,17 @@ const WASM_URL = `https://unpkg.com/stockfish@${STOCKFISH_VERSION}/bin/stockfish
 
 type EngineState = 'uninitialized' | 'ready' | 'analyzing' | 'error';
 
+export class EngineTimeoutError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'EngineTimeoutError';
+  }
+}
+
+export function isEngineTimeoutError(err: unknown): err is EngineTimeoutError {
+  return err instanceof EngineTimeoutError;
+}
+
 interface PendingAnalysis {
   resolve: (moves: CandidateMove[]) => void;
   reject: (err: Error) => void;
@@ -55,7 +66,7 @@ class StockfishEngine {
         this.state = 'error';
         this.initResolve = null;
         this.initReject = null;
-        reject(new Error('Engine init timed out'));
+        reject(new EngineTimeoutError('Engine init timed out'));
       }, INIT_TIMEOUT_MS);
 
       this.initResolve = () => { clearTimeout(timeoutId); resolve(); };
@@ -132,7 +143,7 @@ class StockfishEngine {
 
     return new Promise((resolve, reject) => {
       const timeoutId = setTimeout(() => {
-        this.failPending(new Error('Engine analysis timed out'));
+        this.failPending(new EngineTimeoutError('Engine analysis timed out'));
         this.state = 'ready';
       }, movetime + ANALYZE_TIMEOUT_BUFFER_MS);
 
