@@ -523,7 +523,7 @@ export default function MultipleChoiceChessGame() {
                   </div>
                   <div className="flex gap-2">
                     <a
-                      href={`https://lichess.org/analysis?fen=${encodeURIComponent(moveHistory[viewingMoveIndex]?.fenAfter ?? '')}`}
+                      href={`https://lichess.org/analysis/standard/${encodeURIComponent((moveHistory[viewingMoveIndex]?.fenAfter ?? '').replace(/ /g, '_'))}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="border-2 border-black px-3 py-1 font-neo text-sm font-bold uppercase hover:bg-black hover:text-white active:bg-black active:text-white"

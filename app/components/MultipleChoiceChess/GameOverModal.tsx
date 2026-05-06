@@ -1,4 +1,3 @@
-import { accuracy } from "~/utils/multipleChoiceChess/scoring";
 import type { MoveHistoryEntry } from "~/routes/multipleChoiceChess.$gameId.$playerId";
 
 interface GameOverModalProps {
@@ -77,13 +76,6 @@ export default function GameOverModal({
     ? { rank1: blackRank1, rank2: blackRank2, rank4: blackRank4, rank6: blackRank6 }
     : { rank1: whiteRank1, rank2: whiteRank2, rank4: whiteRank4, rank6: whiteRank6 };
 
-  const myScore = (myRanks.rank1 * 1) + (myRanks.rank2 * 2) + (myRanks.rank4 * 4) + (myRanks.rank6 * 6);
-  const oppScore = (oppRanks.rank1 * 1) + (oppRanks.rank2 * 2) + (oppRanks.rank4 * 4) + (oppRanks.rank6 * 6);
-  const myMoves = myRanks.rank1 + myRanks.rank2 + myRanks.rank4 + myRanks.rank6;
-  const oppMoves = oppRanks.rank1 + oppRanks.rank2 + oppRanks.rank4 + oppRanks.rank6;
-  const myAcc = accuracy(myScore, myMoves);
-  const oppAcc = accuracy(oppScore, oppMoves);
-
   const headline = isDraw ? 'Draw' : didWin ? 'You win!' : 'You lose';
 
   return (
@@ -103,8 +95,6 @@ export default function GameOverModal({
               <StatRow rank={4} count={myRanks.rank4} />
               <StatRow rank={6} count={myRanks.rank6} />
             </div>
-            <div className="mt-2 text-sm text-gray-600">{myAcc}% accuracy</div>
-            <div className="text-xs text-gray-400">{myMoves} moves</div>
           </div>
           <div className="p-5">
             <div className="text-xs font-bold uppercase text-gray-500">
@@ -116,8 +106,6 @@ export default function GameOverModal({
               <StatRow rank={4} count={oppRanks.rank4} />
               <StatRow rank={6} count={oppRanks.rank6} />
             </div>
-            <div className="mt-2 text-sm text-gray-600">{oppAcc}% accuracy</div>
-            <div className="text-xs text-gray-400">{oppMoves} moves</div>
           </div>
         </div>
 
