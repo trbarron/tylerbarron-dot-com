@@ -388,6 +388,28 @@ export default function MultipleChoiceChessGame() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
+  useEffect(() => {
+    if (moveHistory.length === 0) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return;
+      e.preventDefault();
+      setViewingMoveIndex(prev => {
+        const lastIdx = moveHistory.length - 1;
+        if (e.key === 'ArrowLeft') {
+          if (prev === null) return lastIdx;
+          return Math.max(0, prev - 1);
+        }
+        // ArrowRight
+        if (prev === null) return null;
+        return prev >= lastIdx ? null : prev + 1;
+      });
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [moveHistory.length]);
+
   const handlePick = (move: CandidateMove) => {
     if (!gameState || phase !== 'my_choosing') return;
     submitMove(gameState, move);
