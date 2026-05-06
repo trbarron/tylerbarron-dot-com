@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router";
 import { Navbar } from "~/components/Navbar";
 import Footer from "~/components/Footer";
@@ -16,24 +16,48 @@ export default function MultipleChoiceChessLobby() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
     const fetchGames = async () => {
       try {
         setIsLoading(true);
         const res = await fetch('/api/multipleChoiceChess/available');
-        if (res.ok) {
+        if (!cancelled && res.ok) {
           const data = await res.json();
           setAvailableGames(data.games ?? []);
         }
       } catch {
         // silently ignore polling errors
       } finally {
-        setIsLoading(false);
+        if (!cancelled) setIsLoading(false);
       }
     };
 
-    fetchGames();
-    const id = setInterval(fetchGames, 5000);
-    return () => clearInterval(id);
+    let id: ReturnType<typeof setInterval> | null = null;
+    const start = () => {
+      if (id !== null) return;
+      fetchGames();
+      id = setInterval(fetchGames, 5000);
+    };
+    const stop = () => {
+      if (id !== null) {
+        clearInterval(id);
+        id = null;
+      }
+    };
+
+    if (!document.hidden) start();
+
+    const onVisibility = () => {
+      if (document.hidden) stop();
+      else start();
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+
+    return () => {
+      cancelled = true;
+      document.removeEventListener('visibilitychange', onVisibility);
+      stop();
+    };
   }, []);
 
   const createGame = async () => {
@@ -99,9 +123,26 @@ export default function MultipleChoiceChessLobby() {
           </div>
 
           <div className="p-8">
-            <p className="mb-6 font-neo text-black">
+            <p className="mb-3 font-neo text-black">
               Pick from four engine moves each turn — the 1st, 2nd, 4th, and 6th best, shuffled. No time controls.
             </p>
+
+            <details className="mb-6 group">
+              <summary className="cursor-pointer font-neo text-sm font-bold uppercase tracking-wide text-gray-600 hover:text-black">
+                <span className="group-open:hidden">How scoring works ↓</span>
+                <span className="hidden group-open:inline">Hide ↑</span>
+              </summary>
+              <div className="mt-3 space-y-2 border-2 border-black bg-gray-50 p-3 font-neo text-sm text-black">
+                <p>Each turn you see four moves picked by Stockfish, shuffled so you don't know which is best.</p>
+                <ul className="ml-5 list-disc space-y-1 text-gray-700">
+                  <li><span className="font-bold text-black">#1</span> — best move (4 points)</li>
+                  <li><span className="font-bold text-black">#2</span> — second best (3 points)</li>
+                  <li><span className="font-bold text-black">#4</span> — fourth best (2 points)</li>
+                  <li><span className="font-bold text-black">#6</span> — sixth best (1 point)</li>
+                </ul>
+                <p className="text-gray-700">Higher accuracy means you picked the engine's top moves more often. Beat your opponent on the board <em>and</em> in the breakdown.</p>
+              </div>
+            </details>
 
             {error && (
               <div className="mb-4 border-2 border-red-500 bg-red-100 p-3 font-neo text-sm text-red-800">

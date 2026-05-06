@@ -28,6 +28,8 @@ export interface GameState {
   last_move_choices: string; // JSON array of 4 UCI moves
   created_at: number;
   last_updated: number;
+  white_last_seen: number; // ms timestamp; 0 = never (still vacant slot)
+  black_last_seen: number;
 }
 
 export const INITIAL_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
@@ -77,6 +79,8 @@ function parseGame(data: Record<string, string>): GameState {
     last_move_choices: data.last_move_choices,
     created_at: Number(data.created_at),
     last_updated: Number(data.last_updated),
+    white_last_seen: Number(data.white_last_seen ?? 0),
+    black_last_seen: Number(data.black_last_seen ?? 0),
   };
 }
 
@@ -109,6 +113,8 @@ export async function createGame(gameId: string, playerId: string): Promise<Game
     last_move_choices: '[]',
     created_at: now,
     last_updated: now,
+    white_last_seen: now,
+    black_last_seen: 0,
   };
 
   await redis.hset(gameKey(gameId), {
@@ -136,6 +142,8 @@ export async function createGame(gameId: string, playerId: string): Promise<Game
     last_move_choices: '[]',
     created_at: String(now),
     last_updated: String(now),
+    white_last_seen: String(now),
+    black_last_seen: '0',
   });
   await redis.expire(gameKey(gameId), TTL);
   await redis.zadd(AVAILABLE_KEY, now, gameId);
@@ -161,11 +169,48 @@ export async function joinGame(gameId: string, playerId: string): Promise<GameSt
     black_id: playerId,
     status: 'active',
     last_updated: String(now),
+    black_last_seen: String(now),
+    white_last_seen: String(now), // creator just received the join, so refresh
   });
   await redis.expire(gameKey(gameId), TTL);
   await redis.zrem(AVAILABLE_KEY, gameId);
 
-  return { ...game, black_id: playerId, status: 'active', last_updated: now };
+  return {
+    ...game,
+    black_id: playerId,
+    status: 'active',
+    last_updated: now,
+    black_last_seen: now,
+    white_last_seen: now,
+  };
+}
+
+// Mark a player as currently active. Called from the state poller so we can
+// detect abandonment when a player stops polling.
+export async function touchPlayer(
+  gameId: string,
+  color: 'white' | 'black',
+): Promise<void> {
+  const redis = getRedisClient();
+  const field = color === 'white' ? 'white_last_seen' : 'black_last_seen';
+  await redis.hset(gameKey(gameId), { [field]: String(Date.now()) });
+}
+
+// End a game because the opponent abandoned. Server-side validates the
+// inactivity threshold so the client can't claim a win on a live opponent.
+export async function claimWinByAbandonment(
+  gameId: string,
+  claimingColor: 'white' | 'black',
+): Promise<void> {
+  const redis = getRedisClient();
+  const now = Date.now();
+  await redis.hset(gameKey(gameId), {
+    status: 'complete',
+    result: claimingColor,
+    result_reason: 'abandonment',
+    last_updated: String(now),
+  });
+  await redis.expire(gameKey(gameId), TTL);
 }
 
 export interface MoveUpdate {

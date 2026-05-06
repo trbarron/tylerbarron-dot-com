@@ -3,7 +3,7 @@ import { Chess } from "chess.js";
 export interface CandidateMove {
   uci: string;   // "e2e4"
   san: string;   // "e4"
-  rank: 1 | 2 | 4 | 6;
+  rank: 0 | 1 | 2 | 4 | 6; // 0 = fallback/unranked (engine unavailable)
 }
 
 // Parse MultiPV lines from Stockfish output.

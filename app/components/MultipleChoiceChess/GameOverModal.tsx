@@ -1,4 +1,6 @@
-import type { MoveHistoryEntry } from "~/routes/multipleChoiceChess.$gameId.$playerId";
+import type { MoveHistoryEntry } from "~/utils/multipleChoiceChess/types";
+import { accuracy, pointsForRank } from "~/utils/multipleChoiceChess/scoring";
+import RankBadge from "./RankBadge";
 
 interface GameOverModalProps {
   result: 'white' | 'black' | 'draw';
@@ -21,30 +23,15 @@ const REASON_LABELS: Record<string, string> = {
   checkmate: 'Checkmate',
   stalemate: 'Stalemate',
   resignation: 'Resignation',
+  abandonment: 'Opponent left',
   insufficient_material: 'Insufficient material',
   repetition: 'Threefold repetition',
-};
-
-const RANK_BADGE: Record<number, string> = {
-  1: 'bg-white text-black border-black',
-  2: 'bg-gray-200 text-gray-900 border-gray-500',
-  4: 'bg-gray-600 text-white border-gray-800',
-  6: 'bg-black text-white border-black',
-};
-
-const RANK_LABEL: Record<number, string> = {
-  1: '#1',
-  2: '#2',
-  4: '#4',
-  6: '#6',
 };
 
 function StatRow({ rank, count }: { rank: number; count: number }) {
   return (
     <div className="flex items-center gap-2 text-sm text-gray-700">
-      <span className={`shrink-0 border-2 px-1 text-xs leading-none py-0.5 ${RANK_BADGE[rank]}`}>
-        {RANK_LABEL[rank]}
-      </span>
+      <RankBadge rank={rank} />
       <span className="font-bold text-black">{count}</span>
     </div>
   );
@@ -76,20 +63,41 @@ export default function GameOverModal({
     ? { rank1: blackRank1, rank2: blackRank2, rank4: blackRank4, rank6: blackRank6 }
     : { rank1: whiteRank1, rank2: whiteRank2, rank4: whiteRank4, rank6: whiteRank6 };
 
+  // Accuracy is computed from ranked moves only; fallback (rank 0) moves
+  // are excluded by construction since they aren't in any rank counter.
+  const computeAccuracy = (r: { rank1: number; rank2: number; rank4: number; rank6: number }) => {
+    const moves = r.rank1 + r.rank2 + r.rank4 + r.rank6;
+    const score =
+      r.rank1 * pointsForRank(1) +
+      r.rank2 * pointsForRank(2) +
+      r.rank4 * pointsForRank(4) +
+      r.rank6 * pointsForRank(6);
+    return accuracy(score, moves);
+  };
+
+  const myAccuracy = computeAccuracy(myRanks);
+  const oppAccuracy = computeAccuracy(oppRanks);
+
   const headline = isDraw ? 'Draw' : didWin ? 'You win!' : 'You lose';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={onReview}>
-      <div className="w-full max-w-md border-4 border-black bg-white font-neo" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+      <div className="w-full max-w-md border-4 border-black bg-white font-neo">
         <div className="border-b-4 border-black p-6 text-center">
           <h2 className="text-3xl font-extrabold uppercase">{headline}</h2>
           <p className="mt-1 text-sm text-gray-600">{REASON_LABELS[reason] ?? reason}</p>
         </div>
 
+        <div className="px-5 pt-3 pb-1 text-center text-[10px] uppercase tracking-wide text-gray-500">
+          #1 best engine pick · #6 worst
+        </div>
+
         <div className="grid grid-cols-2 divide-x-4 divide-black">
           <div className="p-5">
             <div className="text-xs font-bold uppercase text-gray-500">You ({myColor})</div>
-            <div className="mt-2 space-y-1">
+            <div className="mt-1 text-2xl font-extrabold leading-none text-black">{myAccuracy}%</div>
+            <div className="text-[10px] uppercase tracking-wide text-gray-400">accuracy</div>
+            <div className="mt-3 space-y-1">
               <StatRow rank={1} count={myRanks.rank1} />
               <StatRow rank={2} count={myRanks.rank2} />
               <StatRow rank={4} count={myRanks.rank4} />
@@ -100,7 +108,9 @@ export default function GameOverModal({
             <div className="text-xs font-bold uppercase text-gray-500">
               Opponent ({myColor === 'white' ? 'black' : 'white'})
             </div>
-            <div className="mt-2 space-y-1">
+            <div className="mt-1 text-2xl font-extrabold leading-none text-black">{oppAccuracy}%</div>
+            <div className="text-[10px] uppercase tracking-wide text-gray-400">accuracy</div>
+            <div className="mt-3 space-y-1">
               <StatRow rank={1} count={oppRanks.rank1} />
               <StatRow rank={2} count={oppRanks.rank2} />
               <StatRow rank={4} count={oppRanks.rank4} />

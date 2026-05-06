@@ -1,18 +1,7 @@
-import type { MoveHistoryEntry } from "~/routes/multipleChoiceChess.$gameId.$playerId";
-
-const RANK_LABELS: Record<number, string> = {
-  1: '#1',
-  2: '#2',
-  4: '#4',
-  6: '#6',
-};
-
-const RANK_COLORS: Record<number, string> = {
-  1: 'bg-white text-black border-black',
-  2: 'bg-gray-200 text-gray-900 border-gray-500',
-  4: 'bg-gray-600 text-white border-gray-800',
-  6: 'bg-black text-white border-black',
-};
+import { useEffect, useRef } from "react";
+import type { MoveHistoryEntry } from "~/utils/multipleChoiceChess/types";
+import RankBadge from "./RankBadge";
+import SanText from "./SanText";
 
 interface MoveHistoryProps {
   history: MoveHistoryEntry[];
@@ -21,26 +10,22 @@ interface MoveHistoryProps {
   isGameActive: boolean;
 }
 
-function SanText({ san }: { san: string }) {
-  const idx = san.indexOf('x');
-  if (idx === -1) {
-    return <span className="uppercase">{san}</span>;
-  }
-  return (
-    <span className="inline-flex items-center uppercase leading-none">
-      <span>{san.slice(0, idx)}</span>
-      <span className="text-[0.7em] mx-px">x</span>
-      <span>{san.slice(idx + 1)}</span>
-    </span>
-  );
-}
-
 export default function MoveHistory({
   history,
   viewingIndex,
   onSelectMove,
   isGameActive,
 }: MoveHistoryProps) {
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+
+  // Auto-scroll to the latest move when a new move appears, but not while the
+  // user is browsing earlier history.
+  useEffect(() => {
+    if (viewingIndex !== null) return;
+    const el = scrollRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [history.length, viewingIndex]);
+
   if (history.length === 0) return null;
 
   const pairs: Array<{ white?: MoveHistoryEntry & { index: number }; black?: MoveHistoryEntry & { index: number } }> = [];
@@ -70,27 +55,21 @@ export default function MoveHistory({
         ].join(' ')}
       >
         <SanText san={entry.san} />
-        <span
-          className={[
-            'shrink-0 border-2 px-1 text-xs leading-none py-0.5',
-            selected
-              ? 'bg-white text-black border-white'
-              : RANK_COLORS[entry.rank] ?? 'bg-gray-100 text-gray-600 border-gray-300',
-          ].join(' ')}
-        >
-          {RANK_LABELS[entry.rank] ?? `#${entry.rank}`}
-        </span>
+        <RankBadge rank={entry.rank} inverted={selected} />
       </button>
     );
   };
 
   return (
     <div className="border-4 border-black bg-white font-neo">
-      <div className="border-b-2 border-black px-3 py-2">
+      <div className="flex items-baseline justify-between gap-2 border-b-2 border-black px-3 py-2">
         <span className="text-xs font-bold uppercase tracking-wide">Move History</span>
+        <span className="text-[10px] uppercase tracking-wide text-gray-500">
+          #1 best · #6 worst
+        </span>
       </div>
 
-      <div className="max-h-64 overflow-y-auto">
+      <div ref={scrollRef} className="max-h-64 overflow-y-auto">
         {pairs.map((pair, pairIdx) => (
           <div
             key={pairIdx}

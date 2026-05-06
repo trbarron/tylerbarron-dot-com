@@ -37,7 +37,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     const { game_id: gameId, player_id: playerId, move, rank, choices } = body;
 
-    if (!gameId || !playerId || !move || !rank || !choices) {
+    if (!gameId || !playerId || !move || rank === undefined || rank === null || !choices) {
       return Response.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
