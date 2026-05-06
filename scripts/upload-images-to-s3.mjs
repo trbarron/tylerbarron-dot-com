@@ -37,6 +37,8 @@ function getContentType(filePath) {
     '.svg': 'image/svg+xml',
     '.webp': 'image/webp',
     '.ico': 'image/x-icon',
+    '.mp4': 'video/mp4',
+    '.webm': 'video/webm',
   };
   return contentTypes[ext] || 'application/octet-stream';
 }
@@ -52,7 +54,7 @@ function getAllFiles(dir, fileList = []) {
     } else {
       // Only upload image files
       const ext = extname(file).toLowerCase();
-      if (['.jpg', '.jpeg', '.png', '.gif', '.svg', '.webp', '.ico'].includes(ext)) {
+      if (['.jpg', '.jpeg', '.png', '.gif', '.svg', '.webp', '.ico', '.mp4', '.webm'].includes(ext)) {
         fileList.push(filePath);
       }
     }
