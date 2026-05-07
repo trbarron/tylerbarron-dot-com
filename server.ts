@@ -28,13 +28,14 @@ async function handlerFn(event: any, context: any) {
     // In local dev, serve static files from public directory
     const path = event.rawPath || event.path || event.requestContext?.http?.path;
     
-    // Serve static files in all environments when using spa mode
-    // In production, files are in build/client/, in dev they're in ../public/
-    if (path?.startsWith('/assets/') || path?.startsWith('/fonts/') || path?.startsWith('/images/')) {
-      const isProduction = process.env.ARC_ENV === 'production';
-      const publicDir = isProduction
-        ? join(process.cwd(), 'build', 'client')
-        : join(process.cwd(), '..', 'public');
+    // Serve static files in the local arc sandbox only.
+    // In production all assets are served from the CDN (VITE_CDN_URL baked into
+    // the Vite build at compile time), so the Lambda never sees /assets/ requests.
+    if (
+      process.env.ARC_ENV !== 'production' &&
+      (path?.startsWith('/assets/') || path?.startsWith('/fonts/') || path?.startsWith('/images/'))
+    ) {
+      const publicDir = join(process.cwd(), '..', 'public');
       const filePath = join(publicDir, path);
       
       if (existsSync(filePath)) {

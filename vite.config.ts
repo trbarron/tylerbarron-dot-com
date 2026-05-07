@@ -25,7 +25,11 @@ function getGitVersion() {
   }
 }
 
+// Strip trailing slash then add one so base is always "https://cdn.example.com/"
+const cdnUrl = process.env.VITE_CDN_URL?.replace(/\/?$/, '/');
+
 export default defineConfig({
+  base: cdnUrl ?? '/',
   plugins: [
     reactRouter(),
     tsconfigPaths(),
