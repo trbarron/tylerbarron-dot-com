@@ -123,9 +123,17 @@ jobs:
         run: |
           NODE_ENV=production npx esbuild server.ts --platform=node --target=node22 --format=esm --bundle --minify --outfile=server/index.mjs '--external:@aws-sdk/*' --external:aws-sdk '--external:@react-router/*' --external:react --external:react-dom '--external:./build/*'
           
-      - name: 📦 Copy build output to Lambda
+      - name: 📦 Copy build output to Lambda (excluding images, served from S3/CDN)
         run: |
-          cp -r build server/
+          mkdir -p server/build/client server/build/server
+          cp -r build/server/. server/build/server/
+          cp -r build/client/assets server/build/client/
+          [ -d build/client/fonts ] && cp -r build/client/fonts server/build/client/ || true
+          find build/client -maxdepth 1 -type f -exec cp {} server/build/client/ \;
+          echo "Lambda build/client contents:"
+          du -sh server/build/client/* 2>/dev/null || true
+          echo "Total Lambda build/ size:"
+          du -sh server/build
           
       - name: 🔍 Verify public directory
         run: |

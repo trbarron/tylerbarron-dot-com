@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import LightboxComponent from "yet-another-react-lightbox";
-import "yet-another-react-lightbox/styles.css";
+import LightboxComponent from "../components/LazyLightbox";
 
 const pic5 = getImageUrl('GenerativeArt/5.jpg');
 const pic4 = getImageUrl('GenerativeArt/4.jpg');

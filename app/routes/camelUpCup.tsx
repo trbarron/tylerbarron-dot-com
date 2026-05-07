@@ -1,6 +1,5 @@
 import { useState } from "react";
-import LightboxComponent from "yet-another-react-lightbox";
-import "yet-another-react-lightbox/styles.css";
+import LightboxComponent from "../components/LazyLightbox";
 
 const eventTwo = getImageUrl('CamelUpCup/eventTwo.jpg');
 const eventOne = getImageUrl('CamelUpCup/eventOne.jpg');

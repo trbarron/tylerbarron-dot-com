@@ -1,6 +1,5 @@
 import { useState } from "react";
-import LightboxComponent from "yet-another-react-lightbox";
-import "yet-another-react-lightbox/styles.css";
+import LightboxComponent from "../components/LazyLightbox";
 
 const setSetup = getImageUrl('Set/setSetup.jpg');
 const setAnswers = getImageUrl('Set/setAnswers.jpg');
