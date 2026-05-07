@@ -211,9 +211,9 @@ export default function Index() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {allProjects.map(({ to, title, description }) => (
                 <div key={to} className="border-4 border-black">
-                  <Link to={to} className="block p-6 no-underline h-full bg-white/90 backdrop-blur-sm hover:bg-black active:bg-black group transition-all duration-100">
-                    <div className="font-neo font-bold text-xl text-black group-hover:text-white group-active:text-white tracking-wide">{title.toUpperCase()}</div>
-                    <div className="font-neo text-sm mt-2 opacity-75 text-black group-hover:text-white group-active:text-white group-hover:opacity-100 group-active:opacity-100 font-medium">{description}</div>
+                  <Link to={to} className="block p-6 no-underline h-full bg-white/90 backdrop-blur-sm [@media(hover:hover)]:hover:bg-black active:bg-black group transition-all duration-100">
+                    <div className="font-neo font-bold text-xl text-black [@media(hover:hover)]:group-hover:text-white group-active:text-white tracking-wide">{title.toUpperCase()}</div>
+                    <div className="font-neo text-sm mt-2 opacity-75 text-black [@media(hover:hover)]:group-hover:text-white group-active:text-white [@media(hover:hover)]:group-hover:opacity-100 group-active:opacity-100 font-medium">{description}</div>
                   </Link>
                 </div>
               ))}
@@ -224,14 +224,14 @@ export default function Index() {
           <ul className="w-full space-y-6 px-8">
             {posts.filter((post: Post) => post.type !== 'project').map((post: Post) => (
               <li key={post.slug} className="border-4 border-black">
-                <Link to={`/blog/${post.slug}`} className="block p-6 no-underline bg-white/90 backdrop-blur-sm hover:bg-black active:bg-black group transition-all duration-100">
-                  <div className="font-neo font-bold text-xl text-black group-hover:text-white group-active:text-white tracking-wide">{post.title.toUpperCase()}</div>
+                <Link to={`/blog/${post.slug}`} className="block p-6 no-underline bg-white/90 backdrop-blur-sm [@media(hover:hover)]:hover:bg-black active:bg-black group transition-all duration-100">
+                  <div className="font-neo font-bold text-xl text-black [@media(hover:hover)]:group-hover:text-white group-active:text-white tracking-wide">{post.title.toUpperCase()}</div>
                   {post.subtitle && (
-                    <div className="font-neo text-base mt-2 text-black group-hover:text-white group-active:text-white opacity-80 group-hover:opacity-100 group-active:opacity-100 font-medium">
+                    <div className="font-neo text-base mt-2 text-black [@media(hover:hover)]:group-hover:text-white group-active:text-white opacity-80 [@media(hover:hover)]:group-hover:opacity-100 group-active:opacity-100 font-medium">
                       {post.subtitle}
                     </div>
                   )}
-                  <div className="font-neo text-sm mt-2 opacity-75 text-black group-hover:text-white group-active:text-white group-hover:opacity-100 group-active:opacity-100 font-medium">
+                  <div className="font-neo text-sm mt-2 opacity-75 text-black [@media(hover:hover)]:group-hover:text-white group-active:text-white [@media(hover:hover)]:group-hover:opacity-100 group-active:opacity-100 font-medium">
                     {new Date(post.date).toLocaleDateString('en-US', {
                       year: 'numeric',
                       month: 'long',
