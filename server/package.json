@@ -3,7 +3,6 @@
   "dependencies": {
     "@ballatech/react-router7-preset-aws": "^1.0.1",
     "chess.js": "^1.0.0",
-    "chessground": "^9.1.1",
     "ioredis": "^5.8.2",
     "isbot": "^4.1.0",
     "react": "^19.0.0",

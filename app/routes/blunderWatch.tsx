@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { useLoaderData, ScrollRestoration, type LinksFunction } from 'react-router';
 import { getRedisClient } from '~/utils/redis.server';
 import { computePacing } from '~/utils/blunderWatch/pacing';
@@ -9,7 +9,7 @@ import Article from '~/components/Article';
 import { Subarticle } from '~/components/Subarticle';
 import { UsernameModal } from '~/components/ChesserGuesser/UsernameModal';
 
-import { GameBoard } from '~/components/BlunderWatch/GameBoard';
+const GameBoard = lazy(() => import('~/components/BlunderWatch/GameBoard').then(m => ({ default: m.GameBoard })));
 import { BlunderButton } from '~/components/BlunderWatch/BlunderButton';
 import { ScoreBug } from '~/components/BlunderWatch/ScoreBug';
 import { ResultsScreen } from '~/components/BlunderWatch/ResultsScreen';
@@ -396,14 +396,16 @@ export default function BlunderWatch() {
                       </span>
                     </div>
 
-                    <GameBoard
-                      initialFen={initialFen}
-                      moves={game.moves}
-                      currentMoveIndex={playback.currentMoveIndex}
-                      orientation={orientation}
-                      isFastForward={playback.phase === 'playing' && playback.isFastForward}
-                      missedBlunderAt={playback.missedBlunderAt}
-                    />
+                    <Suspense fallback={<div className="aspect-square w-full bg-gray-100" />}>
+                      <GameBoard
+                        initialFen={initialFen}
+                        moves={game.moves}
+                        currentMoveIndex={playback.currentMoveIndex}
+                        orientation={orientation}
+                        isFastForward={playback.phase === 'playing' && playback.isFastForward}
+                        missedBlunderAt={playback.missedBlunderAt}
+                      />
+                    </Suspense>
 
                     <BlunderButton
                       onFlag={playback.phase === 'pregame' ? handleStartGame : playback.flagCurrentMove}
@@ -432,14 +434,16 @@ export default function BlunderWatch() {
                     </span>
                   </div>
 
-                  <GameBoard
-                    initialFen={initialFen}
-                    moves={game.moves}
-                    currentMoveIndex={playback.currentMoveIndex}
-                    orientation={orientation}
-                    isFastForward={playback.isFastForward}
-                    missedBlunderAt={playback.missedBlunderAt}
-                  />
+                  <Suspense fallback={<div className="aspect-square w-full bg-gray-100" />}>
+                    <GameBoard
+                      initialFen={initialFen}
+                      moves={game.moves}
+                      currentMoveIndex={playback.currentMoveIndex}
+                      orientation={orientation}
+                      isFastForward={playback.isFastForward}
+                      missedBlunderAt={playback.missedBlunderAt}
+                    />
+                  </Suspense>
 
                   <ResultsScreen
                     gameNumber={game.gameNumber}
