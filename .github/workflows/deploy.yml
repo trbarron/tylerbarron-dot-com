@@ -146,14 +146,20 @@ jobs:
         run: |
           mkdir -p server/build
           cp -r build/server server/build/
-          echo "Lambda build/ size:"
+          echo "=== Lambda bundle size breakdown ==="
           du -sh server/build
-          
+          du -sh server/node_modules 2>/dev/null || echo "no node_modules yet"
+          du -sh server/index.mjs 2>/dev/null || echo "no index.mjs yet"
+          echo "--- total server/ ---"
+          du -sh server/
+          echo "--- top node_modules by size ---"
+          du -sh server/node_modules/*/ 2>/dev/null | sort -rh | head -15
+
       - name: 🔍 Verify public directory
         run: |
           ls -la public/ | head -20
           echo "Asset count:"
-          find public/assets -type f | wc -l
+          find public/assets -type f | wc -l || echo "no assets dir"
 
       - name: 🚀 Production Deploy
         if: github.ref == 'refs/heads/master'
