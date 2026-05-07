@@ -4,6 +4,7 @@ export default [
   index("routes/_index.tsx"),
   route("blog/:slug", "routes/blog.$slug.tsx"),
   route("favicon.ico", "routes/favicon[.]ico.ts"),
+  route(".well-known/appspecific/com.chrome.devtools.json", "routes/wellKnown.chromeDevtools.ts"),
   route("healthcheck", "routes/healthcheck.tsx"),
 
   // Kebab-case routes (preferred)

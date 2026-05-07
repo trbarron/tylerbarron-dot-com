@@ -23,7 +23,8 @@ export async function loader() {
 }
 
 export const links: LinksFunction = () => [
-  { rel: "stylesheet", href: styles }
+  { rel: "stylesheet", href: styles },
+  { rel: "icon", type: "image/png", href: "/favicon.png" },
 ];
 
 export const meta = () => {
