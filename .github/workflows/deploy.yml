@@ -146,14 +146,15 @@ jobs:
         run: |
           mkdir -p server/build
           cp -r build/server server/build/
+          cd server && npm install --omit=dev --silent && cd ..
           echo "=== Lambda bundle size breakdown ==="
           du -sh server/build
-          du -sh server/node_modules 2>/dev/null || echo "no node_modules yet"
-          du -sh server/index.mjs 2>/dev/null || echo "no index.mjs yet"
+          du -sh server/node_modules
+          du -sh server/index.mjs
           echo "--- total server/ ---"
           du -sh server/
           echo "--- top node_modules by size ---"
-          du -sh server/node_modules/*/ 2>/dev/null | sort -rh | head -15
+          du -sh server/node_modules/*/ | sort -rh | head -15
 
       - name: 🔍 Verify public directory
         run: |
