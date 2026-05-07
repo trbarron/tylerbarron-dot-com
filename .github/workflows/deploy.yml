@@ -123,16 +123,30 @@ jobs:
         run: |
           NODE_ENV=production npx esbuild server.ts --platform=node --target=node22 --format=esm --bundle --minify --outfile=server/index.mjs '--external:@aws-sdk/*' --external:aws-sdk '--external:@react-router/*' --external:react --external:react-dom '--external:./build/*'
           
-      - name: 📦 Copy build output to Lambda (excluding images, served from S3/CDN)
+      - name: 📤 Upload JS/CSS/font assets to CDN and configure S3 CORS
+        if: github.ref == 'refs/heads/master'
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+          AWS_BUCKET_NAME: ${{ secrets.AWS_BUCKET_NAME }}
         run: |
-          mkdir -p server/build/client server/build/server
-          cp -r build/server/. server/build/server/
-          cp -r build/client/assets server/build/client/
-          [ -d build/client/fonts ] && cp -r build/client/fonts server/build/client/ || true
-          find build/client -maxdepth 1 -type f -exec cp {} server/build/client/ \;
-          echo "Lambda build/client contents:"
-          du -sh server/build/client/* 2>/dev/null || true
-          echo "Total Lambda build/ size:"
+          # Enable CORS so <script type=module> can load JS chunks cross-origin
+          aws s3api put-bucket-cors --bucket "$AWS_BUCKET_NAME" --cors-configuration \
+            '{"CORSRules":[{"AllowedOrigins":["*"],"AllowedMethods":["GET","HEAD"],"AllowedHeaders":[],"MaxAgeSeconds":86400}]}'
+          # Content-hashed assets are immutable; sync with --delete to prune stale builds
+          aws s3 sync build/client/assets/ "s3://$AWS_BUCKET_NAME/assets/" \
+            --delete \
+            --cache-control "public,max-age=31536000,immutable"
+          # Fonts have fixed names so skip --delete and use a shorter TTL
+          [ -d build/client/fonts ] && aws s3 sync build/client/fonts/ "s3://$AWS_BUCKET_NAME/fonts/" \
+            --cache-control "public,max-age=86400" || true
+
+      - name: 📦 Copy SSR build to Lambda (no client assets — they are on CDN)
+        run: |
+          mkdir -p server/build
+          cp -r build/server server/build/
+          echo "Lambda build/ size:"
           du -sh server/build
           
       - name: 🔍 Verify public directory
