@@ -17,12 +17,10 @@ export function Leaderboard({
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [totalPlayers, setTotalPlayers] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   const fetchLeaderboard = useCallback(async () => {
     try {
       setIsLoading(true);
-      setError(null);
 
       const params = new URLSearchParams();
       if (date) params.append('date', date);
@@ -37,7 +35,8 @@ export function Leaderboard({
       setTotalPlayers(data.totalPlayers || 0);
     } catch (err) {
       console.error('Error fetching leaderboard:', err);
-      setError('Failed to load leaderboard');
+      setLeaderboard([]);
+      setTotalPlayers(0);
     } finally {
       setIsLoading(false);
     }
@@ -72,10 +71,6 @@ export function Leaderboard({
                 <Skeleton variant="rect" className="w-16 h-full" />
               </div>
             ))}
-          </div>
-        ) : error ? (
-          <div className="p-8 text-center font-neo font-bold text-black uppercase">
-            {error}
           </div>
         ) : leaderboard.length === 0 ? (
           <div className="p-8 text-center font-neo font-bold text-black opacity-50 uppercase">
