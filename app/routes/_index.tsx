@@ -11,84 +11,8 @@ interface Post {
 }
 
 export async function loader(): Promise<{ posts: Post[] }> {
-  // Use ARC_ENV (automatically set by Architect) to detect production
-  const isProduction = process.env.ARC_ENV === 'production';
-
-  if (isProduction) {
-    // In production, fetch pre-compiled JSON files from S3
-    const region = 'us-west-2'; // Hardcode since it matches app.arc
-    const bucketName = process.env.AWS_BUCKET_NAME || 'remix-website-writing-posts';
-
-    const { S3Client, GetObjectCommand, ListObjectsV2Command } = await import('@aws-sdk/client-s3');
-    const s3 = new S3Client({ region: region });
-
-    try {
-      const { Contents = [] } = await s3.send(new ListObjectsV2Command({
-        Bucket: bucketName,
-        Prefix: 'compiled-posts/'
-      }));
-
-      const posts = await Promise.all(
-        Contents.map(async (obj) => {
-          if (!obj.Key || !obj.Key.endsWith('.json')) return null;
-          try {
-            const { Body } = await s3.send(new GetObjectCommand({
-              Bucket: bucketName,
-              Key: obj.Key
-            }));
-            if (!Body) return null;
-            const jsonString = await Body.transformToString();
-            const { frontmatter } = JSON.parse(jsonString);
-            return {
-              slug: obj.Key.replace('compiled-posts/', '').replace('.json', ''),
-              title: frontmatter.title,
-              date: frontmatter.date,
-              type: frontmatter.type,
-              subtitle: frontmatter.subtitle,
-            };
-          } catch (err) {
-            console.error(`Error processing ${obj.Key}:`, err);
-            return null;
-          }
-        })
-      );
-      const validPosts = posts.filter((post): post is NonNullable<typeof post> => post !== null);
-      return { posts: validPosts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) };
-    } catch (error) {
-      console.error('S3 Error:', error);
-      return { posts: [] };
-    }
-  } else {
-    // In development, compile MDX on the fly
-    // Dynamic imports to keep mdx-bundler out of production bundle
-    const [{ processMdx }, fs, path] = await Promise.all([
-      import('~/utils/mdx.server'),
-      import('fs/promises'),
-      import('path')
-    ]);
-
-    const postsPath = path.join(process.cwd(), 'posts');
-    try {
-      const files = await fs.readdir(postsPath);
-      const posts = await Promise.all(
-        files.filter(f => f.endsWith('.mdx')).map(async (filename) => {
-          const source = await fs.readFile(path.join(postsPath, filename), 'utf-8');
-          const { frontmatter } = await processMdx(source);
-          return {
-            slug: filename.replace('.mdx', ''),
-            title: frontmatter.title,
-            date: frontmatter.date,
-            type: frontmatter.type,
-            subtitle: frontmatter.subtitle,
-          };
-        })
-      );
-      return { posts: posts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) };
-    } catch (error) {
-      console.error('Filesystem Error:', error);
-      return { posts: [] };
-    }
-  }
+  const { getAllPostMeta } = await import('~/utils/posts.server');
+  return { posts: await getAllPostMeta() };
 }
 
 interface ProjectLink {

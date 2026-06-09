@@ -12,7 +12,6 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  actions: write
   contents: read
 
 defaults:
@@ -20,33 +19,6 @@ defaults:
     shell: bash
 
 jobs:
-  upload:
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v3
-        
-        - name: ⎔ Setup node
-          uses: actions/setup-node@v4
-          with:
-            node-version: 22
-        
-        - name: 📥 Install dependencies
-          run: npm ci
-        
-        - name: 📝 Compile MDX files
-          run: node scripts/compile-mdx.mjs
-        
-        - name: Configure AWS
-          uses: aws-actions/configure-aws-credentials@v1
-          with:
-            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            aws-region: us-east-1
-
-        - name: 📤 Upload compiled posts to S3
-          run: |
-            aws s3 sync public/compiled-posts/ s3://${{ secrets.AWS_BUCKET_NAME }}/compiled-posts/ --delete
-
   lint:
     name: ⬣ ESLint
     runs-on: ubuntu-latest
@@ -88,13 +60,14 @@ jobs:
         run: npm run typecheck
 
   deploy:
+    name: 🚀 Deploy
     runs-on: ubuntu-latest
     needs: [lint, typecheck]
+    # Only master deploys. PRs run lint + typecheck above and stop here, so a PR
+    # can never publish assets or overwrite production.
+    if: github.ref == 'refs/heads/master'
 
     steps:
-      - name: 🛑 Cancel Previous Runs
-        uses: styfle/cancel-workflow-action@0.11.0
-
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v4
 
@@ -103,67 +76,70 @@ jobs:
         with:
           node-version: 22
           architecture: x64
+          cache: npm
+          cache-dependency-path: ./package.json
 
       - name: 📥 Install deps
         run: |
-          rm -rf node_modules
-          npm cache clean --force
           npm ci
           npm i -g @architect/architect
-          
+
+      # Compile MDX (image src's rewritten to VITE_CDN_URL) -> bundle the compiled
+      # posts into the SSR build -> build client assets against the CDN base ->
+      # bundle the Lambda handler.
       - name: 🏗 Build
+        env:
+          NODE_ENV: production
+          VITE_CDN_URL: ${{ secrets.VITE_CDN_URL }}
         run: |
+          npm run compile:mdx
           npm run build
           mkdir -p public
           cp -r build/client/* public/
-        env:
-          VITE_CDN_URL: ${{ secrets.VITE_CDN_URL }}
-          
-      - name: 🏗 Build Architect Handler
-        run: |
-          NODE_ENV=production npx esbuild server.ts --platform=node --target=node22 --format=esm --bundle --minify --outfile=server/index.mjs '--external:@aws-sdk/*' --external:aws-sdk '--external:@react-router/*' --external:react --external:react-dom '--external:./build/*'
-          
-      - name: 📤 Upload JS/CSS/font assets to CDN and configure S3 CORS
-        if: github.ref == 'refs/heads/master'
+          npx esbuild server.ts \
+            --platform=node --target=node22 --format=esm --bundle --minify \
+            --tree-shaking=true --outfile=server/index.mjs \
+            '--external:@aws-sdk/*' --external:aws-sdk \
+            '--external:@react-router/*' --external:react --external:react-dom \
+            '--external:./build/*'
+
+      # The CDN bucket serves everything the browser fetches: hashed JS/CSS,
+      # fonts, and blog images. CORS lets <script type=module> load chunks
+      # cross-origin.
+      - name: 📤 Publish assets + images to CDN
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
           AWS_BUCKET_NAME: ${{ secrets.AWS_BUCKET_NAME }}
         run: |
-          # Enable CORS so <script type=module> can load JS chunks cross-origin
           aws s3api put-bucket-cors --bucket "$AWS_BUCKET_NAME" --cors-configuration \
             '{"CORSRules":[{"AllowedOrigins":["*"],"AllowedMethods":["GET","HEAD"],"AllowedHeaders":[],"MaxAgeSeconds":86400}]}'
-          # Content-hashed assets are immutable; sync with --delete to prune stale builds
+          # Content-hashed assets are immutable; --delete prunes stale builds.
           aws s3 sync build/client/assets/ "s3://$AWS_BUCKET_NAME/assets/" \
             --delete \
             --cache-control "public,max-age=31536000,immutable"
-          # Fonts have fixed names so skip --delete and use a shorter TTL
+          # Fonts have fixed names: skip --delete, shorter TTL.
           [ -d build/client/fonts ] && aws s3 sync build/client/fonts/ "s3://$AWS_BUCKET_NAME/fonts/" \
             --cache-control "public,max-age=86400" || true
+          # Blog/post images referenced as /images/* in MDX (rewritten to the CDN).
+          aws s3 sync public/images/ "s3://$AWS_BUCKET_NAME/images/" \
+            --exclude "*.db" \
+            --cache-control "public,max-age=31536000,immutable"
 
-      - name: 📦 Copy SSR build to Lambda (no client assets — they are on CDN)
+      - name: 📦 Assemble Lambda bundle
         run: |
           mkdir -p server/build
           cp -r build/server server/build/
           cd server && npm install --omit=dev --silent && cd ..
           echo "=== Lambda bundle size breakdown ==="
-          du -sh server/build
-          du -sh server/node_modules
-          du -sh server/index.mjs
+          du -sh server/build server/node_modules server/index.mjs
           echo "--- total server/ ---"
           du -sh server/
           echo "--- top node_modules by size ---"
           du -sh server/node_modules/*/ | sort -rh | head -15
 
-      - name: 🔍 Verify public directory
-        run: |
-          ls -la public/ | head -20
-          echo "Asset count:"
-          find public/assets -type f | wc -l || echo "no assets dir"
-
       - name: 🚀 Production Deploy
-        if: github.ref == 'refs/heads/master'
         run: |
           arc env --add --env production NODE_ENV production || true
           arc deploy --production --prune --verbose --debug

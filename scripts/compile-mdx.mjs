@@ -41,7 +41,9 @@ async function processMdx(source) {
 
 async function compileAllMdx() {
   const postsDir = path.join(__dirname, '..', 'posts');
-  const outputDir = path.join(__dirname, '..', 'public', 'compiled-posts');
+  // Output into the app module graph so Vite bundles the compiled posts into
+  // the SSR build (via import.meta.glob in app/utils/posts.server.ts). No S3.
+  const outputDir = path.join(__dirname, '..', 'app', 'posts', 'compiled');
   
   console.log('📝 Compiling MDX files...');
   console.log(`   Posts directory: ${postsDir}`);

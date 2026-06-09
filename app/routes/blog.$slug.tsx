@@ -20,54 +20,12 @@ function getMDXComponent(code: string) {
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   const { slug } = params;
-  
-  // Use ARC_ENV (automatically set by Architect) to detect production
-  const isProduction = process.env.ARC_ENV === 'production';
-  
-  if (isProduction) {
-    // In production, fetch pre-compiled JSON from S3
-    const region = 'us-west-2'; // Hardcode since it matches app.arc
-    const bucketName = process.env.AWS_BUCKET_NAME || 'remix-website-writing-posts';
-    
-    const { S3Client, GetObjectCommand } = await import('@aws-sdk/client-s3');
-    const s3 = new S3Client({ region: region });
- 
-    try {
-      const { Body } = await s3.send(new GetObjectCommand({
-        Bucket: bucketName,
-        Key: `compiled-posts/${slug}.json`
-      }));
-      
-      if (!Body) {
-        throw new Response('Not Found', { status: 404 });
-      }
-      
-      const jsonString = await Body.transformToString();
-      const { code, frontmatter } = JSON.parse(jsonString);
-      return { code, frontmatter };
-    } catch (error) {
-      console.error('S3 Error:', error);
-      throw new Response('Not Found', { status: 404 });
-    }
-  } else {
-    // In development, compile on the fly for better DX
-    // Dynamic imports to avoid bundling mdx-bundler in production
-    const [{ processMdx }, fs, path] = await Promise.all([
-      import('~/utils/mdx.server'),
-      import('fs/promises'),
-      import('path')
-    ]);
-
-    const filePath = path.join(process.cwd(), 'posts', `${slug}.mdx`);
-    try {
-      const source = await fs.readFile(filePath, 'utf-8');
-      const { code, frontmatter } = await processMdx(source);
-      return { code, frontmatter };
-    } catch (error) {
-      console.error('Filesystem Error:', error);
-      throw new Response('Not Found', { status: 404 });
-    }
+  const { getPost } = await import('~/utils/posts.server');
+  const post = await getPost(slug!);
+  if (!post) {
+    throw new Response('Not Found', { status: 404 });
   }
+  return { code: post.code, frontmatter: post.frontmatter };
 };
 
 export default function BlogPost() {

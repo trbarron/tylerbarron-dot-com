@@ -9,7 +9,7 @@ node_modules
 /public/build
 /public/assets
 /public/static.json
-/public/compiled-posts
+/app/posts/compiled
 /server/*
 !/server/package.json
 

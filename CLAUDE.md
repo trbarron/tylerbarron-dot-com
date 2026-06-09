@@ -95,14 +95,17 @@ This is a personal website built with React Router 7, TypeScript, and deployed o
 
 ## Deployment Architecture Notes
 
-### Lambda zip: SSR build + handler + client assets + prod node_modules
-The deployed Lambda (`server/`) contains `build/client/` because the CI/CD (`deploy.yml`) runs `cp -r build server/` which bundles all Vite client assets into the Lambda zip. The static-file fallback in `server.ts` serves `/assets/*`, `/fonts/*`, and `/images/*` directly from `build/client/` in production and from `../public/` in the sandbox.
+### Lambda zip: SSR build + handler + prod node_modules (no client assets)
+The deployed Lambda (`server/`) contains the SSR build (`build/server/`, including the ~84 KB `posts.server` chunk of compiled MDX) plus the esbuilt `index.mjs` and prod `node_modules`. Client assets, fonts, and blog images are **not** in the Lambda — they're served from the CDN bucket (`VITE_CDN_URL`), which CI syncs in the "Publish assets + images to CDN" step. The `/images/*` static fallback in `server.ts` only runs in the local `arc sandbox` (`ARC_ENV !== 'production'`).
+
+### Blog posts are bundled, not fetched from S3
+`npm run compile:mdx` writes compiled posts to `app/posts/compiled/*.json` (gitignored). `app/utils/posts.server.ts` bundles them into the SSR build via `import.meta.glob` (prod) or compiles `posts/*.mdx` on the fly (dev, gated by `import.meta.env.DEV` so `mdx-bundler` is tree-shaken from prod). Image `src`s are rewritten to `VITE_CDN_URL` at compile time — so `compile:mdx` must run with that env set (CI Build step does). No runtime S3 fetch for posts.
 
 ### Lambda response size cap is 6 MB (effectively ~4.5 MB raw)
 API Gateway rejects Lambda responses larger than 6 MB. Because the handler base64-encodes binary assets (~1.33× expansion), the practical raw-file limit is ~4.5 MB. Symptom of going over: HTTP 500 with body `{"message":"Internal Server Error"}` and `apigw-requestid` header. The Stockfish WASM (7.3 MB) hit this — now offloaded to unpkg CDN; see `app/utils/multipleChoiceChess/stockfishEngine.ts`.
 
 ### When cutting Lambda size further: target node_modules
-The remaining bloat is server `node_modules`. Top offenders: `@aws-sdk` (10 MB) + `@smithy` (7.7 MB), then `react-dom` (4.4 MB) and `react-router` (4 MB). The esbuild step in `build:arc:server` already externalizes `@aws-sdk/*` from `index.mjs`, but they're still installed by `build:arc:deps` because the AWS preset/server code requires them at runtime. Pruning unused AWS SDK clients (only `client-s3` and `client-dynamodb` are used) would be the next big win.
+The remaining bloat is server `node_modules`. Top offenders: `@aws-sdk` (10 MB) + `@smithy` (7.7 MB), then `react-dom` (4.4 MB) and `react-router` (4 MB). The esbuild step in `build:arc:server` already externalizes `@aws-sdk/*` from `index.mjs`, but they're still installed by `build:arc:deps` because the AWS preset/server code requires them at runtime. `@aws-sdk/client-s3` is now a **devDependency** (only the upload scripts use it) so `npm install --omit=dev` keeps it out of the Lambda; runtime AWS usage is `client-dynamodb` + `lib-dynamodb` only. Pruning unused `@aws-sdk` sub-clients pulled in transitively is the next win.
 
 ## Recent Changes
 - 001-modernize-website: Standardized Tailwind CSS patterns, decomposed large routes, unified typography system, enforced code standards via ESLint
