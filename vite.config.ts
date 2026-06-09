@@ -19,7 +19,7 @@ function getGitVersion() {
     
     // Format: "v1.2.3-abc1234" if tag exists, otherwise just "abc1234"
     return tag ? `${tag}-${commitHash}` : commitHash;
-  } catch (error) {
+  } catch {
     // Fallback if git is not available
     return "unknown";
   }

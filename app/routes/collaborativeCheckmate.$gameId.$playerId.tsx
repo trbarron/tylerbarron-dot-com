@@ -85,7 +85,7 @@ export default function CollaborativeCheckmate() {
 
   // Heartbeat state
   const [_connectionId, setConnectionId] = useState<string>('');
-  const [lastHeartbeatSent, setLastHeartbeatSent] = useState<number>(0);
+  const [_lastHeartbeatSent, setLastHeartbeatSent] = useState<number>(0);
   const [_lastHeartbeatReceived, setLastHeartbeatReceived] = useState<number>(0);
 
   // WebSocket reference
@@ -198,8 +198,6 @@ export default function CollaborativeCheckmate() {
       socketRef.current.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
-          console.log(`Received message: ${JSON.stringify(data)}`);
-          console.log(`Current board state - fen: ${fen}, viewOnly: ${!((gamePhase === GamePhase.TEAM1_SELECTION && playerTeam === 1) || (gamePhase === GamePhase.TEAM2_SELECTION && playerTeam === 2)) || lockedIn}, movable: ${!!playerTeam && ((gamePhase === GamePhase.TEAM1_SELECTION && playerTeam === 1) || (gamePhase === GamePhase.TEAM2_SELECTION && playerTeam === 2)) && !lockedIn}`);
 
           // Handle different message types
           switch (data.type) {
@@ -216,10 +214,6 @@ export default function CollaborativeCheckmate() {
                 clearTimeout(heartbeatTimeoutRef.current);
                 heartbeatTimeoutRef.current = null;
               }
-              
-              // Calculate round-trip time for debugging
-              const roundTripTime = responseTime - lastHeartbeatSent;
-              console.log(`Heartbeat RTT: ${roundTripTime}ms`);
               break;
             }
 
@@ -455,10 +449,10 @@ export default function CollaborativeCheckmate() {
               break;
 
             default:
-              console.log(`Unknown message type: ${data.type}`);
+              console.warn(`Unknown message type: ${data.type}`);
           }
         } catch (e) {
-          console.log(`Error parsing message: ${e instanceof Error ? e.message : 'Unknown error'}`);
+          console.error(`Error parsing message: ${e instanceof Error ? e.message : 'Unknown error'}`);
         }
       };
 
@@ -488,7 +482,7 @@ export default function CollaborativeCheckmate() {
       };
 
       socketRef.current.onerror = () => {
-        console.log(`WebSocket error: Unknown error`);
+        console.error(`WebSocket error: Unknown error`);
         
         if (!reconnecting) {
           setGameLog(prev => [...prev, {
@@ -498,7 +492,7 @@ export default function CollaborativeCheckmate() {
         }
       };
     } catch (e) {
-      console.log(`Error connecting to WebSocket: ${e instanceof Error ? e.message : 'Unknown error'}`);
+      console.error(`Error connecting to WebSocket: ${e instanceof Error ? e.message : 'Unknown error'}`);
     }
   };
 

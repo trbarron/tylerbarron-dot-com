@@ -83,11 +83,8 @@ async function getDailyPuzzles(dateString: string): Promise<DailyPuzzleSet> {
     // Check if puzzles are cached in Redis
     const cached = await redis.get(redisKey);
     if (cached) {
-      console.log(`Using cached puzzles for ${dateString}`);
       return JSON.parse(cached);
     }
-
-    console.log(`Generating new puzzles for ${dateString}`);
 
     // Fetch 4 puzzles from Lambda
     // The Redis cache ensures everyone gets the same puzzles for the day
@@ -102,8 +99,6 @@ async function getDailyPuzzles(dateString: string): Promise<DailyPuzzleSet> {
     // Cache in Redis with 7-day TTL
     // This is the key: first request generates and caches, all others read from cache
     await redis.setex(redisKey, TTL_7_DAYS, JSON.stringify(dailySet));
-
-    console.log(`Cached new puzzles for ${dateString}`);
 
     return dailySet;
   } catch (error) {

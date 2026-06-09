@@ -72,7 +72,7 @@ export default function Chessboard({
 }: ChessboardProps) {
   const internalRef = useRef<HTMLDivElement>(null);
   const [chess] = useState(new Chess(normalizeFen(initialFen)));
-  const cgRef = useRef<Api>();
+  const cgRef = useRef<Api | undefined>(undefined);
   const [isClient, setIsClient] = useState(false);
 
   // Use the external ref if provided, otherwise use internal

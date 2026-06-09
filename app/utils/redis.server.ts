@@ -52,21 +52,9 @@ export function getRedisClient(): Redis {
     }),
   });
 
-  // Handle connection events
-  redis.on('connect', () => {
-    console.log('Redis client connected');
-  });
-
-  redis.on('ready', () => {
-    console.log('Redis client ready');
-  });
-
+  // Surface connection errors; lifecycle events are otherwise silent.
   redis.on('error', (err: Error) => {
     console.error('Redis client error:', err);
-  });
-
-  redis.on('close', () => {
-    console.log('Redis client disconnected');
   });
 
   return redis;

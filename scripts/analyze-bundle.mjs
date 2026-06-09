@@ -20,7 +20,7 @@ function getDirSize(dirPath) {
       } else {
         totalSize += stat.size;
       }
-    } catch (err) {
+    } catch {
       // Ignore errors
     }
   }
@@ -35,7 +35,7 @@ try {
   // Analyze server bundle
   const serverBundle = statSync('server/index.mjs');
   console.log(`Server Bundle: ${formatBytes(serverBundle.size)}`);
-} catch (err) {
+} catch {
   console.log('Server Bundle: Not found (run build first)');
 }
 
@@ -43,7 +43,7 @@ try {
   // Analyze node_modules
   const nodeModulesSize = getDirSize('server/node_modules');
   console.log(`Server Dependencies: ${formatBytes(nodeModulesSize)}`);
-} catch (err) {
+} catch {
   console.log('Server Dependencies: Not found');
 }
 
@@ -51,7 +51,7 @@ try {
   // Analyze build directory
   const buildSize = getDirSize('server/build');
   console.log(`Build Assets: ${formatBytes(buildSize)}`);
-} catch (err) {
+} catch {
   console.log('Build Assets: Not found');
 }
 
@@ -78,7 +78,7 @@ try {
   if (estimatedZipped > maxZipped) {
     console.log('⚠️  WARNING: Estimated compressed size exceeds Lambda limit (50MB)');
   }
-} catch (err) {
+} catch {
   console.log('\nTotal Server Size: Not found');
 }
 

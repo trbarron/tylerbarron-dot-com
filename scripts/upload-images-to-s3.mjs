@@ -163,11 +163,7 @@ async function main() {
 
   console.log('\n✨ Done! Images are now available via CloudFront');
   console.log(`🔗 CloudFront URL: https://${BUCKET_NAME}.s3.${REGION}.amazonaws.com/images/`);
-  console.log('\n💡 Next steps:');
-  console.log('   1. Update .env with CDN_URL');
-  console.log('   2. Run: node scripts/update-image-imports.mjs');
-  console.log('   3. Test locally to verify images load');
-  console.log('   4. Remove app/images directory from source control\n');
+  console.log('\n💡 Note: CI auto-syncs public/images on deploy; this script is for manual/one-off uploads.\n');
 }
 
 main().catch(console.error);

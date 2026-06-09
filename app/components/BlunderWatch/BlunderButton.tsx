@@ -31,7 +31,7 @@ function TimerBar({ durationMs, moveKey }: { durationMs: number; moveKey: number
     el.style.width = '100%';
 
     // Force reflow so the reset takes effect before the transition starts
-    el.offsetHeight;
+    void el.offsetHeight;
 
     el.style.transition = `width ${durationMs}ms linear`;
     el.style.width = '0%';

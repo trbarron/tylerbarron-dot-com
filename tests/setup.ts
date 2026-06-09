@@ -23,7 +23,7 @@ export function createLoaderArgs(url: string): LoaderFunctionArgs {
     params: {},
     context: {},
     unstable_pattern: {},
-  } as LoaderFunctionArgs;
+  } as unknown as LoaderFunctionArgs;
 }
 
 /**
@@ -35,7 +35,7 @@ export function createActionArgs(url: string, init?: RequestInit): ActionFunctio
     params: {},
     context: {},
     unstable_pattern: {},
-  } as ActionFunctionArgs;
+  } as unknown as ActionFunctionArgs;
 }
 
 // Export for direct import

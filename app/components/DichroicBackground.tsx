@@ -148,7 +148,7 @@ function createProgram(gl: WebGLRenderingContext, vertexShader: WebGLShader, fra
 
 export default function DichroicBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationRef = useRef<number>();
+  const animationRef = useRef<number | undefined>(undefined);
   const startTimeRef = useRef<number>(Date.now());
 
   useEffect(() => {

@@ -6,7 +6,7 @@ interface TimerProps {
 
 const Timer = memo(function Timer({ timeRemaining: initialTime }: TimerProps) {
   const [displayTime, setDisplayTime] = useState(initialTime);
-  const workerRef = useRef<Worker>();
+  const workerRef = useRef<Worker | undefined>(undefined);
 
   useEffect(() => {
     // Create a worker blob

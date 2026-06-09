@@ -29,9 +29,7 @@ export const loader = async () => {
             "https://nj3ho46btl.execute-api.us-west-2.amazonaws.com/checoStage/checoRestEndpoint"
         );
         const data = await basicResponse.json();
-        console.log('Raw API response:', data);
         const basicData: BasicResponseData = JSON.parse(data.body);
-        console.log('Parsed basicData:', basicData);
 
         return Response.json({ basicData });
     } catch (error) {
