@@ -1,0 +1,36 @@
+---
+title: "How much better is a 96mph fastball than a 95mph fastball?"
+date: 2026-06-09
+---
+I recently went to a baseball game and while watching the Rockies get absolutely rocked I was reminded of an analysis I did some number of years ago [where I tried to identify how much a mile per hour matters](https://barronwasteland.wordpress.com/2018/10/28/how-much-better-is-a-96mph-fastball-than-a-95mph-fastball/) for a pitcher in baseball.
+
+I reread my analysis and thought I could make some improvements mostly on the software and data side -- so I'm happy to present some up-to-date figures with stronger datasets.
+
+Let's jump in. These are graphs derived from every four seam fastball thrown between 2018-2025 in the MLB to try to answer the question "How much better is a 96mph fastball than a 95mph fastball?"
+
+<img src="/images/bb_01_contact_pct.png" alt="contact percentage per mph" />
+
+Contact goes down when speed goes up
+
+<img src="/images/bb_02_swing_pct.png" alt="swing percentage per mph" />
+
+Players swing more often at faster pitches
+
+<img src="/images/bb_03_swstr_pct.png" alt="swstr percentage per mph" />
+
+Players swing and miss more at faster pitches
+
+<img src="/images/bb_04_rv100.png" alt="run value per fastball per mph" />
+
+Faster pitches result in fewer runs
+
+### Conclusions:
+A 96mph four seamer is roughly 1 percentage point harder to hit, swung at 1.1 percentage point more often (0.76 percentage point for a miss) than the same pitch at 95mph. Per 100 pitches the one mph results in 0.18 fewer runs.
+
+Pretty interesting! Just for fun, here are the individual pitchers who gain the most or least from the velocity change:
+
+<img src="/images/bb_05_top_pitchers_by_slope.png" alt="run value per pitcher per mph" />
+
+
+### Code
+[Code can be found here](https://github.com/trbarron/96mph_vs_95mph_fastball)
