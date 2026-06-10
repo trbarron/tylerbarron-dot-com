@@ -1,22 +1,20 @@
 import React, { useState } from "react";
 import LightboxComponent from "../components/LazyLightbox";
 
-const pic5 = getImageUrl('GenerativeArt/5.jpg');
-const pic4 = getImageUrl('GenerativeArt/4.jpg');
-const pic3 = getImageUrl('GenerativeArt/3.jpg');
-const pic2 = getImageUrl('GenerativeArt/2.jpg');
-const pic1 = getImageUrl('GenerativeArt/1.jpg');
-const plotter = getImageUrl('GenerativeArt/plotter.jpg');
+const pic5 = getImageUrl("GenerativeArt/5.jpg");
+const pic4 = getImageUrl("GenerativeArt/4.jpg");
+const pic3 = getImageUrl("GenerativeArt/3.jpg");
+const pic2 = getImageUrl("GenerativeArt/2.jpg");
+const pic1 = getImageUrl("GenerativeArt/1.jpg");
+const plotter = getImageUrl("GenerativeArt/plotter.jpg");
 // Import components
 import { Navbar } from "../components/Navbar.js";
 import Footer from "../components/Footer.js";
-import { Subarticle } from "../components/Subarticle.js";
-import Article from "../components/Article.js";
 import Riddler from "../components/Riddler.js";
 
 // Import assets
 
-import { getImageUrl } from '~/utils/cdn';
+import { getImageUrl } from "~/utils/cdn";
 
 const GenerativeArt = () => {
   const [open, setOpen] = useState(false);
@@ -36,46 +34,95 @@ const GenerativeArt = () => {
     setOpen(true);
   };
 
-  const PhotoComponent = ({ photo, index }: { photo: typeof photos[0]; index: number }) => (
-    <div onClick={() => openLightbox(index)} className="cursor-pointer my-5">
-      <img src={photo.src} alt={photo.alt} className="max-w-full h-auto" />
-      {photo.caption && <p className="italic mt-2.5">{photo.caption}</p>}
+  const PhotoComponent = ({
+    photo,
+    index,
+  }: {
+    photo: (typeof photos)[0];
+    index: number;
+  }) => (
+    <div onClick={() => openLightbox(index)} className="my-5 cursor-pointer">
+      <img src={photo.src} alt={photo.alt} className="h-auto max-w-full" />
+      {photo.caption && <p className="mt-2.5 italic">{photo.caption}</p>}
     </div>
   );
 
   return (
-    <div className="bg-black  bg-fixed min-h-screen flex flex-col">
+    <div className="flex min-h-screen flex-col bg-black bg-fixed">
       <Navbar />
       <main className="flex-grow">
-        <Article title="Generative Art" subtitle="">
-          <Subarticle subtitle="goodbad.png">
-            <p>Inspired by <a href="https://medium.com/quarterstudio/an-intro-to-pen-plotters-29b6bd4327ba">a blog post</a> I decided to purchase a 1980's pen plotter and get into the world of generative art</p>
+        <section className="article">
+          <article className="article-card">
+            <header className="article-header">
+              <h1 className="article-title">Generative Art</h1>
+            </header>
+            <div className="prose">
+              <section className="subarticle prose">
+                <h3 className="subarticle-title">goodbad.png</h3>
+                <div className="overflow-hidden bg-white break-words">
+                  <p>
+                    Inspired by{" "}
+                    <a href="https://medium.com/quarterstudio/an-intro-to-pen-plotters-29b6bd4327ba">
+                      a blog post
+                    </a>{" "}
+                    I decided to purchase a 1980's pen plotter and get into the
+                    world of generative art
+                  </p>
 
-            <PhotoComponent photo={photos[0]} index={0} />
+                  <PhotoComponent photo={photos[0]} index={0} />
 
-            <p>After taking some online classes I set up an instagram to showcase my art: <a href="https://www.instagram.com/goodbad.png/">goodbad.png</a>. This led to an invitation to an online community of generative artists to share work and methodology</p>
+                  <p>
+                    After taking some online classes I set up an instagram to
+                    showcase my art:{" "}
+                    <a href="https://www.instagram.com/goodbad.png/">
+                      goodbad.png
+                    </a>
+                    . This led to an invitation to an online community of
+                    generative artists to share work and methodology
+                  </p>
 
-            <p>After months of sharing work I was accepted to showcase my art at the local library with an exhibition for the public. This was unfortunately canceled due to COVID-19 but <a href="https://www.instagram.com/p/B_h_3LmAZSy/">led to a digital exhibition on their instagram</a></p>
+                  <p>
+                    After months of sharing work I was accepted to showcase my
+                    art at the local library with an exhibition for the public.
+                    This was unfortunately canceled due to COVID-19 but{" "}
+                    <a href="https://www.instagram.com/p/B_h_3LmAZSy/">
+                      led to a digital exhibition on their instagram
+                    </a>
+                  </p>
 
-            <p>Here is my artist's statement about the generative work:</p>
+                  <p>
+                    Here is my artist's statement about the generative work:
+                  </p>
 
-            <Riddler>
-              {"good bad plotting is a showcase of generated geometric structures, which I disrupt to create snapshots reminiscent of the natural world. I guide their creation using repetition, symmetry, and reoccurring patterns. My work embraces exploration and discovery, often following unintended paths to get to the result. The code is written by myself primarily in JavaScript, and I then trace it to paper using a modified 1980's Hewlett-Packard pen plotter."}
-            </Riddler>
+                  <Riddler>
+                    {
+                      "good bad plotting is a showcase of generated geometric structures, which I disrupt to create snapshots reminiscent of the natural world. I guide their creation using repetition, symmetry, and reoccurring patterns. My work embraces exploration and discovery, often following unintended paths to get to the result. The code is written by myself primarily in JavaScript, and I then trace it to paper using a modified 1980's Hewlett-Packard pen plotter."
+                    }
+                  </Riddler>
 
-            {photos.slice(1).map((photo, index) => (
-              <React.Fragment key={index + 1}>
-                <p></p>
-                <PhotoComponent photo={photo} index={index + 1} />
-              </React.Fragment>
-            ))}
-          </Subarticle>
-          <Subarticle subtitle="For more:">
-            <p>
-              Check out more work <a href="https://www.instagram.com/goodbad.png/">on my instagram</a> where I post this work along with some photography.
-            </p>
-          </Subarticle>
-        </Article>
+                  {photos.slice(1).map((photo, index) => (
+                    <React.Fragment key={index + 1}>
+                      <p></p>
+                      <PhotoComponent photo={photo} index={index + 1} />
+                    </React.Fragment>
+                  ))}
+                </div>
+              </section>
+              <section className="subarticle prose">
+                <h3 className="subarticle-title">For more:</h3>
+                <div className="overflow-hidden bg-white break-words">
+                  <p>
+                    Check out more work{" "}
+                    <a href="https://www.instagram.com/goodbad.png/">
+                      on my instagram
+                    </a>{" "}
+                    where I post this work along with some photography.
+                  </p>
+                </div>
+              </section>
+            </div>
+          </article>
+        </section>
       </main>
       <Footer />
       <LightboxComponent

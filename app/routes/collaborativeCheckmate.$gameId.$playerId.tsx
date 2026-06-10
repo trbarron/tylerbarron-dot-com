@@ -1,37 +1,43 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
-import { Chess } from 'chess.js';
+import { Chess } from "chess.js";
 import { Navbar } from "~/components/Navbar";
 import Footer from "~/components/Footer";
-import Article from "~/components/Article";
 import ChessBoard from "~/components/CollaborativeCheckmate/ChessBoard";
 import GameControls from "~/components/CollaborativeCheckmate/GameControls";
 import PlayerSeats from "~/components/CollaborativeCheckmate/PlayerSeats";
 import GameLog from "~/components/CollaborativeCheckmate/GameLog";
-import chessgroundBase from '../styles/chessground.base.css?url';
-import chessgroundBrown from '../styles/chessground.brown.css?url';
-import chessgroundCburnett from '../styles/chessground.cburnett.css?url';
+import chessgroundBase from "../styles/chessground.base.css?url";
+import chessgroundBrown from "../styles/chessground.brown.css?url";
+import chessgroundCburnett from "../styles/chessground.cburnett.css?url";
 import { useLoaderData, type LinksFunction } from "react-router";
 import { GamePhase, type GamePhaseType, type SeatKey } from "~/types/generated";
 
 export const links: LinksFunction = () => [
-  { rel: 'stylesheet', href: chessgroundBase },
-  { rel: 'stylesheet', href: chessgroundBrown },
-  { rel: 'stylesheet', href: chessgroundCburnett }
+  { rel: "stylesheet", href: chessgroundBase },
+  { rel: "stylesheet", href: chessgroundBrown },
+  { rel: "stylesheet", href: chessgroundCburnett },
 ];
 
 // Define game phase names locally
 const GamePhaseNames = {
-  [GamePhase.SETUP]: 'Setup',
-  [GamePhase.TEAM1_SELECTION]: 'White Selection',
-  [GamePhase.TEAM1_COMPUTING]: 'White Computing',
-  [GamePhase.TEAM2_SELECTION]: 'Black Selection',
-  [GamePhase.TEAM2_COMPUTING]: 'Black Computing',
-  [GamePhase.COOLDOWN]: 'Cooldown'
+  [GamePhase.SETUP]: "Setup",
+  [GamePhase.TEAM1_SELECTION]: "White Selection",
+  [GamePhase.TEAM1_COMPUTING]: "White Computing",
+  [GamePhase.TEAM2_SELECTION]: "Black Selection",
+  [GamePhase.TEAM2_COMPUTING]: "Black Computing",
+  [GamePhase.COOLDOWN]: "Cooldown",
 } as const;
 
 // Type for game log entries
 type GameLogEntry = {
-  type: 'system' | 'move' | 'engine' | 'phase' | 'error' | 'game_over' | 'reconnecting';
+  type:
+    | "system"
+    | "move"
+    | "engine"
+    | "phase"
+    | "error"
+    | "game_over"
+    | "reconnecting";
   message: string;
   player?: string;
 };
@@ -44,16 +50,22 @@ type PlayersState = {
   };
 };
 
-export const loader = async ({ params }: { params: { gameId?: string; playerId?: string } }) => {
+export const loader = async ({
+  params,
+}: {
+  params: { gameId?: string; playerId?: string };
+}) => {
   const { gameId, playerId } = params;
   return Response.json({ gameId, playerId });
-}
+};
 
 export default function CollaborativeCheckmate() {
   const { gameId, playerId } = useLoaderData<typeof loader>();
   const [chess, setChess] = useState(new Chess());
-  const [fen, setFen] = useState('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
-  const [orientation, setOrientation] = useState<'white' | 'black'>('white');
+  const [fen, setFen] = useState(
+    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  );
+  const [orientation, setOrientation] = useState<"white" | "black">("white");
   const [gamePhase, setGamePhase] = useState<GamePhaseType>(GamePhase.COOLDOWN);
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [timeRemainingKey, setTimeRemainingKey] = useState<string | null>(null);
@@ -62,15 +74,20 @@ export default function CollaborativeCheckmate() {
     t1p1: { id: null, ready: false },
     t1p2: { id: null, ready: false },
     t2p1: { id: null, ready: false },
-    t2p2: { id: null, ready: false }
+    t2p2: { id: null, ready: false },
   });
-  const [shapes, setShapes] = useState([{ orig: 'e0', dest: 'e0', brush: 'green' }]);
+  const [shapes, setShapes] = useState([
+    { orig: "e0", dest: "e0", brush: "green" },
+  ]);
   const [selectedMove, setSelectedMove] = useState(false);
   const [lockedIn, setLockedIn] = useState(false);
   const [gameLog, setGameLog] = useState<GameLogEntry[]>([]);
   const [connected, setConnected] = useState(false);
 
-  const [_lastMove, setLastMove] = useState<{from: string, to: string} | null>(null);
+  const [_lastMove, setLastMove] = useState<{
+    from: string;
+    to: string;
+  } | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [_submittedMoves, setSubmittedMoves] = useState<any[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -84,9 +101,10 @@ export default function CollaborativeCheckmate() {
   const [hasReceivedInitialState, setHasReceivedInitialState] = useState(false);
 
   // Heartbeat state
-  const [_connectionId, setConnectionId] = useState<string>('');
+  const [_connectionId, setConnectionId] = useState<string>("");
   const [_lastHeartbeatSent, setLastHeartbeatSent] = useState<number>(0);
-  const [_lastHeartbeatReceived, setLastHeartbeatReceived] = useState<number>(0);
+  const [_lastHeartbeatReceived, setLastHeartbeatReceived] =
+    useState<number>(0);
 
   // WebSocket reference
   const socketRef = useRef<WebSocket | null>(null);
@@ -162,11 +180,11 @@ export default function CollaborativeCheckmate() {
   const connectWebSocket = (reconnection = false) => {
     try {
       isReconnectionRef.current = reconnection;
-      
+
       // Generate new connection ID for this connection
       const newConnectionId = generateConnectionId();
       setConnectionId(newConnectionId);
-      
+
       // Construct WebSocket URL
       const wsUrl = `wss://collaborative-checkmate-server.fly.dev/ws/game/${gameId}/player/${playerId}`;
 
@@ -177,21 +195,28 @@ export default function CollaborativeCheckmate() {
         setReconnecting(false);
         setReconnectAttempts(0);
         setHasReceivedInitialState(false); // Reset this flag on new connection
-        
+
         // Start heartbeat mechanism with the new connection ID
         startHeartbeat(newConnectionId);
-        
+
         if (isReconnectionRef.current) {
-          setGameLog(prev => [...prev, { 
-            type: 'system', 
-            message: 'Successfully reconnected to game server. Waiting for game state...' 
-          }]);
+          setGameLog((prev) => [
+            ...prev,
+            {
+              type: "system",
+              message:
+                "Successfully reconnected to game server. Waiting for game state...",
+            },
+          ]);
           // Don't call attemptStateRestoration immediately - wait for game state update
         } else {
-          setGameLog(prev => [...prev, { 
-            type: 'system', 
-            message: 'Connected to game server' 
-          }]);
+          setGameLog((prev) => [
+            ...prev,
+            {
+              type: "system",
+              message: "Connected to game server",
+            },
+          ]);
         }
       };
 
@@ -201,14 +226,14 @@ export default function CollaborativeCheckmate() {
 
           // Handle different message types
           switch (data.type) {
-            case 'connection_established':
+            case "connection_established":
               break;
 
-            case 'heartbeat_response': {
+            case "heartbeat_response": {
               // Handle heartbeat response
               const responseTime = Date.now();
               setLastHeartbeatReceived(responseTime);
-              
+
               // Clear heartbeat timeout since we received a response
               if (heartbeatTimeoutRef.current) {
                 clearTimeout(heartbeatTimeoutRef.current);
@@ -217,60 +242,75 @@ export default function CollaborativeCheckmate() {
               break;
             }
 
-            case 'move_submitted':
+            case "move_submitted":
               // Update player's submitted state
-              setGameLog(prev => [...prev, {
-                type: 'move',
-                message: `${data.player_id} submitted a move`,
-                player: ''
-              }]);
+              setGameLog((prev) => [
+                ...prev,
+                {
+                  type: "move",
+                  message: `${data.player_id} submitted a move`,
+                  player: "",
+                },
+              ]);
               break;
 
-            case 'player_ready': {
+            case "player_ready": {
               // Update player's ready state
               const currentPlayers = playersRef.current;
-              const seatKey = Object.keys(currentPlayers).find(key =>
-                currentPlayers[key as SeatKey].id === data.player_id
+              const seatKey = Object.keys(currentPlayers).find(
+                (key) => currentPlayers[key as SeatKey].id === data.player_id,
               );
 
               if (seatKey) {
                 // Update the ready status for this seat
-                setPlayers(prev => ({
+                setPlayers((prev) => ({
                   ...prev,
-                  [seatKey]: { ...prev[seatKey as SeatKey], ready: true }
+                  [seatKey]: { ...prev[seatKey as SeatKey], ready: true },
                 }));
 
                 // Store our own state when we become ready
                 if (data.player_id === playerIdRef.current) {
                   setLastKnownSeat(seatKey as SeatKey);
                   setLastKnownReadyState(true);
-                  setGameLog(prev => [...prev, {
-                    type: 'system',
-                    message: `You are now ready. You cannot change seats until the game ends.`
-                  }]);
+                  setGameLog((prev) => [
+                    ...prev,
+                    {
+                      type: "system",
+                      message: `You are now ready. You cannot change seats until the game ends.`,
+                    },
+                  ]);
                 } else {
-                  setGameLog(prev => [...prev, {
-                    type: 'system',
-                    message: `${data.player_id} is ready`
-                  }]);
+                  setGameLog((prev) => [
+                    ...prev,
+                    {
+                      type: "system",
+                      message: `${data.player_id} is ready`,
+                    },
+                  ]);
                 }
               } else {
-                setGameLog(prev => [...prev, {
-                  type: 'system',
-                  message: `${data.player_id} is ready`
-                }]);
+                setGameLog((prev) => [
+                  ...prev,
+                  {
+                    type: "system",
+                    message: `${data.player_id} is ready`,
+                  },
+                ]);
               }
               break;
             }
 
-            case 'game_state_update':
+            case "game_state_update":
               // Only update game phase if it's included in the update
               if (data.game_phase && data.game_phase !== gamePhase) {
                 setGamePhase(data.game_phase);
-                setGameLog(prev => [...prev, {
-                  type: 'phase',
-                  message: `Phase: ${GamePhaseNames[data.game_phase as GamePhaseType]}`
-                }]);
+                setGameLog((prev) => [
+                  ...prev,
+                  {
+                    type: "phase",
+                    message: `Phase: ${GamePhaseNames[data.game_phase as GamePhaseType]}`,
+                  },
+                ]);
               }
 
               // Only update duration/time if it's included
@@ -283,113 +323,138 @@ export default function CollaborativeCheckmate() {
                 chess.load(data.fen);
                 setFen(data.fen);
                 setChess(new Chess(data.fen));
-                setShapes([{ orig: 'e0', dest: 'e0', brush: 'green' }]);
+                setShapes([{ orig: "e0", dest: "e0", brush: "green" }]);
                 setSelectedMove(false);
                 setLockedIn(false);
               }
 
               if (data.last_move) {
                 // Parse the last move from "e2e4" to "e2" and "e4"
-                const move = data.last_move
-                const from = move.substring(0, 2)
-                const to = move.substring(2, 4)
-                setShapes([{
-                  orig: from,
-                  dest: to,
-                  brush: 'yellow'
-                }]);
+                const move = data.last_move;
+                const from = move.substring(0, 2);
+                const to = move.substring(2, 4);
+                setShapes([
+                  {
+                    orig: from,
+                    dest: to,
+                    brush: "yellow",
+                  },
+                ]);
               }
 
               // Handle player seat/ready status updates if present
               {
-              const seatUpdates: Partial<PlayersState> = {};
-              (['t1p1', 't1p2', 't2p1', 't2p2'] as SeatKey[]).forEach(seat => {
-                if (data[`${seat}_seat`] !== undefined || data[`${seat}_ready`] !== undefined) {
-                  const seatId = data[`${seat}_seat`];
-                  seatUpdates[seat] = {
-                    id: seatId === "" ? null : (seatId ?? players[seat].id),
-                    ready: data[`${seat}_ready`] === 'true' || false
-                  };
-                }
-              });
-
-              if (Object.keys(seatUpdates).length > 0) {
-                setPlayers(prev => {
-                  const newPlayers = { ...prev };
-                  Object.entries(seatUpdates).forEach(([seat, info]) => {
-                    if (info) {
-                      newPlayers[seat as SeatKey] = info;
+                const seatUpdates: Partial<PlayersState> = {};
+                (["t1p1", "t1p2", "t2p1", "t2p2"] as SeatKey[]).forEach(
+                  (seat) => {
+                    if (
+                      data[`${seat}_seat`] !== undefined ||
+                      data[`${seat}_ready`] !== undefined
+                    ) {
+                      const seatId = data[`${seat}_seat`];
+                      seatUpdates[seat] = {
+                        id: seatId === "" ? null : (seatId ?? players[seat].id),
+                        ready: data[`${seat}_ready`] === "true" || false,
+                      };
                     }
+                  },
+                );
+
+                if (Object.keys(seatUpdates).length > 0) {
+                  setPlayers((prev) => {
+                    const newPlayers = { ...prev };
+                    Object.entries(seatUpdates).forEach(([seat, info]) => {
+                      if (info) {
+                        newPlayers[seat as SeatKey] = info;
+                      }
+                    });
+                    return newPlayers;
                   });
-                  return newPlayers;
-                });
 
-                // Update player team based on their seat
-                for (const [seat, info] of Object.entries(seatUpdates)) {
-                  if (info && typeof info === 'object' && 'id' in info && info.id === playerIdRef.current) {
-                    // Store our seat information when we take a seat
-                    setLastKnownSeat(seat as SeatKey);
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    setLastKnownReadyState((info as any).ready || false);
-                    
-                    if (seat.startsWith('t1')) {
-                      setPlayerTeam(1);
-                      setOrientation('white');
-                    } else if (seat.startsWith('t2')) {
-                      setPlayerTeam(2);
-                      setOrientation('black');
+                  // Update player team based on their seat
+                  for (const [seat, info] of Object.entries(seatUpdates)) {
+                    if (
+                      info &&
+                      typeof info === "object" &&
+                      "id" in info &&
+                      info.id === playerIdRef.current
+                    ) {
+                      // Store our seat information when we take a seat
+                      setLastKnownSeat(seat as SeatKey);
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      setLastKnownReadyState((info as any).ready || false);
+
+                      if (seat.startsWith("t1")) {
+                        setPlayerTeam(1);
+                        setOrientation("white");
+                      } else if (seat.startsWith("t2")) {
+                        setPlayerTeam(2);
+                        setOrientation("black");
+                      }
+                      break;
                     }
-                    break;
                   }
+
+                  setGameLog((prev) => [
+                    ...prev,
+                    {
+                      type: "system",
+                      message: `Player seats updated`,
+                    },
+                  ]);
                 }
 
-                setGameLog(prev => [...prev, {
-                  type: 'system',
-                  message: `Player seats updated`
-                }]);
-              }
+                // Check if this is the first state update after reconnection
+                if (!hasReceivedInitialState && isReconnectionRef.current) {
+                  setHasReceivedInitialState(true);
+                  setGameLog((prev) => [
+                    ...prev,
+                    {
+                      type: "system",
+                      message:
+                        "Received game state. Checking seat assignment...",
+                    },
+                  ]);
 
-              // Check if this is the first state update after reconnection
-              if (!hasReceivedInitialState && isReconnectionRef.current) {
-                setHasReceivedInitialState(true);
-                setGameLog(prev => [...prev, {
-                  type: 'system',
-                  message: 'Received game state. Checking seat assignment...'
-                }]);
-                
-                // Immediately attempt state restoration, then clear reconnection flag
-                setTimeout(() => {
-                  attemptStateRestoration();
-                  // Clear the reconnection flag after restoration is complete
+                  // Immediately attempt state restoration, then clear reconnection flag
                   setTimeout(() => {
-                    isReconnectionRef.current = false;
-                  }, 200);
-                }, 100);
-              } else if (!hasReceivedInitialState) {
-                setHasReceivedInitialState(true);
-              }
+                    attemptStateRestoration();
+                    // Clear the reconnection flag after restoration is complete
+                    setTimeout(() => {
+                      isReconnectionRef.current = false;
+                    }, 200);
+                  }, 100);
+                } else if (!hasReceivedInitialState) {
+                  setHasReceivedInitialState(true);
+                }
               }
               break;
 
-            case 'timer_update':
-              if (data.seconds_remaining !== undefined && data.seconds_remaining !== null) {
+            case "timer_update":
+              if (
+                data.seconds_remaining !== undefined &&
+                data.seconds_remaining !== null
+              ) {
                 const newTime = parseFloat(data.seconds_remaining);
                 setTimeRemaining(newTime);
                 setTimeRemainingKey(data.key);
               }
               break;
 
-            case 'move_selected': {
+            case "move_selected": {
               const moveText = `${data.move.from} to ${data.move.to}`;
-              setGameLog(prev => [...prev, {
-                type: 'engine',
-                message: `Engine selected move: ${moveText} (by ${data.move.submitted_by})`
-              }]);
+              setGameLog((prev) => [
+                ...prev,
+                {
+                  type: "engine",
+                  message: `Engine selected move: ${moveText} (by ${data.move.submitted_by})`,
+                },
+              ]);
 
               // Set the last move for animation purposes
               setLastMove({
                 from: data.move.from,
-                to: data.move.to
+                to: data.move.to,
               });
 
               // Reset selections for next turn
@@ -398,46 +463,61 @@ export default function CollaborativeCheckmate() {
               break;
             }
 
-            case 'player_disconnected': {
+            case "player_disconnected": {
               // Update player status to not ready
-              const disconnectedSeatKey = Object.keys(players).find(key =>
-                players[key as SeatKey].id === data.player_id
+              const disconnectedSeatKey = Object.keys(players).find(
+                (key) => players[key as SeatKey].id === data.player_id,
               );
 
               if (disconnectedSeatKey) {
-                setPlayers(prev => ({
+                setPlayers((prev) => ({
                   ...prev,
-                  [disconnectedSeatKey]: { ...prev[disconnectedSeatKey as SeatKey], ready: false }
+                  [disconnectedSeatKey]: {
+                    ...prev[disconnectedSeatKey as SeatKey],
+                    ready: false,
+                  },
                 }));
               }
 
-              setGameLog(prev => [...prev, {
-                type: 'system',
-                message: `${data.player_id} disconnected`
-              }]);
+              setGameLog((prev) => [
+                ...prev,
+                {
+                  type: "system",
+                  message: `${data.player_id} disconnected`,
+                },
+              ]);
               break;
             }
 
-            case 'game_over':
+            case "game_over":
               // Handle game over messages (checkmate, stalemate, etc.)
-              setGameLog(prev => [...prev, {
-                type: 'game_over',
-                message: data.message || `Game Over! ${data.result}`
-              }]);
+              setGameLog((prev) => [
+                ...prev,
+                {
+                  type: "game_over",
+                  message: data.message || `Game Over! ${data.result}`,
+                },
+              ]);
 
               // Add additional game details if available
               if (data.total_moves) {
-                setGameLog(prev => [...prev, {
-                  type: 'system',
-                  message: `Total moves: ${data.total_moves}`
-                }]);
+                setGameLog((prev) => [
+                  ...prev,
+                  {
+                    type: "system",
+                    message: `Total moves: ${data.total_moves}`,
+                  },
+                ]);
               }
 
               if (data.team_coordination) {
-                setGameLog(prev => [...prev, {
-                  type: 'system',
-                  message: `Team coordination - Team 1: ${data.team_coordination.team1_same_moves}, Team 2: ${data.team_coordination.team2_same_moves}`
-                }]);
+                setGameLog((prev) => [
+                  ...prev,
+                  {
+                    type: "system",
+                    message: `Team coordination - Team 1: ${data.team_coordination.team1_same_moves}, Team 2: ${data.team_coordination.team2_same_moves}`,
+                  },
+                ]);
               }
 
               // Update the chess position to the final position
@@ -452,126 +532,166 @@ export default function CollaborativeCheckmate() {
               console.warn(`Unknown message type: ${data.type}`);
           }
         } catch (e) {
-          console.error(`Error parsing message: ${e instanceof Error ? e.message : 'Unknown error'}`);
+          console.error(
+            `Error parsing message: ${e instanceof Error ? e.message : "Unknown error"}`,
+          );
         }
       };
 
       socketRef.current.onclose = (event) => {
         setConnected(false);
-        
+
         // Stop heartbeat mechanism
         stopHeartbeat();
-        
+
         // Store current state before attempting reconnection
         storePlayerState();
-        
+
         // Only attempt reconnection if this wasn't an intentional close
         if (event.code !== 1000 && !reconnecting) {
           setReconnecting(true);
-          setGameLog(prev => [...prev, {
-            type: 'system',
-            message: 'Connection lost. Attempting to reconnect...'
-          }]);
+          setGameLog((prev) => [
+            ...prev,
+            {
+              type: "system",
+              message: "Connection lost. Attempting to reconnect...",
+            },
+          ]);
           attemptReconnect();
         } else if (!reconnecting) {
-          setGameLog(prev => [...prev, {
-            type: 'system',
-            message: 'Disconnected from game server'
-          }]);
+          setGameLog((prev) => [
+            ...prev,
+            {
+              type: "system",
+              message: "Disconnected from game server",
+            },
+          ]);
         }
       };
 
       socketRef.current.onerror = () => {
         console.error(`WebSocket error: Unknown error`);
-        
+
         if (!reconnecting) {
-          setGameLog(prev => [...prev, {
-            type: 'error',
-            message: 'Connection error occurred'
-          }]);
+          setGameLog((prev) => [
+            ...prev,
+            {
+              type: "error",
+              message: "Connection error occurred",
+            },
+          ]);
         }
       };
     } catch (e) {
-      console.error(`Error connecting to WebSocket: ${e instanceof Error ? e.message : 'Unknown error'}`);
+      console.error(
+        `Error connecting to WebSocket: ${e instanceof Error ? e.message : "Unknown error"}`,
+      );
     }
   };
 
   // Take a specific seat
   const takeSeat = (seat: SeatKey) => {
     if (!connected) {
-      setGameLog(prev => [...prev, {
-        type: 'error',
-        message: 'Cannot take seat: Not connected'
-      }]);
+      setGameLog((prev) => [
+        ...prev,
+        {
+          type: "error",
+          message: "Cannot take seat: Not connected",
+        },
+      ]);
       return;
     }
 
     // Check if player has already readied up - can't change seats if ready
     const currentSeat = getCurrentPlayerSeat();
-    const currentPlayerReady = currentSeat ? playersRef.current[currentSeat]?.ready : false;
+    const currentPlayerReady = currentSeat
+      ? playersRef.current[currentSeat]?.ready
+      : false;
 
     if (currentSeat && currentPlayerReady) {
-      setGameLog(prev => [...prev, {
-        type: 'error',
-        message: 'Cannot change seats after readying up'
-      }]);
+      setGameLog((prev) => [
+        ...prev,
+        {
+          type: "error",
+          message: "Cannot change seats after readying up",
+        },
+      ]);
       return;
     }
 
     // Check if seat is already taken by someone else (can click on your own seat)
     const currentPlayers = playersRef.current;
-    if (currentPlayers[seat]?.id !== null && currentPlayers[seat]?.id !== playerIdRef.current) {
-      setGameLog(prev => [...prev, {
-        type: 'error',
-        message: `Seat ${seat} is already taken by ${currentPlayers[seat].id}`
-      }]);
+    if (
+      currentPlayers[seat]?.id !== null &&
+      currentPlayers[seat]?.id !== playerIdRef.current
+    ) {
+      setGameLog((prev) => [
+        ...prev,
+        {
+          type: "error",
+          message: `Seat ${seat} is already taken by ${currentPlayers[seat].id}`,
+        },
+      ]);
       return;
     }
 
     // Send request to take seat
     if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-      socketRef.current.send(JSON.stringify({
-        type: "take_seat",
-        seat: seat
-      }));
+      socketRef.current.send(
+        JSON.stringify({
+          type: "take_seat",
+          seat: seat,
+        }),
+      );
     }
   };
 
   const readyUp = () => {
     if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-      socketRef.current.send(JSON.stringify({
-        type: "ready",
-        player_id: playerId
-      }));
-
+      socketRef.current.send(
+        JSON.stringify({
+          type: "ready",
+          player_id: playerId,
+        }),
+      );
     } else {
-      setGameLog(prev => [...prev, {
-        type: 'error',
-        message: 'Cannot ready up: Not connected'
-      }]);
+      setGameLog((prev) => [
+        ...prev,
+        {
+          type: "error",
+          message: "Cannot ready up: Not connected",
+        },
+      ]);
     }
   };
 
   const lockInMove = () => {
     if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-      socketRef.current.send(JSON.stringify({
-        type: "lock_in_move",
-        player_id: playerId
-      }));
+      socketRef.current.send(
+        JSON.stringify({
+          type: "lock_in_move",
+          player_id: playerId,
+        }),
+      );
     }
     setLockedIn(true);
   };
 
   // Find which seat the current player is in, if any
   const getCurrentPlayerSeat = (): SeatKey | null => {
-    return Object.entries(playersRef.current).find(
-      ([, player]) => player.id === playerIdRef.current
-    )?.[0] as SeatKey || null;
+    return (
+      (Object.entries(playersRef.current).find(
+        ([, player]) => player.id === playerIdRef.current,
+      )?.[0] as SeatKey) || null
+    );
   };
 
   // Helper function to calculate reconnect delay with exponential backoff
   const getReconnectDelay = (attempts: number) => {
-    const delay = Math.min(INITIAL_RECONNECT_DELAY * Math.pow(2, attempts), MAX_RECONNECT_DELAY);
+    const delay = Math.min(
+      INITIAL_RECONNECT_DELAY * Math.pow(2, attempts),
+      MAX_RECONNECT_DELAY,
+    );
     return delay + Math.random() * 1000; // Add jitter
   };
 
@@ -588,93 +708,128 @@ export default function CollaborativeCheckmate() {
   const attemptStateRestoration = () => {
     // First, check if we're already in a seat according to current game state
     const currentSeat = getCurrentPlayerSeat();
-    
+
     if (currentSeat) {
       // We're already in a seat, just update our local state
       setLastKnownSeat(currentSeat);
       const isReady = playersRef.current[currentSeat]?.ready || false;
       setLastKnownReadyState(isReady);
-      
+
       // Update team assignment based on current seat
-      if (currentSeat.startsWith('t1')) {
+      if (currentSeat.startsWith("t1")) {
         setPlayerTeam(1);
-        setOrientation('white');
-      } else if (currentSeat.startsWith('t2')) {
+        setOrientation("white");
+      } else if (currentSeat.startsWith("t2")) {
         setPlayerTeam(2);
-        setOrientation('black');
+        setOrientation("black");
       }
-      
-      setGameLog(prev => [...prev, {
-        type: 'system',
-        message: `Found existing seat: ${currentSeat} (ready: ${isReady})`
-      }]);
-      
+
+      setGameLog((prev) => [
+        ...prev,
+        {
+          type: "system",
+          message: `Found existing seat: ${currentSeat} (ready: ${isReady})`,
+        },
+      ]);
+
       return; // No need to try to take a seat
     }
-    
+
     // If we're not in any seat but have a last known seat, try to retake it
-    if (lastKnownSeat && socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-      setGameLog(prev => [...prev, {
-        type: 'system',
-        message: `No current seat found. Attempting to restore seat: ${lastKnownSeat} (ready: ${lastKnownReadyState})`
-      }]);
+    if (
+      lastKnownSeat &&
+      socketRef.current &&
+      socketRef.current.readyState === WebSocket.OPEN
+    ) {
+      setGameLog((prev) => [
+        ...prev,
+        {
+          type: "system",
+          message: `No current seat found. Attempting to restore seat: ${lastKnownSeat} (ready: ${lastKnownReadyState})`,
+        },
+      ]);
 
       // Wait a moment for the server to be ready, then try to take the same seat
       setTimeout(() => {
-        if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-          socketRef.current.send(JSON.stringify({
-            type: "take_seat",
-            seat: lastKnownSeat
-          }));
+        if (
+          socketRef.current &&
+          socketRef.current.readyState === WebSocket.OPEN
+        ) {
+          socketRef.current.send(
+            JSON.stringify({
+              type: "take_seat",
+              seat: lastKnownSeat,
+            }),
+          );
 
           // If they were ready before, try to ready up again after the seat is taken
           if (lastKnownReadyState) {
             setTimeout(() => {
-              if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-                socketRef.current.send(JSON.stringify({
-                  type: "ready",
-                  player_id: playerId
-                }));
-                setGameLog(prev => [...prev, {
-                  type: 'system',
-                  message: `Attempting to restore ready state...`
-                }]);
+              if (
+                socketRef.current &&
+                socketRef.current.readyState === WebSocket.OPEN
+              ) {
+                socketRef.current.send(
+                  JSON.stringify({
+                    type: "ready",
+                    player_id: playerId,
+                  }),
+                );
+                setGameLog((prev) => [
+                  ...prev,
+                  {
+                    type: "system",
+                    message: `Attempting to restore ready state...`,
+                  },
+                ]);
               }
             }, 1000); // Wait 1 second for seat to be confirmed
           }
         }
       }, 500); // Wait 500ms for server to be ready
     } else if (!lastKnownSeat) {
-      setGameLog(prev => [...prev, {
-        type: 'system',
-        message: `No seat to restore - starting fresh`
-      }]);
+      setGameLog((prev) => [
+        ...prev,
+        {
+          type: "system",
+          message: `No seat to restore - starting fresh`,
+        },
+      ]);
     } else {
-      setGameLog(prev => [...prev, {
-        type: 'system',
-        message: `Cannot restore state - connection not ready`
-      }]);
+      setGameLog((prev) => [
+        ...prev,
+        {
+          type: "system",
+          message: `Cannot restore state - connection not ready`,
+        },
+      ]);
     }
   };
 
   // Reconnection function
   const attemptReconnect = () => {
     if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
-      setGameLog(prev => [...prev, {
-        type: 'error',
-        message: `Failed to reconnect after ${MAX_RECONNECT_ATTEMPTS} attempts. Please refresh the page.`
-      }]);
+      setGameLog((prev) => [
+        ...prev,
+        {
+          type: "error",
+          message: `Failed to reconnect after ${MAX_RECONNECT_ATTEMPTS} attempts. Please refresh the page.`,
+        },
+      ]);
       setReconnecting(false);
       return;
     }
 
     const delay = getReconnectDelay(reconnectAttempts);
-    setReconnectAttempts(prev => prev + 1);
-    
-    setGameLog(prev => [...prev, {
-      type: 'system',
-      message: `Attempting to reconnect... (${reconnectAttempts + 1}/${MAX_RECONNECT_ATTEMPTS})`
-    }]);
+    setReconnectAttempts((prev) => prev + 1);
+
+    setGameLog((prev) => [
+      ...prev,
+      {
+        type: "system",
+        message: `Attempting to reconnect... (${reconnectAttempts + 1}/${MAX_RECONNECT_ATTEMPTS})`,
+      },
+    ]);
 
     reconnectTimeoutRef.current = setTimeout(() => {
       connectWebSocket(true); // Pass true to indicate this is a reconnection
@@ -691,24 +846,29 @@ export default function CollaborativeCheckmate() {
     if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
       const timestamp = Date.now();
       setLastHeartbeatSent(timestamp);
-      
-      socketRef.current.send(JSON.stringify({
-        type: "heartbeat",
-        timestamp: timestamp,
-        connectionId: connectionId
-      }));
+
+      socketRef.current.send(
+        JSON.stringify({
+          type: "heartbeat",
+          timestamp: timestamp,
+          connectionId: connectionId,
+        }),
+      );
 
       // Set timeout for heartbeat response
       if (heartbeatTimeoutRef.current) {
         clearTimeout(heartbeatTimeoutRef.current);
       }
-      
+
       heartbeatTimeoutRef.current = setTimeout(() => {
-        setGameLog(prev => [...prev, {
-          type: 'error',
-          message: 'Heartbeat timeout - connection may be lost'
-        }]);
-        
+        setGameLog((prev) => [
+          ...prev,
+          {
+            type: "error",
+            message: "Heartbeat timeout - connection may be lost",
+          },
+        ]);
+
         // Trigger reconnection on heartbeat timeout
         if (socketRef.current) {
           socketRef.current.close();
@@ -723,10 +883,10 @@ export default function CollaborativeCheckmate() {
     if (heartbeatIntervalRef.current) {
       clearInterval(heartbeatIntervalRef.current);
     }
-    
+
     // Send initial heartbeat
     sendHeartbeat(connectionId);
-    
+
     // Set up regular heartbeat interval
     heartbeatIntervalRef.current = setInterval(() => {
       sendHeartbeat(connectionId);
@@ -746,92 +906,115 @@ export default function CollaborativeCheckmate() {
   };
 
   // Memoize the move handler to prevent unnecessary Chessboard remounts
-  const handleMove = useCallback((orig: string, dest: string) => {
-    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-      const chessCopy = new Chess(fen);
-      chessCopy.move({ from: orig, to: dest, promotion: 'q' });
-      socketRef.current.send(JSON.stringify({
-        type: "submit_move",
-        player_id: playerId,
-        move: chessCopy.fen()
-      }));
+  const handleMove = useCallback(
+    (orig: string, dest: string) => {
+      if (
+        socketRef.current &&
+        socketRef.current.readyState === WebSocket.OPEN
+      ) {
+        const chessCopy = new Chess(fen);
+        chessCopy.move({ from: orig, to: dest, promotion: "q" });
+        socketRef.current.send(
+          JSON.stringify({
+            type: "submit_move",
+            player_id: playerId,
+            move: chessCopy.fen(),
+          }),
+        );
 
-      // Reset position to original FEN
-      chess.load(fen);
-      setFen(fen);
-      setChess(new Chess(fen));
-      setSelectedMove(true);
+        // Reset position to original FEN
+        chess.load(fen);
+        setFen(fen);
+        setChess(new Chess(fen));
+        setSelectedMove(true);
 
-      setShapes([{
-        orig: orig,
-        dest: dest,
-        brush: 'blue'
-      }]);
-    }
-  }, [fen, playerId, chess]);
+        setShapes([
+          {
+            orig: orig,
+            dest: dest,
+            brush: "blue",
+          },
+        ]);
+      }
+    },
+    [fen, playerId, chess],
+  );
 
   // Memoize events object to prevent unnecessary Chessboard remounts
-  const chessboardEvents = useMemo(() => ({
-    move: handleMove
-  }), [handleMove]);
+  const chessboardEvents = useMemo(
+    () => ({
+      move: handleMove,
+    }),
+    [handleMove],
+  );
 
   // Memoize drawable config to prevent unnecessary Chessboard remounts
-  const chessboardDrawable = useMemo(() => ({
-    enabled: true,
-    visible: true,
-    defaultSnapToValidMove: true,
-    eraseOnClick: true,
-    autoShapes: shapes
-  }), [shapes]);
+  const chessboardDrawable = useMemo(
+    () => ({
+      enabled: true,
+      visible: true,
+      defaultSnapToValidMove: true,
+      eraseOnClick: true,
+      autoShapes: shapes,
+    }),
+    [shapes],
+  );
 
   return (
-    <div className="bg-black  bg-fixed min-h-screen flex flex-col">
+    <div className="flex min-h-screen flex-col bg-black bg-fixed">
       <Navbar />
       <main className="flex-grow">
-        <Article title="Collaborative Checkmate" subtitle="">
-          <div className="pb-6 mx-auto grid gap-6 grid-cols-1 md:grid-cols-3">
-            {/* Chessboard */}
-            <div className="md:col-span-2">
-              <ChessBoard
-                fen={fen}
-                orientation={orientation}
-                gamePhase={gamePhase}
-                playerTeam={playerTeam}
-                lockedIn={lockedIn}
-                chessboardEvents={chessboardEvents}
-                chessboardDrawable={chessboardDrawable}
-              />
+        <section className="article">
+          <article className="article-card">
+            <header className="article-header">
+              <h1 className="article-title">Collaborative Checkmate</h1>
+            </header>
+            <div className="prose">
+              <div className="mx-auto grid grid-cols-1 gap-6 pb-6 md:grid-cols-3">
+                {/* Chessboard */}
+                <div className="md:col-span-2">
+                  <ChessBoard
+                    fen={fen}
+                    orientation={orientation}
+                    gamePhase={gamePhase}
+                    playerTeam={playerTeam}
+                    lockedIn={lockedIn}
+                    chessboardEvents={chessboardEvents}
+                    chessboardDrawable={chessboardDrawable}
+                  />
 
-              <GameControls
-                gamePhase={gamePhase}
-                timeRemaining={timeRemaining}
-                timeRemainingKey={timeRemainingKey}
-                connected={connected}
-                selectedMove={selectedMove}
-                lockedIn={lockedIn}
-                onLockInMove={lockInMove}
-              />
+                  <GameControls
+                    gamePhase={gamePhase}
+                    timeRemaining={timeRemaining}
+                    timeRemainingKey={timeRemainingKey}
+                    connected={connected}
+                    selectedMove={selectedMove}
+                    lockedIn={lockedIn}
+                    onLockInMove={lockInMove}
+                  />
 
-              <PlayerSeats
-                players={players}
-                playerId={playerId}
-                connected={connected}
-                onTakeSeat={takeSeat}
-                onReadyUp={readyUp}
-                getCurrentPlayerSeat={getCurrentPlayerSeat}
-              />
+                  <PlayerSeats
+                    players={players}
+                    playerId={playerId}
+                    connected={connected}
+                    onTakeSeat={takeSeat}
+                    onReadyUp={readyUp}
+                    getCurrentPlayerSeat={getCurrentPlayerSeat}
+                  />
+                </div>
+
+                {/* Game log panel */}
+                <div className="md:col-span-1">
+                  <GameLog
+                    gameLog={gameLog}
+                    connected={connected}
+                    reconnecting={reconnecting}
+                  />
+                </div>
+              </div>
             </div>
-
-            {/* Game log panel */}
-            <div className="md:col-span-1">
-              <GameLog
-                gameLog={gameLog}
-                connected={connected}
-                reconnecting={reconnecting}
-              />
-            </div>
-          </div>
-        </Article>
+          </article>
+        </section>
       </main>
       <Footer />
     </div>

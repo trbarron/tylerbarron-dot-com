@@ -1,10 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate, useLoaderData, ScrollRestoration, type LinksFunction } from "react-router";
-import { Chess } from 'chess.js';
+import {
+  useNavigate,
+  useLoaderData,
+  ScrollRestoration,
+  type LinksFunction,
+} from "react-router";
+import { Chess } from "chess.js";
 import { Navbar } from "~/components/Navbar";
 import Footer from "~/components/Footer";
-import Article from "~/components/Article";
-import { Subarticle } from "~/components/Subarticle";
 
 // Import new components
 import { ModeSwitcher } from "~/components/ChesserGuesser/ModeSwitcher";
@@ -20,7 +23,12 @@ import MoveControls from "~/components/ChesserGuesser/MoveControls";
 import ScoreDisplay from "~/components/ChesserGuesser/ScoreDisplay";
 
 // Import utilities
-import type { GameMode, ChessPuzzle, DailyPuzzleSet, DailyGameState } from "~/utils/chesserGuesser/types";
+import type {
+  GameMode,
+  ChessPuzzle,
+  DailyPuzzleSet,
+  DailyGameState,
+} from "~/utils/chesserGuesser/types";
 import { calculatePuzzleScore } from "~/utils/chesserGuesser/puzzleSelection";
 import { getTodayDateString } from "~/utils/chesserGuesser/seededRandom";
 import {
@@ -36,14 +44,14 @@ import {
   saveMaxStreak,
 } from "~/utils/chesserGuesser/localStorage";
 
-import chessgroundBase from '../styles/chessground.base.css?url';
-import chessgroundBrown from '../styles/chessground.brown.css?url';
-import chessgroundCburnett from '../styles/chessground.cburnett.css?url';
+import chessgroundBase from "../styles/chessground.base.css?url";
+import chessgroundBrown from "../styles/chessground.brown.css?url";
+import chessgroundCburnett from "../styles/chessground.cburnett.css?url";
 
 export const links: LinksFunction = () => [
-  { rel: 'stylesheet', href: chessgroundBase },
-  { rel: 'stylesheet', href: chessgroundBrown },
-  { rel: 'stylesheet', href: chessgroundCburnett }
+  { rel: "stylesheet", href: chessgroundBase },
+  { rel: "stylesheet", href: chessgroundBrown },
+  { rel: "stylesheet", href: chessgroundCburnett },
 ];
 
 type LoaderData = {
@@ -54,7 +62,9 @@ type LoaderData = {
 
 export const loader = async () => {
   try {
-    const response = await fetch('https://f73vgbj1jk.execute-api.us-west-2.amazonaws.com/prod/chesserGuesser');
+    const response = await fetch(
+      "https://f73vgbj1jk.execute-api.us-west-2.amazonaws.com/prod/chesserGuesser",
+    );
     const data = await response.json();
     const parsedBody = JSON.parse(data.body);
 
@@ -65,9 +75,9 @@ export const loader = async () => {
   } catch (error) {
     console.error("Error fetching position:", error);
     return Response.json({
-      randomFEN: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+      randomFEN: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
       evalScore: 0,
-      error: 'Failed to fetch position'
+      error: "Failed to fetch position",
     });
   }
 };
@@ -77,17 +87,21 @@ export default function ChesserGuesserUnlimited() {
   const navigate = useNavigate();
 
   // Game mode state
-  const [gameMode, setGameMode] = useState<GameMode>('endless');
+  const [gameMode, setGameMode] = useState<GameMode>("endless");
   const [showUsernameModal, setShowUsernameModal] = useState(false);
   const [showLeaderboardModal, setShowLeaderboardModal] = useState(false);
-  const [username, setUsername] = useState<string>('');
+  const [username, setUsername] = useState<string>("");
 
   // Endless mode state
   const [, setChess] = useState(new Chess(loaderData.randomFEN));
   const [fen, setFen] = useState(loaderData.randomFEN);
-  const [boardOrientation, setBoardOrientation] = useState<"white" | "black">(getCurrentPlayer(loaderData.randomFEN).toLowerCase() as "white" | "black");
+  const [boardOrientation, setBoardOrientation] = useState<"white" | "black">(
+    getCurrentPlayer(loaderData.randomFEN).toLowerCase() as "white" | "black",
+  );
   const [sliderValue, setSliderValue] = useState(0);
-  const [currentTurn, setCurrentTurn] = useState(getCurrentPlayer(loaderData.randomFEN));
+  const [currentTurn, setCurrentTurn] = useState(
+    getCurrentPlayer(loaderData.randomFEN),
+  );
   const [streak, setStreak] = useState(0);
   const [maxStreak, setMaxStreak] = useState(0);
   const [lastSlider, setLastSlider] = useState(0);
@@ -98,9 +112,13 @@ export default function ChesserGuesserUnlimited() {
   // Daily mode state
   const [dailyPuzzles, setDailyPuzzles] = useState<ChessPuzzle[]>([]);
   const [currentPuzzleIndex, setCurrentPuzzleIndex] = useState(0);
-  const [dailyGameState, setDailyGameState] = useState<DailyGameState | null>(null);
+  const [dailyGameState, setDailyGameState] = useState<DailyGameState | null>(
+    null,
+  );
   const [dailyTotalScore, setDailyTotalScore] = useState(0);
-  const [lastDailyScore, setLastDailyScore] = useState<number | undefined>(undefined);
+  const [lastDailyScore, setLastDailyScore] = useState<number | undefined>(
+    undefined,
+  );
   const [isDailyLoading, setIsDailyLoading] = useState(false);
   const [dailyError, setDailyError] = useState<string | null>(null);
 
@@ -110,13 +128,15 @@ export default function ChesserGuesserUnlimited() {
   // Review mode state
   const [isReviewMode, setIsReviewMode] = useState(false);
   const [reviewPuzzleIndex, setReviewPuzzleIndex] = useState(0);
-  const [puzzleHistory, setPuzzleHistory] = useState<Array<{
-    fen: string;
-    eval: number;
-    guess: number;
-    timestamp: number;
-    mode: GameMode;
-  }>>([]);
+  const [puzzleHistory, setPuzzleHistory] = useState<
+    Array<{
+      fen: string;
+      eval: number;
+      guess: number;
+      timestamp: number;
+      mode: GameMode;
+    }>
+  >([]);
   const [copyFeedback, setCopyFeedback] = useState(false);
 
   // Initialize on mount
@@ -142,10 +162,14 @@ export default function ChesserGuesserUnlimited() {
 
   // Update puzzle when loader data changes (endless mode)
   useEffect(() => {
-    if (gameMode === 'endless') {
+    if (gameMode === "endless") {
       setChess(new Chess(loaderData.randomFEN));
       setFen(loaderData.randomFEN);
-      setBoardOrientation(getCurrentPlayer(loaderData.randomFEN).toLowerCase() as "white" | "black");
+      setBoardOrientation(
+        getCurrentPlayer(loaderData.randomFEN).toLowerCase() as
+          | "white"
+          | "black",
+      );
       setCurrentTurn(getCurrentPlayer(loaderData.randomFEN));
       setIsSubmitting(false);
     }
@@ -156,7 +180,9 @@ export default function ChesserGuesserUnlimited() {
       setIsDailyLoading(true);
       setDailyError(null);
 
-      const response = await fetch(`/api/chesserGuesser/puzzles?date=${getTodayDateString()}`);
+      const response = await fetch(
+        `/api/chesserGuesser/puzzles?date=${getTodayDateString()}`,
+      );
       if (!response.ok) {
         throw new Error(`Failed to load daily puzzles: ${response.status}`);
       }
@@ -164,7 +190,7 @@ export default function ChesserGuesserUnlimited() {
       const data: DailyPuzzleSet = await response.json();
 
       if (!data.puzzles || data.puzzles.length !== 4) {
-        throw new Error('Invalid puzzle data received');
+        throw new Error("Invalid puzzle data received");
       }
 
       setDailyPuzzles(data.puzzles);
@@ -184,31 +210,31 @@ export default function ChesserGuesserUnlimited() {
 
       setIsDailyLoading(false);
     } catch (error) {
-      console.error('Error loading daily puzzles:', error);
+      console.error("Error loading daily puzzles:", error);
 
       // Use fallback puzzles for local development
       const fallbackPuzzles: ChessPuzzle[] = [
         {
-          fen: 'r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4',
-          eval: 50
+          fen: "r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4",
+          eval: 50,
         },
         {
-          fen: '4r1k1/pp3ppp/2p5/2b5/4PB2/2P2P2/P5PP/3R2K1 w - - 0 1',
-          eval: -125
+          fen: "4r1k1/pp3ppp/2p5/2b5/4PB2/2P2P2/P5PP/3R2K1 w - - 0 1",
+          eval: -125,
         },
         {
-          fen: '2r3k1/5ppp/p3p3/1p1pP3/3P4/1P2QP2/P5PP/3q2K1 w - - 0 1',
-          eval: 280
+          fen: "2r3k1/5ppp/p3p3/1p1pP3/3P4/1P2QP2/P5PP/3q2K1 w - - 0 1",
+          eval: 280,
         },
         {
-          fen: '6k1/5ppp/4p3/3pP3/3P4/5P2/6PP/6K1 b - - 0 1',
-          eval: -15
-        }
+          fen: "6k1/5ppp/4p3/3pP3/3P4/5P2/6PP/6K1 b - - 0 1",
+          eval: -15,
+        },
       ];
 
-      console.warn('Using fallback puzzles for development');
+      console.warn("Using fallback puzzles for development");
       setDailyPuzzles(fallbackPuzzles);
-      setDailyError('⚠️ Using development puzzles (API unavailable)');
+      setDailyError("⚠️ Using development puzzles (API unavailable)");
 
       // Initialize daily game state if not exists
       if (!dailyGameState) {
@@ -229,18 +255,24 @@ export default function ChesserGuesserUnlimited() {
 
   // Load daily puzzles when switching to daily mode
   useEffect(() => {
-    if (gameMode === 'daily' && dailyPuzzles.length === 0) {
+    if (gameMode === "daily" && dailyPuzzles.length === 0) {
       loadDailyPuzzles();
     }
   }, [gameMode, dailyPuzzles.length, loadDailyPuzzles]);
 
   // Update current puzzle for daily mode
   useEffect(() => {
-    if (gameMode === 'daily' && dailyPuzzles.length > 0 && currentPuzzleIndex < dailyPuzzles.length) {
+    if (
+      gameMode === "daily" &&
+      dailyPuzzles.length > 0 &&
+      currentPuzzleIndex < dailyPuzzles.length
+    ) {
       const puzzle = dailyPuzzles[currentPuzzleIndex];
       setChess(new Chess(puzzle.fen));
       setFen(puzzle.fen);
-      setBoardOrientation(getCurrentPlayer(puzzle.fen).toLowerCase() as "white" | "black");
+      setBoardOrientation(
+        getCurrentPlayer(puzzle.fen).toLowerCase() as "white" | "black",
+      );
       setCurrentTurn(getCurrentPlayer(puzzle.fen));
       setSliderValue(0);
       setIsSubmitting(false);
@@ -260,7 +292,7 @@ export default function ChesserGuesserUnlimited() {
   };
 
   const handleModeChange = (newMode: GameMode) => {
-    if (newMode === 'daily') {
+    if (newMode === "daily") {
       // Check if username is set
       const savedUsername = loadUsername();
       if (!savedUsername) {
@@ -280,12 +312,12 @@ export default function ChesserGuesserUnlimited() {
     setUsername(newUsername);
     saveUsername(newUsername);
     setShowUsernameModal(false);
-    setGameMode('daily');
+    setGameMode("daily");
   };
 
   const toggleReviewMode = () => {
     // Filter history by current mode
-    const currentModeHistory = puzzleHistory.filter(p => p.mode === gameMode);
+    const currentModeHistory = puzzleHistory.filter((p) => p.mode === gameMode);
     if (currentModeHistory.length === 0) return; // Can't review if no history for current mode
 
     if (!isReviewMode) {
@@ -298,10 +330,16 @@ export default function ChesserGuesserUnlimited() {
     }
   };
 
-  const navigateReviewPuzzle = (direction: 'prev' | 'next', filteredHistory: typeof puzzleHistory) => {
-    if (direction === 'prev' && reviewPuzzleIndex > 0) {
+  const navigateReviewPuzzle = (
+    direction: "prev" | "next",
+    filteredHistory: typeof puzzleHistory,
+  ) => {
+    if (direction === "prev" && reviewPuzzleIndex > 0) {
       setReviewPuzzleIndex(reviewPuzzleIndex - 1);
-    } else if (direction === 'next' && reviewPuzzleIndex < filteredHistory.length - 1) {
+    } else if (
+      direction === "next" &&
+      reviewPuzzleIndex < filteredHistory.length - 1
+    ) {
       setReviewPuzzleIndex(reviewPuzzleIndex + 1);
     }
   };
@@ -312,7 +350,7 @@ export default function ChesserGuesserUnlimited() {
       setCopyFeedback(true);
       setTimeout(() => setCopyFeedback(false), 2000); // Hide after 2 seconds
     } catch (err) {
-      console.error('Failed to copy FEN:', err);
+      console.error("Failed to copy FEN:", err);
       // Fallback: show FEN in alert only on error
       alert(`Could not copy. FEN: ${fen}`);
     }
@@ -324,7 +362,12 @@ export default function ChesserGuesserUnlimited() {
       correctSide = true;
     } else if (loaderData.evalScore < -20 && sliderValue < 0) {
       correctSide = true;
-    } else if (loaderData.evalScore < 20 && loaderData.evalScore > -20 && sliderValue < 20 && sliderValue > -20) {
+    } else if (
+      loaderData.evalScore < 20 &&
+      loaderData.evalScore > -20 &&
+      sliderValue < 20 &&
+      sliderValue > -20
+    ) {
       correctSide = true;
     }
 
@@ -343,13 +386,13 @@ export default function ChesserGuesserUnlimited() {
     setLastSlider(sliderValue / 100);
 
     // Add to puzzle history (keep last 15 for endless mode)
-    setPuzzleHistory(prev => {
+    setPuzzleHistory((prev) => {
       const newEntry = {
         fen: loaderData.randomFEN,
         eval: loaderData.evalScore,
         guess: sliderValue,
         timestamp: Date.now(),
-        mode: 'endless' as GameMode,
+        mode: "endless" as GameMode,
       };
       const updated = [newEntry, ...prev];
       return updated.slice(0, 15); // Keep only last 15 for endless mode
@@ -362,7 +405,14 @@ export default function ChesserGuesserUnlimited() {
     }
 
     navigate(".", { replace: true });
-  }, [loaderData.evalScore, sliderValue, streak, maxStreak, loaderData.randomFEN, navigate]);
+  }, [
+    loaderData.evalScore,
+    sliderValue,
+    streak,
+    maxStreak,
+    loaderData.randomFEN,
+    navigate,
+  ]);
 
   const submitDailyGuess = useCallback(async () => {
     if (!dailyGameState || currentPuzzleIndex >= dailyPuzzles.length) {
@@ -375,9 +425,9 @@ export default function ChesserGuesserUnlimited() {
 
     try {
       // Submit to backend
-      const response = await fetch('/api/chesserGuesser/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/chesserGuesser/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           username,
           date: getTodayDateString(),
@@ -388,8 +438,10 @@ export default function ChesserGuesserUnlimited() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-        throw new Error(errorData.error || 'Failed to submit score');
+        const errorData = await response
+          .json()
+          .catch(() => ({ error: "Unknown error" }));
+        throw new Error(errorData.error || "Failed to submit score");
       }
 
       const result = await response.json();
@@ -421,25 +473,29 @@ export default function ChesserGuesserUnlimited() {
       setLastSlider(sliderValue / 100);
 
       // Add to puzzle history (keep last 4 for daily mode)
-      setPuzzleHistory(prev => {
+      setPuzzleHistory((prev) => {
         const newEntry = {
           fen: currentPuzzle.fen,
           eval: currentPuzzle.eval,
           guess: sliderValue,
           timestamp: Date.now(),
-          mode: 'daily' as GameMode,
+          mode: "daily" as GameMode,
         };
         const updated = [newEntry, ...prev];
         // For daily mode, keep only the 4 puzzles from today
-        const dailyPuzzlesHistory = updated.filter(p => p.mode === 'daily').slice(0, 4);
-        const endlessPuzzlesHistory = updated.filter(p => p.mode === 'endless');
+        const dailyPuzzlesHistory = updated
+          .filter((p) => p.mode === "daily")
+          .slice(0, 4);
+        const endlessPuzzlesHistory = updated.filter(
+          (p) => p.mode === "endless",
+        );
         return [...dailyPuzzlesHistory, ...endlessPuzzlesHistory];
       });
 
       // Move to next puzzle or finish
       if (!isLastPuzzle) {
         setTimeout(() => {
-          setCurrentPuzzleIndex(prev => prev + 1);
+          setCurrentPuzzleIndex((prev) => prev + 1);
           setSliderValue(0); // Reset slider for next puzzle
           setIsSubmitting(false);
         }, 1500);
@@ -449,8 +505,12 @@ export default function ChesserGuesserUnlimited() {
         setShowLeaderboardModal(true);
       }
     } catch (error) {
-      console.error('Error submitting daily guess:', error);
-      alert(error instanceof Error ? error.message : 'Failed to submit score. Please try again.');
+      console.error("Error submitting daily guess:", error);
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Failed to submit score. Please try again.",
+      );
       setIsSubmitting(false);
     }
   }, [dailyGameState, currentPuzzleIndex, dailyPuzzles, sliderValue, username]);
@@ -460,203 +520,305 @@ export default function ChesserGuesserUnlimited() {
 
     setIsSubmitting(true);
 
-    if (gameMode === 'endless') {
+    if (gameMode === "endless") {
       await submitEndlessGuess();
     } else {
       await submitDailyGuess();
     }
   }, [isSubmitting, gameMode, submitEndlessGuess, submitDailyGuess]);
 
-
-
   function getCurrentPlayer(fen: string) {
-    const parts = fen.split(' ');
+    const parts = fen.split(" ");
     const turnIndicator = parts[1];
-    return turnIndicator === 'w' ? 'White' : 'Black';
+    return turnIndicator === "w" ? "White" : "Black";
   }
 
-  const isDailyCompleted = dailyGameState?.completed || (gameMode === 'daily' && currentPuzzleIndex >= 4);
+  const isDailyCompleted =
+    dailyGameState?.completed ||
+    (gameMode === "daily" && currentPuzzleIndex >= 4);
 
   // Filter history by current game mode
-  const allModeHistory = puzzleHistory.filter(p => p.mode === gameMode);
+  const allModeHistory = puzzleHistory.filter((p) => p.mode === gameMode);
   const totalCount = allModeHistory.length;
 
   // For display, limit to most recent 15 (for endless) or 4 (for daily)
-  const displayLimit = gameMode === 'endless' ? 15 : 4;
+  const displayLimit = gameMode === "endless" ? 15 : 4;
   const filteredHistory = allModeHistory.slice(0, displayLimit);
 
   // Calculate display number (most recent = highest number)
   const displayPuzzleNumber = totalCount - reviewPuzzleIndex;
 
   // Determine what to display (current puzzle or review puzzle)
-  const displayFen = isReviewMode && filteredHistory.length > 0
-    ? filteredHistory[reviewPuzzleIndex].fen
-    : fen;
+  const displayFen =
+    isReviewMode && filteredHistory.length > 0
+      ? filteredHistory[reviewPuzzleIndex].fen
+      : fen;
 
-  const displayOrientation = isReviewMode && filteredHistory.length > 0
-    ? (getCurrentPlayer(filteredHistory[reviewPuzzleIndex].fen).toLowerCase() as "white" | "black")
-    : boardOrientation;
+  const displayOrientation =
+    isReviewMode && filteredHistory.length > 0
+      ? (getCurrentPlayer(
+          filteredHistory[reviewPuzzleIndex].fen,
+        ).toLowerCase() as "white" | "black")
+      : boardOrientation;
 
-  const reviewPuzzle = isReviewMode && filteredHistory.length > 0 ? filteredHistory[reviewPuzzleIndex] : null;
+  const reviewPuzzle =
+    isReviewMode && filteredHistory.length > 0
+      ? filteredHistory[reviewPuzzleIndex]
+      : null;
 
   return (
-    <div className="bg-fixed min-h-screen flex flex-col">
+    <div className="flex min-h-screen flex-col bg-fixed">
       <Navbar />
       <ScrollRestoration getKey={(location) => location.pathname} />
       <main className="flex-grow">
-        <Article title="Chesser Guesser" subtitle="">
-          {/* Mode Switcher */}
-          <ModeSwitcher
-            currentMode={gameMode}
-            onModeChange={handleModeChange}
-            disabled={isSubmitting}
-          />
+        <section className="article">
+          <article className="article-card">
+            <header className="article-header">
+              <h1 className="article-title">Chesser Guesser</h1>
+            </header>
+            <div className="prose">
+              {/* Mode Switcher */}
+              <ModeSwitcher
+                currentMode={gameMode}
+                onModeChange={handleModeChange}
+                disabled={isSubmitting}
+              />
 
-          {/* Endless Mode Prompt */}
-          {showEndlessPrompt && gameMode === 'endless' && (
-            <EndlessModePrompt
-              onTryRanked={() => {
-                dismissEndlessPrompt();
-                setShowEndlessPrompt(false);
-                handleModeChange('daily');
-              }}
-              onDismiss={() => {
-                dismissEndlessPrompt();
-                setShowEndlessPrompt(false);
-              }}
-              gamesPlayed={getEndlessCount()}
-            />
-          )}
+              {/* Endless Mode Prompt */}
+              {showEndlessPrompt && gameMode === "endless" && (
+                <EndlessModePrompt
+                  onTryRanked={() => {
+                    dismissEndlessPrompt();
+                    setShowEndlessPrompt(false);
+                    handleModeChange("daily");
+                  }}
+                  onDismiss={() => {
+                    dismissEndlessPrompt();
+                    setShowEndlessPrompt(false);
+                  }}
+                  gamesPlayed={getEndlessCount()}
+                />
+              )}
 
-          {/* Daily Loading State */}
-          {gameMode === 'daily' && isDailyLoading && (
-            <div className="bg-white  border-4 border-black  p-6 mb-4 text-center">
-              <div className="font-neo text-black ">
-                Loading daily puzzles...
+              {/* Daily Loading State */}
+              {gameMode === "daily" && isDailyLoading && (
+                <div className="mb-4 border-4 border-black bg-white p-6 text-center">
+                  <div className="font-neo text-black">
+                    Loading daily puzzles...
+                  </div>
+                </div>
+              )}
+
+              {/* Daily Error State */}
+              {gameMode === "daily" && dailyError && (
+                <div className="mb-4 border-4 border-red-500 bg-red-100 p-4">
+                  <p className="font-neo mb-2 font-bold text-red-800">
+                    Error Loading Puzzles
+                  </p>
+                  <p className="font-neo text-sm text-red-800">{dailyError}</p>
+                </div>
+              )}
+
+              {/* Daily Completion Message */}
+              {gameMode === "daily" && isDailyCompleted && (
+                <DailyCompletionMessage totalScore={dailyTotalScore} />
+              )}
+
+              <div className="grid grid-cols-1 gap-6 pb-6 lg:grid-cols-5">
+                <div className="w-full lg:col-span-4">
+                  <GameBoard
+                    mode={gameMode}
+                    fen={displayFen}
+                    orientation={displayOrientation}
+                    currentTurn={currentTurn}
+                    isReviewMode={isReviewMode}
+                  />
+
+                  {/* Move Controls - Hidden in review mode */}
+                  {!isReviewMode && (
+                    <MoveControls
+                      sliderValue={sliderValue}
+                      onSliderChange={handleSliderChange}
+                      onSubmit={submitGuess}
+                      isSubmitting={isSubmitting}
+                      isDisabled={isDailyCompleted}
+                      submitLabel={
+                        isDailyCompleted ? "Daily Complete!" : undefined
+                      }
+                    />
+                  )}
+                </div>
+
+                {/* Sidebar */}
+                <div className="space-y-4 lg:col-span-1">
+                  {/* Last Round Info / Review Puzzle Info - First on mobile */}
+                  <ScoreDisplay
+                    gameMode={gameMode}
+                    isReviewMode={isReviewMode}
+                    lastEval={lastEval}
+                    lastSlider={lastSlider}
+                    lastDailyScore={lastDailyScore}
+                    currentPuzzleIndex={currentPuzzleIndex}
+                    displayPuzzleNumber={displayPuzzleNumber}
+                    totalCount={totalCount}
+                    displayLimit={displayLimit}
+                    reviewPuzzle={reviewPuzzle}
+                    reviewPuzzleIndex={reviewPuzzleIndex}
+                    filteredHistory={filteredHistory}
+                    copyFeedback={copyFeedback}
+                    onNavigateReview={navigateReviewPuzzle}
+                    onCopyFEN={copyFEN}
+                    onToggleReview={toggleReviewMode}
+                  />
+
+                  {/* Daily Progress Tracker (only in daily mode) */}
+                  {gameMode === "daily" && (
+                    <DailyProgressTracker
+                      currentPuzzle={currentPuzzleIndex}
+                      completedPuzzles={dailyGameState?.attempts.length || 0}
+                      totalScore={dailyTotalScore}
+                      lastPuzzleScore={lastDailyScore}
+                    />
+                  )}
+
+                  {/* Endless Progress Tracker (only in endless mode) */}
+                  {gameMode === "endless" && (
+                    <EndlessProgressTracker
+                      streak={streak}
+                      gamesPlayed={getEndlessCount()}
+                      maxStreak={maxStreak}
+                    />
+                  )}
+                </div>
               </div>
             </div>
-          )}
-
-          {/* Daily Error State */}
-          {gameMode === 'daily' && dailyError && (
-            <div className="bg-red-100  border-4 border-red-500  p-4 mb-4">
-              <p className="font-neo text-red-800  font-bold mb-2">
-                Error Loading Puzzles
-              </p>
-              <p className="font-neo text-red-800  text-sm">
-                {dailyError}
-              </p>
-            </div>
-          )}
-
-          {/* Daily Completion Message */}
-          {gameMode === 'daily' && isDailyCompleted && (
-            <DailyCompletionMessage
-              totalScore={dailyTotalScore}
-            />
-          )}
-
-          <div className="pb-6 grid gap-6 grid-cols-1 lg:grid-cols-5">
-            <div className="w-full lg:col-span-4">
-              <GameBoard
-                mode={gameMode}
-                fen={displayFen}
-                orientation={displayOrientation}
-                currentTurn={currentTurn}
-                isReviewMode={isReviewMode}
-              />
-
-              {/* Move Controls - Hidden in review mode */}
-              {!isReviewMode && (
-                <MoveControls
-                  sliderValue={sliderValue}
-                  onSliderChange={handleSliderChange}
-                  onSubmit={submitGuess}
-                  isSubmitting={isSubmitting}
-                  isDisabled={isDailyCompleted}
-                  submitLabel={isDailyCompleted ? 'Daily Complete!' : undefined}
-                />
-              )}
-            </div>
-
-            {/* Sidebar */}
-            <div className="lg:col-span-1 space-y-4">
-              {/* Last Round Info / Review Puzzle Info - First on mobile */}
-              <ScoreDisplay
-                gameMode={gameMode}
-                isReviewMode={isReviewMode}
-                lastEval={lastEval}
-                lastSlider={lastSlider}
-                lastDailyScore={lastDailyScore}
-                currentPuzzleIndex={currentPuzzleIndex}
-                displayPuzzleNumber={displayPuzzleNumber}
-                totalCount={totalCount}
-                displayLimit={displayLimit}
-                reviewPuzzle={reviewPuzzle}
-                reviewPuzzleIndex={reviewPuzzleIndex}
-                filteredHistory={filteredHistory}
-                copyFeedback={copyFeedback}
-                onNavigateReview={navigateReviewPuzzle}
-                onCopyFEN={copyFEN}
-                onToggleReview={toggleReviewMode}
-              />
-
-
-              {/* Daily Progress Tracker (only in daily mode) */}
-              {gameMode === 'daily' && (
-                <DailyProgressTracker
-                  currentPuzzle={currentPuzzleIndex}
-                  completedPuzzles={dailyGameState?.attempts.length || 0}
-                  totalScore={dailyTotalScore}
-                  lastPuzzleScore={lastDailyScore}
-                />
-              )}
-
-              {/* Endless Progress Tracker (only in endless mode) */}
-              {gameMode === 'endless' && (
-                <EndlessProgressTracker
-                  streak={streak}
-                  gamesPlayed={getEndlessCount()}
-                  maxStreak={maxStreak}
-                />
-              )}
-            </div>
-          </div>
-        </Article>
+          </article>
+        </section>
 
         {/* Leaderboard Section */}
-        <Article title="Daily Leaderboard" subtitle="" styleModifier="pb-6">
-          <Leaderboard
-            currentUsername={username}
-            date={getTodayDateString()}
-          />
-        </Article>
+        <section className="article">
+          <article className="article-card">
+            <header className="article-header">
+              <h1 className="article-title">Daily Leaderboard</h1>
+            </header>
+            <div className="prose">
+              <Leaderboard
+                currentUsername={username}
+                date={getTodayDateString()}
+              />
+            </div>
+          </article>
+        </section>
 
         {/* About Section */}
-        <Article title="About Chesser Guesser" subtitle="">
-          <Subarticle subtitle="Overview">
-            <p>Inspired by GeoGuessr, Chesser Guesser challenges players to estimate the computer&apos;s evaluation of chess positions. Players try to estimate the value of specific chess positions as accurately as possible.</p>
-            <p className="mt-2"><strong>Endless Mode:</strong> Play and have fun. There are no stakes to this. Your streak gets extended if you correctly guess who is advantaged.</p>
-            <p className="mt-2"><strong>Ranked Mode:</strong> Compete on the daily leaderboard! Everyone gets the same 4 puzzles each day, see how you rank globally.</p>
-          </Subarticle>
-          <Subarticle subtitle="The Analysis">
-            <p>The game integrates with the <a href='https://lichess.org/@/lichess/blog/thousands-of-stockfish-analysers/WN-gLzAA'>Lichess Cloud Analysis</a> to fetch position evaluations at scale, giving access to all the positions and their evaluations without me having to do any work. Having this resource made the tough part of this project incredibly easy.</p>
+        <section className="article">
+          <article className="article-card">
+            <header className="article-header">
+              <h1 className="article-title">About Chesser Guesser</h1>
+            </header>
+            <div className="prose">
+              <section className="subarticle prose">
+                <h3 className="subarticle-title">Overview</h3>
+                <div className="overflow-hidden bg-white break-words">
+                  <p>
+                    Inspired by GeoGuessr, Chesser Guesser challenges players to
+                    estimate the computer&apos;s evaluation of chess positions.
+                    Players try to estimate the value of specific chess
+                    positions as accurately as possible.
+                  </p>
+                  <p className="mt-2">
+                    <strong>Endless Mode:</strong> Play and have fun. There are
+                    no stakes to this. Your streak gets extended if you
+                    correctly guess who is advantaged.
+                  </p>
+                  <p className="mt-2">
+                    <strong>Ranked Mode:</strong> Compete on the daily
+                    leaderboard! Everyone gets the same 4 puzzles each day, see
+                    how you rank globally.
+                  </p>
+                </div>
+              </section>
+              <section className="subarticle prose">
+                <h3 className="subarticle-title">The Analysis</h3>
+                <div className="overflow-hidden bg-white break-words">
+                  <p>
+                    The game integrates with the{" "}
+                    <a href="https://lichess.org/@/lichess/blog/thousands-of-stockfish-analysers/WN-gLzAA">
+                      Lichess Cloud Analysis
+                    </a>{" "}
+                    to fetch position evaluations at scale, giving access to all
+                    the positions and their evaluations without me having to do
+                    any work. Having this resource made the tough part of this
+                    project incredibly easy.
+                  </p>
 
-            <p>Chesser Guesser uses Python connected to several Amazon DynamoDB instances for data storage. Lichess gives us a huge number of analyzed positions – we get to parse those down and only insert the interesting ones for our game. The criteria used was: </p>
-            <p className='pl-8'>- The evaluation is not above 400 centipawns (a centipawn is a unit of advantage, with 100 ~= 1 pawn&apos;s advantage) in either direction or between -50 and 50 centipawns</p>
-            <p className='pl-8'>- The same number of entries must be given for both the black and white side</p>
-            <p className='pl-8'>- There are less than 5 pawns on any rank, to remove most analysis being on openings</p>
-            <p>A total of 400 evaluations were added, although thousands meet the criteria and there are over a million with saved analysis</p>
-          </Subarticle>
-          <Subarticle subtitle="The UI">
-            <p>For the chess board I used the open source <a href='https://github.com/lichess-org/chessground/tree/master'>Chessground</a>. I&apos;ve used it before and gotta say, its the best. Again, thank you to Lichess for providing these resources! </p>
-            <p>Sliders and such were able to be reused from another, now defunct project. I made a few improvements to help with it on mobile (75+% of users are mobile users) which is always great.</p>
-          </Subarticle>
-          <Subarticle subtitle="Reception">
-            <p>This was released on the afternoon of March 17th 2024. It did really well on /r/chess, getting 40+k views, 50+ comments and a 95+% upvote rate. This spurred me to rush to implement Google Analytics where I could see the global engagement. Over one thousand people have since played, including a few titled players.</p>
-            <p>Overall I would consider this experiment a success, hosting a lot of traffic and some fun conversations.</p>
-          </Subarticle>
-        </Article>
+                  <p>
+                    Chesser Guesser uses Python connected to several Amazon
+                    DynamoDB instances for data storage. Lichess gives us a huge
+                    number of analyzed positions – we get to parse those down
+                    and only insert the interesting ones for our game. The
+                    criteria used was:{" "}
+                  </p>
+                  <p className="pl-8">
+                    - The evaluation is not above 400 centipawns (a centipawn is
+                    a unit of advantage, with 100 ~= 1 pawn&apos;s advantage) in
+                    either direction or between -50 and 50 centipawns
+                  </p>
+                  <p className="pl-8">
+                    - The same number of entries must be given for both the
+                    black and white side
+                  </p>
+                  <p className="pl-8">
+                    - There are less than 5 pawns on any rank, to remove most
+                    analysis being on openings
+                  </p>
+                  <p>
+                    A total of 400 evaluations were added, although thousands
+                    meet the criteria and there are over a million with saved
+                    analysis
+                  </p>
+                </div>
+              </section>
+              <section className="subarticle prose">
+                <h3 className="subarticle-title">The UI</h3>
+                <div className="overflow-hidden bg-white break-words">
+                  <p>
+                    For the chess board I used the open source{" "}
+                    <a href="https://github.com/lichess-org/chessground/tree/master">
+                      Chessground
+                    </a>
+                    . I&apos;ve used it before and gotta say, its the best.
+                    Again, thank you to Lichess for providing these
+                    resources!{" "}
+                  </p>
+                  <p>
+                    Sliders and such were able to be reused from another, now
+                    defunct project. I made a few improvements to help with it
+                    on mobile (75+% of users are mobile users) which is always
+                    great.
+                  </p>
+                </div>
+              </section>
+              <section className="subarticle prose">
+                <h3 className="subarticle-title">Reception</h3>
+                <div className="overflow-hidden bg-white break-words">
+                  <p>
+                    This was released on the afternoon of March 17th 2024. It
+                    did really well on /r/chess, getting 40+k views, 50+
+                    comments and a 95+% upvote rate. This spurred me to rush to
+                    implement Google Analytics where I could see the global
+                    engagement. Over one thousand people have since played,
+                    including a few titled players.
+                  </p>
+                  <p>
+                    Overall I would consider this experiment a success, hosting
+                    a lot of traffic and some fun conversations.
+                  </p>
+                </div>
+              </section>
+            </div>
+          </article>
+        </section>
       </main>
       <Footer />
 

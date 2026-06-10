@@ -2,26 +2,34 @@
 import { lazy, Suspense } from "react";
 import { Navbar } from "../components/Navbar.js";
 import Footer from "../components/Footer.js";
-import Article from "../components/Article.js";
-
 
 const PizzaScoringMap = lazy(() => import("~/components/PizzaScoringMap"));
 
-
 const PizzaRating = () => {
   return (
-    <div className="bg-fixed min-h-screen flex flex-col">
+    <div className="flex min-h-screen flex-col bg-fixed">
       <Navbar />
       <main className="flex-grow">
-        <Article title="Pizza Ratings" subtitle="">
-          <Suspense fallback={
-            <div className="w-full bg-white border-4 border-black p-8 text-center mt-4">
-              <p className="font-neo font-bold text-black uppercase tracking-widest animate-pulse">Loading map…</p>
+        <section className="article">
+          <article className="article-card">
+            <header className="article-header">
+              <h1 className="article-title">Pizza Ratings</h1>
+            </header>
+            <div className="prose">
+              <Suspense
+                fallback={
+                  <div className="mt-4 w-full border-4 border-black bg-white p-8 text-center">
+                    <p className="font-neo animate-pulse font-bold tracking-widest text-black uppercase">
+                      Loading map…
+                    </p>
+                  </div>
+                }
+              >
+                <PizzaScoringMap />
+              </Suspense>
             </div>
-          }>
-            <PizzaScoringMap />
-          </Suspense>
-        </Article>
+          </article>
+        </section>
       </main>
       <Footer />
     </div>
