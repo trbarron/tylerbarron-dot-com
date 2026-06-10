@@ -4,23 +4,9 @@ import { useLoaderData } from "react-router";
 import { Navbar } from "~/components/Navbar";
 import Footer from "~/components/Footer";
 import ImageDisplay from "~/components/CatImage";
+import type { CatSummaryData, CatDetailedData } from "~/types/catTracker";
 
 const DetailedStats = lazy(() => import("~/components/DetailedStats"));
-
-interface BasicResponseData {
-  work_time: string;
-  is_present: boolean;
-  checo_time: string;
-  tuni_time: string;
-  cat: string;
-}
-
-interface DetailedResponseData extends BasicResponseData {
-  last_week_work_time: number;
-  thirty_days_work_time: number;
-  lifetime_work_time: number;
-  work_time_histogram: { hour: number; count: number }[];
-}
 
 export const loader = async () => {
   try {
@@ -28,7 +14,7 @@ export const loader = async () => {
       "https://nj3ho46btl.execute-api.us-west-2.amazonaws.com/checoStage/checoRestEndpoint",
     );
     const data = await basicResponse.json();
-    const basicData: BasicResponseData = JSON.parse(data.body);
+    const basicData: CatSummaryData = JSON.parse(data.body);
 
     return Response.json({ basicData });
   } catch (error) {
@@ -39,10 +25,10 @@ export const loader = async () => {
 
 export default function ChecoLiveTracker() {
   const loaderData = useLoaderData<{
-    basicData: BasicResponseData | undefined;
+    basicData: CatSummaryData | undefined;
   }>();
   const basicData = loaderData.basicData;
-  const [detailedData, setDetailedData] = useState<DetailedResponseData | null>(
+  const [detailedData, setDetailedData] = useState<CatDetailedData | null>(
     null,
   );
   const [showDetails, setShowDetails] = useState<boolean>(false);
@@ -97,7 +83,7 @@ export default function ChecoLiveTracker() {
           const responseData = await response.json();
 
           // Parse the nested JSON in the body
-          const data: DetailedResponseData = JSON.parse(responseData.body);
+          const data: CatDetailedData = JSON.parse(responseData.body);
 
           // Validate the data
           if (
