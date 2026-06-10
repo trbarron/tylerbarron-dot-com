@@ -29,8 +29,6 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.1065.0",
-    "@aws-sdk/lib-dynamodb": "^3.1065.0",
     "@ballatech/react-router7-preset-aws": "^1.0.1",
     "@tailwindcss/postcss": "^4.1.17",
     "chess.js": "^1.0.0",
