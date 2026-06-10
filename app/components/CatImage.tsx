@@ -35,12 +35,16 @@ const ImageDisplay = () => {
     fetchImage();
   }, [isMounted]);
 
-  if (!isMounted) {
-    return null; // Return null on server-side render
-  }
-
-  if (isLoading) {
-    return <div className="text-center text-black ">Loading image...</div>;
+  // Skeleton during SSR and while the camera image fetches. The camera
+  // produces 4:3 frames, so the placeholder reserves the same footprint to
+  // avoid layout shift when the image arrives.
+  if (!isMounted || isLoading) {
+    return (
+      <div className="mb-4 text-center">
+        <div className="mx-auto aspect-[4/3] w-full animate-pulse border-2 border-black bg-gray-200" />
+        <div className="mx-auto mt-3 h-4 w-40 animate-pulse bg-gray-200" />
+      </div>
+    );
   }
 
   if (error) {

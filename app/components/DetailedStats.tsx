@@ -65,21 +65,21 @@ export default function DetailedStats({ data, isLoading }: DetailedStatsProps) {
 
   return (
     <div className="mt-8">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto mb-8">
-        <div className="bg-gray-50 rounded-lg p-6 border-2 border-gray-200">
-          <p className="text-sm text-gray-600 mb-2">Last Week</p>
-          <p className="text-3xl font-bold text-black">{data.last_week_work_time.toFixed(2)}</p>
-          <p className="text-xs text-gray-500 mt-1">hours</p>
+      <div className="grid grid-cols-3 gap-3 max-w-xl mx-auto mb-8">
+        <div className="bg-gray-50 rounded-lg p-3 border-2 border-gray-200">
+          <p className="text-xs text-gray-600 mb-1">Last Week</p>
+          <p className="text-xl font-bold text-black">{data.last_week_work_time.toFixed(2)}</p>
+          <p className="text-[10px] text-gray-500 mt-0.5">hours</p>
         </div>
-        <div className="bg-gray-50 rounded-lg p-6 border-2 border-gray-200">
-          <p className="text-sm text-gray-600 mb-2">Last 30 Days</p>
-          <p className="text-3xl font-bold text-black">{data.thirty_days_work_time.toFixed(2)}</p>
-          <p className="text-xs text-gray-500 mt-1">hours</p>
+        <div className="bg-gray-50 rounded-lg p-3 border-2 border-gray-200">
+          <p className="text-xs text-gray-600 mb-1">Last 30 Days</p>
+          <p className="text-xl font-bold text-black">{data.thirty_days_work_time.toFixed(2)}</p>
+          <p className="text-[10px] text-gray-500 mt-0.5">hours</p>
         </div>
-        <div className="bg-gray-50 rounded-lg p-6 border-2 border-gray-200">
-          <p className="text-sm text-gray-600 mb-2">Lifetime</p>
-          <p className="text-3xl font-bold text-black">{data.lifetime_work_time.toFixed(2)}</p>
-          <p className="text-xs text-gray-500 mt-1">hours</p>
+        <div className="bg-gray-50 rounded-lg p-3 border-2 border-gray-200">
+          <p className="text-xs text-gray-600 mb-1">Lifetime</p>
+          <p className="text-xl font-bold text-black">{data.lifetime_work_time.toFixed(2)}</p>
+          <p className="text-[10px] text-gray-500 mt-0.5">hours</p>
         </div>
       </div>
       
