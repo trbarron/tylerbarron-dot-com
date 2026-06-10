@@ -13,6 +13,7 @@ import {
 } from "react-router";
 import { useEffect } from "react";
 import styles from './styles/index.css?url';
+import faviconUrl from './favicon.png';
 import DichroicBackground from './components/DichroicBackground';
 
 export async function loader() {
@@ -23,6 +24,8 @@ export async function loader() {
 }
 
 export const links: LinksFunction = () => [
+  { rel: "icon", type: "image/png", href: faviconUrl },
+  { rel: "apple-touch-icon", href: faviconUrl },
   { rel: "stylesheet", href: styles }
 ];
 

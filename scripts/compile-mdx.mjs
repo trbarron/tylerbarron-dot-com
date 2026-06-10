@@ -7,20 +7,13 @@ import rehypeKatex from 'rehype-katex';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { computeCdnBase, rewriteAssetSrcs } from './lib/rewriteAssetSrcs.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Bake the production CDN base into compiled MDX so /images/* and /fonts/*
 // references resolve directly to S3/CloudFront instead of routing through Lambda.
-const CDN_BASE = (process.env.VITE_CDN_URL || process.env.CDN_URL || '')
-  .replace(/\/$/, '')
-  .replace(/\/images$/, '');
-
-function rewriteAssetSrcs(code) {
-  if (!CDN_BASE) return code;
-  // Matches src:"/images/... or src:"/fonts/... in the bundled JSX output.
-  return code.replace(/src:"\/(images|fonts)\//g, `src:"${CDN_BASE}/$1/`);
-}
+const CDN_BASE = computeCdnBase();
 
 async function processMdx(source) {
   const result = await bundleMDX({
@@ -36,7 +29,7 @@ async function processMdx(source) {
       return options;
     },
   });
-  return { ...result, code: rewriteAssetSrcs(result.code) };
+  return { ...result, code: rewriteAssetSrcs(result.code, CDN_BASE) };
 }
 
 async function compileAllMdx() {
