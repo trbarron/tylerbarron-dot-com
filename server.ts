@@ -18,7 +18,7 @@ const mode = process.env.NODE_ENV === 'production' ? 'production' : 'development
 
 const requestHandler = createRequestHandler({
   // @ts-expect-error - React Router build types
-  build: () => import("./build/server/root/index.mjs"),
+  build: () => import("./build/server/index.mjs"),
   mode: mode,
 });
 

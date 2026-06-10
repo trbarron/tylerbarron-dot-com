@@ -124,37 +124,27 @@ jobs:
             git log -1 --format=%b | gh release create "$TAG" --title "$TAG" --verify-tag --notes-file -
           fi
 
-      # Compile MDX (image src's rewritten to VITE_CDN_URL) -> bundle the compiled
-      # posts into the SSR build -> build client assets against the CDN base ->
-      # bundle the Lambda handler.
+      # Single source of truth: the same npm scripts used locally. Compiles MDX
+      # (image src's rewritten to VITE_CDN_URL), builds client + SSR bundles
+      # against the CDN base, bundles the Lambda handler, and installs the
+      # Lambda's prod-only deps in server/.
       - name: 🏗 Build
         env:
           NODE_ENV: production
           VITE_CDN_URL: ${{ secrets.VITE_CDN_URL }}
-        run: |
-          npm run compile:mdx
-          npm run build
-          mkdir -p public
-          cp -r build/client/* public/
-          npx esbuild server.ts \
-            --platform=node --target=node22 --format=esm --bundle --minify \
-            --tree-shaking=true --outfile=server/index.mjs \
-            '--external:@aws-sdk/*' --external:aws-sdk \
-            '--external:@react-router/*' --external:react --external:react-dom \
-            '--external:./build/*'
+        run: npm run build:arc
 
-      # The CDN bucket serves everything the browser fetches: hashed JS/CSS,
-      # fonts, and blog images. CORS lets <script type=module> load chunks
-      # cross-origin.
-      - name: 📤 Publish assets + images to CDN
+      # The asset bucket is an origin on the tylerbarron.com CloudFront
+      # distribution (/assets/*, /fonts/*, /images/* behaviors), so everything
+      # the browser fetches is same-origin, compressed, and edge-cached. No
+      # bucket CORS needed.
+      - name: 📤 Publish assets + images to CDN bucket
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
           AWS_BUCKET_NAME: ${{ secrets.AWS_BUCKET_NAME }}
         run: |
-          aws s3api put-bucket-cors --bucket "$AWS_BUCKET_NAME" --cors-configuration \
-            '{"CORSRules":[{"AllowedOrigins":["*"],"AllowedMethods":["GET","HEAD"],"AllowedHeaders":[],"MaxAgeSeconds":86400}]}'
           # Content-hashed assets are immutable; --delete prunes stale builds.
           aws s3 sync build/client/assets/ "s3://$AWS_BUCKET_NAME/assets/" \
             --delete \
@@ -167,11 +157,8 @@ jobs:
             --exclude "*.db" \
             --cache-control "public,max-age=31536000,immutable"
 
-      - name: 📦 Assemble Lambda bundle
+      - name: 📊 Lambda bundle size
         run: |
-          mkdir -p server/build
-          cp -r build/server server/build/
-          cd server && npm install --omit=dev --silent && cd ..
           echo "=== Lambda bundle size breakdown ==="
           du -sh server/build server/node_modules server/index.mjs
           echo "--- total server/ ---"
