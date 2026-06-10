@@ -2,26 +2,18 @@ import { reactRouter } from "@react-router/dev/vite";
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 import { execSync } from "child_process";
+import { readFileSync } from "fs";
 
-// Get git version info at build time
-function getGitVersion() {
+// Semantic version is the single source of truth (package.json). It works even
+// in CI's shallow clone, where git tags are unavailable.
+const pkg = JSON.parse(readFileSync(new URL("./package.json", import.meta.url), "utf-8"));
+
+// Short commit hash for build traceability; empty when git is unavailable.
+function getGitCommit() {
   try {
-    // Get the short commit hash
-    const commitHash = execSync("git rev-parse --short HEAD").toString().trim();
-    
-    // Try to get the most recent tag
-    let tag = "";
-    try {
-      tag = execSync("git describe --tags --abbrev=0").toString().trim();
-    } catch {
-      // No tags found, that's okay
-    }
-    
-    // Format: "v1.2.3-abc1234" if tag exists, otherwise just "abc1234"
-    return tag ? `${tag}-${commitHash}` : commitHash;
+    return execSync("git rev-parse --short HEAD").toString().trim();
   } catch {
-    // Fallback if git is not available
-    return "unknown";
+    return "";
   }
 }
 
@@ -35,7 +27,8 @@ export default defineConfig({
     tsconfigPaths(),
   ],
   define: {
-    __GIT_VERSION__: JSON.stringify(getGitVersion()),
+    __APP_VERSION__: JSON.stringify(pkg.version),
+    __GIT_COMMIT__: JSON.stringify(getGitCommit()),
   },
   build: {
     rollupOptions: {

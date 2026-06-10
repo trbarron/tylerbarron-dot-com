@@ -3,6 +3,10 @@ import { getImageUrl } from '~/utils/cdn';
 const linkedin = getImageUrl('Global/in.svg');
 const git = getImageUrl('Global/git.svg');
 const email = getImageUrl('Global/email.svg');
+
+// Semantic version from package.json, with the build's short commit hash appended.
+const appVersion = `v${__APP_VERSION__}${__GIT_COMMIT__ ? ` · ${__GIT_COMMIT__}` : ''}`;
+
 export default function Footer() {
   return (
     <footer className="border-t-4 border-black py-8 bg-white/90 backdrop-blur-sm relative z-10">
@@ -11,7 +15,7 @@ export default function Footer() {
           <div className="w-full px-4 mx-auto text-center">
             <div className="text-black  font-neo">
               <div className="text-sm pb-4 text-black  font-neo font-semibold tracking-wide">
-                version: {__GIT_VERSION__}
+                version: {appVersion}
               </div>
 
 

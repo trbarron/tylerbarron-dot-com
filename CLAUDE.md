@@ -107,5 +107,14 @@ API Gateway rejects Lambda responses larger than 6 MB. Because the handler base6
 ### When cutting Lambda size further: target node_modules
 The remaining bloat is server `node_modules`. Top offenders: `@aws-sdk` (10 MB) + `@smithy` (7.7 MB), then `react-dom` (4.4 MB) and `react-router` (4 MB). The esbuild step in `build:arc:server` already externalizes `@aws-sdk/*` from `index.mjs`, but they're still installed by `build:arc:deps` because the AWS preset/server code requires them at runtime. `@aws-sdk/client-s3` is now a **devDependency** (only the upload scripts use it) so `npm install --omit=dev` keeps it out of the Lambda; runtime AWS usage is `client-dynamodb` + `lib-dynamodb` only. Pruning unused `@aws-sdk` sub-clients pulled in transitively is the next win.
 
+### Versioning (automated semver in the footer)
+Releases are **fully automated by semantic-release** (`.releaserc.json`), driven by [Conventional Commits](https://www.conventionalcommits.org): `fix:` → patch, `feat:` → minor, `feat!:`/`BREAKING CHANGE:` → major. Other types (`chore:`, `ci:`, `docs:`, `refactor:`, `perf:`, `test:`) don't release.
+
+Flow: on push to `master`, the deploy job runs `npx semantic-release` **before** the build. It analyzes commits since the last tag, and if a release is warranted it bumps `package.json` on disk, writes `CHANGELOG.md`, commits + tags `X.Y.Z` (prefix-less, `tagFormat: "${version}"`, matching the legacy `5.0.24` tag), and publishes a GitHub Release. The commit message carries `[skip ci]` to avoid re-triggering. The build then reads the bumped `package.json`.
+
+`package.json` `version` is the footer's source of truth: `vite.config.ts` injects it as `__APP_VERSION__` (and the short commit hash as `__GIT_COMMIT__`); `Footer.tsx` renders `v<version> · <hash>`. The deploy checkout uses `fetch-depth: 0` so semantic-release can see all tags/history. To cut a release you just push conventional commits — no manual version step. Validate locally with `GITHUB_TOKEN=$(gh auth token) npx semantic-release --dry-run --no-ci`.
+
+Commit messages are enforced locally: a **Husky** `commit-msg` hook (`.husky/commit-msg`) runs **commitlint** (`.commitlintrc.json`, extends `@commitlint/config-conventional`) and rejects non-conventional messages. The hook installs via the `prepare` script on `npm install`; CI sets `HUSKY=0` so it never runs against semantic-release's own release commit.
+
 ## Recent Changes
 - 001-modernize-website: Standardized Tailwind CSS patterns, decomposed large routes, unified typography system, enforced code standards via ESLint

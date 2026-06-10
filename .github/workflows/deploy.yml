@@ -14,6 +14,11 @@ concurrency:
 permissions:
   contents: read
 
+# Husky git hooks are a local-dev guardrail; skip installing them in CI so they
+# never run against semantic-release's automated release commit.
+env:
+  HUSKY: 0
+
 defaults:
   run:
     shell: bash
@@ -66,10 +71,19 @@ jobs:
     # Only master deploys. PRs run lint + typecheck above and stop here, so a PR
     # can never publish assets or overwrite production.
     if: github.ref == 'refs/heads/master'
+    # semantic-release pushes the version bump/CHANGELOG commit, tag, and GitHub release.
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
 
     steps:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v4
+        with:
+          # Full history + tags so semantic-release can analyze commits since
+          # the last release tag.
+          fetch-depth: 0
 
       - name: ⎔ Setup node
         uses: actions/setup-node@v4
@@ -83,6 +97,16 @@ jobs:
         run: |
           npm ci
           npm i -g @architect/architect
+
+      # Analyze commits since the last release; if a release is warranted, bump
+      # package.json on disk, write CHANGELOG.md, commit/tag (with [skip ci] so it
+      # doesn't re-trigger this workflow), and publish a GitHub Release. The bumped
+      # package.json is then read by the build below so the footer shows the new
+      # version. A no-op when no release-worthy commits exist.
+      - name: 🔖 Release (semantic-release)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release
 
       # Compile MDX (image src's rewritten to VITE_CDN_URL) -> bundle the compiled
       # posts into the SSR build -> build client assets against the CDN base ->

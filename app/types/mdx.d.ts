@@ -10,4 +10,6 @@ declare module '@mdx-js/esbuild/lib' {
   export default content;
 }
 
-declare const __GIT_VERSION__: string;
+// Injected at build time by vite.config.ts `define`.
+declare const __APP_VERSION__: string;
+declare const __GIT_COMMIT__: string;
