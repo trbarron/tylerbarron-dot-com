@@ -30,6 +30,13 @@ export default defineConfig({
     __APP_VERSION__: JSON.stringify(pkg.version),
     __GIT_COMMIT__: JSON.stringify(getGitCommit()),
   },
+  ssr: {
+    // Bundle (and tree-shake) pure-JS UI deps into the server build. The SSR
+    // build externalizes deps by default, and anything left external must also
+    // be listed in server/package.json or the Lambda 500s on routes whose
+    // chunks import it (bots/curl only — browsers recover client-side).
+    noExternal: ["chessground", "d3-geo", "d3-array", "topojson-client"],
+  },
   build: {
     rollupOptions: {
       external: [
