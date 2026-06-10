@@ -1,3 +1,10 @@
+# [5.4.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.3.0...5.4.0) (2026-06-10)
+
+
+### Features
+
+* make the cat page even prettier again ([3dd1821](https://github.com/trbarron/tylerbarron-dot-com/commit/3dd182106225fff56cfafdc4adc46acff78e9316))
+
 # [5.3.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.2.0...5.3.0) (2026-06-10)
 
 
