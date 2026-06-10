@@ -88,6 +88,7 @@ describe('DetailedStats', () => {
 
     const oldHtml = render(<DetailedStats data={base} isLoading={false} />);
     expect(oldHtml).not.toContain('Who Did the Work?');
-    expect(oldHtml).toContain('Work Time Distribution');
+    // Stat cards render the totals regardless of API generation
+    expect(oldHtml).toContain('135.07');
   });
 });
