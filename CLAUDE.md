@@ -66,8 +66,8 @@ This is a personal website built with React Router 7, TypeScript, and deployed o
 - Never save working files, text/mds and tests to the root folder
 
 ## Active Technologies
-- TypeScript 5.x (strict mode enabled), React 19, Node.js 22+ + React Router 7 (v7.9.0), Tailwind CSS 4, Vite 6, AWS Architec (001-modernize-website)
-- Redis (ioredis) for server-side state, LocalStorage for client persistence, S3 for compiled MDX/images (001-modernize-website)
+- TypeScript 5.x (strict mode enabled), React 19, Node.js 22+, React Router 7, Tailwind CSS 4, Vite 6, AWS Architect (001-modernize-website)
+- Redis (ioredis) for server-side state, LocalStorage for client persistence, S3 + CloudFront for assets/images; compiled MDX is bundled into the SSR build, not fetched (001-modernize-website)
 
 ## Code Standards (Modernization)
 
@@ -96,7 +96,7 @@ This is a personal website built with React Router 7, TypeScript, and deployed o
 ## Deployment Architecture Notes
 
 ### Lambda zip: SSR build + handler + prod node_modules (no client assets)
-The deployed Lambda (`server/`) contains the SSR build (`build/server/`, including the ~84 KB `posts.server` chunk of compiled MDX) plus the esbuilt `index.mjs` and prod `node_modules`. Client assets, fonts, and blog images are **not** in the Lambda — they're served from the CDN bucket (`VITE_CDN_URL`), which CI syncs in the "Publish assets + images to CDN" step. The `/images/*` static fallback in `server.ts` only runs in the local `arc sandbox` (`ARC_ENV !== 'production'`).
+The deployed Lambda (`server/`) contains the SSR build (`build/server/`, including the ~84 KB `posts.server` chunk of compiled MDX) plus the esbuilt `index.mjs` and prod `node_modules`. Client assets, fonts, and blog images are **not** in the Lambda — they're served **same-origin through CloudFront**: the asset bucket is an origin on the `tylerbarron.com` distribution (E1TUWNZL0WZZ6J) with `/assets/*`, `/fonts/*`, `/images/*` behaviors (CachingOptimized + brotli/gzip). `VITE_CDN_URL` is `https://tylerbarron.com`, and CI syncs the bucket in the "Publish assets + images to CDN bucket" step. The `/assets/*`, `/fonts/*`, `/images/*` static fallback in `server.ts` only runs in the local `arc sandbox` (`ARC_ENV !== 'production'`).
 
 ### Blog posts are bundled, not fetched from S3
 `npm run compile:mdx` writes compiled posts to `app/posts/compiled/*.json` (gitignored). `app/utils/posts.server.ts` bundles them into the SSR build via `import.meta.glob` (prod) or compiles `posts/*.mdx` on the fly (dev, gated by `import.meta.env.DEV` so `mdx-bundler` is tree-shaken from prod). Image `src`s are rewritten to `VITE_CDN_URL` at compile time — so `compile:mdx` must run with that env set (CI Build step does). No runtime S3 fetch for posts.
@@ -104,8 +104,8 @@ The deployed Lambda (`server/`) contains the SSR build (`build/server/`, includi
 ### Lambda response size cap is 6 MB (effectively ~4.5 MB raw)
 API Gateway rejects Lambda responses larger than 6 MB. Because the handler base64-encodes binary assets (~1.33× expansion), the practical raw-file limit is ~4.5 MB. Symptom of going over: HTTP 500 with body `{"message":"Internal Server Error"}` and `apigw-requestid` header. The Stockfish WASM (7.3 MB) hit this — now offloaded to unpkg CDN; see `app/utils/multipleChoiceChess/stockfishEngine.ts`.
 
-### When cutting Lambda size further: target node_modules
-The remaining bloat is server `node_modules`. Top offenders: `@aws-sdk` (10 MB) + `@smithy` (7.7 MB), then `react-dom` (4.4 MB) and `react-router` (4 MB). The esbuild step in `build:arc:server` already externalizes `@aws-sdk/*` from `index.mjs`, but they're still installed by `build:arc:deps` because the AWS preset/server code requires them at runtime. `@aws-sdk/client-s3` is now a **devDependency** (only the upload scripts use it) so `npm install --omit=dev` keeps it out of the Lambda; runtime AWS usage is `client-dynamodb` + `lib-dynamodb` only. Pruning unused `@aws-sdk` sub-clients pulled in transitively is the next win.
+### Lambda dependencies: two lists that must stay in sync
+The Lambda installs `server/package.json` (a separate, hand-maintained list: the AWS preset, `chess.js`, `ioredis`, `isbot`, `react`, `react-dom`, `react-router`) — ~15 MB installed, dominated by `react-dom` (4.4 MB) and `react-router` (4 MB). **No `@aws-sdk` ships in the Lambda**; runtime AWS SDK usage is zero (`@aws-sdk/client-s3` is a devDependency used only by the upload scripts). The Vite SSR build externalizes all npm deps, so anything an SSR-rendered module imports must either be in `server/package.json` or listed in `ssr.noExternal` in `vite.config.ts` (currently `chessground`, `d3-geo`, `d3-array`, `topojson-client` — bundled tree-shaken into `build/server`). Getting this wrong 500s those routes **for bots/curl only** (`onAllReady` path); browsers recover client-side via `onShellReady`, so the breakage hides from casual testing (2026-06-10 incident). Audit after a build: `grep -rho 'from "[^"]*"' build/server/ | grep -v '"\./\|"node:' | sort -u` and compare against `server/package.json` (npm auto-installs the preset's peers `react-router` + `@react-router/node`).
 
 ### Versioning (automated semver in the footer)
 Releases are **fully automated by semantic-release** (`.releaserc.json`), driven by [Conventional Commits](https://www.conventionalcommits.org): `fix:` → patch, `feat:` → minor, `feat!:`/`BREAKING CHANGE:` → major. Other types (`chore:`, `ci:`, `docs:`, `refactor:`, `perf:`, `test:`) don't release.

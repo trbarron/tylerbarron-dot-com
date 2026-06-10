@@ -42,7 +42,7 @@ tylerbarron-dot-com/
 
 ### 🖼️ Managing Images
 
-Images are hosted on an S3 CDN to improve performance.
+Images live in an S3 bucket served same-origin through CloudFront (`https://tylerbarron.com/images/...`).
 
 **To add new images:**
 1. Place them in `app/images/`.
@@ -132,17 +132,16 @@ npm start
 
 ### AWS Deployment
 
-The application is configured for deployment to AWS using the Architect framework. The infrastructure is defined in `app.arc` and `preferences.arc`.
+Deploys are automated: pushing to `master` runs lint + typecheck, then semantic-release
+(Conventional Commits drive the version in the footer) and `arc deploy` via GitHub
+Actions (`.github/workflows/deploy.yml`). There is no manual deploy step in normal use.
 
-Deploy to AWS:
-```bash
-arc deploy
-```
-
-The app uses:
-- AWS Lambda for serverless compute
-- S3 for static asset storage
-- CloudFront for CDN (configured via Architect)
+The infrastructure is defined in `app.arc` and `preferences.arc`. The app uses:
+- AWS Lambda (via Architect) for SSR compute behind API Gateway
+- S3 for static assets, fonts, and blog images
+- CloudFront serving everything same-origin at tylerbarron.com — API Gateway as the
+  default origin, the asset bucket behind `/assets/*`, `/fonts/*`, `/images/*`
+  behaviors (compressed + edge-cached)
 
 ## 🎨 Styling
 
@@ -177,5 +176,5 @@ Supported features:
 - `react-router.config.ts` - React Router configuration
 - `tsconfig.json` - TypeScript compiler options
 - `app.arc` - AWS Architect infrastructure definition
-- `prettier.config.cjs` - Prettier code formatting rules
+- `prettier.config.mjs` - Prettier code formatting rules
 
