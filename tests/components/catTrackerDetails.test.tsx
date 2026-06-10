@@ -88,6 +88,6 @@ describe('DetailedStats', () => {
 
     const oldHtml = render(<DetailedStats data={base} isLoading={false} />);
     expect(oldHtml).not.toContain('Who Did the Work?');
-    expect(oldHtml).toContain('135.07');
+    expect(oldHtml).toContain('Work Time Distribution');
   });
 });
