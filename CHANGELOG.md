@@ -1,3 +1,10 @@
+## [5.1.1](https://github.com/trbarron/tylerbarron-dot-com/compare/5.1.0...5.1.1) (2026-06-10)
+
+
+### Bug Fixes
+
+* removed Article and Subarticle. fixed prettier ([6e1ce46](https://github.com/trbarron/tylerbarron-dot-com/commit/6e1ce46a2c334de578866c8611e950d23b0fda6a))
+
 # [5.1.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.0.24...5.1.0) (2026-06-10)
 
 
