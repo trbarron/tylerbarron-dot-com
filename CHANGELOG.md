@@ -1,3 +1,10 @@
+## [5.1.3](https://github.com/trbarron/tylerbarron-dot-com/compare/5.1.2...5.1.3) (2026-06-10)
+
+
+### Bug Fixes
+
+* healthcheck + release hardening ([6308c71](https://github.com/trbarron/tylerbarron-dot-com/commit/6308c716b6f781b49e76adebbed794e3474b569f))
+
 ## [5.1.2](https://github.com/trbarron/tylerbarron-dot-com/compare/5.1.1...5.1.2) (2026-06-10)
 
 
