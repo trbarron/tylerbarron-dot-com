@@ -1,3 +1,10 @@
+## [5.1.2](https://github.com/trbarron/tylerbarron-dot-com/compare/5.1.1...5.1.2) (2026-06-10)
+
+
+### Bug Fixes
+
+* bundle SSR-only UI deps into server build ([0d4eaef](https://github.com/trbarron/tylerbarron-dot-com/commit/0d4eaef04a3b3777558a75eaa91ccfa2583b993c))
+
 ## [5.1.1](https://github.com/trbarron/tylerbarron-dot-com/compare/5.1.0...5.1.1) (2026-06-10)
 
 
