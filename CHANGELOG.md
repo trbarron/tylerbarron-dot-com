@@ -1,3 +1,10 @@
+# [5.5.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.4.0...5.5.0) (2026-06-10)
+
+
+### Features
+
+* final prettification of the cat tracker page ([697f76c](https://github.com/trbarron/tylerbarron-dot-com/commit/697f76cb0877f5ed1f0237c8d2d853fee9a89505))
+
 # [5.4.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.3.0...5.4.0) (2026-06-10)
 
 
