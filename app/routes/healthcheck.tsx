@@ -4,9 +4,16 @@ import { isRedisAvailable } from "~/utils/redis.server";
 export async function loader({ request }: LoaderFunctionArgs) {
     const host =
         request.headers.get("X-Forwarded-Host") ?? request.headers.get("host");
+    // API Gateway/CloudFront only serve HTTPS, so a hardcoded http:// self-fetch
+    // always fails in production. Trust the forwarded proto; fall back by host.
+    const proto =
+        request.headers.get("X-Forwarded-Proto") ??
+        (host?.startsWith("localhost") || host?.startsWith("127.")
+            ? "http"
+            : "https");
 
     try {
-        const url = new URL("/", `http://${host}`);
+        const url = new URL("/", `${proto}://${host}`);
         // if we can connect to the database and make a simple query
         // and make a HEAD request to ourselves, then we're good.
         const [redisReady] = await Promise.all([

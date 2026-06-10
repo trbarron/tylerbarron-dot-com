@@ -108,6 +108,22 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release
 
+      # Create the GitHub Release for the tag semantic-release just pushed.
+      # Kept out of semantic-release (and non-blocking) on purpose: this is the
+      # only release step that runs after the tag exists but before the deploy,
+      # so a flaky GitHub API response here used to abort the deploy and leave
+      # a tagged-but-undeployed state (run 27287187104, GitHub outage 2026-06-10).
+      # Idempotent: skips when HEAD isn't a fresh release or the Release exists.
+      - name: 🏷 GitHub Release (non-blocking)
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG=$(git tag --points-at HEAD | head -n1)
+          if [ -n "$TAG" ] && ! gh release view "$TAG" --json id >/dev/null 2>&1; then
+            git log -1 --format=%b | gh release create "$TAG" --title "$TAG" --verify-tag --notes-file -
+          fi
+
       # Compile MDX (image src's rewritten to VITE_CDN_URL) -> bundle the compiled
       # posts into the SSR build -> build client assets against the CDN base ->
       # bundle the Lambda handler.
