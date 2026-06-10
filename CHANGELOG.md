@@ -1,3 +1,10 @@
+# [5.2.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.1.3...5.2.0) (2026-06-10)
+
+
+### Features
+
+* per-cat work visuals and corrected-API support for cat tracker ([7c68a34](https://github.com/trbarron/tylerbarron-dot-com/commit/7c68a34246c58268e8a38a674c8209f0231152d2))
+
 ## [5.1.3](https://github.com/trbarron/tylerbarron-dot-com/compare/5.1.2...5.1.3) (2026-06-10)
 
 
