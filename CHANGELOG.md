@@ -1,3 +1,10 @@
+## [5.5.1](https://github.com/trbarron/tylerbarron-dot-com/compare/5.5.0...5.5.1) (2026-06-12)
+
+
+### Bug Fixes
+
+* consolidate Google Analytics config and add consent mode + 404 tracking ([adbccc1](https://github.com/trbarron/tylerbarron-dot-com/commit/adbccc1366393bd8605b6dcafd35020568c137e6))
+
 # [5.5.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.4.0...5.5.0) (2026-06-10)
 
 
