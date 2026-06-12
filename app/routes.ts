@@ -63,5 +63,9 @@ export default [
   route("api/multipleChoiceChess/resign", "routes/api/multipleChoiceChess/resign.ts"),
   route("api/multipleChoiceChess/claimWin", "routes/api/multipleChoiceChess/claimWin.ts"),
   route("api/multipleChoiceChess/available", "routes/api/multipleChoiceChess/available.ts"),
+
+  // Catch-all 404 (must stay last) — serves the styled not-found page with a
+  // 404 status while keeping the root loader (and analytics) active.
+  route("*", "routes/$.tsx"),
 ] satisfies RouteConfig;
 

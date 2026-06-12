@@ -8,6 +8,7 @@ import {
   useLoaderData,
   useLocation,
   useRouteError,
+  useRouteLoaderData,
   isRouteErrorResponse,
   Link,
 } from "react-router";
@@ -19,8 +20,47 @@ import DichroicBackground from './components/DichroicBackground';
 export async function loader() {
   const rawId = process.env.GA_TRACKING_ID?.trim() || null;
   // Validate GA tracking ID format to prevent XSS via dangerouslySetInnerHTML
-  const gaTrackingId = rawId && /^(G|UA|GT)-[A-Za-z0-9-]+$/.test(rawId) ? rawId : null;
+  const gaTrackingId = rawId && /^(G|GT)-[A-Za-z0-9]+$/.test(rawId) ? rawId : null;
   return { gaTrackingId };
+}
+
+// EEA + UK + CH: analytics cookies denied by default in these regions (Consent
+// Mode v2); GA falls back to cookieless pings there. Granted everywhere else.
+const CONSENT_DENIED_REGIONS = [
+  "AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "DE", "GR",
+  "HU", "IE", "IT", "LV", "LT", "LU", "MT", "NL", "PL", "PT", "RO", "SK",
+  "SI", "ES", "SE", "IS", "LI", "NO", "GB", "CH",
+];
+
+function GtagScripts({ gaTrackingId, sendPageView }: { gaTrackingId: string; sendPageView: boolean }) {
+  return (
+    <>
+      <script async src={`https://www.googletagmanager.com/gtag/js?id=${gaTrackingId}`} />
+      <script
+        id="gtag-init"
+        dangerouslySetInnerHTML={{
+          __html: `
+            window.dataLayer = window.dataLayer || [];
+            window.gtag = function(){dataLayer.push(arguments);}
+            gtag('consent', 'default', {
+              ad_storage: 'denied',
+              ad_user_data: 'denied',
+              ad_personalization: 'denied',
+              analytics_storage: 'granted'
+            });
+            gtag('consent', 'default', {
+              analytics_storage: 'denied',
+              region: ${JSON.stringify(CONSENT_DENIED_REGIONS)}
+            });
+            gtag('js', new Date());
+            gtag('config', '${gaTrackingId}', {
+              send_page_view: ${sendPageView}
+            });
+          `,
+        }}
+      />
+    </>
+  );
 }
 
 export const links: LinksFunction = () => [
@@ -37,6 +77,10 @@ export const meta = () => {
 
 export function ErrorBoundary() {
   const error = useRouteError();
+  // Root loader data is available when a child route threw (e.g. 404), but not
+  // when the root loader itself failed — degrade to no analytics in that case.
+  const rootData = useRouteLoaderData<typeof loader>("root");
+  const gaTrackingId = rootData?.gaTrackingId ?? null;
   const is404 = isRouteErrorResponse(error) && error.status === 404;
   const isServerError = isRouteErrorResponse(error) && error.status >= 500;
   const status = isRouteErrorResponse(error) ? error.status : 500;
@@ -53,6 +97,8 @@ export function ErrorBoundary() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>{`${title} — Barron Wasteland`}</title>
         <Links />
+        {/* Error pages have no client navigations, so let gtag auto-send the page view */}
+        {gaTrackingId && <GtagScripts gaTrackingId={gaTrackingId} sendPageView={true} />}
       </head>
       <body>
         <nav className="border-b-4 border-black flex flex-wrap items-center justify-between px-4 py-6 bg-white">
@@ -120,24 +166,8 @@ export default function App() {
         <Meta />
         <Links />
 
-        {gaTrackingId && (
-          <>
-            <script async src={`https://www.googletagmanager.com/gtag/js?id=${gaTrackingId}`} />
-            <script
-              id="gtag-init"
-              dangerouslySetInnerHTML={{
-                __html: `
-                  window.dataLayer = window.dataLayer || [];
-                  window.gtag = function(){dataLayer.push(arguments);}
-                  gtag('js', new Date());
-                  gtag('config', '${gaTrackingId}', {
-                    send_page_view: false
-                  });
-                `,
-              }}
-            />
-          </>
-        )}
+        {/* send_page_view: false — page views are sent manually on location change */}
+        {gaTrackingId && <GtagScripts gaTrackingId={gaTrackingId} sendPageView={false} />}
       </head>
       <body>
         {/* WebGL Dichroic glass background effect */}
