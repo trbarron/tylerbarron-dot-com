@@ -1,3 +1,11 @@
+# [5.6.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.5.1...5.6.0) (2026-06-12)
+
+
+### Features
+
+* add seo lol ([c376792](https://github.com/trbarron/tylerbarron-dot-com/commit/c3767929529793dddff31e3e5f0140e2e92db0cf))
+* add seo lol ([3738fcc](https://github.com/trbarron/tylerbarron-dot-com/commit/3738fcc91925fc5ea8b1c8533db477396c2a8344))
+
 ## [5.5.1](https://github.com/trbarron/tylerbarron-dot-com/compare/5.5.0...5.5.1) (2026-06-12)
 
 
