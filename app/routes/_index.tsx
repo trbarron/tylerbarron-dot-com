@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import Footer from "~/components/Footer";
 import { Link, useLoaderData } from 'react-router';
+import { buildMeta } from "~/utils/seo";
+
+export function meta() {
+  return buildMeta({ path: "/" });
+}
 
 interface Post {
   slug: string;

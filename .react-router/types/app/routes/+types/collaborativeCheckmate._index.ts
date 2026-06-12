@@ -15,12 +15,6 @@ type Matches = [{
 }, {
   id: "routes/collaborativeCheckmate._index";
   module: typeof import("../collaborativeCheckmate._index.js");
-}] | [{
-  id: "root";
-  module: typeof import("../../root.js");
-}, {
-  id: "legacy-collaborative-checkmate";
-  module: typeof import("../collaborativeCheckmate._index.js");
 }];
 
 type Annotations = GetAnnotations<Info & { module: Module, matches: Matches }>;

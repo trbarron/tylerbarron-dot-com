@@ -14,6 +14,7 @@ import {
 } from "react-router";
 import { useEffect } from "react";
 import styles from './styles/index.css?url';
+import { buildMeta } from './utils/seo';
 import faviconUrl from './favicon.png';
 import DichroicBackground from './components/DichroicBackground';
 
@@ -70,9 +71,7 @@ export const links: LinksFunction = () => [
 ];
 
 export const meta = () => {
-  return [
-    { title: "Barron Wasteland" }
-  ];
+  return buildMeta();
 };
 
 export function ErrorBoundary() {

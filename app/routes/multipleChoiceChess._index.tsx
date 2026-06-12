@@ -2,6 +2,15 @@ import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router";
 import { Navbar } from "~/components/Navbar";
 import Footer from "~/components/Footer";
+import { buildMeta } from "~/utils/seo";
+
+export function meta() {
+  return buildMeta({
+    title: "Multiple Choice Chess",
+    description: "Chess where every turn is a multiple-choice question — pick the best of a few candidate moves.",
+    path: "/multiple-choice-chess",
+  });
+}
 
 interface AvailableGame {
   game_id: string;

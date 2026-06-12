@@ -1,5 +1,14 @@
 import React, { useState } from "react";
 import LightboxComponent from "../components/LazyLightbox";
+import { buildMeta } from "~/utils/seo";
+
+export function meta() {
+  return buildMeta({
+    title: "Generative Art",
+    description: "A gallery of generative art experiments.",
+    path: "/generative-art",
+  });
+}
 
 const pic5 = getImageUrl("GenerativeArt/5.jpg");
 const pic4 = getImageUrl("GenerativeArt/4.jpg");

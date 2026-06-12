@@ -19,29 +19,34 @@ export default [
   route("pizza-rating", "routes/pizzaRating.tsx"),
   route("the-riddler", "routes/theRiddler.tsx"),
 
-  // Legacy camelCase and PascalCase routes (for backward compatibility)
-  { path: "boulderingTracker", file: "routes/boulderingTracker.tsx", id: "legacy-bouldering-tracker" },
-  { path: "BoulderingTracker", file: "routes/boulderingTracker.tsx", id: "legacy-bouldering-tracker-pascal" },
-  { path: "camelUpCup", file: "routes/camelUpCup.tsx", id: "legacy-camel-up-cup" },
-  { path: "CamelUpCup", file: "routes/camelUpCup.tsx", id: "legacy-camel-up-cup-pascal" },
-  { path: "catTracker", file: "routes/catTracker._index.tsx", id: "legacy-cat-tracker" },
-  { path: "CatTracker", file: "routes/catTracker._index.tsx", id: "legacy-cat-tracker-pascal" },
-  { path: "catTracker/blog", file: "routes/catTracker.blog.tsx", id: "legacy-cat-tracker-blog" },
-  { path: "CatTracker/Blog", file: "routes/catTracker.blog.tsx", id: "legacy-cat-tracker-blog-pascal" },
-  { path: "chesserGuesser", file: "routes/chesserGuesser.tsx", id: "legacy-chesser-guesser" },
-  { path: "collaborativeCheckmate", file: "routes/collaborativeCheckmate._index.tsx", id: "legacy-collaborative-checkmate" },
-  { path: "collaborativeCheckmate/:gameId/:playerId", file: "routes/collaborativeCheckmate.$gameId.$playerId.tsx", id: "legacy-collaborative-checkmate-game" },
-  { path: "generativeArt", file: "routes/generativeArt.tsx", id: "legacy-generative-art" },
-  { path: "GenerativeArt", file: "routes/generativeArt.tsx", id: "legacy-generative-art-pascal" },
-  { path: "pizzaRating", file: "routes/pizzaRating.tsx", id: "legacy-pizza-rating" },
-  { path: "PizzaRating", file: "routes/pizzaRating.tsx", id: "legacy-pizza-rating-pascal" },
-  { path: "theRiddler", file: "routes/theRiddler.tsx", id: "legacy-the-riddler" },
-  { path: "TheRiddler", file: "routes/theRiddler.tsx", id: "legacy-the-riddler-pascal" },
+  // Legacy camelCase and PascalCase URLs 301-redirect to the kebab-case
+  // canonical routes (rendering the same content at both URLs hurt SEO).
+  { path: "boulderingTracker", file: "routes/legacyRedirect.ts", id: "legacy-bouldering-tracker" },
+  { path: "BoulderingTracker", file: "routes/legacyRedirect.ts", id: "legacy-bouldering-tracker-pascal" },
+  { path: "camelUpCup", file: "routes/legacyRedirect.ts", id: "legacy-camel-up-cup" },
+  { path: "CamelUpCup", file: "routes/legacyRedirect.ts", id: "legacy-camel-up-cup-pascal" },
+  { path: "catTracker", file: "routes/legacyRedirect.ts", id: "legacy-cat-tracker" },
+  { path: "CatTracker", file: "routes/legacyRedirect.ts", id: "legacy-cat-tracker-pascal" },
+  { path: "catTracker/blog", file: "routes/legacyRedirect.ts", id: "legacy-cat-tracker-blog" },
+  { path: "CatTracker/Blog", file: "routes/legacyRedirect.ts", id: "legacy-cat-tracker-blog-pascal" },
+  { path: "chesserGuesser", file: "routes/legacyRedirect.ts", id: "legacy-chesser-guesser" },
+  { path: "collaborativeCheckmate", file: "routes/legacyRedirect.ts", id: "legacy-collaborative-checkmate" },
+  { path: "collaborativeCheckmate/:gameId/:playerId", file: "routes/legacyRedirect.ts", id: "legacy-collaborative-checkmate-game" },
+  { path: "generativeArt", file: "routes/legacyRedirect.ts", id: "legacy-generative-art" },
+  { path: "GenerativeArt", file: "routes/legacyRedirect.ts", id: "legacy-generative-art-pascal" },
+  { path: "pizzaRating", file: "routes/legacyRedirect.ts", id: "legacy-pizza-rating" },
+  { path: "PizzaRating", file: "routes/legacyRedirect.ts", id: "legacy-pizza-rating-pascal" },
+  { path: "theRiddler", file: "routes/legacyRedirect.ts", id: "legacy-the-riddler" },
+  { path: "TheRiddler", file: "routes/legacyRedirect.ts", id: "legacy-the-riddler-pascal" },
 
-  // Other routes
+  // Other routes. Path matching is case-insensitive, so "set" also serves
+  // "/Set" (its canonical link tag points crawlers at /set).
   route("set", "routes/set.tsx"),
-  { path: "Set", file: "routes/set.tsx", id: "legacy-set-pascal" },
   route("SSBM", "routes/SSBM.tsx"),
+
+  // SEO resource routes
+  route("robots.txt", "routes/robots[.]txt.ts"),
+  route("sitemap.xml", "routes/sitemap[.]xml.ts"),
 
   // API routes for Chesser Guesser
   route("api/chesserGuesser/puzzles", "routes/api/chesserGuesser/puzzles.ts"),

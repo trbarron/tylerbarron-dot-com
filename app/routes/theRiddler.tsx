@@ -1,5 +1,14 @@
 import { useState } from "react";
 import LightboxComponent from "../components/LazyLightbox";
+import { buildMeta } from "~/utils/seo";
+
+export function meta() {
+  return buildMeta({
+    title: "The Riddler",
+    description: "Solutions to FiveThirtyEight Riddler puzzles.",
+    path: "/the-riddler",
+  });
+}
 
 const crosswordTwo = getImageUrl("Riddler/crosswordTwo.png");
 const crosswordOne = getImageUrl("Riddler/crosswordOne.png");

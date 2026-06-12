@@ -4,6 +4,15 @@ import { Navbar } from "../components/Navbar.js";
 import Footer from "../components/Footer.js";
 
 const PizzaScoringMap = lazy(() => import("~/components/PizzaScoringMap"));
+import { buildMeta } from "~/utils/seo";
+
+export function meta() {
+  return buildMeta({
+    title: "Pizza Ratings",
+    description: "Personal pizza ratings and an interactive map of pizza coverage.",
+    path: "/pizza-rating",
+  });
+}
 
 const PizzaRating = () => {
   return (

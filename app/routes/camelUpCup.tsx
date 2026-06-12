@@ -1,5 +1,14 @@
 import { useState } from "react";
 import LightboxComponent from "../components/LazyLightbox";
+import { buildMeta } from "~/utils/seo";
+
+export function meta() {
+  return buildMeta({
+    title: "Camel Up Cup 2K18",
+    description: "The board game tournament where you bring a bot you wrote to play Camel Up.",
+    path: "/camel-up-cup",
+  });
+}
 
 const eventTwo = getImageUrl("CamelUpCup/eventTwo.jpg");
 const eventOne = getImageUrl("CamelUpCup/eventOne.jpg");

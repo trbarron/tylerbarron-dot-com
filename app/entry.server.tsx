@@ -13,6 +13,54 @@ import { renderToPipeableStream } from "react-dom/server";
 
 const ABORT_DELAY = 5_000;
 
+// Security headers for document responses. Static assets are served from the
+// CDN bucket and don't pass through here, but headers only matter on documents.
+//
+// CSP caveats, all load-bearing:
+// - 'unsafe-eval': blog posts evaluate compiled MDX via `new Function` at
+//   runtime, and Stockfish compiles WASM (blog.$slug.tsx, stockfishEngine.ts).
+// - 'unsafe-inline': React Router's hydration script and the gtag bootstrap
+//   are inline. Tightening to nonces would require plumbing one through
+//   root.tsx and this file.
+// - blob: workers: Stockfish bootstraps from a Blob URL (it importScripts the
+//   unpkg-hosted engine), and Timer.tsx uses a blob worker.
+const CONTENT_SECURITY_POLICY = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://www.googletagmanager.com https://unpkg.com",
+  "worker-src 'self' blob:",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob: https://www.googletagmanager.com https://*.google-analytics.com",
+  "font-src 'self'",
+  [
+    "connect-src 'self'",
+    // Google Analytics (incl. regional endpoints)
+    "https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com",
+    // Stockfish engine + WASM (multiple choice chess)
+    "https://unpkg.com",
+    // Cat tracker camera + chesser guesser puzzle APIs
+    "https://nj3ho46btl.execute-api.us-west-2.amazonaws.com https://f73vgbj1jk.execute-api.us-west-2.amazonaws.com",
+    // Pizza map datasets
+    "https://externalwebsiteassets.s3.us-west-2.amazonaws.com",
+    // Collaborative checkmate game server
+    "wss://collaborative-checkmate-server.fly.dev",
+  ].join(" "),
+  "media-src 'self'",
+  "frame-src https://www.youtube.com",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+].join("; ");
+
+function applySecurityHeaders(headers: Headers) {
+  headers.set("Content-Security-Policy", CONTENT_SECURITY_POLICY);
+  headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+  headers.set("X-Content-Type-Options", "nosniff");
+  headers.set("X-Frame-Options", "DENY");
+  headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+}
+
 export default function handleRequest(
   request: Request,
   responseStatusCode: number,
@@ -58,6 +106,7 @@ function handleBotRequest(
           const stream = Readable.toWeb(body) as ReadableStream;
 
           responseHeaders.set("Content-Type", "text/html");
+          applySecurityHeaders(responseHeaders);
 
           resolve(
             new Response(stream, {
@@ -107,6 +156,7 @@ function handleBrowserRequest(
           const stream = Readable.toWeb(body) as ReadableStream;
 
           responseHeaders.set("Content-Type", "text/html");
+          applySecurityHeaders(responseHeaders);
 
           resolve(
             new Response(stream, {

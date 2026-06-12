@@ -11,6 +11,12 @@ import chessgroundBrown from "../styles/chessground.brown.css?url";
 import chessgroundCburnett from "../styles/chessground.cburnett.css?url";
 import { useLoaderData, type LinksFunction } from "react-router";
 import { GamePhase, type GamePhaseType, type SeatKey } from "~/types/generated";
+import { buildMeta } from "~/utils/seo";
+
+// Live game pages are ephemeral — keep them out of search indexes.
+export function meta() {
+  return buildMeta({ title: "Collaborative Checkmate", noIndex: true });
+}
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: chessgroundBase },

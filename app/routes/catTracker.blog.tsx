@@ -5,6 +5,15 @@ import { Navbar } from "~/components/Navbar";
 import Footer from "~/components/Footer";
 import CustomLightbox from "~/components/CustomLightbox";
 import LightboxPhoto from "~/components/LightboxPhoto";
+import { buildMeta } from "~/utils/seo";
+
+export function meta() {
+  return buildMeta({
+    title: "Cat Tracker Blog",
+    description: "How the cat tracker was built — hardware, software, and lessons learned.",
+    path: "/cat-tracker/blog",
+  });
+}
 
 import { getImageUrl } from "~/utils/cdn";
 

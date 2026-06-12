@@ -124,6 +124,12 @@ type Pages = {
   "/SSBM": {
     params: {};
   };
+  "/robots.txt": {
+    params: {};
+  };
+  "/sitemap.xml": {
+    params: {};
+  };
   "/api/chesserGuesser/puzzles": {
     params: {};
   };
@@ -182,7 +188,7 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/blog/:slug" | "/favicon.ico" | "/healthcheck" | "/blunder-watch" | "/bouldering-tracker" | "/camel-up-cup" | "/cat-tracker" | "/cat-tracker/blog" | "/chesser-guesser" | "/collaborative-checkmate" | "/collaborative-checkmate/:gameId/:playerId" | "/generative-art" | "/pizza-rating" | "/the-riddler" | "/boulderingTracker" | "/BoulderingTracker" | "/camelUpCup" | "/CamelUpCup" | "/catTracker" | "/CatTracker" | "/catTracker/blog" | "/CatTracker/Blog" | "/chesserGuesser" | "/collaborativeCheckmate" | "/collaborativeCheckmate/:gameId/:playerId" | "/generativeArt" | "/GenerativeArt" | "/pizzaRating" | "/PizzaRating" | "/theRiddler" | "/TheRiddler" | "/set" | "/Set" | "/SSBM" | "/api/chesserGuesser/puzzles" | "/api/chesserGuesser/submit" | "/api/chesserGuesser/leaderboard" | "/api/blunderWatch/game" | "/api/blunderWatch/submit" | "/api/blunderWatch/leaderboard" | "/multiple-choice-chess" | "/multiple-choice-chess/:gameId/:playerId" | "/api/multipleChoiceChess/create" | "/api/multipleChoiceChess/join" | "/api/multipleChoiceChess/state" | "/api/multipleChoiceChess/move" | "/api/multipleChoiceChess/resign" | "/api/multipleChoiceChess/claimWin" | "/api/multipleChoiceChess/available" | "/*";
+    page: "/" | "/blog/:slug" | "/favicon.ico" | "/healthcheck" | "/blunder-watch" | "/bouldering-tracker" | "/camel-up-cup" | "/cat-tracker" | "/cat-tracker/blog" | "/chesser-guesser" | "/collaborative-checkmate" | "/collaborative-checkmate/:gameId/:playerId" | "/generative-art" | "/pizza-rating" | "/the-riddler" | "/boulderingTracker" | "/BoulderingTracker" | "/camelUpCup" | "/CamelUpCup" | "/catTracker" | "/CatTracker" | "/catTracker/blog" | "/CatTracker/Blog" | "/chesserGuesser" | "/collaborativeCheckmate" | "/collaborativeCheckmate/:gameId/:playerId" | "/generativeArt" | "/GenerativeArt" | "/pizzaRating" | "/PizzaRating" | "/theRiddler" | "/TheRiddler" | "/set" | "/Set" | "/SSBM" | "/robots.txt" | "/sitemap.xml" | "/api/chesserGuesser/puzzles" | "/api/chesserGuesser/submit" | "/api/chesserGuesser/leaderboard" | "/api/blunderWatch/game" | "/api/blunderWatch/submit" | "/api/blunderWatch/leaderboard" | "/multiple-choice-chess" | "/multiple-choice-chess/:gameId/:playerId" | "/api/multipleChoiceChess/create" | "/api/multipleChoiceChess/join" | "/api/multipleChoiceChess/state" | "/api/multipleChoiceChess/move" | "/api/multipleChoiceChess/resign" | "/api/multipleChoiceChess/claimWin" | "/api/multipleChoiceChess/available" | "/*";
   };
   "routes/_index.tsx": {
     id: "routes/_index";
@@ -207,104 +213,113 @@ type RouteFiles = {
   "routes/boulderingTracker.tsx": {
     id: "routes/boulderingTracker";
     page: "/bouldering-tracker";
-  } | {
+  };
+  "routes/camelUpCup.tsx": {
+    id: "routes/camelUpCup";
+    page: "/camel-up-cup";
+  };
+  "routes/catTracker._index.tsx": {
+    id: "routes/catTracker._index";
+    page: "/cat-tracker";
+  };
+  "routes/catTracker.blog.tsx": {
+    id: "routes/catTracker.blog";
+    page: "/cat-tracker/blog";
+  };
+  "routes/chesserGuesser.tsx": {
+    id: "routes/chesserGuesser";
+    page: "/chesser-guesser";
+  };
+  "routes/collaborativeCheckmate._index.tsx": {
+    id: "routes/collaborativeCheckmate._index";
+    page: "/collaborative-checkmate";
+  };
+  "routes/collaborativeCheckmate.$gameId.$playerId.tsx": {
+    id: "routes/collaborativeCheckmate.$gameId.$playerId";
+    page: "/collaborative-checkmate/:gameId/:playerId";
+  };
+  "routes/generativeArt.tsx": {
+    id: "routes/generativeArt";
+    page: "/generative-art";
+  };
+  "routes/pizzaRating.tsx": {
+    id: "routes/pizzaRating";
+    page: "/pizza-rating";
+  };
+  "routes/theRiddler.tsx": {
+    id: "routes/theRiddler";
+    page: "/the-riddler";
+  };
+  "routes/legacyRedirect.ts": {
     id: "legacy-bouldering-tracker";
     page: "/boulderingTracker";
   } | {
     id: "legacy-bouldering-tracker-pascal";
     page: "/BoulderingTracker";
-  };
-  "routes/camelUpCup.tsx": {
-    id: "routes/camelUpCup";
-    page: "/camel-up-cup";
   } | {
     id: "legacy-camel-up-cup";
     page: "/camelUpCup";
   } | {
     id: "legacy-camel-up-cup-pascal";
     page: "/CamelUpCup";
-  };
-  "routes/catTracker._index.tsx": {
-    id: "routes/catTracker._index";
-    page: "/cat-tracker";
   } | {
     id: "legacy-cat-tracker";
     page: "/catTracker";
   } | {
     id: "legacy-cat-tracker-pascal";
     page: "/CatTracker";
-  };
-  "routes/catTracker.blog.tsx": {
-    id: "routes/catTracker.blog";
-    page: "/cat-tracker/blog";
   } | {
     id: "legacy-cat-tracker-blog";
     page: "/catTracker/blog";
   } | {
     id: "legacy-cat-tracker-blog-pascal";
     page: "/CatTracker/Blog";
-  };
-  "routes/chesserGuesser.tsx": {
-    id: "routes/chesserGuesser";
-    page: "/chesser-guesser";
   } | {
     id: "legacy-chesser-guesser";
     page: "/chesserGuesser";
-  };
-  "routes/collaborativeCheckmate._index.tsx": {
-    id: "routes/collaborativeCheckmate._index";
-    page: "/collaborative-checkmate";
   } | {
     id: "legacy-collaborative-checkmate";
     page: "/collaborativeCheckmate";
-  };
-  "routes/collaborativeCheckmate.$gameId.$playerId.tsx": {
-    id: "routes/collaborativeCheckmate.$gameId.$playerId";
-    page: "/collaborative-checkmate/:gameId/:playerId";
   } | {
     id: "legacy-collaborative-checkmate-game";
     page: "/collaborativeCheckmate/:gameId/:playerId";
-  };
-  "routes/generativeArt.tsx": {
-    id: "routes/generativeArt";
-    page: "/generative-art";
   } | {
     id: "legacy-generative-art";
     page: "/generativeArt";
   } | {
     id: "legacy-generative-art-pascal";
     page: "/GenerativeArt";
-  };
-  "routes/pizzaRating.tsx": {
-    id: "routes/pizzaRating";
-    page: "/pizza-rating";
   } | {
     id: "legacy-pizza-rating";
     page: "/pizzaRating";
   } | {
     id: "legacy-pizza-rating-pascal";
     page: "/PizzaRating";
-  };
-  "routes/theRiddler.tsx": {
-    id: "routes/theRiddler";
-    page: "/the-riddler";
   } | {
     id: "legacy-the-riddler";
     page: "/theRiddler";
   } | {
     id: "legacy-the-riddler-pascal";
     page: "/TheRiddler";
-  };
-  "routes/set.tsx": {
-    id: "routes/set";
-    page: "/set";
   } | {
     id: "legacy-set-pascal";
     page: "/Set";
   };
+  "routes/set.tsx": {
+    id: "routes/set";
+    page: "/set";
+  };
   "routes/SSBM.tsx": {
     id: "routes/SSBM";
     page: "/SSBM";
+  };
+  "routes/robots[.]txt.ts": {
+    id: "routes/robots[.]txt";
+    page: "/robots.txt";
+  };
+  "routes/sitemap[.]xml.ts": {
+    id: "routes/sitemap[.]xml";
+    page: "/sitemap.xml";
   };
   "routes/api/chesserGuesser/puzzles.ts": {
     id: "routes/api/chesserGuesser/puzzles";
@@ -389,26 +404,28 @@ type RouteModules = {
   "routes/generativeArt": typeof import("./app/routes/generativeArt.tsx");
   "routes/pizzaRating": typeof import("./app/routes/pizzaRating.tsx");
   "routes/theRiddler": typeof import("./app/routes/theRiddler.tsx");
-  "legacy-bouldering-tracker": typeof import("./app/routes/boulderingTracker.tsx");
-  "legacy-bouldering-tracker-pascal": typeof import("./app/routes/boulderingTracker.tsx");
-  "legacy-camel-up-cup": typeof import("./app/routes/camelUpCup.tsx");
-  "legacy-camel-up-cup-pascal": typeof import("./app/routes/camelUpCup.tsx");
-  "legacy-cat-tracker": typeof import("./app/routes/catTracker._index.tsx");
-  "legacy-cat-tracker-pascal": typeof import("./app/routes/catTracker._index.tsx");
-  "legacy-cat-tracker-blog": typeof import("./app/routes/catTracker.blog.tsx");
-  "legacy-cat-tracker-blog-pascal": typeof import("./app/routes/catTracker.blog.tsx");
-  "legacy-chesser-guesser": typeof import("./app/routes/chesserGuesser.tsx");
-  "legacy-collaborative-checkmate": typeof import("./app/routes/collaborativeCheckmate._index.tsx");
-  "legacy-collaborative-checkmate-game": typeof import("./app/routes/collaborativeCheckmate.$gameId.$playerId.tsx");
-  "legacy-generative-art": typeof import("./app/routes/generativeArt.tsx");
-  "legacy-generative-art-pascal": typeof import("./app/routes/generativeArt.tsx");
-  "legacy-pizza-rating": typeof import("./app/routes/pizzaRating.tsx");
-  "legacy-pizza-rating-pascal": typeof import("./app/routes/pizzaRating.tsx");
-  "legacy-the-riddler": typeof import("./app/routes/theRiddler.tsx");
-  "legacy-the-riddler-pascal": typeof import("./app/routes/theRiddler.tsx");
+  "legacy-bouldering-tracker": typeof import("./app/routes/legacyRedirect.ts");
+  "legacy-bouldering-tracker-pascal": typeof import("./app/routes/legacyRedirect.ts");
+  "legacy-camel-up-cup": typeof import("./app/routes/legacyRedirect.ts");
+  "legacy-camel-up-cup-pascal": typeof import("./app/routes/legacyRedirect.ts");
+  "legacy-cat-tracker": typeof import("./app/routes/legacyRedirect.ts");
+  "legacy-cat-tracker-pascal": typeof import("./app/routes/legacyRedirect.ts");
+  "legacy-cat-tracker-blog": typeof import("./app/routes/legacyRedirect.ts");
+  "legacy-cat-tracker-blog-pascal": typeof import("./app/routes/legacyRedirect.ts");
+  "legacy-chesser-guesser": typeof import("./app/routes/legacyRedirect.ts");
+  "legacy-collaborative-checkmate": typeof import("./app/routes/legacyRedirect.ts");
+  "legacy-collaborative-checkmate-game": typeof import("./app/routes/legacyRedirect.ts");
+  "legacy-generative-art": typeof import("./app/routes/legacyRedirect.ts");
+  "legacy-generative-art-pascal": typeof import("./app/routes/legacyRedirect.ts");
+  "legacy-pizza-rating": typeof import("./app/routes/legacyRedirect.ts");
+  "legacy-pizza-rating-pascal": typeof import("./app/routes/legacyRedirect.ts");
+  "legacy-the-riddler": typeof import("./app/routes/legacyRedirect.ts");
+  "legacy-the-riddler-pascal": typeof import("./app/routes/legacyRedirect.ts");
   "routes/set": typeof import("./app/routes/set.tsx");
-  "legacy-set-pascal": typeof import("./app/routes/set.tsx");
+  "legacy-set-pascal": typeof import("./app/routes/legacyRedirect.ts");
   "routes/SSBM": typeof import("./app/routes/SSBM.tsx");
+  "routes/robots[.]txt": typeof import("./app/routes/robots[.]txt.ts");
+  "routes/sitemap[.]xml": typeof import("./app/routes/sitemap[.]xml.ts");
   "routes/api/chesserGuesser/puzzles": typeof import("./app/routes/api/chesserGuesser/puzzles.ts");
   "routes/api/chesserGuesser/submit": typeof import("./app/routes/api/chesserGuesser/submit.ts");
   "routes/api/chesserGuesser/leaderboard": typeof import("./app/routes/api/chesserGuesser/leaderboard.ts");

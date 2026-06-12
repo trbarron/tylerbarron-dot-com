@@ -1,5 +1,14 @@
 import { useState } from "react";
 import LightboxComponent from "../components/LazyLightbox";
+import { buildMeta } from "~/utils/seo";
+
+export function meta() {
+  return buildMeta({
+    title: "Super Smash Bros. Melee",
+    description: "Competitive Melee and custom GameCube controller builds, with photos.",
+    path: "/SSBM",
+  });
+}
 
 const boxxRender = getImageUrl("SSBM/boxxRender.jpg");
 const barronBoxx = getImageUrl("SSBM/barronBoxx.jpg");

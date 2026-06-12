@@ -15,18 +15,6 @@ type Matches = [{
 }, {
   id: "routes/camelUpCup";
   module: typeof import("../camelUpCup.js");
-}] | [{
-  id: "root";
-  module: typeof import("../../root.js");
-}, {
-  id: "legacy-camel-up-cup";
-  module: typeof import("../camelUpCup.js");
-}] | [{
-  id: "root";
-  module: typeof import("../../root.js");
-}, {
-  id: "legacy-camel-up-cup-pascal";
-  module: typeof import("../camelUpCup.js");
 }];
 
 type Annotations = GetAnnotations<Info & { module: Module, matches: Matches }>;

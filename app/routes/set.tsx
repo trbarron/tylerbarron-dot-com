@@ -7,6 +7,15 @@ const setBoard = getImageUrl("Set/setBoard.jpg");
 // Import components
 import { Navbar } from "../components/Navbar.js";
 import Footer from "../components/Footer.js";
+import { buildMeta } from "~/utils/seo";
+
+export function meta() {
+  return buildMeta({
+    title: "Set",
+    description: "An exploration of the card game Set.",
+    path: "/set",
+  });
+}
 
 // Import assets
 import { getImageUrl } from "~/utils/cdn";

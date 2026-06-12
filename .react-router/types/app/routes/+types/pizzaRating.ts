@@ -15,18 +15,6 @@ type Matches = [{
 }, {
   id: "routes/pizzaRating";
   module: typeof import("../pizzaRating.js");
-}] | [{
-  id: "root";
-  module: typeof import("../../root.js");
-}, {
-  id: "legacy-pizza-rating";
-  module: typeof import("../pizzaRating.js");
-}] | [{
-  id: "root";
-  module: typeof import("../../root.js");
-}, {
-  id: "legacy-pizza-rating-pascal";
-  module: typeof import("../pizzaRating.js");
 }];
 
 type Annotations = GetAnnotations<Info & { module: Module, matches: Matches }>;

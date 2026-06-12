@@ -1,6 +1,7 @@
 import { Link, data } from "react-router";
 import { Navbar } from "~/components/Navbar";
 import Footer from "~/components/Footer";
+import { buildMeta } from "~/utils/seo";
 
 // Render the 404 page with a 404 status. Matching the URL (instead of letting
 // it fall through to the root ErrorBoundary) keeps the root loader running, so
@@ -10,7 +11,7 @@ export function loader() {
 }
 
 export function meta() {
-  return [{ title: "404 — Barron Wasteland" }];
+  return buildMeta({ title: "404", noIndex: true });
 }
 
 export default function NotFound() {

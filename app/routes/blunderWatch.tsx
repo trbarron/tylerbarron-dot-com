@@ -5,6 +5,15 @@ import {
   type LinksFunction,
 } from "react-router";
 import { getRedisClient } from "~/utils/redis.server";
+import { buildMeta } from "~/utils/seo";
+
+export function meta() {
+  return buildMeta({
+    title: "Blunder Watch",
+    description: "A daily chess puzzle: watch a real game play out and spot the blunders as they happen.",
+    path: "/blunder-watch",
+  });
+}
 import { computePacing } from "~/utils/blunderWatch/pacing";
 import { calculateScore } from "~/utils/blunderWatch/scoring";
 import { Navbar } from "~/components/Navbar";

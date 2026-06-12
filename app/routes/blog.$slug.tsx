@@ -1,5 +1,6 @@
 import { useLoaderData } from 'react-router';
-import type { LoaderFunctionArgs } from 'react-router';
+import type { LoaderFunctionArgs, MetaFunction } from 'react-router';
+import { buildMeta } from '~/utils/seo';
 import { useMemo } from 'react';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
@@ -26,6 +27,19 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
     throw new Response('Not Found', { status: 404 });
   }
   return { code: post.code, frontmatter: post.frontmatter };
+};
+
+export const meta: MetaFunction<typeof loader> = ({ data, params }) => {
+  if (!data) {
+    return buildMeta({ title: "Post Not Found", noIndex: true });
+  }
+  const { title, subtitle } = data.frontmatter;
+  return buildMeta({
+    title,
+    description: subtitle ?? `${title} — writing from Barron Wasteland.`,
+    path: `/blog/${params.slug}`,
+    type: "article",
+  });
 };
 
 export default function BlogPost() {

@@ -6,6 +6,15 @@ import {
   type LinksFunction,
 } from "react-router";
 import { Chess } from "chess.js";
+import { buildMeta } from "~/utils/seo";
+
+export function meta() {
+  return buildMeta({
+    title: "Chesser Guesser",
+    description: "Guess the engine evaluation of real chess positions — daily and unlimited modes with a leaderboard.",
+    path: "/chesser-guesser",
+  });
+}
 import { Navbar } from "~/components/Navbar";
 import Footer from "~/components/Footer";
 

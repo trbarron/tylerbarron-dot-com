@@ -7,6 +7,12 @@ import MoveChoices from "~/components/MultipleChoiceChess/MoveChoices";
 import MoveHistory from "~/components/MultipleChoiceChess/MoveHistory";
 import GameOverModal from "~/components/MultipleChoiceChess/GameOverModal";
 import { useMultipleChoiceChessGame } from "~/hooks/useMultipleChoiceChessGame";
+import { buildMeta } from "~/utils/seo";
+
+// Live game pages are ephemeral — keep them out of search indexes.
+export function meta() {
+  return buildMeta({ title: "Multiple Choice Chess", noIndex: true });
+}
 
 import chessgroundBase from "../styles/chessground.base.css?url";
 import chessgroundBrown from "../styles/chessground.brown.css?url";

@@ -1,5 +1,14 @@
 import { Navbar } from "../components/Navbar.js";
 import Footer from "../components/Footer.js";
+import { buildMeta } from "~/utils/seo";
+
+export function meta() {
+  return buildMeta({
+    title: "Bouldering Tracker",
+    description: "Tracking bouldering progress, with videos of project climbs.",
+    path: "/bouldering-tracker",
+  });
+}
 
 const BoulderingTracker = () => {
   const VideoComponent = ({

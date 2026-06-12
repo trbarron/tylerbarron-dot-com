@@ -2,6 +2,15 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import Footer from "~/components/Footer";
 import { Navbar } from "~/components/Navbar";
+import { buildMeta } from "~/utils/seo";
+
+export function meta() {
+  return buildMeta({
+    title: "Collaborative Checkmate",
+    description: "Real-time team chess: pair up with a partner and coordinate moves against another duo.",
+    path: "/collaborative-checkmate",
+  });
+}
 
 interface Game {
   game_id: string;

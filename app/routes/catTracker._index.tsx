@@ -5,6 +5,15 @@ import { Navbar } from "~/components/Navbar";
 import Footer from "~/components/Footer";
 import ImageDisplay from "~/components/CatImage";
 import type { CatSummaryData, CatDetailedData } from "~/types/catTracker";
+import { buildMeta } from "~/utils/seo";
+
+export function meta() {
+  return buildMeta({
+    title: "Cat Tracker",
+    description: "A live dashboard for my cat: camera feed, activity stats, and history.",
+    path: "/cat-tracker",
+  });
+}
 
 const DetailedStats = lazy(() => import("~/components/DetailedStats"));
 

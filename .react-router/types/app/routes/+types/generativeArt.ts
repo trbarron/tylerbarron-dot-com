@@ -15,18 +15,6 @@ type Matches = [{
 }, {
   id: "routes/generativeArt";
   module: typeof import("../generativeArt.js");
-}] | [{
-  id: "root";
-  module: typeof import("../../root.js");
-}, {
-  id: "legacy-generative-art";
-  module: typeof import("../generativeArt.js");
-}] | [{
-  id: "root";
-  module: typeof import("../../root.js");
-}, {
-  id: "legacy-generative-art-pascal";
-  module: typeof import("../generativeArt.js");
 }];
 
 type Annotations = GetAnnotations<Info & { module: Module, matches: Matches }>;
