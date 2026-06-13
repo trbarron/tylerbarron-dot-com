@@ -87,11 +87,12 @@ export default tseslint.config(
     },
   },
 
-  // Node scripts and config files: Node globals, console allowed.
+  // Node scripts and config files: Node globals, console allowed. Browser
+  // globals too, since Playwright scripts reference them inside page.evaluate().
   {
     files: ['scripts/**/*.{js,mjs,cjs}', '*.config.{js,ts,cjs,mjs}', 'eslint.config.js'],
     languageOptions: {
-      globals: { ...globals.node },
+      globals: { ...globals.node, ...globals.browser },
     },
     rules: {
       'no-console': 'off',
