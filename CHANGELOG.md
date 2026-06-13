@@ -1,3 +1,10 @@
+# [5.8.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.7.0...5.8.0) (2026-06-13)
+
+
+### Features
+
+* add Cusdis comments to blog posts ([4880315](https://github.com/trbarron/tylerbarron-dot-com/commit/4880315df7c47e39ac18543a0667925fdd7e0dc8))
+
 # [5.7.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.6.1...5.7.0) (2026-06-13)
 
 
