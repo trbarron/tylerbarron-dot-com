@@ -1,3 +1,10 @@
+## [5.10.1](https://github.com/trbarron/tylerbarron-dot-com/compare/5.10.0...5.10.1) (2026-06-13)
+
+
+### Bug Fixes
+
+* set explicit white background on giscus iframe body for mobile ([be91b39](https://github.com/trbarron/tylerbarron-dot-com/commit/be91b397455a3d36bc2b6e1deb770393f212cd24))
+
 # [5.10.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.9.0...5.10.0) (2026-06-13)
 
 
