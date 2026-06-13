@@ -4,6 +4,11 @@
 // Forks Primer's light theme (https://github.com/giscus/giscus styles/themes/light.css),
 // overriding the structural color variables and squaring off borders/shadows.
 const THEME_CSS = `
+html, body {
+  background-color: #ffffff;
+  color: #171717;
+}
+
 main {
   /* syntax highlighting — Primer light defaults */
   --color-prettylights-syntax-comment: #6e7781;
