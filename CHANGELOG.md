@@ -1,3 +1,10 @@
+# [5.10.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.9.0...5.10.0) (2026-06-13)
+
+
+### Features
+
+* giscus theming, linting changes ([c7320b3](https://github.com/trbarron/tylerbarron-dot-com/commit/c7320b3870fae366375e2481498ea71782e87a99))
+
 # [5.9.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.8.0...5.9.0) (2026-06-13)
 
 
