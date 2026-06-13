@@ -1,4 +1,5 @@
 import { Suspense, lazy } from "react";
+import type { ChessboardProps } from "~/components/Chessboard";
 import { GamePhase, type GamePhaseType } from "~/types/generated";
 
 const Chessboard = lazy(() => import('~/components/Chessboard'));
@@ -9,10 +10,8 @@ interface ChessBoardProps {
   gamePhase: GamePhaseType;
   playerTeam: number | null;
   lockedIn: boolean;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  chessboardEvents: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  chessboardDrawable: any;
+  chessboardEvents: ChessboardProps['events'];
+  chessboardDrawable: ChessboardProps['drawable'];
 }
 
 export default function ChessBoard({

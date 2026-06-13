@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { Chess } from "chess.js";
+import type { DrawShape } from "chessground/draw";
+import type { Key } from "chessground/types";
 import { Navbar } from "~/components/Navbar";
 import Footer from "~/components/Footer";
 import ChessBoard from "~/components/CollaborativeCheckmate/ChessBoard";
@@ -82,8 +84,9 @@ export default function CollaborativeCheckmate() {
     t2p1: { id: null, ready: false },
     t2p2: { id: null, ready: false },
   });
-  const [shapes, setShapes] = useState([
-    { orig: "e0", dest: "e0", brush: "green" },
+  // "e0" is an off-board placeholder (drawn as no visible arrow) until a real move arrives.
+  const [shapes, setShapes] = useState<DrawShape[]>([
+    { orig: "e0" as Key, dest: "e0" as Key, brush: "green" },
   ]);
   const [selectedMove, setSelectedMove] = useState(false);
   const [lockedIn, setLockedIn] = useState(false);
@@ -94,10 +97,6 @@ export default function CollaborativeCheckmate() {
     from: string;
     to: string;
   } | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [_submittedMoves, setSubmittedMoves] = useState<any[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [_teammateMoves, setTeammateMoves] = useState<any[]>([]);
 
   // Connection handling state
   const [reconnecting, setReconnecting] = useState(false);
@@ -156,7 +155,13 @@ export default function CollaborativeCheckmate() {
     timeRemainingRef.current = timeRemaining;
   }, [timeRemaining]);
 
-  // Connect to WebSocket on component mount
+  // Connect to WebSocket once on component mount.
+  // exhaustive-deps is disabled deliberately: connectWebSocket is omitted from
+  // the deps so this runs a single time (including it would open duplicate
+  // connections on every render), and the cleanup reads each ref's *latest*
+  // value at unmount — these handles are created asynchronously after mount,
+  // so copying them to locals (the rule's suggested fix) would capture nulls.
+  /* eslint-disable react-hooks/exhaustive-deps */
   useEffect(() => {
     setTimeout(() => {
       connectWebSocket();
@@ -180,7 +185,8 @@ export default function CollaborativeCheckmate() {
         clearTimeout(heartbeatTimeoutRef.current);
       }
     };
-  }, []); // Empty dependency array means this runs once on mount
+  }, []);
+  /* eslint-enable react-hooks/exhaustive-deps */
 
   // Connect to WebSocket
   const connectWebSocket = (reconnection = false) => {
@@ -329,7 +335,7 @@ export default function CollaborativeCheckmate() {
                 chess.load(data.fen);
                 setFen(data.fen);
                 setChess(new Chess(data.fen));
-                setShapes([{ orig: "e0", dest: "e0", brush: "green" }]);
+                setShapes([{ orig: "e0" as Key, dest: "e0" as Key, brush: "green" }]);
                 setSelectedMove(false);
                 setLockedIn(false);
               }
@@ -337,8 +343,8 @@ export default function CollaborativeCheckmate() {
               if (data.last_move) {
                 // Parse the last move from "e2e4" to "e2" and "e4"
                 const move = data.last_move;
-                const from = move.substring(0, 2);
-                const to = move.substring(2, 4);
+                const from = move.substring(0, 2) as Key;
+                const to = move.substring(2, 4) as Key;
                 setShapes([
                   {
                     orig: from,
@@ -387,8 +393,7 @@ export default function CollaborativeCheckmate() {
                     ) {
                       // Store our seat information when we take a seat
                       setLastKnownSeat(seat as SeatKey);
-                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                      setLastKnownReadyState((info as any).ready || false);
+                      setLastKnownReadyState(info.ready || false);
 
                       if (seat.startsWith("t1")) {
                         setPlayerTeam(1);
@@ -462,10 +467,6 @@ export default function CollaborativeCheckmate() {
                 from: data.move.from,
                 to: data.move.to,
               });
-
-              // Reset selections for next turn
-              setSubmittedMoves([]);
-              setTeammateMoves([]);
               break;
             }
 
@@ -936,8 +937,8 @@ export default function CollaborativeCheckmate() {
 
         setShapes([
           {
-            orig: orig,
-            dest: dest,
+            orig: orig as Key,
+            dest: dest as Key,
             brush: "blue",
           },
         ]);

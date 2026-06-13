@@ -6,7 +6,7 @@ import type { Config } from 'chessground/config';
 import type { Color, Key, Piece } from 'chessground/types';
 import type { DrawShape } from 'chessground/draw';
 
-interface ChessboardProps {
+export interface ChessboardProps {
   initialFen?: string;
   movable?: boolean;
   viewOnly?: boolean;

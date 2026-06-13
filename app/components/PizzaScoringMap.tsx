@@ -1,4 +1,5 @@
 import type { Feature, FeatureCollection } from 'geojson';
+import type { Topology, GeometryCollection } from 'topojson-specification';
 import { useState, useEffect } from 'react';
 import { geoAlbersUsa, geoPath } from 'd3-geo';
 import { feature } from 'topojson-client';
@@ -16,21 +17,6 @@ type PizzaScoreData = {
   latitude: number;
   longitude: number;
   pizza_score: number;
-}
-
-type TopoJSON = {
-  type: string;
-  objects: {
-    states: {
-      type: string;
-      geometries: Array<{
-        type: string;
-        coordinates: number[][][];
-        properties: Record<string, unknown>;
-      }>;
-    };
-  };
-  arcs: number[][][];
 }
 
 export default function PizzaLocationMap() {
@@ -59,11 +45,8 @@ export default function PizzaLocationMap() {
     const fetchStates = async () => {
       try {
         const response = await fetch('https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json');
-        const topology = await response.json() as TopoJSON;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const statesGeo = feature(topology as any, topology.objects.states as any);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        setUsStates(statesGeo as any);
+        const topology = await response.json() as Topology<{ states: GeometryCollection }>;
+        setUsStates(feature(topology, topology.objects.states));
       } catch (error) {
         console.error('Error loading US states:', error);
       }

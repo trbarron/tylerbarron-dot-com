@@ -118,9 +118,6 @@ type Pages = {
   "/set": {
     params: {};
   };
-  "/Set": {
-    params: {};
-  };
   "/SSBM": {
     params: {};
   };
@@ -188,7 +185,7 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/blog/:slug" | "/favicon.ico" | "/healthcheck" | "/blunder-watch" | "/bouldering-tracker" | "/camel-up-cup" | "/cat-tracker" | "/cat-tracker/blog" | "/chesser-guesser" | "/collaborative-checkmate" | "/collaborative-checkmate/:gameId/:playerId" | "/generative-art" | "/pizza-rating" | "/the-riddler" | "/boulderingTracker" | "/BoulderingTracker" | "/camelUpCup" | "/CamelUpCup" | "/catTracker" | "/CatTracker" | "/catTracker/blog" | "/CatTracker/Blog" | "/chesserGuesser" | "/collaborativeCheckmate" | "/collaborativeCheckmate/:gameId/:playerId" | "/generativeArt" | "/GenerativeArt" | "/pizzaRating" | "/PizzaRating" | "/theRiddler" | "/TheRiddler" | "/set" | "/Set" | "/SSBM" | "/robots.txt" | "/sitemap.xml" | "/api/chesserGuesser/puzzles" | "/api/chesserGuesser/submit" | "/api/chesserGuesser/leaderboard" | "/api/blunderWatch/game" | "/api/blunderWatch/submit" | "/api/blunderWatch/leaderboard" | "/multiple-choice-chess" | "/multiple-choice-chess/:gameId/:playerId" | "/api/multipleChoiceChess/create" | "/api/multipleChoiceChess/join" | "/api/multipleChoiceChess/state" | "/api/multipleChoiceChess/move" | "/api/multipleChoiceChess/resign" | "/api/multipleChoiceChess/claimWin" | "/api/multipleChoiceChess/available" | "/*";
+    page: "/" | "/blog/:slug" | "/favicon.ico" | "/healthcheck" | "/blunder-watch" | "/bouldering-tracker" | "/camel-up-cup" | "/cat-tracker" | "/cat-tracker/blog" | "/chesser-guesser" | "/collaborative-checkmate" | "/collaborative-checkmate/:gameId/:playerId" | "/generative-art" | "/pizza-rating" | "/the-riddler" | "/boulderingTracker" | "/BoulderingTracker" | "/camelUpCup" | "/CamelUpCup" | "/catTracker" | "/CatTracker" | "/catTracker/blog" | "/CatTracker/Blog" | "/chesserGuesser" | "/collaborativeCheckmate" | "/collaborativeCheckmate/:gameId/:playerId" | "/generativeArt" | "/GenerativeArt" | "/pizzaRating" | "/PizzaRating" | "/theRiddler" | "/TheRiddler" | "/set" | "/SSBM" | "/robots.txt" | "/sitemap.xml" | "/api/chesserGuesser/puzzles" | "/api/chesserGuesser/submit" | "/api/chesserGuesser/leaderboard" | "/api/blunderWatch/game" | "/api/blunderWatch/submit" | "/api/blunderWatch/leaderboard" | "/multiple-choice-chess" | "/multiple-choice-chess/:gameId/:playerId" | "/api/multipleChoiceChess/create" | "/api/multipleChoiceChess/join" | "/api/multipleChoiceChess/state" | "/api/multipleChoiceChess/move" | "/api/multipleChoiceChess/resign" | "/api/multipleChoiceChess/claimWin" | "/api/multipleChoiceChess/available" | "/*";
   };
   "routes/_index.tsx": {
     id: "routes/_index";
@@ -301,9 +298,6 @@ type RouteFiles = {
   } | {
     id: "legacy-the-riddler-pascal";
     page: "/TheRiddler";
-  } | {
-    id: "legacy-set-pascal";
-    page: "/Set";
   };
   "routes/set.tsx": {
     id: "routes/set";
@@ -422,7 +416,6 @@ type RouteModules = {
   "legacy-the-riddler": typeof import("./app/routes/legacyRedirect.ts");
   "legacy-the-riddler-pascal": typeof import("./app/routes/legacyRedirect.ts");
   "routes/set": typeof import("./app/routes/set.tsx");
-  "legacy-set-pascal": typeof import("./app/routes/legacyRedirect.ts");
   "routes/SSBM": typeof import("./app/routes/SSBM.tsx");
   "routes/robots[.]txt": typeof import("./app/routes/robots[.]txt.ts");
   "routes/sitemap[.]xml": typeof import("./app/routes/sitemap[.]xml.ts");

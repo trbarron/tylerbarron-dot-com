@@ -11,8 +11,7 @@
  * branch (and `mdx-bundler`) is dead-code-eliminated from the production build.
  */
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Frontmatter = { title: string; date: string; type?: string; subtitle?: string } & Record<string, any>;
+type Frontmatter = { title: string; date: string; type?: string; subtitle?: string } & Record<string, unknown>;
 
 export interface CompiledPost {
   code: string;

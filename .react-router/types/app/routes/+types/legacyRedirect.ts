@@ -111,12 +111,6 @@ type Matches = [{
 }, {
   id: "legacy-the-riddler-pascal";
   module: typeof import("../legacyRedirect.js");
-}] | [{
-  id: "root";
-  module: typeof import("../../root.js");
-}, {
-  id: "legacy-set-pascal";
-  module: typeof import("../legacyRedirect.js");
 }];
 
 type Annotations = GetAnnotations<Info & { module: Module, matches: Matches }>;
