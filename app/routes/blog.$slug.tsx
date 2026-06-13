@@ -1,13 +1,13 @@
 import { useLoaderData } from 'react-router';
 import type { LoaderFunctionArgs, MetaFunction } from 'react-router';
-import { buildMeta, SITE_URL } from '~/utils/seo';
+import { buildMeta } from '~/utils/seo';
 import { useMemo } from 'react';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import * as jsxRuntime from 'react/jsx-runtime';
 import { Navbar } from "../components/Navbar.js";
 import Footer from "../components/Footer.js";
-import Cusdis from "~/components/Cusdis";
+import Giscus from "~/components/Giscus";
 
 // Inline MDX component evaluator (replaces getMDXComponent from mdx-bundler/client)
 function getMDXComponent(code: string) {
@@ -108,11 +108,7 @@ export default function BlogPost() {
             <h2 className="text-2xl font-extrabold text-black font-neo uppercase tracking-tight border-b-4 border-black pb-2 mb-6">
               Comments
             </h2>
-            <Cusdis
-              pageId={slug}
-              pageUrl={`${SITE_URL}/blog/${slug}`}
-              pageTitle={frontmatter.title}
-            />
+            <Giscus term={slug} />
           </section>
         )}
       </div>
