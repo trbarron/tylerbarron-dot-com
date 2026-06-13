@@ -1,3 +1,10 @@
+## [5.6.1](https://github.com/trbarron/tylerbarron-dot-com/compare/5.6.0...5.6.1) (2026-06-13)
+
+
+### Bug Fixes
+
+* type cleanup and lint fixes ([387e933](https://github.com/trbarron/tylerbarron-dot-com/commit/387e933f20a2ebd9aeea3af5495bf367f6486722))
+
 # [5.6.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.5.1...5.6.0) (2026-06-12)
 
 
