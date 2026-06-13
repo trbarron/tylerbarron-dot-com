@@ -1,3 +1,10 @@
+# [5.7.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.6.1...5.7.0) (2026-06-13)
+
+
+### Features
+
+* add og:image share cards and RSS feed ([5a91665](https://github.com/trbarron/tylerbarron-dot-com/commit/5a9166570c07fb1c194518b229ab4cf5d988f3d6))
+
 ## [5.6.1](https://github.com/trbarron/tylerbarron-dot-com/compare/5.6.0...5.6.1) (2026-06-13)
 
 
