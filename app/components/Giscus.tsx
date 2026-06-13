@@ -31,6 +31,8 @@ export default function Giscus({ term }: GiscusProps) {
     script.src = GISCUS_SCRIPT;
     script.async = true;
     script.crossOrigin = "anonymous";
+    // Custom brutalist theme served same-origin (works in dev + prod).
+    const theme = `${window.location.origin}/giscus-theme.css`;
     const attrs: Record<string, string> = {
       "data-repo": GISCUS_REPO,
       "data-repo-id": GISCUS_REPO_ID,
@@ -42,7 +44,7 @@ export default function Giscus({ term }: GiscusProps) {
       "data-reactions-enabled": "1",
       "data-emit-metadata": "0",
       "data-input-position": "top",
-      "data-theme": "light",
+      "data-theme": theme,
       "data-lang": "en",
       "data-loading": "lazy",
     };

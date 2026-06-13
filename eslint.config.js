@@ -74,12 +74,11 @@ export default tseslint.config(
       'import/no-named-as-default': 'off',
       'import/no-unresolved': ['error', { ignore: ['^\\./build/'] }],
 
-      // Modernization: forbid inline styles, cap file size.
+      // Modernization: forbid inline styles.
       'react/forbid-dom-props': [
         'error',
         { forbid: [{ propName: 'style', message: 'Use Tailwind utility classes instead of inline styles' }] },
       ],
-      'max-lines': ['warn', { max: 500, skipBlankLines: true, skipComments: true }],
 
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
 

@@ -483,3 +483,15 @@
     }
   }
 }
+
+/* giscus comments: fill the article width and force light iframe rendering.
+   The <iframe class="giscus-frame"> element lives in our DOM (only its contents
+   are sandboxed), so width + color-scheme are ours to set. color-scheme:light
+   stops the iframe defaulting to a dark canvas behind giscus's light content. */
+.giscus,
+.giscus-frame {
+  width: 100%;
+}
+.giscus-frame {
+  color-scheme: light;
+}

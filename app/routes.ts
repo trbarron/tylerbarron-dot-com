@@ -48,6 +48,7 @@ export default [
   route("robots.txt", "routes/robots[.]txt.ts"),
   route("sitemap.xml", "routes/sitemap[.]xml.ts"),
   route("feed.xml", "routes/feed[.]xml.ts"),
+  route("giscus-theme.css", "routes/giscus-theme[.]css.ts"),
 
   // API routes for Chesser Guesser
   route("api/chesserGuesser/puzzles", "routes/api/chesserGuesser/puzzles.ts"),

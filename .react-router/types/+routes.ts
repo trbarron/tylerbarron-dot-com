@@ -130,6 +130,9 @@ type Pages = {
   "/feed.xml": {
     params: {};
   };
+  "/giscus-theme.css": {
+    params: {};
+  };
   "/api/chesserGuesser/puzzles": {
     params: {};
   };
@@ -188,7 +191,7 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/blog/:slug" | "/favicon.ico" | "/healthcheck" | "/blunder-watch" | "/bouldering-tracker" | "/camel-up-cup" | "/cat-tracker" | "/cat-tracker/blog" | "/chesser-guesser" | "/collaborative-checkmate" | "/collaborative-checkmate/:gameId/:playerId" | "/generative-art" | "/pizza-rating" | "/the-riddler" | "/boulderingTracker" | "/BoulderingTracker" | "/camelUpCup" | "/CamelUpCup" | "/catTracker" | "/CatTracker" | "/catTracker/blog" | "/CatTracker/Blog" | "/chesserGuesser" | "/collaborativeCheckmate" | "/collaborativeCheckmate/:gameId/:playerId" | "/generativeArt" | "/GenerativeArt" | "/pizzaRating" | "/PizzaRating" | "/theRiddler" | "/TheRiddler" | "/set" | "/SSBM" | "/robots.txt" | "/sitemap.xml" | "/feed.xml" | "/api/chesserGuesser/puzzles" | "/api/chesserGuesser/submit" | "/api/chesserGuesser/leaderboard" | "/api/blunderWatch/game" | "/api/blunderWatch/submit" | "/api/blunderWatch/leaderboard" | "/multiple-choice-chess" | "/multiple-choice-chess/:gameId/:playerId" | "/api/multipleChoiceChess/create" | "/api/multipleChoiceChess/join" | "/api/multipleChoiceChess/state" | "/api/multipleChoiceChess/move" | "/api/multipleChoiceChess/resign" | "/api/multipleChoiceChess/claimWin" | "/api/multipleChoiceChess/available" | "/*";
+    page: "/" | "/blog/:slug" | "/favicon.ico" | "/healthcheck" | "/blunder-watch" | "/bouldering-tracker" | "/camel-up-cup" | "/cat-tracker" | "/cat-tracker/blog" | "/chesser-guesser" | "/collaborative-checkmate" | "/collaborative-checkmate/:gameId/:playerId" | "/generative-art" | "/pizza-rating" | "/the-riddler" | "/boulderingTracker" | "/BoulderingTracker" | "/camelUpCup" | "/CamelUpCup" | "/catTracker" | "/CatTracker" | "/catTracker/blog" | "/CatTracker/Blog" | "/chesserGuesser" | "/collaborativeCheckmate" | "/collaborativeCheckmate/:gameId/:playerId" | "/generativeArt" | "/GenerativeArt" | "/pizzaRating" | "/PizzaRating" | "/theRiddler" | "/TheRiddler" | "/set" | "/SSBM" | "/robots.txt" | "/sitemap.xml" | "/feed.xml" | "/giscus-theme.css" | "/api/chesserGuesser/puzzles" | "/api/chesserGuesser/submit" | "/api/chesserGuesser/leaderboard" | "/api/blunderWatch/game" | "/api/blunderWatch/submit" | "/api/blunderWatch/leaderboard" | "/multiple-choice-chess" | "/multiple-choice-chess/:gameId/:playerId" | "/api/multipleChoiceChess/create" | "/api/multipleChoiceChess/join" | "/api/multipleChoiceChess/state" | "/api/multipleChoiceChess/move" | "/api/multipleChoiceChess/resign" | "/api/multipleChoiceChess/claimWin" | "/api/multipleChoiceChess/available" | "/*";
   };
   "routes/_index.tsx": {
     id: "routes/_index";
@@ -322,6 +325,10 @@ type RouteFiles = {
     id: "routes/feed[.]xml";
     page: "/feed.xml";
   };
+  "routes/giscus-theme[.]css.ts": {
+    id: "routes/giscus-theme[.]css";
+    page: "/giscus-theme.css";
+  };
   "routes/api/chesserGuesser/puzzles.ts": {
     id: "routes/api/chesserGuesser/puzzles";
     page: "/api/chesserGuesser/puzzles";
@@ -427,6 +434,7 @@ type RouteModules = {
   "routes/robots[.]txt": typeof import("./app/routes/robots[.]txt.ts");
   "routes/sitemap[.]xml": typeof import("./app/routes/sitemap[.]xml.ts");
   "routes/feed[.]xml": typeof import("./app/routes/feed[.]xml.ts");
+  "routes/giscus-theme[.]css": typeof import("./app/routes/giscus-theme[.]css.ts");
   "routes/api/chesserGuesser/puzzles": typeof import("./app/routes/api/chesserGuesser/puzzles.ts");
   "routes/api/chesserGuesser/submit": typeof import("./app/routes/api/chesserGuesser/submit.ts");
   "routes/api/chesserGuesser/leaderboard": typeof import("./app/routes/api/chesserGuesser/leaderboard.ts");

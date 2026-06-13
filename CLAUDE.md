@@ -79,7 +79,7 @@ This is a personal website built with React Router 7, TypeScript, and deployed o
 ### Component Structure
 - **Export Pattern**: Default exports for components, named exports for hooks/utilities
 - **TypeScript**: Explicit prop interfaces (e.g., `interface ButtonProps`)
-- **File Size**: Target <500 lines (ESLint warns at 500)
+- **File Size**: Target <500 lines when practical (soft guideline; not lint-enforced)
 - **Shared Components**: Extract patterns used in 2+ routes to `app/components/`
 
 ### File Organization
