@@ -1,3 +1,11 @@
+## [5.10.3](https://github.com/trbarron/tylerbarron-dot-com/compare/5.10.2...5.10.3) (2026-06-13)
+
+
+### Bug Fixes
+
+* allow browser globals in scripts lint config ([feb0b42](https://github.com/trbarron/tylerbarron-dot-com/commit/feb0b42bb1ee3dcef9c040317ffa383a5f860f9b))
+* paint giscus surface white on main, not just :root ([4182f6c](https://github.com/trbarron/tylerbarron-dot-com/commit/4182f6c2b41bfad5db7d49ac26d928f7cc7eb9a3))
+
 ## [5.10.2](https://github.com/trbarron/tylerbarron-dot-com/compare/5.10.1...5.10.2) (2026-06-13)
 
 
