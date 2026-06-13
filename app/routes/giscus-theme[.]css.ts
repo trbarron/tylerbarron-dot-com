@@ -4,9 +4,17 @@
 // Forks Primer's light theme (https://github.com/giscus/giscus styles/themes/light.css),
 // overriding the structural color variables and squaring off borders/shadows.
 const THEME_CSS = `
-:root {
+/* Force light rendering: iOS Safari paints a cross-origin iframe's backdrop
+   dark when color-scheme resolves to dark and the content is transparent. */
+:root, html, body, main {
   color-scheme: light;
+}
 
+/* giscus paints the page surface by reading --color-canvas-default on <main>
+   (see its light.css). Define the palette on BOTH :root and main so our values
+   win regardless of whether giscus sets a dark default directly on main (a
+   main-scoped declaration beats an inherited :root one for the main element). */
+:root, main {
   /* syntax highlighting — Primer light defaults */
   --color-prettylights-syntax-comment: #6e7781;
   --color-prettylights-syntax-constant: #0550ae;
@@ -95,7 +103,9 @@ const THEME_CSS = `
   --color-social-reaction-bg-reacted-hover: #e5e5e5;
 }
 
-html, body {
+/* Paint an opaque white surface directly, so the section is light even if
+   giscus' own background rule loses the cascade or the iframe backdrop is dark. */
+html, body, main {
   background-color: #ffffff !important;
   color: #171717 !important;
 }
