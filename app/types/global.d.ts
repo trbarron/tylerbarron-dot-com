@@ -6,4 +6,6 @@ type GtagFn = (command: string, ...args: unknown[]) => void;
 interface Window {
   gtag?: GtagFn;
   dataLayer?: unknown[];
+  /** Cusdis comments loader — re-renders #cusdis_thread on SPA navigation. */
+  CUSDIS?: { initial: () => void };
 }

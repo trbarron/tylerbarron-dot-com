@@ -1,12 +1,13 @@
 import { useLoaderData } from 'react-router';
 import type { LoaderFunctionArgs, MetaFunction } from 'react-router';
-import { buildMeta } from '~/utils/seo';
+import { buildMeta, SITE_URL } from '~/utils/seo';
 import { useMemo } from 'react';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import * as jsxRuntime from 'react/jsx-runtime';
 import { Navbar } from "../components/Navbar.js";
 import Footer from "../components/Footer.js";
+import Cusdis from "~/components/Cusdis";
 
 // Inline MDX component evaluator (replaces getMDXComponent from mdx-bundler/client)
 function getMDXComponent(code: string) {
@@ -26,7 +27,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
   if (!post) {
     throw new Response('Not Found', { status: 404 });
   }
-  return { code: post.code, frontmatter: post.frontmatter };
+  return { slug: slug!, code: post.code, frontmatter: post.frontmatter };
 };
 
 export const meta: MetaFunction<typeof loader> = ({ data, params }) => {
@@ -46,10 +47,13 @@ export const meta: MetaFunction<typeof loader> = ({ data, params }) => {
 };
 
 export default function BlogPost() {
-  const { code, frontmatter } = useLoaderData<typeof loader>();
+  const { slug, code, frontmatter } = useLoaderData<typeof loader>();
 
   // Use getMDXComponent from mdx-bundler/client
   const Component = useMemo(() => getMDXComponent(code), [code]);
+
+  // Comments are on by default; opt out per post with `comments: false` frontmatter.
+  const commentsEnabled = frontmatter.comments !== false;
 
   return (
     <div className="min-h-screen font-neo relative z-10">
@@ -98,7 +102,19 @@ export default function BlogPost() {
             <Component />
           </div>
         </article>
-        
+
+        {commentsEnabled && (
+          <section className="max-w-4xl mx-auto mb-8 bg-white/95 backdrop-blur-sm px-6 lg:px-12 py-8">
+            <h2 className="text-2xl font-extrabold text-black font-neo uppercase tracking-tight border-b-4 border-black pb-2 mb-6">
+              Comments
+            </h2>
+            <Cusdis
+              pageId={slug}
+              pageUrl={`${SITE_URL}/blog/${slug}`}
+              pageTitle={frontmatter.title}
+            />
+          </section>
+        )}
       </div>
       <Footer />
     </div>

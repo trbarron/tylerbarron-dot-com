@@ -26,7 +26,7 @@ const ABORT_DELAY = 5_000;
 //   unpkg-hosted engine), and Timer.tsx uses a blob worker.
 const CONTENT_SECURITY_POLICY = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://www.googletagmanager.com https://unpkg.com",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://www.googletagmanager.com https://unpkg.com https://cusdis.com",
   "worker-src 'self' blob:",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https://www.googletagmanager.com https://*.google-analytics.com",
@@ -43,9 +43,11 @@ const CONTENT_SECURITY_POLICY = [
     "https://externalwebsiteassets.s3.us-west-2.amazonaws.com https://cdn.jsdelivr.net",
     // Collaborative checkmate game server (REST lobby + websocket gameplay)
     "https://collaborative-checkmate-server.fly.dev wss://collaborative-checkmate-server.fly.dev",
+    // Cusdis comments (loader fetches thread data)
+    "https://cusdis.com",
   ].join(" "),
   "media-src 'self'",
-  "frame-src https://www.youtube.com",
+  "frame-src https://www.youtube.com https://cusdis.com",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
