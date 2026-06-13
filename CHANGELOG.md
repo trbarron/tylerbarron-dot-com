@@ -1,3 +1,10 @@
+# [5.9.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.8.0...5.9.0) (2026-06-13)
+
+
+### Features
+
+* add comments via giscus ([2dcc40f](https://github.com/trbarron/tylerbarron-dot-com/commit/2dcc40f105a5aeeae2703f06a1516b6fa403b1db))
+
 # [5.8.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.7.0...5.8.0) (2026-06-13)
 
 
