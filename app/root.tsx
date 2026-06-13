@@ -67,7 +67,9 @@ function GtagScripts({ gaTrackingId, sendPageView }: { gaTrackingId: string; sen
 export const links: LinksFunction = () => [
   { rel: "icon", type: "image/png", href: faviconUrl },
   { rel: "apple-touch-icon", href: faviconUrl },
-  { rel: "stylesheet", href: styles }
+  { rel: "stylesheet", href: styles },
+  // RSS feed autodiscovery (consumed by feed readers).
+  { rel: "alternate", type: "application/rss+xml", title: "Barron Wasteland", href: "/feed.xml" },
 ];
 
 export const meta = () => {

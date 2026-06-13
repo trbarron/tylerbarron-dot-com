@@ -34,11 +34,14 @@ export const meta: MetaFunction<typeof loader> = ({ data, params }) => {
     return buildMeta({ title: "Post Not Found", noIndex: true });
   }
   const { title, subtitle } = data.frontmatter;
+  // Optional `image:` frontmatter overrides the default share card.
+  const image = typeof data.frontmatter.image === "string" ? data.frontmatter.image : undefined;
   return buildMeta({
     title,
     description: subtitle ?? `${title} — writing from Barron Wasteland.`,
     path: `/blog/${params.slug}`,
     type: "article",
+    image,
   });
 };
 

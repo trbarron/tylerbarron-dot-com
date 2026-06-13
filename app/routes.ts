@@ -47,6 +47,7 @@ export default [
   // SEO resource routes
   route("robots.txt", "routes/robots[.]txt.ts"),
   route("sitemap.xml", "routes/sitemap[.]xml.ts"),
+  route("feed.xml", "routes/feed[.]xml.ts"),
 
   // API routes for Chesser Guesser
   route("api/chesserGuesser/puzzles", "routes/api/chesserGuesser/puzzles.ts"),
