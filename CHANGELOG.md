@@ -1,3 +1,10 @@
+## [5.10.2](https://github.com/trbarron/tylerbarron-dot-com/compare/5.10.1...5.10.2) (2026-06-13)
+
+
+### Bug Fixes
+
+* move giscus theme vars to :root and add color-scheme: light ([b51e3ec](https://github.com/trbarron/tylerbarron-dot-com/commit/b51e3ec836965d7d3f4de292d2411bc842b8b38a))
+
 ## [5.10.1](https://github.com/trbarron/tylerbarron-dot-com/compare/5.10.0...5.10.1) (2026-06-13)
 
 
