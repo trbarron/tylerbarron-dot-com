@@ -159,6 +159,7 @@ function formatPostDate(iso: string) {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
+    timeZone: 'UTC',
   }).toUpperCase();
 }
 
@@ -234,7 +235,7 @@ export default function Index() {
             BARRON WASTELAND
           </h1>
           <p className="text-black text-xl xl:text-2xl font-neo font-semibold mt-4 tracking-wide opacity-80 uppercase">
-            FOOD FOR THOUGHT // IDEAS FOR EATING
+            A SERIES OF FLAT CIRCLES
           </p>
         </div>
       </section>

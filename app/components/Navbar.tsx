@@ -13,7 +13,7 @@ export function Navbar() {
               BARRON WASTELAND
             </div>
             <div className="text-lg text-black  group-hover:text-white font-semibold tracking-wide">
-              FOOD FOR THOUGHT // IDEAS FOR EATING
+              A SERIES OF FLAT CIRCLES
             </div>
           </div>
         </div>

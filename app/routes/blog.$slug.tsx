@@ -68,7 +68,8 @@ export default function BlogPost() {
               {new Date(frontmatter.date).toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'long',
-                day: 'numeric'
+                day: 'numeric',
+                timeZone: 'UTC'
               }).toUpperCase()}
             </div>
             <div className="border-t-4 border-black  w-full"></div>

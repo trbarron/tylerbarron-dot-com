@@ -1,7 +1,9 @@
-import { Link, data } from "react-router";
+import { useEffect } from "react";
+import { Link, data, useLocation } from "react-router";
 import { Navbar } from "~/components/Navbar";
 import Footer from "~/components/Footer";
 import { buildMeta } from "~/utils/seo";
+import { trackNotFound } from "~/utils/analytics";
 
 // Render the 404 page with a 404 status. Matching the URL (instead of letting
 // it fall through to the root ErrorBoundary) keeps the root loader running, so
@@ -15,6 +17,12 @@ export function meta() {
 }
 
 export default function NotFound() {
+  const location = useLocation();
+
+  useEffect(() => {
+    trackNotFound(location.pathname + location.search);
+  }, [location]);
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />

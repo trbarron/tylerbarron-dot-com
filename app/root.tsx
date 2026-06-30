@@ -15,6 +15,7 @@ import {
 import { useEffect } from "react";
 import styles from './styles/index.css?url';
 import { buildMeta } from './utils/seo';
+import { trackNotFound } from './utils/analytics';
 import faviconUrl from './favicon.png';
 import DichroicBackground from './components/DichroicBackground';
 
@@ -85,6 +86,11 @@ export function ErrorBoundary() {
   const is404 = isRouteErrorResponse(error) && error.status === 404;
   const isServerError = isRouteErrorResponse(error) && error.status >= 500;
   const status = isRouteErrorResponse(error) ? error.status : 500;
+
+  useEffect(() => {
+    if (!gaTrackingId || !is404) return;
+    trackNotFound(window.location.pathname + window.location.search);
+  }, [gaTrackingId, is404]);
 
   const title = is404 ? "404" : String(status);
   const heading = is404 ? "Page Not Found" : "Something Went Wrong";

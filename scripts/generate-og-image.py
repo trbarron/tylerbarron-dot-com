@@ -17,7 +17,7 @@ BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 
 TITLE = "BARRON WASTELAND"
-TAGLINE = "chess · generative art · engineering · writing"
+TAGLINE = "a series of flat circles"
 URL = "tylerbarron.com"
 
 # Bold sans to match the extrabold uppercase nav wordmark. Fall back across a
