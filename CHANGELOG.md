@@ -1,3 +1,10 @@
+## [5.10.4](https://github.com/trbarron/tylerbarron-dot-com/compare/5.10.3...5.10.4) (2026-06-30)
+
+
+### Bug Fixes
+
+* 404s, date formatting, etc ([aff6699](https://github.com/trbarron/tylerbarron-dot-com/commit/aff66991656a212e5d36a1eed3313bdfed595e74))
+
 ## [5.10.3](https://github.com/trbarron/tylerbarron-dot-com/compare/5.10.2...5.10.3) (2026-06-13)
 
 
