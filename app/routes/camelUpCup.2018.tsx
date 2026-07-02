@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router";
 import LightboxComponent from "../components/LazyLightbox";
 import { buildMeta } from "~/utils/seo";
 
@@ -6,7 +7,7 @@ export function meta() {
   return buildMeta({
     title: "Camel Up Cup 2K18",
     description: "The board game tournament where you bring a bot you wrote to play Camel Up.",
-    path: "/camel-up-cup",
+    path: "/camel-up-cup/2018",
   });
 }
 
@@ -168,6 +169,12 @@ const CamelUpCup = () => {
               <section className="subarticle prose">
                 <h3 className="subarticle-title">The Aftermath</h3>
                 <div className="overflow-hidden bg-white break-words">
+                  <p>
+                    The Cup lives on: the tournament now runs itself. Write a
+                    bot, upload it on the{" "}
+                    <Link to="/camel-up-cup">live leaderboard page</Link> and
+                    it'll battle every bot submitted so far.
+                  </p>
                   <p>
                     Thanks for reading! It was a quirky experiment that led to a
                     fun day with buddies -- can't ask for much more.{" "}

@@ -7,6 +7,7 @@ const STATIC_PATHS = [
   "/blunder-watch",
   "/bouldering-tracker",
   "/camel-up-cup",
+  "/camel-up-cup/2018",
   "/cat-tracker",
   "/cat-tracker/blog",
   "/chesser-guesser",

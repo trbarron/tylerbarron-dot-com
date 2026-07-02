@@ -9,7 +9,10 @@ export default [
   // Kebab-case routes (preferred)
   route("blunder-watch", "routes/blunderWatch.tsx"),
   route("bouldering-tracker", "routes/boulderingTracker.tsx"),
-  route("camel-up-cup", "routes/camelUpCup.tsx"),
+  route("camel-up-cup", "routes/camelUpCup._index.tsx"),
+  route("camel-up-cup/2018", "routes/camelUpCup.2018.tsx"),
+  // The live leaderboard moved up to /camel-up-cup; keep the old sub-path working.
+  route("camel-up-cup/leaderboard", "routes/camelUpCup.leaderboardRedirect.ts"),
   route("cat-tracker", "routes/catTracker._index.tsx"),
   route("cat-tracker/blog", "routes/catTracker.blog.tsx"),
   route("chesser-guesser", "routes/chesserGuesser.tsx"),
@@ -54,6 +57,10 @@ export default [
   route("api/chesserGuesser/puzzles", "routes/api/chesserGuesser/puzzles.ts"),
   route("api/chesserGuesser/submit", "routes/api/chesserGuesser/submit.ts"),
   route("api/chesserGuesser/leaderboard", "routes/api/chesserGuesser/leaderboard.ts"),
+
+  // API routes for Camel Up Cup bot submissions
+  route("api/camelUpCup/submit", "routes/api/camelUpCup/submit.ts"),
+  route("api/camelUpCup/status", "routes/api/camelUpCup/status.ts"),
 
   // API routes for Blunder Watch
   route("api/blunderWatch/game", "routes/api/blunderWatch/game.ts"),

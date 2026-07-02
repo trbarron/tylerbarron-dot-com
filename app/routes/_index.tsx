@@ -73,7 +73,7 @@ function categoryOf(to: string): CategoryId | null {
 
 const staticLinks: ProjectLink[] = [
   { to: "/the-riddler", title: "FiveThirtyEight's The Riddler", description: "Math puzzles and problems" },
-  { to: "/camel-up-cup", title: "Camel Up Cup", description: "\"Bring your own board game playing bot\" competition" },
+  { to: "/camel-up-cup", title: "Camel Up Cup", description: "\"Bring your own board game playing bot\" competition — live leaderboard, open for entries" },
   { to: "/chesser-guesser", title: "Chesser Guesser", description: "Can you tell who is winning the chess game?" },
   { to: "/blunder-watch", title: "Blunder Watch", description: "Spot the blunders as a chess game plays out" },
   { to: "/collaborative-checkmate", title: "Collaborative Checkmate", description: "Play chess with your friends" },
