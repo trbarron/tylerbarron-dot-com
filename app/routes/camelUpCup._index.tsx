@@ -63,7 +63,7 @@ function SortableHeader({
   const active = sortKey === activeKey;
   return (
     <th
-      className={`py-2 pr-2 cursor-pointer select-none ${align === "right" ? "text-right" : ""} ${active ? "text-black" : "text-gray-500 hover:text-black"}`}
+      className={`py-2 pr-2 cursor-pointer select-none ${align === "right" ? "text-right" : ""} ${active ? "text-white" : "text-gray-400 hover:text-white"}`}
       onClick={() => onSort(sortKey)}
       aria-sort={active ? (dir === "desc" ? "descending" : "ascending") : "none"}
     >
