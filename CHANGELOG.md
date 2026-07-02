@@ -1,3 +1,10 @@
+## [5.12.1](https://github.com/trbarron/tylerbarron-dot-com/compare/5.12.0...5.12.1) (2026-07-02)
+
+
+### Bug Fixes
+
+* fix leaderboard ([e14c1c3](https://github.com/trbarron/tylerbarron-dot-com/commit/e14c1c32e9893eb0d1efdaa6dd459193945f7977))
+
 # [5.12.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.11.0...5.12.0) (2026-07-02)
 
 
