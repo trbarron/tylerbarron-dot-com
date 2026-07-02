@@ -968,7 +968,7 @@ export default function CollaborativeCheckmate() {
   );
 
   return (
-    <div className="flex min-h-screen flex-col bg-black bg-fixed">
+    <div className="flex min-h-screen flex-col bg-black bg-fixed relative z-10">
       <Navbar />
       <main className="flex-grow">
         <section className="article">

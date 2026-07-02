@@ -24,7 +24,7 @@ export default function NotFound() {
   }, [location]);
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col relative z-10">
       <Navbar />
       <main className="flex-grow flex items-center justify-center px-4 py-16">
         <div className="border-4 border-black bg-white/95 w-full max-w-lg">

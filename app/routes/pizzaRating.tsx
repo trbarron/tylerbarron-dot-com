@@ -16,7 +16,7 @@ export function meta() {
 
 const PizzaRating = () => {
   return (
-    <div className="flex min-h-screen flex-col bg-fixed">
+    <div className="flex min-h-screen flex-col bg-fixed relative z-10">
       <Navbar />
       <main className="flex-grow">
         <section className="article">

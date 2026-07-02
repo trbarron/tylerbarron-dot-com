@@ -576,7 +576,7 @@ export default function ChesserGuesserUnlimited() {
       : null;
 
   return (
-    <div className="flex min-h-screen flex-col bg-fixed">
+    <div className="flex min-h-screen flex-col bg-fixed relative z-10">
       <Navbar />
       <ScrollRestoration getKey={(location) => location.pathname} />
       <main className="flex-grow">

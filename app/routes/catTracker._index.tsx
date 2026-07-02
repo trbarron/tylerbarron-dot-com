@@ -146,7 +146,7 @@ export default function ChecoLiveTracker() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col relative z-10">
       <Navbar />
       <main className="flex-grow">
         <section className="article">

@@ -332,7 +332,7 @@ export default function BlunderWatch() {
       : "White";
 
   return (
-    <div className="flex min-h-screen flex-col bg-fixed">
+    <div className="flex min-h-screen flex-col bg-fixed relative z-10">
       <Navbar />
       <ScrollRestoration getKey={(loc) => loc.pathname} />
       <main className="flex-grow">
