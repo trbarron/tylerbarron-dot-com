@@ -1,3 +1,10 @@
+# [5.11.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.10.7...5.11.0) (2026-07-02)
+
+
+### Features
+
+* camel up cup live leaderboard with bot uploads ([4738e25](https://github.com/trbarron/tylerbarron-dot-com/commit/4738e25bda01f7c92c881646c366564ab230f294))
+
 ## [5.10.7](https://github.com/trbarron/tylerbarron-dot-com/compare/5.10.6...5.10.7) (2026-07-02)
 
 
