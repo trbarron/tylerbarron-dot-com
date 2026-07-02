@@ -1,3 +1,10 @@
+# [5.12.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.11.0...5.12.0) (2026-07-02)
+
+
+### Features
+
+* show bot author on its own line in the camel up leaderboard ([1e9b6ba](https://github.com/trbarron/tylerbarron-dot-com/commit/1e9b6ba858b4998ac8c14c6aa922a03cd208a7d4))
+
 # [5.11.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.10.7...5.11.0) (2026-07-02)
 
 
