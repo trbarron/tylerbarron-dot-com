@@ -70,7 +70,7 @@ export default function CatTrackerBlog() {
                 <div className="overflow-hidden bg-white break-words">
                   <p>
                     This project started with a simple curiosity: just how much
-                    does one of our catsCheco work next to me? He seemed to
+                    does one of our cats, Checo, work next to me? He seemed to
                     always be there, clocking in hours by sleeping in his circle
                     next to my desk. With a free weekend, I decided to turn this
                     into a project to track his effort.
