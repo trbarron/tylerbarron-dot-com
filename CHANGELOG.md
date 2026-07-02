@@ -1,3 +1,10 @@
+## [5.10.5](https://github.com/trbarron/tylerbarron-dot-com/compare/5.10.4...5.10.5) (2026-07-02)
+
+
+### Bug Fixes
+
+* z indexing ([6114a85](https://github.com/trbarron/tylerbarron-dot-com/commit/6114a852b489edf4d490afaa1b2f1b545d220173))
+
 ## [5.10.4](https://github.com/trbarron/tylerbarron-dot-com/compare/5.10.3...5.10.4) (2026-06-30)
 
 
