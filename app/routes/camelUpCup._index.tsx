@@ -54,14 +54,16 @@ function LeaderboardTable({ board }: { board: Leaderboard }) {
             <tr key={bot.name} className="border-b border-gray-200">
               <td className="py-2 pr-2">{medals[i] ?? i + 1}</td>
               <td className="py-2 pr-2">
-                <span className="font-mono">{bot.name}</span>
+                <div>
+                  <span className="font-mono">{bot.name}</span>
+                  {!bot.builtin && (
+                    <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-800">
+                      uploaded
+                    </span>
+                  )}
+                </div>
                 {bot.author && (
-                  <span className="text-gray-500"> — {bot.author}</span>
-                )}
-                {!bot.builtin && (
-                  <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-800">
-                    uploaded
-                  </span>
+                  <div className="text-sm text-gray-500">by {bot.author}</div>
                 )}
                 {(bot.model || bot.note) && (
                   <div className="text-xs text-gray-400">
