@@ -33,8 +33,76 @@ export async function loader({ request }: LoaderFunctionArgs) {
 const POLL_INTERVAL_MS = 5000;
 const TERMINAL_PHASES = new Set(["complete", "rejected", "error"]);
 
+type SortKey = "wins" | "games" | "winPct" | "avgCoins" | "maxMoveMs";
+type SortDir = "asc" | "desc";
+
+// Lower is better for max move time; higher is better for everything else.
+const DEFAULT_SORT_DIR: Record<SortKey, SortDir> = {
+  wins: "desc",
+  games: "desc",
+  winPct: "desc",
+  avgCoins: "desc",
+  maxMoveMs: "asc",
+};
+
+function SortableHeader({
+  label,
+  sortKey,
+  activeKey,
+  dir,
+  onSort,
+  align = "right",
+}: {
+  label: string;
+  sortKey: SortKey;
+  activeKey: SortKey;
+  dir: SortDir;
+  onSort: (key: SortKey) => void;
+  align?: "left" | "right";
+}) {
+  const active = sortKey === activeKey;
+  return (
+    <th
+      className={`py-2 pr-2 cursor-pointer select-none ${align === "right" ? "text-right" : ""} ${active ? "text-black" : "text-gray-500 hover:text-black"}`}
+      onClick={() => onSort(sortKey)}
+      aria-sort={active ? (dir === "desc" ? "descending" : "ascending") : "none"}
+    >
+      {label}
+      {active ? (dir === "desc" ? " ▼" : " ▲") : ""}
+    </th>
+  );
+}
+
 function LeaderboardTable({ board }: { board: Leaderboard }) {
   const medals = ["🥇", "🥈", "🥉"];
+  const [sortKey, setSortKey] = useState<SortKey>("winPct");
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
+
+  const handleSort = useCallback(
+    (key: SortKey) => {
+      if (key === sortKey) {
+        setSortDir((d) => (d === "desc" ? "asc" : "desc"));
+      } else {
+        setSortKey(key);
+        setSortDir(DEFAULT_SORT_DIR[key]);
+      }
+    },
+    [sortKey],
+  );
+
+  // Rank (and medals) always reflect standing by win %, independent of the
+  // column the table is currently sorted by.
+  const rankByName = new Map(
+    [...board.bots]
+      .sort((a, b) => b.winPct - a.winPct)
+      .map((bot, i) => [bot.name, i]),
+  );
+
+  const bots = [...board.bots].sort((a, b) => {
+    const diff = a[sortKey] - b[sortKey];
+    return sortDir === "desc" ? -diff : diff;
+  });
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
@@ -42,43 +110,48 @@ function LeaderboardTable({ board }: { board: Leaderboard }) {
           <tr className="border-b-2 border-black text-left">
             <th className="py-2 pr-2">Rank</th>
             <th className="py-2 pr-2">Bot</th>
-            <th className="py-2 pr-2 text-right">Wins</th>
-            <th className="py-2 pr-2 text-right">Games</th>
-            <th className="py-2 pr-2 text-right">Win %</th>
-            <th className="py-2 pr-2 text-right">Avg Coins</th>
-            <th className="py-2 text-right">Max ms</th>
+            <SortableHeader label="Wins" sortKey="wins" activeKey={sortKey} dir={sortDir} onSort={handleSort} />
+            <SortableHeader label="Games" sortKey="games" activeKey={sortKey} dir={sortDir} onSort={handleSort} />
+            <SortableHeader label="Win %" sortKey="winPct" activeKey={sortKey} dir={sortDir} onSort={handleSort} />
+            <SortableHeader label="Avg Coins" sortKey="avgCoins" activeKey={sortKey} dir={sortDir} onSort={handleSort} />
+            <SortableHeader label="Max ms" sortKey="maxMoveMs" activeKey={sortKey} dir={sortDir} onSort={handleSort} />
           </tr>
         </thead>
         <tbody>
-          {board.bots.map((bot, i) => (
-            <tr key={bot.name} className="border-b border-gray-200">
-              <td className="py-2 pr-2">{medals[i] ?? i + 1}</td>
-              <td className="py-2 pr-2">
-                <div>
-                  <span className="font-mono">{bot.name}</span>
-                  {!bot.builtin && (
-                    <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-800">
-                      uploaded
-                    </span>
-                  )}
-                </div>
-                {bot.author && (
-                  <div className="text-sm text-gray-500">by {bot.author}</div>
-                )}
-                {(bot.model || bot.note) && (
-                  <div className="text-xs text-gray-400">
-                    {bot.model ?? bot.note}
-                    {bot.year ? ` · ${bot.year}` : ""}
+          {bots.map((bot) => {
+            const rank = rankByName.get(bot.name) ?? 0;
+            return (
+              <tr key={bot.name} className="border-b border-gray-200">
+                <td className="py-2 pr-2">{medals[rank] ?? rank + 1}</td>
+                <td className="py-2 pr-2">
+                  <div>
+                    <span className="font-mono">{bot.name}</span>
                   </div>
-                )}
-              </td>
-              <td className="py-2 pr-2 text-right">{bot.wins}</td>
-              <td className="py-2 pr-2 text-right">{bot.games}</td>
-              <td className="py-2 pr-2 text-right">{bot.winPct}%</td>
-              <td className="py-2 pr-2 text-right">{bot.avgCoins}</td>
-              <td className="py-2 text-right">{bot.maxMoveMs}</td>
-            </tr>
-          ))}
+                  {(bot.author || !bot.builtin) && (
+                    <div className="flex items-center gap-1.5 text-sm text-gray-500">
+                      {bot.author && <span>by {bot.author}</span>}
+                      {!bot.builtin && (
+                        <span className="rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-800">
+                          uploaded
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  {(bot.model || bot.note) && (
+                    <div className="text-xs text-gray-400">
+                      {bot.model ?? bot.note}
+                      {bot.year ? ` · ${bot.year}` : ""}
+                    </div>
+                  )}
+                </td>
+                <td className="py-2 pr-2 text-right">{bot.wins}</td>
+                <td className="py-2 pr-2 text-right">{bot.games}</td>
+                <td className="py-2 pr-2 text-right">{bot.winPct}%</td>
+                <td className="py-2 pr-2 text-right">{bot.avgCoins}</td>
+                <td className="py-2 text-right">{bot.maxMoveMs}</td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
       <p className="mt-2 text-xs text-gray-500">
