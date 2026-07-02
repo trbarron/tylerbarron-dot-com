@@ -1,3 +1,10 @@
+## [5.10.6](https://github.com/trbarron/tylerbarron-dot-com/compare/5.10.5...5.10.6) (2026-07-02)
+
+
+### Bug Fixes
+
+* **chesser-guesser:** fix hydration mismatch on endless games-played count ([4f5e707](https://github.com/trbarron/tylerbarron-dot-com/commit/4f5e707aa4ef4e0b69c4f4abc928a7a446663b11))
+
 ## [5.10.5](https://github.com/trbarron/tylerbarron-dot-com/compare/5.10.4...5.10.5) (2026-07-02)
 
 
