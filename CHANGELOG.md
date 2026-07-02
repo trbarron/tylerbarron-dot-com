@@ -1,3 +1,10 @@
+## [5.10.7](https://github.com/trbarron/tylerbarron-dot-com/compare/5.10.6...5.10.7) (2026-07-02)
+
+
+### Bug Fixes
+
+* punctuation ([a1f4024](https://github.com/trbarron/tylerbarron-dot-com/commit/a1f402411232d67f32cbce781e3e1135eea2d34b))
+
 ## [5.10.6](https://github.com/trbarron/tylerbarron-dot-com/compare/5.10.5...5.10.6) (2026-07-02)
 
 
