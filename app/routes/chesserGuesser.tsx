@@ -113,6 +113,7 @@ export default function ChesserGuesserUnlimited() {
   );
   const [streak, setStreak] = useState(0);
   const [maxStreak, setMaxStreak] = useState(0);
+  const [gamesPlayedCount, setGamesPlayedCount] = useState(0);
   const [lastSlider, setLastSlider] = useState(0);
   const [lastEval, setLastEval] = useState(0);
 
@@ -167,6 +168,9 @@ export default function ChesserGuesserUnlimited() {
 
     // Load max streak
     setMaxStreak(loadMaxStreak());
+
+    // Load endless games-played count
+    setGamesPlayedCount(getEndlessCount());
   }, []);
 
   // Update puzzle when loader data changes (endless mode)
@@ -408,7 +412,7 @@ export default function ChesserGuesserUnlimited() {
     });
 
     // Increment endless count and check for prompt
-    incrementEndlessCount();
+    setGamesPlayedCount(incrementEndlessCount());
     if (shouldShowEndlessPrompt()) {
       setShowEndlessPrompt(true);
     }
@@ -605,7 +609,7 @@ export default function ChesserGuesserUnlimited() {
                     dismissEndlessPrompt();
                     setShowEndlessPrompt(false);
                   }}
-                  gamesPlayed={getEndlessCount()}
+                  gamesPlayed={gamesPlayedCount}
                 />
               )}
 
@@ -694,7 +698,7 @@ export default function ChesserGuesserUnlimited() {
                   {gameMode === "endless" && (
                     <EndlessProgressTracker
                       streak={streak}
-                      gamesPlayed={getEndlessCount()}
+                      gamesPlayed={gamesPlayedCount}
                       maxStreak={maxStreak}
                     />
                   )}
