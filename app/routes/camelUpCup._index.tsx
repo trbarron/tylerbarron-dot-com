@@ -199,9 +199,14 @@ function StatusPanel({ status }: { status: SubmissionStatus }) {
   return (
     <div className="mt-4 rounded border border-blue-300 bg-blue-50 p-4 text-sm">
       <p className="font-bold">
-        {status.phase === "running"
-          ? `Tournament running — ${status.gamesDone}/${status.totalGames} games`
-          : `${status.botName ?? "Submission"}: ${status.phase}…`}
+        {status.phase === "running" ? (
+          <>
+            Tournament running — <span className="font-mono">{status.botName ?? "your bot"}</span>{" "}
+            — {status.gamesDone}/{status.totalGames} games
+          </>
+        ) : (
+          `${status.botName ?? "Submission"}: ${status.phase}…`
+        )}
       </p>
       <div className="mt-2 h-2 w-full rounded bg-blue-100">
         {/* eslint-disable-next-line react/forbid-dom-props -- width is runtime tournament progress */}
@@ -336,9 +341,8 @@ const CamelUpCupLeaderboard = () => {
                       original 2018 bring-your-own-bot tournament
                     </Link>{" "}
                     never really ended. Write a Python bot that plays Camel
-                    Up, upload it below, and it'll play{" "}
-                    {board?.totalGames ?? 200} games against every bot on
-                    this board.
+                    Up, upload it below, and it'll play a batch of games
+                    against every bot on this board.
                   </p>
                 </div>
               </section>
