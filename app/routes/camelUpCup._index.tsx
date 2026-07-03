@@ -4,6 +4,7 @@ import type { LoaderFunctionArgs } from "react-router";
 
 import { Navbar } from "../components/Navbar.js";
 import Footer from "../components/Footer.js";
+import Giscus from "~/components/Giscus";
 import { buildMeta } from "~/utils/seo";
 import {
   activeTournamentId,
@@ -104,7 +105,7 @@ function LeaderboardTable({ board }: { board: Leaderboard }) {
   });
 
   return (
-    <div className="overflow-x-auto">
+    <div className="mx-auto overflow-x-auto px-4 lg:w-11/12">
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b-2 border-black text-left">
@@ -170,7 +171,7 @@ function StatusPanel({ status }: { status: SubmissionStatus }) {
 
   if (status.phase === "rejected") {
     return (
-      <div className="mt-4 rounded border border-red-300 bg-red-50 p-4 text-sm">
+      <div className="mx-4 mt-4 rounded border border-red-300 bg-red-50 p-4 text-sm lg:mx-auto lg:w-11/12">
         <p className="font-bold">
           {status.botName ?? "Your bot"} was rejected.
         </p>
@@ -180,7 +181,7 @@ function StatusPanel({ status }: { status: SubmissionStatus }) {
   }
   if (status.phase === "error") {
     return (
-      <div className="mt-4 rounded border border-red-300 bg-red-50 p-4 text-sm">
+      <div className="mx-4 mt-4 rounded border border-red-300 bg-red-50 p-4 text-sm lg:mx-auto lg:w-11/12">
         <p className="font-bold">Something broke while running the tournament.</p>
         <p className="mt-1">{status.reason}</p>
       </div>
@@ -188,7 +189,7 @@ function StatusPanel({ status }: { status: SubmissionStatus }) {
   }
   if (status.phase === "complete") {
     return (
-      <div className="mt-4 rounded border border-green-300 bg-green-50 p-4 text-sm">
+      <div className="mx-4 mt-4 rounded border border-green-300 bg-green-50 p-4 text-sm lg:mx-auto lg:w-11/12">
         <p className="font-bold">
           {status.botName} is in! {status.rank ? `Finished rank #${status.rank}.` : ""}
         </p>
@@ -197,7 +198,7 @@ function StatusPanel({ status }: { status: SubmissionStatus }) {
     );
   }
   return (
-    <div className="mt-4 rounded border border-black bg-black p-4 text-sm text-white">
+    <div className="mx-4 mt-4 rounded border border-black bg-black p-4 text-sm text-white lg:mx-auto lg:w-11/12">
       <div className="font-bold text-white">
         {status.phase === "running" ? (
           <>
@@ -248,7 +249,11 @@ function UploadForm({ onSubmitted }: { onSubmitted: (id: string) => void }) {
   };
 
   return (
-    <form ref={formRef} onSubmit={handleSubmit} className="mt-4 space-y-3">
+    <form
+      ref={formRef}
+      onSubmit={handleSubmit}
+      className="mx-auto mt-4 space-y-3 px-4 lg:w-11/12"
+    >
       <div className="flex flex-col gap-3 sm:flex-row">
         <label className="flex-1 text-sm">
           Bot name
@@ -286,7 +291,7 @@ function UploadForm({ onSubmitted }: { onSubmitted: (id: string) => void }) {
       <button
         type="submit"
         disabled={busy}
-        className="rounded bg-black px-4 py-2 text-sm text-white disabled:opacity-50"
+        className="mx-auto block rounded bg-black px-4 py-2 text-sm text-white disabled:opacity-50"
       >
         {busy ? "Submitting…" : "Enter the tournament"}
       </button>
@@ -402,6 +407,13 @@ const CamelUpCupLeaderboard = () => {
               </section>
             </div>
           </article>
+        </section>
+
+        <section className="max-w-4xl mx-auto mb-8 bg-white/95 backdrop-blur-sm px-6 lg:px-12 py-8">
+          <h2 className="text-2xl font-extrabold text-black font-neo uppercase tracking-tight border-b-4 border-black pb-2 mb-6">
+            Comments
+          </h2>
+          <Giscus term="camel-up-cup" />
         </section>
       </main>
       <Footer />
