@@ -1,3 +1,10 @@
+# [5.13.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.12.1...5.13.0) (2026-07-03)
+
+
+### Features
+
+* allow for "-"s in camel names ([a285f35](https://github.com/trbarron/tylerbarron-dot-com/commit/a285f35044f32ce3835a7ce71433c37b1c1c2a81))
+
 ## [5.12.1](https://github.com/trbarron/tylerbarron-dot-com/compare/5.12.0...5.12.1) (2026-07-02)
 
 
