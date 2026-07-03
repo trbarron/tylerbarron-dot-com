@@ -1,3 +1,10 @@
+## [5.13.3](https://github.com/trbarron/tylerbarron-dot-com/compare/5.13.2...5.13.3) (2026-07-03)
+
+
+### Bug Fixes
+
+* linting, adding comments, etc ([8a0e7dd](https://github.com/trbarron/tylerbarron-dot-com/commit/8a0e7dd6521738f4e6f11a015f10f41b91b7009e))
+
 ## [5.13.2](https://github.com/trbarron/tylerbarron-dot-com/compare/5.13.1...5.13.2) (2026-07-03)
 
 
