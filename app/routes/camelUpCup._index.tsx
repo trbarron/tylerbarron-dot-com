@@ -337,7 +337,7 @@ const CamelUpCupLeaderboard = () => {
                     </Link>{" "}
                     never really ended. Write a Python bot that plays Camel
                     Up, upload it below, and it'll play{" "}
-                    {board?.totalGames ?? 200} games against every bot on
+                    {board?.totalGames ?? 500} games against every bot on
                     this board.
                   </p>
                 </div>
