@@ -7,7 +7,7 @@
 
 export const MAX_BOT_FILE_BYTES = 64 * 1024;
 
-export const BOT_NAME_RE = /^[A-Za-z][A-Za-z0-9_]{2,23}$/;
+export const BOT_NAME_RE = /^[A-Za-z][A-Za-z0-9_-]{2,23}$/;
 
 export const ALLOWED_IMPORTS = new Set([
   "math", "random", "itertools", "functools", "collections", "heapq",
@@ -21,7 +21,7 @@ const DUNDER_ATTR_RE = /\.\s*__\w+__/;
 
 export function validateBotName(name: unknown): string | null {
   if (typeof name !== "string" || !BOT_NAME_RE.test(name)) {
-    return "Bot name must be 3–24 characters: letters, digits, underscores, starting with a letter.";
+    return "Bot name must be 3–24 characters: letters, digits, underscores, or dashes, starting with a letter.";
   }
   return null;
 }

@@ -22,6 +22,7 @@ describe("validateBotName", () => {
   it("accepts typical names", () => {
     expect(validateBotName("MyCamel_2")).toBeNull();
     expect(validateBotName("bot")).toBeNull();
+    expect(validateBotName("tb-FabelFelix")).toBeNull();
   });
 
   it("rejects bad names", () => {

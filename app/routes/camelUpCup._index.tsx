@@ -250,8 +250,8 @@ function UploadForm({ onSubmitted }: { onSubmitted: (id: string) => void }) {
           <input
             name="botName"
             required
-            pattern="[A-Za-z][A-Za-z0-9_]{2,23}"
-            title="3–24 characters: letters, digits, underscores; starts with a letter"
+            pattern="[A-Za-z][A-Za-z0-9_-]{2,23}"
+            title="3–24 characters: letters, digits, underscores, or dashes; starts with a letter"
             placeholder="MyCamelBot"
             className="mt-1 w-full rounded border border-gray-300 px-2 py-1.5 font-mono"
           />
