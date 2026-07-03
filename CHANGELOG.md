@@ -1,3 +1,10 @@
+## [5.13.2](https://github.com/trbarron/tylerbarron-dot-com/compare/5.13.1...5.13.2) (2026-07-03)
+
+
+### Bug Fixes
+
+* more color fixes ([2ac1a7e](https://github.com/trbarron/tylerbarron-dot-com/commit/2ac1a7ebff9043700d0b0c88c3642d0a1618f2c1))
+
 ## [5.13.1](https://github.com/trbarron/tylerbarron-dot-com/compare/5.13.0...5.13.1) (2026-07-03)
 
 
