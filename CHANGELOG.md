@@ -1,3 +1,10 @@
+## [5.13.1](https://github.com/trbarron/tylerbarron-dot-com/compare/5.13.0...5.13.1) (2026-07-03)
+
+
+### Bug Fixes
+
+* copy changes ([d84388d](https://github.com/trbarron/tylerbarron-dot-com/commit/d84388dab294cfed589842a91ce2cfffb567dbf4))
+
 # [5.13.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.12.1...5.13.0) (2026-07-03)
 
 
