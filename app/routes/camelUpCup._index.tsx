@@ -197,8 +197,8 @@ function StatusPanel({ status }: { status: SubmissionStatus }) {
     );
   }
   return (
-    <div className="mt-4 rounded border border-blue-300 bg-blue-50 p-4 text-sm">
-      <p className="font-bold">
+    <div className="mt-4 rounded border border-black bg-black p-4 text-sm text-white">
+      <div className="font-bold text-white">
         {status.phase === "running" ? (
           <>
             Tournament running — <span className="font-mono">{status.botName ?? "your bot"}</span>{" "}
@@ -207,14 +207,14 @@ function StatusPanel({ status }: { status: SubmissionStatus }) {
         ) : (
           `${status.botName ?? "Submission"}: ${status.phase}…`
         )}
-      </p>
-      <div className="mt-2 h-2 w-full rounded bg-blue-100">
-        {/* eslint-disable-next-line react/forbid-dom-props -- width is runtime tournament progress */}
-        <div className="h-2 rounded bg-blue-500 transition-all" style={{ width: `${pct}%` }} />
       </div>
-      <p className="mt-1 text-xs text-gray-600">
+      <div className="mt-2 h-2 w-full rounded bg-gray-700">
+        {/* eslint-disable-next-line react/forbid-dom-props -- width is runtime tournament progress */}
+        <div className="h-2 rounded bg-white transition-all" style={{ width: `${pct}%` }} />
+      </div>
+      <div className="mt-1 text-xs text-gray-300">
         A full run takes about an hour — you can close this page and check back.
-      </p>
+      </div>
     </div>
   );
 }
