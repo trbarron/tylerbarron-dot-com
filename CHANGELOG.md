@@ -1,3 +1,10 @@
+# [5.14.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.13.3...5.14.0) (2026-07-04)
+
+
+### Features
+
+* add elo to leaderboard ([3d283a5](https://github.com/trbarron/tylerbarron-dot-com/commit/3d283a5af03b97d34e077bba1079ef3a6097bca4))
+
 ## [5.13.3](https://github.com/trbarron/tylerbarron-dot-com/compare/5.13.2...5.13.3) (2026-07-03)
 
 
