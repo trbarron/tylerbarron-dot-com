@@ -10,6 +10,7 @@ export interface LeaderboardBot {
   note?: string | null;
   year?: number | null;
   builtin: boolean;
+  elo?: number | null;
   wins: number;
   games: number;
   winPct: number;

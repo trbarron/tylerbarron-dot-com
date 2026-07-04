@@ -34,17 +34,23 @@ export async function loader({ request }: LoaderFunctionArgs) {
 const POLL_INTERVAL_MS = 5000;
 const TERMINAL_PHASES = new Set(["complete", "rejected", "error"]);
 
-type SortKey = "wins" | "games" | "winPct" | "avgCoins" | "maxMoveMs";
+type SortKey = "elo" | "wins" | "games" | "winPct" | "avgCoins" | "maxMoveMs";
 type SortDir = "asc" | "desc";
 
 // Lower is better for max move time; higher is better for everything else.
 const DEFAULT_SORT_DIR: Record<SortKey, SortDir> = {
+  elo: "desc",
   wins: "desc",
   games: "desc",
   winPct: "desc",
   avgCoins: "desc",
   maxMoveMs: "asc",
 };
+
+const ELO_TOOLTIP =
+  "Winner-take-all Bradley-Terry rating on the Elo scale (anchored at 1500). " +
+  "Only winning counts — 2nd place rates the same as 4th — and beating a " +
+  "strong field pays more than farming a weak one. Wide spreads are normal.";
 
 function SortableHeader({
   label,
@@ -53,6 +59,7 @@ function SortableHeader({
   dir,
   onSort,
   align = "right",
+  title,
 }: {
   label: string;
   sortKey: SortKey;
@@ -60,6 +67,7 @@ function SortableHeader({
   dir: SortDir;
   onSort: (key: SortKey) => void;
   align?: "left" | "right";
+  title?: string;
 }) {
   const active = sortKey === activeKey;
   return (
@@ -67,6 +75,7 @@ function SortableHeader({
       className={`py-2 pr-2 cursor-pointer select-none ${align === "right" ? "text-right" : ""} ${active ? "text-white" : "text-gray-400 hover:text-white"}`}
       onClick={() => onSort(sortKey)}
       aria-sort={active ? (dir === "desc" ? "descending" : "ascending") : "none"}
+      title={title}
     >
       {label}
       {active ? (dir === "desc" ? " ▼" : " ▲") : ""}
@@ -76,7 +85,10 @@ function SortableHeader({
 
 function LeaderboardTable({ board }: { board: Leaderboard }) {
   const medals = ["🥇", "🥈", "🥉"];
-  const [sortKey, setSortKey] = useState<SortKey>("winPct");
+  // Old cached boards during rollout may predate the rating system —
+  // hide the Elo column and fall back to win % ordering.
+  const hasElo = board.bots.some((bot) => typeof bot.elo === "number");
+  const [sortKey, setSortKey] = useState<SortKey>(hasElo ? "elo" : "winPct");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 
   const handleSort = useCallback(
@@ -91,16 +103,22 @@ function LeaderboardTable({ board }: { board: Leaderboard }) {
     [sortKey],
   );
 
-  // Rank (and medals) always reflect standing by win %, independent of the
-  // column the table is currently sorted by.
+  // Rank (and medals) always reflect standing by Elo (win % on boards
+  // without ratings), independent of the column the table is sorted by.
   const rankByName = new Map(
     [...board.bots]
-      .sort((a, b) => b.winPct - a.winPct)
+      .sort((a, b) =>
+        hasElo ? (b.elo ?? -Infinity) - (a.elo ?? -Infinity) : b.winPct - a.winPct,
+      )
       .map((bot, i) => [bot.name, i]),
   );
 
   const bots = [...board.bots].sort((a, b) => {
-    const diff = a[sortKey] - b[sortKey];
+    const av = a[sortKey];
+    const bv = b[sortKey];
+    // Unrated bots (null elo) sort last regardless of direction.
+    if (av == null || bv == null) return (av == null ? 1 : 0) - (bv == null ? 1 : 0);
+    const diff = av - bv;
     return sortDir === "desc" ? -diff : diff;
   });
 
@@ -111,6 +129,9 @@ function LeaderboardTable({ board }: { board: Leaderboard }) {
           <tr className="border-b-2 border-black text-left">
             <th className="py-2 pr-2">Rank</th>
             <th className="py-2 pr-2">Bot</th>
+            {hasElo && (
+              <SortableHeader label="Elo" sortKey="elo" activeKey={sortKey} dir={sortDir} onSort={handleSort} title={ELO_TOOLTIP} />
+            )}
             <SortableHeader label="Wins" sortKey="wins" activeKey={sortKey} dir={sortDir} onSort={handleSort} />
             <SortableHeader label="Games" sortKey="games" activeKey={sortKey} dir={sortDir} onSort={handleSort} />
             <SortableHeader label="Win %" sortKey="winPct" activeKey={sortKey} dir={sortDir} onSort={handleSort} />
@@ -145,6 +166,11 @@ function LeaderboardTable({ board }: { board: Leaderboard }) {
                     </div>
                   )}
                 </td>
+                {hasElo && (
+                  <td className="py-2 pr-2 text-right">
+                    {typeof bot.elo === "number" ? Math.round(bot.elo) : "—"}
+                  </td>
+                )}
                 <td className="py-2 pr-2 text-right">{bot.wins}</td>
                 <td className="py-2 pr-2 text-right">{bot.games}</td>
                 <td className="py-2 pr-2 text-right">{bot.winPct}%</td>
@@ -157,7 +183,16 @@ function LeaderboardTable({ board }: { board: Leaderboard }) {
       </table>
       <p className="mt-2 text-xs text-gray-500">
         {board.totalGames} games per tournament · random 4-player seatings ·
-        ties split wins · updated {new Date(board.updated).toLocaleString()}
+        ties split wins ·{" "}
+        {hasElo && (
+          <>
+            <span title={ELO_TOOLTIP} className="cursor-help underline decoration-dotted">
+              Elo
+            </span>{" "}
+            counts only wins, adjusted for opponent strength ·{" "}
+          </>
+        )}
+        updated {new Date(board.updated).toLocaleString()}
       </p>
     </div>
   );
