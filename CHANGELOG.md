@@ -1,3 +1,10 @@
+## [5.15.1](https://github.com/trbarron/tylerbarron-dot-com/compare/5.15.0...5.15.1) (2026-07-06)
+
+
+### Bug Fixes
+
+* fix submission column to camel chart ([4f3fad7](https://github.com/trbarron/tylerbarron-dot-com/commit/4f3fad70ec6fc227562bead517b5745fea6208e8))
+
 # [5.15.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.14.0...5.15.0) (2026-07-06)
 
 
