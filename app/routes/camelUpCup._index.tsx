@@ -139,28 +139,29 @@ function LeaderboardTable({ board }: { board: Leaderboard }) {
   });
 
   return (
-    <div className="mx-auto overflow-x-auto px-4 lg:w-11/12">
+    <div className="mx-auto overflow-x-auto px-4">
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b-2 border-black text-left">
             <th className="py-2 pr-2">Rank</th>
             <th className="py-2 pr-2">Bot</th>
             <SortableHeader
-              label="Submitted"
+              label="Uploaded"
               sortKey="submitted"
               activeKey={sortKey}
               dir={sortDir}
               onSort={handleSort}
               align="left"
+              title="When the bot entered the tournament (house bots predate it)"
             />
             {hasElo && (
               <SortableHeader label="Elo" sortKey="elo" activeKey={sortKey} dir={sortDir} onSort={handleSort} title={ELO_TOOLTIP} />
             )}
-            <SortableHeader label="Wins" sortKey="wins" activeKey={sortKey} dir={sortDir} onSort={handleSort} />
-            <SortableHeader label="Games" sortKey="games" activeKey={sortKey} dir={sortDir} onSort={handleSort} />
+            <SortableHeader label="Wins" sortKey="wins" activeKey={sortKey} dir={sortDir} onSort={handleSort} className="hidden md:table-cell" />
+            <SortableHeader label="Games" sortKey="games" activeKey={sortKey} dir={sortDir} onSort={handleSort} className="hidden md:table-cell" />
             <SortableHeader label="Win %" sortKey="winPct" activeKey={sortKey} dir={sortDir} onSort={handleSort} />
-            <SortableHeader label="Avg Coins" sortKey="avgCoins" activeKey={sortKey} dir={sortDir} onSort={handleSort} />
-            <SortableHeader label="Max ms" sortKey="maxMoveMs" activeKey={sortKey} dir={sortDir} onSort={handleSort} />
+            <SortableHeader label="Coins" sortKey="avgCoins" activeKey={sortKey} dir={sortDir} onSort={handleSort} title="Average coins per game" className="hidden lg:table-cell" />
+            <SortableHeader label="Max ms" sortKey="maxMoveMs" activeKey={sortKey} dir={sortDir} onSort={handleSort} title="Slowest move, in milliseconds" className="hidden lg:table-cell" />
           </tr>
         </thead>
         <tbody>
@@ -209,11 +210,13 @@ function LeaderboardTable({ board }: { board: Leaderboard }) {
                     {typeof bot.elo === "number" ? Math.round(bot.elo) : "—"}
                   </td>
                 )}
-                <td className="py-2 pr-2 text-right">{bot.wins}</td>
-                <td className="py-2 pr-2 text-right">{bot.games}</td>
+                <td className="hidden py-2 pr-2 text-right md:table-cell" title={`${bot.wins}`}>
+                  {Math.round(bot.wins)}
+                </td>
+                <td className="hidden py-2 pr-2 text-right md:table-cell">{bot.games}</td>
                 <td className="py-2 pr-2 text-right">{bot.winPct}%</td>
-                <td className="py-2 pr-2 text-right">{bot.avgCoins}</td>
-                <td className="py-2 text-right">{bot.maxMoveMs}</td>
+                <td className="hidden py-2 pr-2 text-right lg:table-cell">{bot.avgCoins}</td>
+                <td className="hidden py-2 text-right lg:table-cell">{bot.maxMoveMs}</td>
               </tr>
             );
           })}
