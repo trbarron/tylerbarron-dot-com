@@ -10,6 +10,8 @@ export interface LeaderboardBot {
   note?: string | null;
   year?: number | null;
   builtin: boolean;
+  /** ISO-8601 UTC submission time; null/absent for house bots and pre-rollout boards. */
+  submitted?: string | null;
   elo?: number | null;
   wins: number;
   games: number;

@@ -11,7 +11,7 @@ import {
   fetchLeaderboard,
   fetchStatus,
 } from "~/utils/camelUpCup/tournament.server";
-import type { Leaderboard, SubmissionStatus } from "~/utils/camelUpCup/types";
+import type { Leaderboard, LeaderboardBot, SubmissionStatus } from "~/utils/camelUpCup/types";
 
 export function meta() {
   return buildMeta({
@@ -34,18 +34,32 @@ export async function loader({ request }: LoaderFunctionArgs) {
 const POLL_INTERVAL_MS = 5000;
 const TERMINAL_PHASES = new Set(["complete", "rejected", "error"]);
 
-type SortKey = "elo" | "wins" | "games" | "winPct" | "avgCoins" | "maxMoveMs";
+type SortKey = "elo" | "submitted" | "wins" | "games" | "winPct" | "avgCoins" | "maxMoveMs";
 type SortDir = "asc" | "desc";
 
 // Lower is better for max move time; higher is better for everything else.
+// Submitted defaults to newest first.
 const DEFAULT_SORT_DIR: Record<SortKey, SortDir> = {
   elo: "desc",
+  submitted: "desc",
   wins: "desc",
   games: "desc",
   winPct: "desc",
   avgCoins: "desc",
   maxMoveMs: "asc",
 };
+
+/** Defensive parse: missing key, null, or garbage all become null (never "Invalid Date"). */
+function parseSubmitted(iso: string | null | undefined): Date | null {
+  if (!iso) return null;
+  const date = new Date(iso);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function sortValue(bot: LeaderboardBot, key: SortKey): number | null {
+  if (key === "submitted") return parseSubmitted(bot.submitted)?.getTime() ?? null;
+  return bot[key] ?? null;
+}
 
 const ELO_TOOLTIP =
   "Winner-take-all Bradley-Terry rating on the Elo scale (anchored at 1500). " +
@@ -60,6 +74,7 @@ function SortableHeader({
   onSort,
   align = "right",
   title,
+  className,
 }: {
   label: string;
   sortKey: SortKey;
@@ -68,11 +83,12 @@ function SortableHeader({
   onSort: (key: SortKey) => void;
   align?: "left" | "right";
   title?: string;
+  className?: string;
 }) {
   const active = sortKey === activeKey;
   return (
     <th
-      className={`py-2 pr-2 cursor-pointer select-none ${align === "right" ? "text-right" : ""} ${active ? "text-white" : "text-gray-400 hover:text-white"}`}
+      className={`py-2 pr-2 cursor-pointer select-none ${align === "right" ? "text-right" : ""} ${active ? "text-white" : "text-gray-400 hover:text-white"} ${className ?? ""}`}
       onClick={() => onSort(sortKey)}
       aria-sort={active ? (dir === "desc" ? "descending" : "ascending") : "none"}
       title={title}
@@ -114,9 +130,9 @@ function LeaderboardTable({ board }: { board: Leaderboard }) {
   );
 
   const bots = [...board.bots].sort((a, b) => {
-    const av = a[sortKey];
-    const bv = b[sortKey];
-    // Unrated bots (null elo) sort last regardless of direction.
+    const av = sortValue(a, sortKey);
+    const bv = sortValue(b, sortKey);
+    // Unrated (null elo) or undated bots sort last regardless of direction.
     if (av == null || bv == null) return (av == null ? 1 : 0) - (bv == null ? 1 : 0);
     const diff = av - bv;
     return sortDir === "desc" ? -diff : diff;
@@ -129,6 +145,15 @@ function LeaderboardTable({ board }: { board: Leaderboard }) {
           <tr className="border-b-2 border-black text-left">
             <th className="py-2 pr-2">Rank</th>
             <th className="py-2 pr-2">Bot</th>
+            <SortableHeader
+              label="Submitted"
+              sortKey="submitted"
+              activeKey={sortKey}
+              dir={sortDir}
+              onSort={handleSort}
+              align="left"
+              className="hidden sm:table-cell"
+            />
             {hasElo && (
               <SortableHeader label="Elo" sortKey="elo" activeKey={sortKey} dir={sortDir} onSort={handleSort} title={ELO_TOOLTIP} />
             )}
@@ -142,6 +167,7 @@ function LeaderboardTable({ board }: { board: Leaderboard }) {
         <tbody>
           {bots.map((bot) => {
             const rank = rankByName.get(bot.name) ?? 0;
+            const submittedDate = parseSubmitted(bot.submitted);
             return (
               <tr key={bot.name} className="border-b border-gray-200">
                 <td className="py-2 pr-2">{medals[rank] ?? rank + 1}</td>
@@ -153,8 +179,17 @@ function LeaderboardTable({ board }: { board: Leaderboard }) {
                     <div className="flex items-center gap-1.5 text-sm text-gray-500">
                       {bot.author && <span>by {bot.author}</span>}
                       {!bot.builtin && (
-                        <span className="rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-800">
+                        <span className="rounded bg-amber-100 px-1.5 py-0.5 text-xs whitespace-nowrap text-amber-800">
                           uploaded
+                          {submittedDate && (
+                            <span className="sm:hidden" suppressHydrationWarning>
+                              {" "}
+                              {submittedDate.toLocaleDateString(undefined, {
+                                month: "short",
+                                day: "numeric",
+                              })}
+                            </span>
+                          )}
                         </span>
                       )}
                     </div>
@@ -165,6 +200,19 @@ function LeaderboardTable({ board }: { board: Leaderboard }) {
                       {bot.year ? ` · ${bot.year}` : ""}
                     </div>
                   )}
+                </td>
+                <td
+                  className="hidden py-2 pr-2 whitespace-nowrap text-gray-600 sm:table-cell"
+                  title={bot.submitted ?? undefined}
+                  suppressHydrationWarning
+                >
+                  {submittedDate
+                    ? submittedDate.toLocaleDateString(undefined, {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })
+                    : "—"}
                 </td>
                 {hasElo && (
                   <td className="py-2 pr-2 text-right">
