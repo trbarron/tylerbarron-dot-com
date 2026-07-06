@@ -1,3 +1,10 @@
+# [5.15.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.14.0...5.15.0) (2026-07-06)
+
+
+### Features
+
+* add submission column to camel chart ([b0dc1f0](https://github.com/trbarron/tylerbarron-dot-com/commit/b0dc1f01e6c7908719cf1358ec1ef644077b7e82))
+
 # [5.14.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.13.3...5.14.0) (2026-07-04)
 
 
