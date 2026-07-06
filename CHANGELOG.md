@@ -1,3 +1,10 @@
+## [5.15.2](https://github.com/trbarron/tylerbarron-dot-com/compare/5.15.1...5.15.2) (2026-07-06)
+
+
+### Bug Fixes
+
+* table adjustemnts ([458c707](https://github.com/trbarron/tylerbarron-dot-com/commit/458c707f01ff31445b24011867ab8f9b0ece58c1))
+
 ## [5.15.1](https://github.com/trbarron/tylerbarron-dot-com/compare/5.15.0...5.15.1) (2026-07-06)
 
 
