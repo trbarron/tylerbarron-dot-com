@@ -152,7 +152,6 @@ function LeaderboardTable({ board }: { board: Leaderboard }) {
               dir={sortDir}
               onSort={handleSort}
               align="left"
-              className="hidden sm:table-cell"
             />
             {hasElo && (
               <SortableHeader label="Elo" sortKey="elo" activeKey={sortKey} dir={sortDir} onSort={handleSort} title={ELO_TOOLTIP} />
@@ -181,15 +180,6 @@ function LeaderboardTable({ board }: { board: Leaderboard }) {
                       {!bot.builtin && (
                         <span className="rounded bg-amber-100 px-1.5 py-0.5 text-xs whitespace-nowrap text-amber-800">
                           uploaded
-                          {submittedDate && (
-                            <span className="sm:hidden" suppressHydrationWarning>
-                              {" "}
-                              {submittedDate.toLocaleDateString(undefined, {
-                                month: "short",
-                                day: "numeric",
-                              })}
-                            </span>
-                          )}
                         </span>
                       )}
                     </div>
@@ -202,7 +192,7 @@ function LeaderboardTable({ board }: { board: Leaderboard }) {
                   )}
                 </td>
                 <td
-                  className="hidden py-2 pr-2 whitespace-nowrap text-gray-600 sm:table-cell"
+                  className="py-2 pr-2 whitespace-nowrap text-gray-600"
                   title={bot.submitted ?? undefined}
                   suppressHydrationWarning
                 >
