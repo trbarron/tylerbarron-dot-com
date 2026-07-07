@@ -4,6 +4,7 @@ import rehypeImgSize from 'rehype-img-size';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
+import rehypePrettyCode from 'rehype-pretty-code';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -24,6 +25,10 @@ async function processMdx(source) {
       options.remarkPlugins = [...(options.remarkPlugins ?? []), remarkGfm];
       options.rehypePlugins = [
         ...(options.rehypePlugins ?? []),
+        // Shiki highlighting at compile time; keepBackground off so the
+        // prose-pre styles control the block background. Untagged fences
+        // (ASCII diagrams) are left untouched.
+        [rehypePrettyCode, { theme: 'github-light', keepBackground: false }],
         [rehypeImgSize, { dir: "public" }]
       ];
       return options;
@@ -61,7 +66,17 @@ async function compileAllMdx() {
     try {
       const source = await fs.readFile(filePath, 'utf-8');
       const { code, frontmatter } = await processMdx(source);
-      
+
+      // Per-post OG share card (scripts/generate-og-image.py). Only reference
+      // it when the PNG actually exists so meta never points at a 404.
+      const ogPath = path.join(__dirname, '..', 'public', 'images', 'og', `${slug}.png`);
+      const hasOgImage = await fs.access(ogPath).then(() => true, () => false);
+      if (hasOgImage) {
+        frontmatter.ogImage = `/images/og/${slug}.png`;
+      } else {
+        console.warn(`   ⚠️  ${slug} has no OG card (falls back to the default) — run: python3 scripts/generate-og-image.py`);
+      }
+
       // Write compiled output as JSON
       const outputPath = path.join(outputDir, `${slug}.json`);
       await fs.writeFile(

@@ -1,6 +1,6 @@
-import { useLoaderData } from 'react-router';
+import { Link, useLoaderData } from 'react-router';
 import type { LoaderFunctionArgs, MetaFunction } from 'react-router';
-import { buildMeta } from '~/utils/seo';
+import { buildMeta, SITE_URL } from '~/utils/seo';
 import { useMemo } from 'react';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
@@ -22,12 +22,23 @@ function getMDXComponent(code: string) {
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
   const { slug } = params;
-  const { getPost } = await import('~/utils/posts.server');
+  const { getPost, getAllPostMeta } = await import('~/utils/posts.server');
   const post = await getPost(slug!);
   if (!post) {
     throw new Response('Not Found', { status: 404 });
   }
-  return { slug: slug!, code: post.code, frontmatter: post.frontmatter };
+
+  // Prev/next within the same bucket (writing vs. project posts), newest first.
+  const all = await getAllPostMeta();
+  const isProject = post.frontmatter.type === 'project';
+  const siblings = all.filter((p) => (p.type === 'project') === isProject);
+  const idx = siblings.findIndex((p) => p.slug === slug);
+  const toLink = (p?: { slug: string; title: string }) =>
+    p ? { slug: p.slug, title: p.title } : null;
+  const newer = toLink(siblings[idx - 1]);
+  const older = toLink(siblings[idx + 1]);
+
+  return { slug: slug!, code: post.code, frontmatter: post.frontmatter, newer, older };
 };
 
 export const meta: MetaFunction<typeof loader> = ({ data, params }) => {
@@ -35,19 +46,70 @@ export const meta: MetaFunction<typeof loader> = ({ data, params }) => {
     return buildMeta({ title: "Post Not Found", noIndex: true });
   }
   const { title, subtitle } = data.frontmatter;
-  // Optional `image:` frontmatter overrides the default share card.
-  const image = typeof data.frontmatter.image === "string" ? data.frontmatter.image : undefined;
-  return buildMeta({
-    title,
-    description: subtitle ?? `${title} — writing from Barron Wasteland.`,
-    path: `/blog/${params.slug}`,
-    type: "article",
-    image,
-  });
+  // Optional `image:` frontmatter wins; otherwise the generated per-post card
+  // (`ogImage`, injected at compile time); otherwise buildMeta's default card.
+  const image =
+    typeof data.frontmatter.image === "string"
+      ? data.frontmatter.image
+      : typeof data.frontmatter.ogImage === "string"
+        ? data.frontmatter.ogImage
+        : undefined;
+  const url = `${SITE_URL}/blog/${params.slug}`;
+  return [
+    ...buildMeta({
+      title,
+      description: subtitle ?? `${title} — writing from Barron Wasteland.`,
+      path: `/blog/${params.slug}`,
+      type: "article",
+      image,
+    }),
+    // Article structured data; pairs with the Person schema on the homepage.
+    {
+      "script:ld+json": {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        headline: title,
+        datePublished: data.frontmatter.date,
+        url,
+        mainEntityOfPage: url,
+        ...(image
+          ? { image: /^https?:\/\//.test(image) ? image : `${SITE_URL}${image}` }
+          : {}),
+        author: {
+          "@type": "Person",
+          name: "Tyler Barron",
+          url: SITE_URL,
+        },
+      },
+    },
+  ];
 };
 
+interface PostNavCardProps {
+  slug: string;
+  title: string;
+  direction: 'newer' | 'older';
+}
+
+function PostNavCard({ slug, title, direction }: PostNavCardProps) {
+  const isNewer = direction === 'newer';
+  return (
+    <Link
+      to={`/blog/${slug}`}
+      className={`group block border-4 border-black bg-white p-4 no-underline hover:no-underline transition-all duration-150 [@media(hover:hover)]:hover:bg-black motion-reduce:transition-none ${isNewer ? 'text-left' : 'text-right md:col-start-2'}`}
+    >
+      <div className="font-mono text-[11px] text-neutral-500 uppercase [@media(hover:hover)]:group-hover:text-white/80">
+        {isNewer ? '← Newer' : 'Older →'}
+      </div>
+      <div className="font-neo font-extrabold text-black tracking-tight mt-1 [@media(hover:hover)]:group-hover:text-white">
+        {title.toUpperCase()}
+      </div>
+    </Link>
+  );
+}
+
 export default function BlogPost() {
-  const { slug, code, frontmatter } = useLoaderData<typeof loader>();
+  const { slug, code, frontmatter, newer, older } = useLoaderData<typeof loader>();
 
   // Use getMDXComponent from mdx-bundler/client
   const Component = useMemo(() => getMDXComponent(code), [code]);
@@ -103,6 +165,16 @@ export default function BlogPost() {
             <Component />
           </div>
         </article>
+
+        {(newer || older) && (
+          <nav
+            aria-label="More posts"
+            className="max-w-4xl mx-auto mb-8 grid grid-cols-1 md:grid-cols-2 gap-4 px-6 lg:px-0"
+          >
+            {newer && <PostNavCard {...newer} direction="newer" />}
+            {older && <PostNavCard {...older} direction="older" />}
+          </nav>
+        )}
 
         {commentsEnabled && (
           <section className="max-w-4xl mx-auto mb-8 bg-white/95 backdrop-blur-sm px-6 lg:px-12 py-8">

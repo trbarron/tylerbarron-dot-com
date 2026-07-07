@@ -4,7 +4,22 @@ import { Link, useLoaderData } from 'react-router';
 import { buildMeta } from "~/utils/seo";
 
 export function meta() {
-  return buildMeta({ path: "/" });
+  return [
+    ...buildMeta({ path: "/" }),
+    // Person structured data so search engines connect the site to its author.
+    {
+      "script:ld+json": {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        name: "Tyler Barron",
+        url: "https://tylerbarron.com",
+        sameAs: [
+          "https://github.com/trbarron",
+          "https://linkedin.com/in/tylerbarron",
+        ],
+      },
+    },
+  ];
 }
 
 interface Post {
@@ -236,6 +251,10 @@ export default function Index() {
           </h1>
           <p className="text-black text-xl xl:text-2xl font-neo font-semibold mt-4 tracking-wide opacity-80 uppercase">
             A SERIES OF FLAT CIRCLES
+          </p>
+          <p className="text-black font-neo font-medium text-base xl:text-lg mt-6 max-w-2xl mx-auto opacity-70">
+            I'm Tyler Barron, an engineer. This is where my chess experiments,
+            computer vision toys, puzzles, and writing live.
           </p>
         </div>
       </section>

@@ -60,6 +60,10 @@ export async function getPost(slug: string): Promise<CompiledPost | null> {
     try {
       const source = await fs.readFile(path.join(process.cwd(), 'posts', `${slug}.mdx`), 'utf-8');
       const { code, frontmatter } = await processMdx(source);
+      // Mirror the compile step's per-post OG card injection (compile-mdx.mjs).
+      const ogPath = path.join(process.cwd(), 'public', 'images', 'og', `${slug}.png`);
+      const hasOgImage = await fs.access(ogPath).then(() => true, () => false);
+      if (hasOgImage) frontmatter.ogImage = `/images/og/${slug}.png`;
       return { code, frontmatter: frontmatter as Frontmatter };
     } catch {
       return null;
