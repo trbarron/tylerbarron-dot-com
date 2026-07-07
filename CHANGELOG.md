@@ -1,3 +1,10 @@
+# [5.16.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.15.2...5.16.0) (2026-07-07)
+
+
+### Features
+
+* blog upgrades, per-post OG cards with CI guard, image restructure ([f5eca3e](https://github.com/trbarron/tylerbarron-dot-com/commit/f5eca3e6019bee5aa35583e6194b890074fc0f83))
+
 ## [5.15.2](https://github.com/trbarron/tylerbarron-dot-com/compare/5.15.1...5.15.2) (2026-07-06)
 
 
