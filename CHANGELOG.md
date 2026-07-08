@@ -1,3 +1,10 @@
+## [5.17.1](https://github.com/trbarron/tylerbarron-dot-com/compare/5.17.0...5.17.1) (2026-07-08)
+
+
+### Bug Fixes
+
+* some minor deploy fixes thanks to codex ([b275985](https://github.com/trbarron/tylerbarron-dot-com/commit/b275985966f5162f54b42a1703d0b270956b6892))
+
 # [5.17.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.16.0...5.17.0) (2026-07-08)
 
 
