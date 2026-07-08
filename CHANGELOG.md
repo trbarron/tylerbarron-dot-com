@@ -1,3 +1,10 @@
+# [5.17.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.16.0...5.17.0) (2026-07-08)
+
+
+### Features
+
+* added a heckin trophy ([a508c3f](https://github.com/trbarron/tylerbarron-dot-com/commit/a508c3fc49fb80cbe749113c111fcf5d8d1cf89e))
+
 # [5.16.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.15.2...5.16.0) (2026-07-07)
 
 
