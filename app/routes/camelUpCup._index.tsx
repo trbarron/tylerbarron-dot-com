@@ -5,6 +5,7 @@ import type { LoaderFunctionArgs } from "react-router";
 import { Navbar } from "../components/Navbar.js";
 import Footer from "../components/Footer.js";
 import Giscus from "~/components/Giscus";
+import TrophyModel from "~/components/TrophyModel";
 import { buildMeta } from "~/utils/seo";
 import {
   activeTournamentId,
@@ -239,6 +240,45 @@ function LeaderboardTable({ board }: { board: Leaderboard }) {
   );
 }
 
+/** Reigning champion: best Elo (win % on pre-rating boards) among bots that
+ *  have actually played. Null on an empty or gamesless board. */
+function championOf(board: Leaderboard): LeaderboardBot | null {
+  const hasElo = board.bots.some((bot) => typeof bot.elo === "number");
+  const played = board.bots.filter((bot) => bot.games > 0);
+  if (played.length === 0) return null;
+  return [...played].sort((a, b) =>
+    hasElo ? (b.elo ?? -Infinity) - (a.elo ?? -Infinity) : b.winPct - a.winPct,
+  )[0];
+}
+
+function ChampionShowcase({ board }: { board: Leaderboard }) {
+  const champion = championOf(board);
+  if (!champion) return null;
+  const hasElo = typeof champion.elo === "number";
+  return (
+    <section className="subarticle prose">
+      <h3 className="subarticle-title">Champion</h3>
+      <div className="overflow-hidden bg-white break-words">
+        <div className="flex flex-col items-center gap-4 border-4 border-black bg-white p-4 sm:flex-row sm:gap-6">
+          <div className="h-56 w-44 shrink-0">
+            <TrophyModel alt={`Trophy awarded to ${champion.name}`} />
+          </div>
+          <div className="text-center sm:text-left">
+            <div className="mt-1 font-mono text-2xl font-bold break-all">{champion.name}</div>
+            {champion.author && (
+              <div className="text-sm text-gray-600">by {champion.author}</div>
+            )}
+            <div className="mt-2 text-sm">
+              {hasElo && `Elo ${Math.round(champion.elo as number)} · `}
+              {champion.winPct}% win rate
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function StatusPanel({ status }: { status: SubmissionStatus }) {
   const pct =
     status.totalGames && status.gamesDone
@@ -421,12 +461,16 @@ const CamelUpCupLeaderboard = () => {
                     <Link to="/camel-up-cup/2018">
                       original 2018 bring-your-own-bot tournament
                     </Link>{" "}
-                    never really ended. Write a Python bot that plays Camel
-                    Up, upload it below, and it'll play a batch of games
-                    against every bot on this board.
+                    never really ended.
+                    <br />
+                    Write a Python bot that plays Camel Up, upload it below,
+                    and it'll play a batch of games against every bot on this
+                    board.
                   </p>
                 </div>
               </section>
+
+              {board && <ChampionShowcase board={board} />}
 
               <section className="subarticle prose">
                 <h3 className="subarticle-title">Standings</h3>

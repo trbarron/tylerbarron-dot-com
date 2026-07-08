@@ -31,6 +31,7 @@
   },
   "dependencies": {
     "@ballatech/react-router7-preset-aws": "^1.0.1",
+    "@google/model-viewer": "^4.3.1",
     "@tailwindcss/postcss": "^4.1.17",
     "chess.js": "^1.0.0",
     "chessground": "^9.1.1",
@@ -50,6 +51,7 @@
     "@commitlint/cli": "^21.0.2",
     "@commitlint/config-conventional": "^21.0.2",
     "@eslint/js": "^9.39.4",
+    "@gltf-transform/cli": "^4.4.1",
     "@playwright/test": "^1.57.0",
     "@react-router/dev": "^7.17.0",
     "@react-router/node": "^7.17.0",

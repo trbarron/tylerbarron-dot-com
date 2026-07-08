@@ -32,7 +32,7 @@ const CONTENT_SECURITY_POLICY = [
   "img-src 'self' data: blob: https://www.googletagmanager.com https://*.google-analytics.com",
   "font-src 'self'",
   [
-    "connect-src 'self'",
+    "connect-src 'self' blob:",
     // Google Analytics (incl. regional endpoints)
     "https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com",
     // Stockfish engine + WASM (multiple choice chess)
