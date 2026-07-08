@@ -36,7 +36,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: ./package.json
+          cache-dependency-path: ./package-lock.json
 
       - name: 📥 Install deps
         run: npm ci
@@ -56,7 +56,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: ./package.json
+          cache-dependency-path: ./package-lock.json
 
       - name: 📥 Install deps
         run: npm ci
@@ -109,12 +109,10 @@ jobs:
           node-version: 22
           architecture: x64
           cache: npm
-          cache-dependency-path: ./package.json
+          cache-dependency-path: ./package-lock.json
 
       - name: 📥 Install deps
-        run: |
-          npm ci
-          npm i -g @architect/architect
+        run: npm ci
 
       # Analyze commits since the last release; if a release is warranted, bump
       # package.json on disk, write CHANGELOG.md, commit/tag (with [skip ci] so it
@@ -196,8 +194,8 @@ jobs:
 
       - name: 🚀 Production Deploy
         run: |
-          arc env --add --env production NODE_ENV production || true
-          arc deploy --production --prune --verbose --debug
+          npm exec arc -- env --add --env production NODE_ENV production || true
+          npm exec arc -- deploy --production --prune --verbose --debug
         env:
           CI: true
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
