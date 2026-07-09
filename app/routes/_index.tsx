@@ -88,7 +88,7 @@ function categoryOf(to: string): CategoryId | null {
 
 const staticLinks: ProjectLink[] = [
   { to: "/the-riddler", title: "FiveThirtyEight's The Riddler", description: "Math puzzles and problems" },
-  { to: "/camel-up-cup", title: "Camel Up Cup", description: "\"Bring your own board game playing bot\" competition — live leaderboard, open for entries" },
+  { to: "/camel-up-cup", title: "Camel Up Cup", description: "\"Bring your own board game playing bot\" competition" },
   { to: "/chesser-guesser", title: "Chesser Guesser", description: "Can you tell who is winning the chess game?" },
   { to: "/blunder-watch", title: "Blunder Watch", description: "Spot the blunders as a chess game plays out" },
   { to: "/collaborative-checkmate", title: "Collaborative Checkmate", description: "Play chess with your friends" },
@@ -251,10 +251,6 @@ export default function Index() {
           </h1>
           <p className="text-black text-xl xl:text-2xl font-neo font-semibold mt-4 tracking-wide opacity-80 uppercase">
             A SERIES OF FLAT CIRCLES
-          </p>
-          <p className="text-black font-neo font-medium text-base xl:text-lg mt-6 max-w-2xl mx-auto opacity-70">
-            I'm Tyler Barron, an engineer. This is where my chess experiments,
-            computer vision toys, puzzles, and writing live.
           </p>
         </div>
       </section>

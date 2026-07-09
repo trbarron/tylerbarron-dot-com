@@ -330,7 +330,7 @@ function StatusPanel({ status }: { status: SubmissionStatus }) {
         <div className="h-2 rounded bg-white transition-all" style={{ width: `${pct}%` }} />
       </div>
       <div className="mt-1 text-xs text-gray-300">
-        A full run takes about an hour — you can close this page and check back.
+        A full run takes about four hours — you can close this page and check back.
       </div>
     </div>
   );
