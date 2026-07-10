@@ -1,3 +1,10 @@
+## [5.17.2](https://github.com/trbarron/tylerbarron-dot-com/compare/5.17.1...5.17.2) (2026-07-10)
+
+
+### Bug Fixes
+
+* break Elo ties by win percentage on camel leaderboard ([d0d5ab6](https://github.com/trbarron/tylerbarron-dot-com/commit/d0d5ab62047624330ee172c74eb10ee1f0fbfd2c))
+
 ## [5.17.1](https://github.com/trbarron/tylerbarron-dot-com/compare/5.17.0...5.17.1) (2026-07-08)
 
 
