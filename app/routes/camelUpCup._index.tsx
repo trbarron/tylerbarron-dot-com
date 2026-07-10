@@ -218,7 +218,7 @@ function LeaderboardTable({ board }: { board: Leaderboard }) {
                 </td>
                 {hasElo && (
                   <td className="py-2 pr-2 text-right">
-                    {typeof bot.elo === "number" ? Math.round(bot.elo) : "—"}
+                    {typeof bot.elo === "number" ? bot.elo.toFixed(1) : "—"}
                   </td>
                 )}
                 <td className="hidden py-2 pr-2 text-right md:table-cell" title={`${bot.wins}`}>
@@ -278,7 +278,7 @@ function ChampionShowcase({ board }: { board: Leaderboard }) {
               <div className="text-sm text-gray-600">by {champion.author}</div>
             )}
             <div className="mt-2 text-sm">
-              {hasElo && `Elo ${Math.round(champion.elo as number)} · `}
+              {hasElo && `Elo ${(champion.elo as number).toFixed(1)} · `}
               {champion.winPct}% win rate
             </div>
           </div>
