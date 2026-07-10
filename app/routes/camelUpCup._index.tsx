@@ -62,6 +62,14 @@ function sortValue(bot: LeaderboardBot, key: SortKey): number | null {
   return bot[key] ?? null;
 }
 
+/** Standing order: best Elo first, ties broken by win %. Falls back to win %
+ *  alone on pre-rating boards where no bot has an Elo yet. */
+function compareStanding(a: LeaderboardBot, b: LeaderboardBot, hasElo: boolean): number {
+  if (!hasElo) return b.winPct - a.winPct;
+  const eloDiff = (b.elo ?? -Infinity) - (a.elo ?? -Infinity);
+  return eloDiff !== 0 ? eloDiff : b.winPct - a.winPct;
+}
+
 const ELO_TOOLTIP =
   "Winner-take-all Bradley-Terry rating on the Elo scale (anchored at 1500). " +
   "Only winning counts — 2nd place rates the same as 4th — and beating a " +
@@ -124,13 +132,15 @@ function LeaderboardTable({ board }: { board: Leaderboard }) {
   // without ratings), independent of the column the table is sorted by.
   const rankByName = new Map(
     [...board.bots]
-      .sort((a, b) =>
-        hasElo ? (b.elo ?? -Infinity) - (a.elo ?? -Infinity) : b.winPct - a.winPct,
-      )
+      .sort((a, b) => compareStanding(a, b, hasElo))
       .map((bot, i) => [bot.name, i]),
   );
 
   const bots = [...board.bots].sort((a, b) => {
+    if (sortKey === "elo") {
+      const standing = compareStanding(a, b, hasElo);
+      return sortDir === "desc" ? standing : -standing;
+    }
     const av = sortValue(a, sortKey);
     const bv = sortValue(b, sortKey);
     // Unrated (null elo) or undated bots sort last regardless of direction.
@@ -240,15 +250,14 @@ function LeaderboardTable({ board }: { board: Leaderboard }) {
   );
 }
 
-/** Reigning champion: best Elo (win % on pre-rating boards) among bots that
- *  have actually played. Null on an empty or gamesless board. */
+/** Reigning champion: best Elo, ties broken by win % (win % alone on
+ *  pre-rating boards), among bots that have actually played. Null on an
+ *  empty or gamesless board. */
 function championOf(board: Leaderboard): LeaderboardBot | null {
   const hasElo = board.bots.some((bot) => typeof bot.elo === "number");
   const played = board.bots.filter((bot) => bot.games > 0);
   if (played.length === 0) return null;
-  return [...played].sort((a, b) =>
-    hasElo ? (b.elo ?? -Infinity) - (a.elo ?? -Infinity) : b.winPct - a.winPct,
-  )[0];
+  return [...played].sort((a, b) => compareStanding(a, b, hasElo))[0];
 }
 
 function ChampionShowcase({ board }: { board: Leaderboard }) {
