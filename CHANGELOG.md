@@ -1,3 +1,10 @@
+## [5.17.3](https://github.com/trbarron/tylerbarron-dot-com/compare/5.17.2...5.17.3) (2026-07-10)
+
+
+### Bug Fixes
+
+* show one decimal of Elo on camel leaderboard ([b85d763](https://github.com/trbarron/tylerbarron-dot-com/commit/b85d763f4350c1bddb7730ab60aab450e7d2569e))
+
 ## [5.17.2](https://github.com/trbarron/tylerbarron-dot-com/compare/5.17.1...5.17.2) (2026-07-10)
 
 
