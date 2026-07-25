@@ -1,3 +1,10 @@
+## [5.18.1](https://github.com/trbarron/tylerbarron-dot-com/compare/5.18.0...5.18.1) (2026-07-25)
+
+
+### Bug Fixes
+
+* added more flavors. Referenced old tier list ([9d15a15](https://github.com/trbarron/tylerbarron-dot-com/commit/9d15a15d5115d2a3c502e98196c51744a9558dbc))
+
 # [5.18.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.17.3...5.18.0) (2026-07-25)
 
 
