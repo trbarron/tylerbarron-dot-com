@@ -1,0 +1,175 @@
+---
+title: "V8 Energy Tier List"
+date: 2026-07-25
+subtitle: "Ranking every V8 Energy flavor — click a can to read the review"
+---
+
+import { useState } from 'react'
+
+I love V8 energy and consider myself an expert V8 Energy knower. With that I am qualified to share their rankings:
+
+export const TIERS = [
+  { key: 'S', label: 'S', color: '#ff7f7f' },
+  { key: 'A', label: 'A', color: '#ffbf7f' },
+  { key: 'B', label: 'B', color: '#ffdf7f' },
+  { key: 'C', label: 'C', color: '#ffff7f' },
+  { key: 'D', label: 'D', color: '#bfff7f' },
+  { key: 'IDK', label: 'IDK', color: '#FFFFFF' },
+]
+
+{/* Edit tier + review for each flavor here. `tier` must match a TIERS key above. */}
+export const FLAVORS = [
+  {
+    id: 'watermelon-guava',
+    name: 'Watermelon Guava',
+    img: '/images/posts/v8-energy-tier-list/watermelon-guava.png',
+    tier: 'B',
+    review: 'Tasty with a lot of pop. Pretty drinkable but does not inspire the senses.',
+  },
+  {
+    id: 'passionfruit-orange-guava',
+    name: 'Passionfruit Orange Guava',
+    img: '/images/posts/v8-energy-tier-list/passionfruit-orange-guava.png',
+    tier: 'S',
+    review: 'What a summer delight. Clearly in the top two, one you will not regret trying. Its got hints of childhood, incredibly refreshing and keeps ya coming back for more.',
+  },
+  {
+    id: 'peach-mango',
+    name: 'Peach Mango',
+    img: '/images/posts/v8-energy-tier-list/peach-mango.png',
+    tier: 'A',
+    review: 'Its good, it plays to the V8 strengths... its just not as good as the top 2. Its a bit too fruity and sweet.',
+  },
+  {
+    id: 'pomegranate-blueberry',
+    name: 'Pomegranate Blueberry',
+    img: '/images/posts/v8-energy-tier-list/pomegranate-blueberry.png',
+    tier: 'S',
+    review: 'The absolute GOAT. Its a great fruit juice that tastes healthy and gives you a midday pep. The first one I would recommend to anyone to try',
+  },
+  {
+    id: 'yuzu-lemon',
+    name: 'Yuzu Lemon',
+    img: '/images/posts/v8-energy-tier-list/yuzu-lemon.png',
+    tier: 'D',
+    review: 'This feels like a mocktail. Its best had in halfs or thirds of the can because its so sharp. I will not be getting this again',
+  },
+  {
+    id: 'pear-ginger',
+    name: 'Pear Ginger',
+    img: '/images/posts/v8-energy-tier-list/pear-ginger.png',
+    tier: 'D',
+    review: 'I wanted to like this so bad but its just SO gingery that it becomes undrinkable. I really love ginger too but sheesh',
+  },
+  {
+    id: 'black-cherry',
+    name: 'Black Cherry',
+    img: '/images/posts/v8-energy-tier-list/black-cherry.png',
+    tier: 'D',
+    review: 'It tastes like fake sugar. Truly no redeeming aspects here I was really not about this.',
+  },
+  {
+    id: 'orange-pineapple',
+    name: 'Orange Pineapple',
+    img: '/images/posts/v8-energy-tier-list/orange-pineapple.png',
+    tier: 'A',
+    review: 'Before POG this was the best orange colored can. Its bright, its tasty, its fun. But Its a bit bland',
+  },
+  {
+    id: 'strawberry-banana',
+    name: 'Strawberry Banana',
+    img: '/images/posts/v8-energy-tier-list/strawberry-banana.png',
+    tier: 'C',
+    review: 'More smoothie than fruit beverage. It kinda tasted like medicine. Would not recc.',
+  },
+  {
+    id: 'diet-strawberry-lemonade',
+    name: 'Diet Strawberry Lemonade',
+    img: '/images/posts/v8-energy-tier-list/diet-strawberry-lemonade.png',
+    tier: 'C',
+    review: 'Its just not playing to the V8 strengths unfortunately. Drinkable and good but trying to be something its not',
+  },
+]
+
+export function V8TierList() {
+  const [selectedId, setSelectedId] = useState(FLAVORS[0].id)
+  const selected = FLAVORS.find((f) => f.id === selectedId)
+  const selectedTier = TIERS.find((t) => t.key === selected.tier)
+
+  return (
+    <div className="not-prose font-neo">
+      <div className="border-4 border-black bg-white">
+        {TIERS.map((tier) => {
+          const cans = FLAVORS.filter((f) => f.tier === tier.key)
+          return (
+            <div key={tier.key} className="flex min-h-16 items-stretch border-b-4 border-black last:border-b-0 md:min-h-[4.5rem]">
+              <div
+                className={
+                  'flex w-14 shrink-0 items-center justify-center border-r-4 border-black px-1 text-center font-mono font-extrabold leading-tight text-black break-words ' +
+                  (tier.label.length <= 1 ? 'text-2xl' : 'text-sm')
+                }
+                style={{ backgroundColor: tier.color }}
+              >
+                {tier.label}
+              </div>
+              <div className="flex flex-wrap items-center gap-0.5 p-0.5">
+                {cans.map((flavor) => {
+                  const isSelected = flavor.id === selectedId
+                  return (
+                    <button
+                      key={flavor.id}
+                      type="button"
+                      onClick={() => setSelectedId(flavor.id)}
+                      aria-pressed={isSelected}
+                      aria-label={flavor.name}
+                      title={flavor.name}
+                      className={
+                        'border-2 transition-all duration-100 ' +
+                        (isSelected
+                          ? 'border-black bg-black'
+                          : 'border-transparent bg-transparent hover:border-black')
+                      }
+                    >
+                      <img
+                        src={flavor.img}
+                        alt={flavor.name}
+                        loading="lazy"
+                        className="h-14 w-14 object-contain md:h-16 md:w-16"
+                      />
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      <div className="mt-3 flex items-start gap-4 border-4 border-black bg-white p-3">
+        <img
+          src={selected.img}
+          alt={selected.name}
+          className="h-24 w-24 shrink-0 object-contain md:h-28 md:w-28"
+        />
+        <div>
+          <div className="mb-1.5 flex items-center gap-2">
+            <span
+              className="flex h-7 w-7 shrink-0 items-center justify-center border-2 border-black font-mono text-base font-extrabold text-black"
+              style={{ backgroundColor: selectedTier.color }}
+            >
+              {selectedTier.label}
+            </span>
+            <h3 className="font-neo text-xl font-extrabold uppercase tracking-tight text-black">
+              {selected.name}
+            </h3>
+          </div>
+          <p className="font-neo font-medium leading-relaxed text-black">
+            {selected.review}
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+<V8TierList />
