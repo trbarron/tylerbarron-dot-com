@@ -1,3 +1,10 @@
+# [5.18.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.17.3...5.18.0) (2026-07-25)
+
+
+### Features
+
+* add v8 energy tier list ([5809ea2](https://github.com/trbarron/tylerbarron-dot-com/commit/5809ea25e4cf97a08ba17913608b9fd54735df98))
+
 ## [5.17.3](https://github.com/trbarron/tylerbarron-dot-com/compare/5.17.2...5.17.3) (2026-07-10)
 
 
