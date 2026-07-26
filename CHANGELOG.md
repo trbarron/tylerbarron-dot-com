@@ -1,3 +1,10 @@
+## [5.20.1](https://github.com/trbarron/tylerbarron-dot-com/compare/5.20.0...5.20.1) (2026-07-26)
+
+
+### Bug Fixes
+
+* address code review findings from today's upgrades ([c477be0](https://github.com/trbarron/tylerbarron-dot-com/commit/c477be038fc95e30e36b46063dccddf6b4b1fa0c))
+
 # [5.20.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.19.0...5.20.0) (2026-07-26)
 
 
