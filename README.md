@@ -122,12 +122,20 @@ This command:
 
 ## 🚢 Deployment
 
-### Standard Deployment
+### Running the production build locally
 
-Run the production server:
+The deployed app is a Lambda behind API Gateway, so the way to exercise a
+production build locally is the Architect sandbox — it runs the real handler:
 
 ```bash
-npm start
+npm run dev:arc          # builds, then serves on http://localhost:8811
+```
+
+This is also the only local setup that reproduces the SSR externalization
+boundary, so it's what to use when checking that routes render for bots:
+
+```bash
+curl -sS -o /dev/null -w '%{http_code}\n' -A 'Googlebot' http://localhost:8811/
 ```
 
 ### AWS Deployment

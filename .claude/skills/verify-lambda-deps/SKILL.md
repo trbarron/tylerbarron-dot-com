@@ -63,5 +63,14 @@ route the way a bot would and confirm a 200 with real HTML in the body:
 curl -sS -o /dev/null -w '%{http_code}\n' -A 'Googlebot' <url>
 ```
 
-Locally that means building and running `npm start` rather than `npm run dev`; the dev
-server does not reproduce the externalization boundary.
+Locally that means the Architect sandbox, which runs the real handler:
+
+```bash
+npm run dev:arc                  # builds, then serves on http://localhost:8811
+curl -sS -o /tmp/b.html -w '%{http_code}\n' -A 'Googlebot' http://localhost:8811/<route>
+grep -qi '<html' /tmp/b.html && echo 'real HTML' || echo 'error shell'
+```
+
+`npm run dev` does **not** reproduce the externalization boundary, so a passing dev
+server proves nothing here. Check the body, not just the status — a route can return
+200 with an error shell.

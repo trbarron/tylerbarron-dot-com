@@ -10,7 +10,7 @@
  *
  * Both families are SIL Open Font License, copied from their @fontsource
  * devDependencies rather than imported so the CDN serves them like any other
- * static asset. Re-copy from node_modules/@fontsource*/…/files/ to update.
+ * static asset. Re-copy from the packages' files/ directories to update.
  *
  * IBM Plex Mono replaced Berkeley Mono, which was a paid licence shipping as a
  * single static Regular — so every `font-mono font-bold` spot rendered as

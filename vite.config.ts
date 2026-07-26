@@ -1,6 +1,6 @@
 import { reactRouter } from "@react-router/dev/vite";
 import { defineConfig } from "vite";
-import tsconfigPaths from "vite-tsconfig-paths";
+import tailwindcss from "@tailwindcss/vite";
 import { execSync } from "child_process";
 import { readFileSync } from "fs";
 
@@ -22,9 +22,10 @@ const cdnUrl = process.env.VITE_CDN_URL?.replace(/\/?$/, '/');
 
 export default defineConfig({
   base: cdnUrl ?? '/',
+  resolve: { tsconfigPaths: true },
   plugins: [
+    tailwindcss(),
     reactRouter(),
-    tsconfigPaths(),
   ],
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
