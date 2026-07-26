@@ -37,33 +37,19 @@ Thumbs.db
 *.tmp
 *~
 
-# Claude Flow generated files
+# Claude Code: the shared config and skills are checked in; only personal
+# machine-local overrides are ignored. docs/ is tracked in full.
 .claude/settings.local.json
-.claude/*
-docs/*
-.mcp.json
-claude-flow.config.json
-.swarm/
-.hive-mind/
-.claude-flow/
-memory/
-coordination/
-memory/claude-flow-data.json
-memory/sessions/*
-!memory/sessions/README.md
-memory/agents/*
-!memory/agents/README.md
-coordination/memory_bank/*
-coordination/subtasks/*
-coordination/orchestration/*
+
+# spec-kit: templates and scripts are checked in; the generated constitution is
+# not (regenerate with /speckit.constitution when it's needed again).
+.specify/memory/
+
+# Local databases. The Places scrape behind the pizza map lives outside the
+# repo on purpose — see the pizza-map bullet in CLAUDE.md.
 *.db
 *.db-journal
 *.db-wal
 *.sqlite
 *.sqlite-journal
 *.sqlite-wal
-claude-flow
-# Removed Windows wrapper files per user request
-hive-mind-prompt-*.txt
-
-.DS_Store

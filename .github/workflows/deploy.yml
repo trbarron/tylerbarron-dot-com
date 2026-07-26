@@ -34,7 +34,7 @@ jobs:
       - name: ⎔ Setup node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
           cache-dependency-path: ./package-lock.json
 
@@ -54,7 +54,7 @@ jobs:
       - name: ⎔ Setup node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
           cache-dependency-path: ./package-lock.json
 
@@ -74,7 +74,7 @@ jobs:
       - name: ⎔ Setup node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
 
       # Fails when a post's OG share card (public/images/og/<slug>.png) is
       # missing or was rendered from outdated frontmatter. Dependency-free,
@@ -106,7 +106,7 @@ jobs:
       - name: ⎔ Setup node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           architecture: x64
           cache: npm
           cache-dependency-path: ./package-lock.json

@@ -13,6 +13,82 @@ import MapControls from './MapControls.js';
 const LOCATIONS_URL = '/images/pizza/dominos-locations.json';
 const NETWORK_URL = '/images/pizza/pizza-network.json';
 
+// Two scales, because the layers encode different things and must not share a
+// ramp. The Pizza Score is a percentile centred on the national median, so it
+// is *diverging* — above/below typical, neutral in the middle. A raw star
+// rating is magnitude, so it is *sequential* — one hue, light to dark.
+//
+// Both replace an `hsl(rating/5 * 120, 70%, 50%)` red→yellow→green sweep. That
+// ramp measured CVD ΔE 3.7 between its midpoint and its top end (protanopia,
+// OKLab ×100) against a target of 8 — i.e. for a red-green colourblind reader,
+// "average" and "best" were nearly the same colour. Blue↔red measures 12.9 on
+// the same test, and every step below clears 3:1 against the #f5f5f5 map
+// surface. Don't reintroduce a hue sweep here.
+type Stop = { at: number; hex: string };
+
+/** Diverging. Blue = Domino's rates well (weaker local pizza); red = the reverse. */
+const SCORE_RAMP: Stop[] = [
+  { at: 0, hex: '#1c5cab' },
+  { at: 1.25, hex: '#3987e5' },
+  { at: 2.5, hex: '#e9e7e2' },  // neutral: at the median, deliberately recessive
+  { at: 3.75, hex: '#d03b3b' },
+  { at: 5, hex: '#8f1f1f' },
+];
+
+/**
+ * Sequential, single hue. Domain is 3.0–4.5 stars with clamping, not 0–5:
+ * real ratings span 1.7–4.9 but bunch between 3.4 and 4.2, so a full 0–5 domain
+ * renders the whole country one flat shade. The legend states the domain.
+ */
+const RATING_RAMP: Stop[] = [
+  { at: 3.0, hex: '#86b6ef' },
+  { at: 3.5, hex: '#3987e5' },
+  { at: 4.0, hex: '#1c5cab' },
+  { at: 4.5, hex: '#0d366b' },
+];
+
+/** Status green, not pure #00ff00 — that sat at 1.6:1 on the map surface. */
+const PERFECT_RATING_COLOR = '#0ca30c';
+
+/**
+ * The legend bar, drawn from the same stops the map uses so the two can't
+ * drift apart. SVG rather than a CSS gradient because the repo forbids inline
+ * `style` props (react/forbid-dom-props) and Tailwind can't see arbitrary
+ * colours built at runtime.
+ */
+function RampBar({ stops, id }: { stops: Stop[]; id: string }) {
+  const lo = stops[0].at;
+  const span = stops[stops.length - 1].at - lo;
+  return (
+    <svg className="w-full h-4 border-2 border-black block" preserveAspectRatio="none" viewBox="0 0 100 10">
+      <defs>
+        <linearGradient id={id} x1="0" x2="1" y1="0" y2="0">
+          {stops.map(s => (
+            <stop key={s.at} offset={`${(((s.at - lo) / span) * 100).toFixed(1)}%`} stopColor={s.hex} />
+          ))}
+        </linearGradient>
+      </defs>
+      <rect width="100" height="10" fill={`url(#${id})`} />
+    </svg>
+  );
+}
+
+function rampColor(stops: Stop[], value: number): string {
+  const first = stops[0];
+  const last = stops[stops.length - 1];
+  if (!(value > first.at)) return first.hex;
+  if (value >= last.at) return last.hex;
+
+  const upper = stops.findIndex(s => s.at > value);
+  const lo = stops[upper - 1];
+  const hi = stops[upper];
+  const t = (value - lo.at) / (hi.at - lo.at);
+
+  const channel = (hex: string, i: number) => parseInt(hex.slice(1 + i * 2, 3 + i * 2), 16);
+  const mix = (i: number) => Math.round(channel(lo.hex, i) + (channel(hi.hex, i) - channel(lo.hex, i)) * t);
+  return `#${[0, 1, 2].map(i => mix(i).toString(16).padStart(2, '0')).join('')}`;
+}
+
 type LocationData = {
   latitude: number;
   longitude: number;
@@ -99,11 +175,8 @@ export default function PizzaLocationMap() {
     loadScoreData();
   }, []);
 
-  // Calculate color based on rating
-  const getRatingColor = (rating: number): string => {
-    const hue = (rating / 5) * 120;
-    return `hsl(${hue}, 70%, 50%)`;
-  };
+  const getScoreColor = (score: number): string => rampColor(SCORE_RAMP, score);
+  const getRatingColor = (rating: number): string => rampColor(RATING_RAMP, rating);
 
   // Render US states (excluding Alaska and Hawaii)
   const renderStates = () => {
@@ -153,9 +226,12 @@ export default function PizzaLocationMap() {
             key={`score-${i}`}
             cx={x}
             cy={y}
-            r={6}
-            fill={getRatingColor(point.pizza_score)}
-            opacity={0.3}
+            r={5.5}
+            fill={getScoreColor(point.pizza_score)}
+            // Cells nearly tile at this radius, so heavy transparency is no
+            // longer needed to see the map beneath — and overlapping alpha was
+            // compounding into false intensity where the grid is dense.
+            opacity={0.9}
             onMouseEnter={() => setHoveredScore(point)}
             onMouseLeave={() => setHoveredScore(null)}
             className="cursor-pointer"
@@ -181,8 +257,8 @@ export default function PizzaLocationMap() {
             cx={x}
             cy={y}
             r={4}
-            fill={showPerfectRatings ? '#00ff00' : getRatingColor(location.rating)}
-            opacity={0.8}
+            fill={showPerfectRatings ? PERFECT_RATING_COLOR : getRatingColor(location.rating)}
+            opacity={0.85}
             onMouseEnter={() => setHoveredLocation(location)}
             onMouseLeave={() => setHoveredLocation(null)}
             className="cursor-pointer"
@@ -297,6 +373,36 @@ export default function PizzaLocationMap() {
             {renderReviewPoints()}
             {renderHoverInfo()}
           </svg>
+        </div>
+
+        <div className="mt-4 bg-white border-4 border-black p-4">
+          {showReviews ? (
+            <>
+              <div className="font-neo font-extrabold uppercase tracking-widest text-black text-sm border-b-2 border-black pb-2 mb-3">
+                Domino&apos;s Google Rating
+              </div>
+              <RampBar stops={RATING_RAMP} id="ratingRamp" />
+              <div className="flex justify-between mt-1 font-neo font-bold text-[10px] md:text-xs uppercase tracking-widest text-black opacity-60">
+                <span>3.0★ or below</span>
+                <span>4.5★ or above</span>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="font-neo font-extrabold uppercase tracking-widest text-black text-sm border-b-2 border-black pb-2 mb-3">
+                Pizza Score
+              </div>
+              <RampBar stops={SCORE_RAMP} id="scoreRamp" />
+              <div className="flex justify-between mt-1 font-neo font-bold text-[10px] md:text-xs uppercase tracking-widest text-black opacity-60">
+                <span>Domino&apos;s rates well</span>
+                <span>Typical</span>
+                <span>Domino&apos;s rates poorly</span>
+              </div>
+              <div className="mt-3 font-neo font-medium text-xs md:text-sm text-black">
+                A percentile, not a star rating: it ranks each area against the national median. The full sweep covers well under half a star of real variation.
+              </div>
+            </>
+          )}
         </div>
 
         <div className="mt-8 grid gap-8 border-t-4 border-black pt-6">

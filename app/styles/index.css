@@ -1,8 +1,69 @@
 @import "tailwindcss";
 
+/*
+ * Self-hosted, served root-relative from /fonts/* so they resolve through the
+ * tylerbarron.com CloudFront distribution — same-origin, no third-party origin
+ * for visitors to be exposed to, and no extra DNS+TLS handshake. (Browsers
+ * partitioned their HTTP caches in 2020, so a shared Google Fonts cache buys
+ * nothing any more.) Files live in public/fonts/ and are synced by the
+ * "Publish assets + images to CDN bucket" step.
+ *
+ * Both families are SIL Open Font License, copied from their @fontsource
+ * devDependencies rather than imported so the CDN serves them like any other
+ * static asset. Re-copy from node_modules/@fontsource*/…/files/ to update.
+ *
+ * IBM Plex Mono replaced Berkeley Mono, which was a paid licence shipping as a
+ * single static Regular — so every `font-mono font-bold` spot rendered as
+ * browser-synthesized faux bold. Plex has a real 700 cut, which fixes that.
+ * Licence: /fonts/ibm-plex-mono-LICENSE.txt.
+ */
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("/fonts/ibm-plex-mono-latin-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("/fonts/ibm-plex-mono-latin-700-normal.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("/fonts/ibm-plex-mono-latin-400-italic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+/*
+ * Inter, latin subset, weight axis 100-900 in one file each for upright and
+ * italic. Licence: /fonts/inter-LICENSE.txt.
+ */
+@font-face {
+  font-family: "Inter";
+  src: url("/fonts/inter-latin-wght-normal.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Inter";
+  src: url("/fonts/inter-latin-wght-italic.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+
 @theme {
   --font-mono:
-    "JetBrains Mono", "SF Mono", "Monaco", "Consolas", "Liberation Mono",
+    "IBM Plex Mono", "SF Mono", "Monaco", "Consolas", "Liberation Mono",
     "Courier New", monospace;
   --font-neo:
     "Inter", system-ui, -apple-system, BlinkMacSystemFont, Helvetica, Arial,
