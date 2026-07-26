@@ -1,3 +1,10 @@
+# [5.19.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.18.2...5.19.0) (2026-07-26)
+
+
+### Features
+
+* move Lambda, CI and engines to Node 24 ([3f97f62](https://github.com/trbarron/tylerbarron-dot-com/commit/3f97f622cb458c479c85e7837f13074af8005bab))
+
 ## [5.18.2](https://github.com/trbarron/tylerbarron-dot-com/compare/5.18.1...5.18.2) (2026-07-26)
 
 

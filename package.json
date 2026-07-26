@@ -1,6 +1,6 @@
 {
   "name": "tb-website",
-  "version": "5.18.2",
+  "version": "5.19.0",
   "private": true,
   "sideEffects": false,
   "type": "module",
@@ -19,7 +19,7 @@
     "test:visual": "playwright test",
     "test:visual:baseline": "playwright test --update-snapshots",
     "test:visual:update": "playwright test --update-snapshots",
-    "test:deploy": "echo '\n\ud83e\uddea Simulating Lambda Deployment\n' && npm run build:arc:server && npm run build:arc:deps && echo '\n\ud83d\udcca Size Analysis:' && echo 'Lambda Handler: '$(du -sh server/index.mjs 2>/dev/null | awk '{print $1}' || echo 'Not built') && echo 'SSR Build: '$(du -sh server/build 2>/dev/null | awk '{print $1}' || echo 'Not built') && echo 'Dependencies: '$(du -sh server/node_modules 2>/dev/null | awk '{print $1}' || echo 'Not installed') && echo 'TOTAL: '$(du -sh server 2>/dev/null | awk '{print $1}' || echo 'Not built') && echo '\n\u2705 Images in Lambda: '$(find server -name '*.jpg' -o -name '*.png' -o -name '*.gif' 2>/dev/null | grep -v node_modules | wc -l | tr -d ' ')' (should be 0)' && echo '\u2705 Ready to deploy!\n'",
+    "test:deploy": "echo '\n🧪 Simulating Lambda Deployment\n' && npm run build:arc:server && npm run build:arc:deps && echo '\n📊 Size Analysis:' && echo 'Lambda Handler: '$(du -sh server/index.mjs 2>/dev/null | awk '{print $1}' || echo 'Not built') && echo 'SSR Build: '$(du -sh server/build 2>/dev/null | awk '{print $1}' || echo 'Not built') && echo 'Dependencies: '$(du -sh server/node_modules 2>/dev/null | awk '{print $1}' || echo 'Not installed') && echo 'TOTAL: '$(du -sh server 2>/dev/null | awk '{print $1}' || echo 'Not built') && echo '\n✅ Images in Lambda: '$(find server -name '*.jpg' -o -name '*.png' -o -name '*.gif' 2>/dev/null | grep -v node_modules | wc -l | tr -d ' ')' (should be 0)' && echo '✅ Ready to deploy!\n'",
     "format": "prettier --write .",
     "dev": "react-router dev",
     "dev:arc": "npm run build:arc && arc sandbox -e testing",
