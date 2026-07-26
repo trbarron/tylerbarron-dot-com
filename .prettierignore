@@ -1,0 +1,13 @@
+# Generated, deliberately minified, and served straight to the CDN. Prettier
+# would un-minify these and multiply the payload the deploy step publishes.
+# Regenerate with: python3 scripts/generate-pizza-data.py --db <path>
+public/images/pizza/*.json
+
+# Generated
+CHANGELOG.md
+package-lock.json
+app/posts/compiled/
+build/
+public/assets/
+public/build/
+server/
