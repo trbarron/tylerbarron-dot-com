@@ -1,3 +1,10 @@
+# [5.20.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.19.0...5.20.0) (2026-07-26)
+
+
+### Features
+
+* upgrade Vite to 8, Architect to 12, remaining dev majors ([f40bcdb](https://github.com/trbarron/tylerbarron-dot-com/commit/f40bcdba9f1611e8a55a38f336f3318aa9edc1af))
+
 # [5.19.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.18.2...5.19.0) (2026-07-26)
 
 
