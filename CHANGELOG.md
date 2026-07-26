@@ -1,3 +1,10 @@
+## [5.18.2](https://github.com/trbarron/tylerbarron-dot-com/compare/5.18.1...5.18.2) (2026-07-26)
+
+
+### Bug Fixes
+
+* regenerate pizza map data from source scrape, serve via CDN ([bedd4b4](https://github.com/trbarron/tylerbarron-dot-com/commit/bedd4b49c2991a5149e47fa874e0d45098b4fcd1))
+
 ## [5.18.1](https://github.com/trbarron/tylerbarron-dot-com/compare/5.18.0...5.18.1) (2026-07-25)
 
 
