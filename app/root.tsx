@@ -18,6 +18,7 @@ import { buildMeta } from './utils/seo';
 import { trackNotFound } from './utils/analytics';
 import faviconUrl from './favicon.png';
 import DichroicBackground from './components/DichroicBackground';
+import { RetroreflectanceProvider } from './components/retroreflectance-context';
 
 export async function loader() {
   const rawId = process.env.GA_TRACKING_ID?.trim() || null;
@@ -176,10 +177,13 @@ export default function App() {
         {gaTrackingId && <GtagScripts gaTrackingId={gaTrackingId} sendPageView={false} />}
       </head>
       <body>
-        {/* WebGL Dichroic glass background effect */}
-        <DichroicBackground />
+        <RetroreflectanceProvider>
+          {/* WebGL retroreflective-fabric background effect. Opt-in from the
+              footer control, so it renders pure white until asked. */}
+          <DichroicBackground />
 
-        <Outlet />
+          <Outlet />
+        </RetroreflectanceProvider>
         <ScrollRestoration />
         <Scripts />
       </body>

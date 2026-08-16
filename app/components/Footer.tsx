@@ -1,3 +1,4 @@
+import RetroreflectanceTrigger from '~/components/RetroreflectanceTrigger';
 import { getImageUrl } from '~/utils/cdn';
 
 const linkedin = getImageUrl('Global/in.svg');
@@ -57,6 +58,8 @@ export default function Footer() {
                   </div>
                 </a>
               </div>
+
+              <RetroreflectanceTrigger />
             </div>
           </div>
         </div>
