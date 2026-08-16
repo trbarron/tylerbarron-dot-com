@@ -1,3 +1,10 @@
+# [5.21.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.20.1...5.21.0) (2026-08-16)
+
+
+### Features
+
+* retroreflective background with opt-in color controls ([048c733](https://github.com/trbarron/tylerbarron-dot-com/commit/048c7331605d650cc207bf96fd34d3069e2bbd76))
+
 ## [5.20.1](https://github.com/trbarron/tylerbarron-dot-com/compare/5.20.0...5.20.1) (2026-07-26)
 
 
