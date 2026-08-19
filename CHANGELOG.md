@@ -1,3 +1,10 @@
+# [5.22.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.21.1...5.22.0) (2026-08-19)
+
+
+### Features
+
+* media format appreciation profile post with shareable results ([eb90d4e](https://github.com/trbarron/tylerbarron-dot-com/commit/eb90d4ec9924844c5d56de593b7cd47066f5ff21))
+
 ## [5.21.1](https://github.com/trbarron/tylerbarron-dot-com/compare/5.21.0...5.21.1) (2026-08-19)
 
 
