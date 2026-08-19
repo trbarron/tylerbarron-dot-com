@@ -1,3 +1,10 @@
+## [5.21.1](https://github.com/trbarron/tylerbarron-dot-com/compare/5.21.0...5.21.1) (2026-08-19)
+
+
+### Bug Fixes
+
+* complete pizza-map same-origin migration and harden the generator ([5f98f62](https://github.com/trbarron/tylerbarron-dot-com/commit/5f98f6268e3a6c0d9c6689407ede023159f85e90))
+
 # [5.21.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.20.1...5.21.0) (2026-08-16)
 
 
