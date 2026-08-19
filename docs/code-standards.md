@@ -143,7 +143,7 @@ If a file exceeds limits:
 **Required**: Use only theme-defined font utilities.
 
 - **Body text**: `font-neo` (Inter) or no class (defaults to theme)
-- **Code blocks**: `font-mono` (JetBrains Mono)
+- **Code blocks**: `font-mono` (IBM Plex Mono)
 - **No hardcoded fonts**: Never use `font-family` in styles
 
 ```typescript

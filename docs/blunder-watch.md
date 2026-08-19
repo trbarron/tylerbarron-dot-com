@@ -236,10 +236,10 @@ Aligns with the existing site stack:
 | Language | TypeScript 5.x (strict mode) |
 | Styling | Tailwind CSS 4 — no inline `style={{}}` objects |
 | Chess board | Chessground (lichess-org/chessground) — same library used by Chesser Guesser |
-| Build | Vite 6 |
+| Build | Vite 8 |
 | Deployment | AWS Architect |
 
-**Typography**: `font-neo` (Inter) for all UI text, `font-mono` (JetBrains Mono) for move notation and eval display.
+**Typography**: `font-neo` (Inter) for all UI text, `font-mono` (IBM Plex Mono) for move notation and eval display.
 
 **Design System**: Neobrutalist — white backgrounds, 4px black borders, bold uppercase labels, black/white hover inversions. Follow the visual patterns established in Chesser Guesser and Collaborative Checkmate.
 

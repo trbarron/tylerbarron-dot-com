@@ -1,12 +1,18 @@
 @import "tailwindcss";
 
 /*
- * Self-hosted, served root-relative from /fonts/* so they resolve through the
- * tylerbarron.com CloudFront distribution — same-origin, no third-party origin
- * for visitors to be exposed to, and no extra DNS+TLS handshake. (Browsers
- * partitioned their HTTP caches in 2020, so a shared Google Fonts cache buys
- * nothing any more.) Files live in public/fonts/ and are synced by the
- * "Publish assets + images to CDN bucket" step.
+ * Self-hosted from /fonts/*, so no third-party origin for visitors to be
+ * exposed to and no extra DNS+TLS handshake. (Browsers partitioned their HTTP
+ * caches in 2020, so a shared Google Fonts cache buys nothing any more.) Files
+ * live in public/fonts/ and are synced by the "Publish assets + images to CDN
+ * bucket" step.
+ *
+ * These `url()`s look root-relative but Vite rewrites them against `base`
+ * (= VITE_CDN_URL) at build time — the shipped CSS says
+ * https://tylerbarron.com/fonts/…. They are same-origin only because
+ * VITE_CDN_URL currently equals the site origin. Point it at a different host
+ * and CSP `font-src 'self'` (app/entry.server.tsx) blocks every webfont
+ * silently — widen font-src in the same change.
  *
  * Both families are SIL Open Font License, copied from their @fontsource
  * devDependencies rather than imported so the CDN serves them like any other
