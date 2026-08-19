@@ -1,0 +1,503 @@
+---
+title: "Media Format Appreciation Profile"
+date: 2026-08-18
+subtitle: "Rate how much you appreciate ten media formats, then share the shape it makes"
+---
+
+import { useEffect, useState } from 'react'
+
+I don't feel like different forms of media and how differently people relate to them gets enough attention.
+
+The idea of reading a poem just doesn't resonate with me at all. I get that you're supposed to get excited about Mr. Nolan's Odyssey and travel far to see it in 70mm -- to me that sounds fun because it's an adventure and not because the format is that different. So I built this survey to encourage some self-reflection and made it enforce quantification because I think that's funny.
+
+Rate your appreciation of each form **relative to everyone else** -- 50% means you figure you're about average, 100% means you get more out of it than anyone you know. My results are at the end.
+
+export const SCALES = [
+  { id: 'movies', label: 'Movies' },
+  {
+    id: 'tv',
+    label: 'TV Shows',
+    subs: [{ id: 'tv.reality', label: 'Reality TV specifically' }],
+  },
+  {
+    id: 'liveSports',
+    label: 'Live Sports',
+    ask: 'Do you have a favorite broadcaster?',
+  },
+  {
+    id: 'music',
+    label: 'Music',
+    subs: [
+      { id: 'music.recent', label: 'Share of what you listen to that you found in the last 10 years' },
+    ],
+  },
+  {
+    id: 'books',
+    label: 'Books',
+    hint: 'audiobooks count',
+    subs: [
+      { id: 'books.fiction', label: 'Fiction' },
+      { id: 'books.nonfiction', label: 'Nonfiction' },
+    ],
+  },
+  {
+    id: 'theater',
+    label: 'Theater',
+    subs: [
+      { id: 'theater.musicals', label: 'Musicals' },
+      { id: 'theater.plays', label: 'Non-musicals' },
+    ],
+  },
+  { id: 'poetry', label: 'Poetry' },
+  { id: 'shortForm', label: 'Short-form video', hint: 'TikTok, Reels, Shorts' },
+  { id: 'longForm', label: 'Medium and long-form video', hint: 'YouTube, Twitch' },
+  {
+    id: 'podcasts',
+    label: 'Podcasts',
+    subs: [
+      { id: 'podcasts.scripted', label: 'Scripted' },
+      { id: 'podcasts.unscripted', label: 'Unscripted' },
+    ],
+  },
+]
+
+{/*
+  My own answers. Rendered behind a cover so the numbers can't anchor yours
+  before you've picked your own — the whole point is comparing to the
+  population, and I am not the population.
+*/}
+export const TYLERS_CARD = {
+  scores: {
+    movies: 30,
+    tv: 10,
+    'tv.reality': 0,
+    liveSports: 20,
+    music: 80,
+    'music.recent': 70,
+    books: 50,
+    'books.fiction': 70,
+    'books.nonfiction': 30,
+    theater: 0,
+    'theater.musicals': 10,
+    'theater.plays': 0,
+    poetry: 0,
+    shortForm: 10,
+    longForm: 70,
+    podcasts: 90,
+    'podcasts.scripted': 40,
+    'podcasts.unscripted': 90,
+  },
+  broadcaster: false,
+  notes: {
+    tv: 'Literally just Jeopardy! -- I have not been able to get into any other show',
+    liveSports: 'F1 and the Olympics... no other sport really works on me',
+    music: "I'll die on this hill. I really like music and feel like I've connected with it in some genuinely powerful ways. I know it's cringe but it really works on me",
+    books: 'I love a good book and have been listening to audiobooks pretty consistently for 10 years',
+    shortForm: "Suprisingly avoided this one",
+    longForm: 'I am fully in the YouTube sauce. I have cut back -- no livestreams, and fewer "YouTube until 1am while working on something" nights though',
+    podcasts: "I love my podcasts and listen to one every night. It's a bummer they're so siloed, and therefore hard to connect over",
+  },
+}
+
+export const ALL_SCALE_IDS = SCALES.flatMap((s) => [s.id, ...(s.subs ?? []).map((sub) => sub.id)])
+
+{/* A filled bar. The width has to be an inline style: Tailwind's JIT can't
+    see a value that only exists at runtime. */}
+export function Bar({ value, thin }) {
+  return (
+    <div className={`w-full border-2 border-black bg-white ${thin ? 'h-2' : 'h-4'}`}>
+      <div className="h-full bg-black" style={{ width: `${value}%` }} />
+    </div>
+  )
+}
+
+export function ReadOnlyScale({ scale, result }) {
+  const value = result.scores[scale.id]
+  if (value === undefined) return null
+  const note = result.notes?.[scale.id]
+  const subs = (scale.subs ?? []).filter((sub) => result.scores[sub.id] !== undefined)
+
+  return (
+    <div className="border-b-2 border-black px-3 py-2.5 last:border-b-0">
+      <div className="flex items-baseline justify-between gap-3">
+        <span className="font-neo text-sm font-extrabold uppercase tracking-tight text-black">
+          {scale.label}
+        </span>
+        <span className="font-mono text-sm font-bold tabular-nums text-black">{value}%</span>
+      </div>
+      <div className="mt-1.5">
+        <Bar value={value} />
+      </div>
+      {subs.map((sub) => (
+        <div key={sub.id} className="mt-2">
+          <div className="flex items-baseline justify-between gap-3">
+            <span className="font-neo text-xs font-medium text-black">{sub.label}</span>
+            <span className="font-mono text-xs font-bold tabular-nums text-black">
+              {result.scores[sub.id]}%
+            </span>
+          </div>
+          <div className="mt-1">
+            <Bar value={result.scores[sub.id]} thin />
+          </div>
+        </div>
+      ))}
+      {scale.ask && result.broadcaster !== undefined && (
+        <p className="mt-1.5 pl-3 font-neo text-xs font-medium text-black">
+          {scale.ask} {result.broadcaster ? 'Yes' : 'No'}
+        </p>
+      )}
+      {note && <p className="mt-1.5 font-neo text-sm font-medium leading-snug text-black">{note}</p>}
+    </div>
+  )
+}
+
+export function ResultCard({ result, title }) {
+  return (
+    <div className="not-prose border-4 border-black bg-white font-neo">
+      <div role="heading" aria-level={3} className="border-b-4 border-black bg-black px-3 py-2 font-neo text-base font-extrabold uppercase tracking-tight text-white">
+        {title}
+      </div>
+      {SCALES.map((scale) => (
+        <ReadOnlyScale key={scale.id} scale={scale} result={result} />
+      ))}
+    </div>
+  )
+}
+
+export function TylersCard() {
+  const [revealed, setRevealed] = useState(false)
+
+  if (!revealed) {
+    return (
+      <div className="not-prose border-4 border-black bg-white font-neo">
+        <div role="heading" aria-level={3} className="border-b-4 border-black bg-black px-3 py-2 font-neo text-base font-extrabold uppercase tracking-tight text-white">
+          Tyler's card
+        </div>
+        <div className="p-3">
+          <div aria-hidden="true" className="space-y-3">
+            {SCALES.map((scale) => (
+              <div key={scale.id}>
+                <div className="h-3 w-1/3 bg-gray-200" />
+                <div className="mt-1.5 h-4 w-full border-2 border-gray-200 bg-gray-100" />
+              </div>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => setRevealed(true)}
+            className="mt-4 w-full border-4 border-black bg-white px-4 py-2 font-neo text-sm font-extrabold uppercase tracking-tight text-black hover:bg-black hover:text-white"
+          >
+            Show me
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  return <ResultCard result={TYLERS_CARD} title="Tyler's card" />
+}
+
+{/*
+  A slider parked at 0 cannot report "0%" through onChange alone: the value
+  never changes, so the browser fires nothing and the scale stays unrated.
+  These handlers commit the current position the moment someone touches the
+  control, which is the only way 0 is reachable now that 0 is also the
+  resting position.
+*/}
+export function markRated(id, rated, onScore) {
+  if (rated) return {}
+  const commit = () => onScore(id, 0)
+  return { onPointerDown: commit, onKeyDown: commit }
+}
+
+export function ScaleRow({ scale, scores, notes, broadcaster, onScore, onNote, onBroadcaster }) {
+  const value = scores[scale.id]
+  const rated = value !== undefined
+  const [showNote, setShowNote] = useState(false)
+
+  return (
+    <div className="border-b-4 border-black px-3 py-3 last:border-b-0">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+        <label
+          htmlFor={`scale-${scale.id}`}
+          className="font-neo text-sm font-extrabold uppercase tracking-tight text-black"
+        >
+          {scale.label}
+          {scale.hint && (
+            <span className="ml-1.5 font-neo text-xs font-medium normal-case text-black opacity-60">
+              ({scale.hint})
+            </span>
+          )}
+        </label>
+        <span className="font-mono text-sm font-bold tabular-nums text-black">
+          {rated ? `${value}%` : '—'}
+        </span>
+      </div>
+
+      <input
+        id={`scale-${scale.id}`}
+        type="range"
+        min="0"
+        max="100"
+        step="10"
+        value={rated ? value : 0}
+        onChange={(e) => onScore(scale.id, Number(e.target.value))}
+        {...markRated(scale.id, rated, onScore)}
+        className="mt-2 h-2 w-full cursor-pointer appearance-none rounded-none border-2 border-black bg-gray-200 accent-black"
+      />
+
+      {rated && (
+        <div className="mt-2">
+          {(scale.subs ?? []).map((sub) => {
+            const subValue = scores[sub.id]
+            return (
+              <div key={sub.id} className="mt-1.5 pl-3">
+                <div className="flex flex-wrap items-baseline justify-between gap-x-3">
+                  <label
+                    htmlFor={`scale-${sub.id}`}
+                    className="font-neo text-xs font-medium text-black"
+                  >
+                    {sub.label}
+                  </label>
+                  <span className="font-mono text-xs font-bold tabular-nums text-black">
+                    {subValue !== undefined ? `${subValue}%` : '—'}
+                  </span>
+                </div>
+                <input
+                  id={`scale-${sub.id}`}
+                  type="range"
+                  min="0"
+                  max="100"
+                  step="10"
+                  value={subValue !== undefined ? subValue : 0}
+                  onChange={(e) => onScore(sub.id, Number(e.target.value))}
+                  {...markRated(sub.id, subValue !== undefined, onScore)}
+                  className="mt-1 h-1.5 w-full cursor-pointer appearance-none rounded-none border-2 border-black bg-gray-200 accent-black"
+                />
+              </div>
+            )
+          })}
+
+          {scale.ask && (
+            <div className="mt-2 flex flex-wrap items-center gap-2 pl-3">
+              <span className="font-neo text-xs font-medium text-black">{scale.ask}</span>
+              {[
+                { label: 'Yes', value: true },
+                { label: 'No', value: false },
+              ].map((option) => (
+                <button
+                  key={option.label}
+                  type="button"
+                  onClick={() => onBroadcaster(broadcaster === option.value ? undefined : option.value)}
+                  aria-pressed={broadcaster === option.value}
+                  className={
+                    'border-2 border-black px-2 py-0.5 font-neo text-xs font-extrabold uppercase ' +
+                    (broadcaster === option.value
+                      ? 'bg-black text-white'
+                      : 'bg-white text-black hover:bg-black hover:text-white')
+                  }
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {showNote || notes[scale.id] ? (
+            <textarea
+              value={notes[scale.id] ?? ''}
+              onChange={(e) => onNote(scale.id, e.target.value)}
+              maxLength={280}
+              rows={2}
+              placeholder="Optional note"
+              aria-label={`Note about ${scale.label}`}
+              className="mt-2 w-full border-2 border-black bg-white p-2 font-neo text-sm text-black placeholder:opacity-50"
+            />
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowNote(true)}
+              className="mt-2 font-neo text-xs font-extrabold uppercase tracking-tight text-black underline"
+            >
+              + Add a note
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+export function MediaProfile() {
+  const [scores, setScores] = useState({})
+  const [notes, setNotes] = useState({})
+  const [broadcaster, setBroadcaster] = useState(undefined)
+  const [name, setName] = useState('')
+  const [shareUrl, setShareUrl] = useState('')
+  const [status, setStatus] = useState('idle')
+  const [error, setError] = useState('')
+  const [shared, setShared] = useState(null)
+  const [copied, setCopied] = useState(false)
+
+  // Read ?r= on the client only. Doing it during render would make the server
+  // and the first client pass disagree and blow up hydration.
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get('r')
+    if (!id) return
+    setShared({ state: 'loading' })
+    fetch(`/api/mediaProfile/share?id=${encodeURIComponent(id)}`)
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error('not found'))))
+      .then((data) => setShared({ state: 'ready', result: data.result }))
+      .catch(() => setShared({ state: 'missing' }))
+  }, [])
+
+  const rated = Object.keys(scores).filter((id) => !id.includes('.')).length
+
+  function handleScore(id, value) {
+    setScores((prev) => ({ ...prev, [id]: value }))
+  }
+
+  function handleNote(id, value) {
+    setNotes((prev) => ({ ...prev, [id]: value }))
+  }
+
+  async function handleShare() {
+    setStatus('saving')
+    setError('')
+    try {
+      const payload = {
+        scores,
+        notes: Object.fromEntries(Object.entries(notes).filter(([, v]) => v.trim())),
+        ...(broadcaster === undefined ? {} : { broadcaster }),
+        ...(name.trim() ? { name: name.trim() } : {}),
+      }
+      const res = await fetch('/api/mediaProfile/share', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Could not save that.')
+      setShareUrl(`${window.location.origin}${window.location.pathname}?r=${data.id}`)
+      setStatus('saved')
+    } catch (e) {
+      setError(e.message)
+      setStatus('idle')
+    }
+  }
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(shareUrl)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      setCopied(false)
+    }
+  }
+
+  return (
+    <div className="not-prose mb-8 font-neo">
+      {shared?.state === 'ready' && (
+        <div className="mb-6">
+          <ResultCard
+            result={shared.result}
+            title={shared.result.name ? `${shared.result.name}'s card` : 'A shared card'}
+          />
+          <p className="mt-2 font-neo text-sm font-medium text-black">
+            Fill out your own below.
+          </p>
+        </div>
+      )}
+      {shared?.state === 'missing' && (
+        <p className="mb-6 border-4 border-black bg-white p-3 font-neo text-sm font-medium text-black">
+          That shared card has expired or never existed. You can still fill out your own.
+        </p>
+      )}
+
+      <div className="border-4 border-black bg-white">
+        {SCALES.map((scale) => (
+          <ScaleRow
+            key={scale.id}
+            scale={scale}
+            scores={scores}
+            notes={notes}
+            broadcaster={broadcaster}
+            onScore={handleScore}
+            onNote={handleNote}
+            onBroadcaster={setBroadcaster}
+          />
+        ))}
+      </div>
+
+      <div className="mt-3 border-4 border-black bg-white p-3">
+        {status !== 'saved' && (
+          <div className="mt-2">
+            <label htmlFor="profile-name" className="font-neo text-xs font-extrabold uppercase text-black">
+              Your name <span className="font-medium normal-case opacity-60">(optional)</span>
+            </label>
+            <input
+              id="profile-name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              maxLength={40}
+              placeholder="Goes on the card you share"
+              className="mt-1 w-full border-2 border-black bg-white p-2 font-neo text-sm text-black placeholder:opacity-50"
+            />
+          </div>
+        )}
+
+        {status !== 'saved' && (
+          <button
+            type="button"
+            onClick={handleShare}
+            disabled={rated === 0 || status === 'saving'}
+            className="mt-2 w-full border-4 border-black bg-white px-4 py-2 font-neo text-sm font-extrabold uppercase tracking-tight text-black hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-white disabled:hover:text-black"
+          >
+            {status === 'saving' ? 'Saving…' : 'Share my card'}
+          </button>
+        )}
+
+        {error && (
+          <p role="alert" className="mt-2 font-neo text-sm font-bold text-black">
+            {error}
+          </p>
+        )}
+
+        {status === 'saved' && (
+          <div className="mt-2">
+            <label htmlFor="share-url" className="font-neo text-xs font-extrabold uppercase text-black">
+              Your link
+            </label>
+            <div className="mt-1 flex flex-col gap-2 sm:flex-row">
+              <input
+                id="share-url"
+                type="text"
+                readOnly
+                value={shareUrl}
+                onFocus={(e) => e.target.select()}
+                className="w-full border-2 border-black bg-white p-2 font-mono text-xs text-black"
+              />
+              <button
+                type="button"
+                onClick={handleCopy}
+                className="shrink-0 border-4 border-black bg-white px-4 py-2 font-neo text-xs font-extrabold uppercase tracking-tight text-black hover:bg-black hover:text-white"
+              >
+                {copied ? 'Copied' : 'Copy'}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+<MediaProfile />
+
+<div className="mt-4 border-t-4 border-black" />
+
+## My responses
+
+<TylersCard />

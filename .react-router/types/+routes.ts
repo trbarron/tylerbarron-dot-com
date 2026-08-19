@@ -154,6 +154,9 @@ type Pages = {
   "/api/camelUpCup/status": {
     params: {};
   };
+  "/api/mediaProfile/share": {
+    params: {};
+  };
   "/api/blunderWatch/game": {
     params: {};
   };
@@ -203,7 +206,7 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/blog/:slug" | "/favicon.ico" | "/healthcheck" | "/blunder-watch" | "/bouldering-tracker" | "/camel-up-cup" | "/camel-up-cup/2018" | "/camel-up-cup/leaderboard" | "/cat-tracker" | "/cat-tracker/blog" | "/chesser-guesser" | "/collaborative-checkmate" | "/collaborative-checkmate/:gameId/:playerId" | "/generative-art" | "/pizza-rating" | "/the-riddler" | "/boulderingTracker" | "/BoulderingTracker" | "/camelUpCup" | "/CamelUpCup" | "/catTracker" | "/CatTracker" | "/catTracker/blog" | "/CatTracker/Blog" | "/chesserGuesser" | "/collaborativeCheckmate" | "/collaborativeCheckmate/:gameId/:playerId" | "/generativeArt" | "/GenerativeArt" | "/pizzaRating" | "/PizzaRating" | "/theRiddler" | "/TheRiddler" | "/set" | "/SSBM" | "/robots.txt" | "/sitemap.xml" | "/feed.xml" | "/giscus-theme.css" | "/api/chesserGuesser/puzzles" | "/api/chesserGuesser/submit" | "/api/chesserGuesser/leaderboard" | "/api/camelUpCup/submit" | "/api/camelUpCup/status" | "/api/blunderWatch/game" | "/api/blunderWatch/submit" | "/api/blunderWatch/leaderboard" | "/multiple-choice-chess" | "/multiple-choice-chess/:gameId/:playerId" | "/api/multipleChoiceChess/create" | "/api/multipleChoiceChess/join" | "/api/multipleChoiceChess/state" | "/api/multipleChoiceChess/move" | "/api/multipleChoiceChess/resign" | "/api/multipleChoiceChess/claimWin" | "/api/multipleChoiceChess/available" | "/*";
+    page: "/" | "/blog/:slug" | "/favicon.ico" | "/healthcheck" | "/blunder-watch" | "/bouldering-tracker" | "/camel-up-cup" | "/camel-up-cup/2018" | "/camel-up-cup/leaderboard" | "/cat-tracker" | "/cat-tracker/blog" | "/chesser-guesser" | "/collaborative-checkmate" | "/collaborative-checkmate/:gameId/:playerId" | "/generative-art" | "/pizza-rating" | "/the-riddler" | "/boulderingTracker" | "/BoulderingTracker" | "/camelUpCup" | "/CamelUpCup" | "/catTracker" | "/CatTracker" | "/catTracker/blog" | "/CatTracker/Blog" | "/chesserGuesser" | "/collaborativeCheckmate" | "/collaborativeCheckmate/:gameId/:playerId" | "/generativeArt" | "/GenerativeArt" | "/pizzaRating" | "/PizzaRating" | "/theRiddler" | "/TheRiddler" | "/set" | "/SSBM" | "/robots.txt" | "/sitemap.xml" | "/feed.xml" | "/giscus-theme.css" | "/api/chesserGuesser/puzzles" | "/api/chesserGuesser/submit" | "/api/chesserGuesser/leaderboard" | "/api/camelUpCup/submit" | "/api/camelUpCup/status" | "/api/mediaProfile/share" | "/api/blunderWatch/game" | "/api/blunderWatch/submit" | "/api/blunderWatch/leaderboard" | "/multiple-choice-chess" | "/multiple-choice-chess/:gameId/:playerId" | "/api/multipleChoiceChess/create" | "/api/multipleChoiceChess/join" | "/api/multipleChoiceChess/state" | "/api/multipleChoiceChess/move" | "/api/multipleChoiceChess/resign" | "/api/multipleChoiceChess/claimWin" | "/api/multipleChoiceChess/available" | "/*";
   };
   "routes/_index.tsx": {
     id: "routes/_index";
@@ -369,6 +372,10 @@ type RouteFiles = {
     id: "routes/api/camelUpCup/status";
     page: "/api/camelUpCup/status";
   };
+  "routes/api/mediaProfile/share.ts": {
+    id: "routes/api/mediaProfile/share";
+    page: "/api/mediaProfile/share";
+  };
   "routes/api/blunderWatch/game.ts": {
     id: "routes/api/blunderWatch/game";
     page: "/api/blunderWatch/game";
@@ -470,6 +477,7 @@ type RouteModules = {
   "routes/api/chesserGuesser/leaderboard": typeof import("./app/routes/api/chesserGuesser/leaderboard.ts");
   "routes/api/camelUpCup/submit": typeof import("./app/routes/api/camelUpCup/submit.ts");
   "routes/api/camelUpCup/status": typeof import("./app/routes/api/camelUpCup/status.ts");
+  "routes/api/mediaProfile/share": typeof import("./app/routes/api/mediaProfile/share.ts");
   "routes/api/blunderWatch/game": typeof import("./app/routes/api/blunderWatch/game.ts");
   "routes/api/blunderWatch/submit": typeof import("./app/routes/api/blunderWatch/submit.ts");
   "routes/api/blunderWatch/leaderboard": typeof import("./app/routes/api/blunderWatch/leaderboard.ts");

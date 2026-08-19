@@ -62,6 +62,9 @@ export default [
   route("api/camelUpCup/submit", "routes/api/camelUpCup/submit.ts"),
   route("api/camelUpCup/status", "routes/api/camelUpCup/status.ts"),
 
+  // API route for Media Format Appreciation Profile shared results
+  route("api/mediaProfile/share", "routes/api/mediaProfile/share.ts"),
+
   // API routes for Blunder Watch
   route("api/blunderWatch/game", "routes/api/blunderWatch/game.ts"),
   route("api/blunderWatch/submit", "routes/api/blunderWatch/submit.ts"),
