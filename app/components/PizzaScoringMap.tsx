@@ -47,9 +47,6 @@ const RATING_RAMP: Stop[] = [
   { at: 4.5, hex: '#0d366b' },
 ];
 
-/** Status green, not pure #00ff00 — that sat at 1.6:1 on the map surface. */
-const PERFECT_RATING_COLOR = '#0ca30c';
-
 /**
  * The legend bar, drawn from the same stops the map uses so the two can't
  * drift apart. SVG rather than a CSS gradient because the repo forbids inline
@@ -60,7 +57,13 @@ function RampBar({ stops, id }: { stops: Stop[]; id: string }) {
   const lo = stops[0].at;
   const span = stops[stops.length - 1].at - lo;
   return (
-    <svg className="w-full h-4 border-2 border-black block" preserveAspectRatio="none" viewBox="0 0 100 10">
+    <svg
+      className="w-full h-4 border-2 border-black block"
+      preserveAspectRatio="none"
+      viewBox="0 0 100 10"
+      // Decorative: the endpoint captions beside it carry the meaning.
+      aria-hidden="true"
+    >
       <defs>
         <linearGradient id={id} x1="0" x2="1" y1="0" y2="0">
           {stops.map(s => (
@@ -115,7 +118,6 @@ export default function PizzaLocationMap() {
   const [hoveredScore, setHoveredScore] = useState<PizzaScoreData | null>(null);
   const [showReviews, setShowReviews] = useState<boolean>(false);
   const [showPizzaScore, setShowPizzaScore] = useState<boolean>(true);
-  const [showPerfectRatings, setShowPerfectRatings] = useState<boolean>(false);
   const [usStates, setUsStates] = useState<FeatureCollection | null>(null);
   const [scoreFilter, setScoreFilter] = useState(0);
 
@@ -207,14 +209,17 @@ export default function PizzaLocationMap() {
 
   // Render pizza score heatmap (continental US only)
   const renderPizzaScoreHeatmap = () => {
-    if ((!showPizzaScore && !showPerfectRatings) || !scoreData.length) return null;
+    if (!showPizzaScore || !scoreData.length) return null;
   
     return scoreData
-      // The generator emits US-only cells, so no geographic filter here. The
-      // one this replaced was a lat/lng box that also contains southern
-      // Ontario, Quebec and New Brunswick — Canadian Domino's rate about half a
-      // star higher, and since the score inverts, that used to render the
-      // Buffalo/Niagara/Detroit corridor as the worst pizza in America.
+      // No geographic filter: the one this replaced was a lat/lng box that also
+      // contains southern Ontario, Quebec and New Brunswick, and Canadian
+      // Domino's rate about half a star higher — since the score inverts, that
+      // rendered the Buffalo/Niagara/Detroit corridor as the worst pizza in
+      // America. The generator now filters *stores* to US states, which fixes
+      // the scores. It does not mask the grid, though: cells are emitted
+      // wherever 3+ US stores fall within the smoothing radius, so a handful
+      // still land over Lake Ontario and the Gulf. Cosmetic, not a data bug.
       .filter(point => Number(point.pizza_score) >= scoreFilter)
       .map((point, i) => {
         const projected = projection([point.longitude, point.latitude]);
@@ -257,7 +262,7 @@ export default function PizzaLocationMap() {
             cx={x}
             cy={y}
             r={4}
-            fill={showPerfectRatings ? PERFECT_RATING_COLOR : getRatingColor(location.rating)}
+            fill={getRatingColor(location.rating)}
             opacity={0.85}
             onMouseEnter={() => setHoveredLocation(location)}
             onMouseLeave={() => setHoveredLocation(null)}
@@ -300,7 +305,7 @@ export default function PizzaLocationMap() {
       );
     }
 
-    if (hoveredScore && (showPizzaScore || showPerfectRatings) && !showReviews) {
+    if (hoveredScore && showPizzaScore && !showReviews) {
       const projected = projection([hoveredScore.longitude, hoveredScore.latitude]);
       if (!projected) return null;
       const [x, y] = projected;
@@ -355,17 +360,29 @@ export default function PizzaLocationMap() {
   showReviews={showReviews}
   setShowReviews={setShowReviews}
   setShowPizzaScore={setShowPizzaScore}
-  setShowPerfectRatings={setShowPerfectRatings}
   scoreFilter={scoreFilter}
   setScoreFilter={setScoreFilter}
 />
 
         <div className="h-[50vh] max-h-[800px] relative bg-white border-4 border-black overflow-hidden">
+          {/*
+            role="img" + a summary label rather than per-mark focus handlers:
+            the two layers are ~2,300 grid cells and ~5,700 store dots, so making
+            each one tabbable would build an 8,000-stop tab trap — worse than the
+            hover-only tooltips it set out to fix. The label carries the headline
+            numbers; the Statistics block below carries the rest as real text.
+          */}
           <svg
             width="100%"
             height="100%"
             viewBox={`0 0 ${width} ${height}`}
             preserveAspectRatio="xMidYMid meet"
+            role="img"
+            aria-label={
+              showReviews
+                ? `Map of ${reviewData.length.toLocaleString()} US Domino's locations, shaded by Google rating from 3.0 stars or below (light blue) to 4.5 or above (dark blue).`
+                : `Map of the United States shaded by Pizza Score across ${scoreData.length.toLocaleString()} grid cells. Blue marks areas where Domino's rates well, red where it rates poorly — read as a percentile against the national median, not a star rating.`
+            }
           >
             <rect width={width} height={height} fill="#f5f5f5" />
             {renderStates()}

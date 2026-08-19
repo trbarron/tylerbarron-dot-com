@@ -44,6 +44,8 @@ async function handlerFn(event: any, context: any) {
         const mimeTypes: Record<string, string> = {
           'js': 'application/javascript',
           'css': 'text/css',
+          // /images/pizza/*.json — fetched by PizzaScoringMap in the sandbox.
+          'json': 'application/json',
           'jpg': 'image/jpeg',
           'png': 'image/png',
           'gif': 'image/gif',

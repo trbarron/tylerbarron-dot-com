@@ -3,7 +3,6 @@ interface MapControlsProps {
   showReviews: boolean;
   setShowReviews: (show: boolean) => void;
   setShowPizzaScore: (show: boolean) => void;
-  setShowPerfectRatings: (show: boolean) => void;
   scoreFilter: number;
   setScoreFilter: (value: number) => void;
 }
@@ -12,7 +11,6 @@ const MapControls = ({
     showReviews,
     setShowReviews,
     setShowPizzaScore,
-    setShowPerfectRatings,
     scoreFilter,
     setScoreFilter,
   }: MapControlsProps) => {
@@ -21,7 +19,6 @@ const MapControls = ({
     if (mode === 'reviews') {
       setShowReviews(true);
       setShowPizzaScore(false);
-      setShowPerfectRatings(false);
     } else {
       setShowReviews(false);
       setShowPizzaScore(true);
@@ -80,7 +77,6 @@ const MapControls = ({
               onChange={(e) => {
                 const value = parseFloat(e.target.value);
                 setScoreFilter(value);
-                setShowPerfectRatings(value >= 5);
               }}
               className="w-full h-2 bg-gray-200 rounded-none appearance-none cursor-pointer border-2 border-black accent-black"
             />

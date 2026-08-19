@@ -172,6 +172,12 @@ def load_stores(db_path: Path) -> tuple[list[dict], dict[str, int]]:
 def build_grid(stores: list[dict]) -> list[dict]:
     """Smooth store ratings onto the grid and convert them to Pizza Scores."""
     total_reviews = sum(s["total_ratings"] for s in stores)
+    if not total_reviews:
+        sys.exit(
+            "error: no rated stores survived filtering — nothing to build a grid from.\n"
+            "Check that --db points at the Places scrape and that its `name`/`state` "
+            "columns still match the filters in load_stores()."
+        )
     global_mean = sum(s["rating"] * s["total_ratings"] for s in stores) / total_reviews
 
     # Shrink each store's rating toward the national mean by its review count.
@@ -231,6 +237,12 @@ def build_grid(stores: list[dict]) -> list[dict]:
                     "reviews": reviews,
                 }
             )
+
+    if not cells:
+        sys.exit(
+            f"error: every grid cell was dropped (needs {MIN_STORES}+ stores within "
+            f"{RADIUS_KM:.0f} km). Loosen MIN_STORES/RADIUS_KM or check the store filter."
+        )
 
     # Standardize against the distribution of cell means, then invert: a low
     # local Domino's rating becomes a high Pizza Score.

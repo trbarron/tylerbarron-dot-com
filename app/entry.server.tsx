@@ -39,8 +39,9 @@ const CONTENT_SECURITY_POLICY = [
     "https://unpkg.com",
     // Cat tracker camera + chesser guesser puzzle APIs
     "https://nj3ho46btl.execute-api.us-west-2.amazonaws.com https://f73vgbj1jk.execute-api.us-west-2.amazonaws.com",
-    // Pizza map datasets (S3) + US state boundaries (jsdelivr)
-    "https://externalwebsiteassets.s3.us-west-2.amazonaws.com https://cdn.jsdelivr.net",
+    // US state boundaries for the pizza map (jsdelivr). The pizza datasets
+    // themselves are same-origin now (/images/pizza/*), so they need no grant.
+    "https://cdn.jsdelivr.net",
     // Collaborative checkmate game server (REST lobby + websocket gameplay)
     "https://collaborative-checkmate-server.fly.dev wss://collaborative-checkmate-server.fly.dev",
   ].join(" "),
