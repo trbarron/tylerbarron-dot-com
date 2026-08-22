@@ -4,13 +4,13 @@ date: 2026-08-18
 subtitle: "Rate how much you appreciate ten media formats, then share the shape it makes"
 ---
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 I don't feel like different forms of media and how differently people relate to them gets enough attention.
 
 The idea of reading a poem just doesn't resonate with me at all. I get that you're supposed to get excited about Mr. Nolan's Odyssey and travel far to see it in 70mm -- to me that sounds fun because it's an adventure and not because the format is that different. So I built this survey to encourage some self-reflection and made it enforce quantification because I think that's funny.
 
-Rate your appreciation of each form **relative to everyone else** -- 50% means you figure you're about average, 100% means you get more out of it than anyone you know. My results are at the end.
+Rate your appreciation of each form **relative to everyone else** -- 50% means you figure you're about average, 100% means you get more out of it than anyone you know. Everyone's cards, mine first, are at the bottom.
 
 export const SCALES = [
   { id: 'movies', label: 'Movies' },
@@ -62,9 +62,10 @@ export const SCALES = [
 ]
 
 {/*
-  My own answers. Rendered behind a cover so the numbers can't anchor yours
-  before you've picked your own — the whole point is comparing to the
-  population, and I am not the population.
+  My own answers. First in the list at the bottom, which is itself behind a
+  cover so nobody's numbers -- mine least of all -- can anchor yours before
+  you've picked your own. The whole point is comparing to the population, and
+  I am not the population.
 */}
 export const TYLERS_CARD = {
   scores: {
@@ -100,6 +101,46 @@ export const TYLERS_CARD = {
 }
 
 export const ALL_SCALE_IDS = SCALES.flatMap((s) => [s.id, ...(s.subs ?? []).map((sub) => sub.id)])
+
+{/*
+  Editing is gated on a secret the server minted when the card was saved, and
+  this browser is the only place it is ever kept. That is the whole ownership
+  model: a share link lets you read someone's card and nothing else, so a card
+  in the list below can only be rewritten by the person who wrote it.
+*/}
+export const TOKEN_STORE = 'mediaProfile:editTokens'
+
+export function readTokens() {
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(TOKEN_STORE) ?? 'null')
+    return parsed && typeof parsed === 'object' ? parsed : {}
+  } catch {
+    return {}
+  }
+}
+
+export function rememberToken(id, token) {
+  try {
+    window.localStorage.setItem(TOKEN_STORE, JSON.stringify({ ...readTokens(), [id]: token }))
+  } catch {
+    // Private browsing, or storage that is full. The card is saved either way;
+    // the only thing lost is the ability to come back and change it.
+  }
+}
+
+{/* The form and the list are siblings in the page, so they talk over window. */}
+export const PUBLISHED_EVENT = 'mediaProfile:published'
+export const EDIT_EVENT = 'mediaProfile:edit'
+
+{/* Rendered client-side only, so a locale-dependent date can't desync hydration. */}
+export function formatStamp(result) {
+  const stamp = result.updatedAt || result.savedAt
+  if (!stamp) return ''
+  const date = new Date(stamp)
+  if (Number.isNaN(date.getTime())) return ''
+  const text = date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+  return result.updatedAt ? `Edited ${text}` : text
+}
 
 {/* A filled bar. The width has to be an inline style: Tailwind's JIT can't
     see a value that only exists at runtime. */}
@@ -146,55 +187,55 @@ export function ReadOnlyScale({ scale, result }) {
           {scale.ask} {result.broadcaster ? 'Yes' : 'No'}
         </p>
       )}
-      {note && <p className="mt-1.5 font-neo text-sm font-medium leading-snug text-black">{note}</p>}
+      {note && (
+        <p className="mt-2 border-l-4 border-black pl-2 font-neo text-sm font-medium leading-snug text-black">
+          {note}
+        </p>
+      )}
     </div>
   )
 }
 
-export function ResultCard({ result, title }) {
+{/*
+  One person's answers. The offset shadow and the black title band are doing
+  the same job the numbering is: at a glance, where one card stops and the
+  next one starts.
+*/}
+export function ResultCard({ result, title, index, badge, meta, action }) {
   return (
-    <div className="not-prose border-4 border-black bg-white font-neo">
-      <div role="heading" aria-level={3} className="border-b-4 border-black bg-black px-3 py-2 font-neo text-base font-extrabold uppercase tracking-tight text-white">
-        {title}
+    <div className="not-prose border-4 border-black bg-white font-neo shadow-[6px_6px_0_0_#111]">
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b-4 border-black bg-black px-3 py-2">
+        <span
+          role="heading"
+          aria-level={3}
+          className="font-neo text-base font-extrabold uppercase tracking-tight text-white"
+        >
+          {index !== undefined && (
+            <span className="mr-2 font-mono text-sm font-bold text-white opacity-50">
+              {String(index).padStart(2, '0')}
+            </span>
+          )}
+          {title}
+        </span>
+        {badge && (
+          <span className="border-2 border-white px-1.5 py-0.5 font-neo text-[10px] font-extrabold uppercase tracking-widest text-white">
+            {badge}
+          </span>
+        )}
       </div>
+      {(meta || action) && (
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b-2 border-black bg-gray-100 px-3 py-1">
+          <span className="font-mono text-[11px] font-medium uppercase tracking-wide text-black">
+            {meta}
+          </span>
+          {action}
+        </div>
+      )}
       {SCALES.map((scale) => (
         <ReadOnlyScale key={scale.id} scale={scale} result={result} />
       ))}
     </div>
   )
-}
-
-export function TylersCard() {
-  const [revealed, setRevealed] = useState(false)
-
-  if (!revealed) {
-    return (
-      <div className="not-prose border-4 border-black bg-white font-neo">
-        <div role="heading" aria-level={3} className="border-b-4 border-black bg-black px-3 py-2 font-neo text-base font-extrabold uppercase tracking-tight text-white">
-          Tyler's card
-        </div>
-        <div className="p-3">
-          <div aria-hidden="true" className="space-y-3">
-            {SCALES.map((scale) => (
-              <div key={scale.id}>
-                <div className="h-3 w-1/3 bg-gray-200" />
-                <div className="mt-1.5 h-4 w-full border-2 border-gray-200 bg-gray-100" />
-              </div>
-            ))}
-          </div>
-          <button
-            type="button"
-            onClick={() => setRevealed(true)}
-            className="mt-4 w-full border-4 border-black bg-white px-4 py-2 font-neo text-sm font-extrabold uppercase tracking-tight text-black hover:bg-black hover:text-white"
-          >
-            Show me
-          </button>
-        </div>
-      </div>
-    )
-  }
-
-  return <ResultCard result={TYLERS_CARD} title="Tyler's card" />
 }
 
 {/*
@@ -333,11 +374,34 @@ export function MediaProfile() {
   const [notes, setNotes] = useState({})
   const [broadcaster, setBroadcaster] = useState(undefined)
   const [name, setName] = useState('')
+  const [isPublic, setIsPublic] = useState(false)
+  // Set once this browser owns a card: after saving one, or after picking up
+  // the edit token for one it saved earlier.
+  const [owned, setOwned] = useState(null)
   const [shareUrl, setShareUrl] = useState('')
-  const [status, setStatus] = useState('idle')
+  const [phase, setPhase] = useState('editing')
   const [error, setError] = useState('')
   const [shared, setShared] = useState(null)
   const [copied, setCopied] = useState(false)
+  const formRef = useRef(null)
+
+  function linkFor(id) {
+    return `${window.location.origin}${window.location.pathname}?r=${id}`
+  }
+
+  // Load the card the form should be editing, replacing whatever is in it.
+  function beginEdit(id, token, result) {
+    setScores(result.scores ?? {})
+    setNotes(result.notes ?? {})
+    setBroadcaster(result.broadcaster)
+    setName(result.name ?? '')
+    setIsPublic(Boolean(result.isPublic))
+    setOwned({ id, token })
+    setShareUrl(linkFor(id))
+    setShared(null)
+    setPhase('editing')
+    setError('')
+  }
 
   // Read ?r= on the client only. Doing it during render would make the server
   // and the first client pass disagree and blow up hydration.
@@ -347,11 +411,30 @@ export function MediaProfile() {
     setShared({ state: 'loading' })
     fetch(`/api/mediaProfile/share?id=${encodeURIComponent(id)}`)
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error('not found'))))
-      .then((data) => setShared({ state: 'ready', result: data.result }))
+      .then((data) => setShared({ state: 'ready', id, result: data.result, mine: Boolean(readTokens()[id]) }))
       .catch(() => setShared({ state: 'missing' }))
   }, [])
 
+  // The list at the bottom asks for a card back when its author clicks Edit.
+  useEffect(() => {
+    function onEditRequest(event) {
+      const id = event.detail?.id
+      const token = id ? readTokens()[id] : undefined
+      if (!token) return
+      fetch(`/api/mediaProfile/share?id=${encodeURIComponent(id)}`)
+        .then((res) => (res.ok ? res.json() : Promise.reject(new Error('gone'))))
+        .then((data) => {
+          beginEdit(id, token, data.result)
+          formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        })
+        .catch(() => setError('Could not load that card to edit.'))
+    }
+    window.addEventListener(EDIT_EVENT, onEditRequest)
+    return () => window.removeEventListener(EDIT_EVENT, onEditRequest)
+  }, [])
+
   const rated = Object.keys(scores).filter((id) => !id.includes('.')).length
+  const editing = owned !== null
 
   function handleScore(id, value) {
     setScores((prev) => ({ ...prev, [id]: value }))
@@ -361,8 +444,8 @@ export function MediaProfile() {
     setNotes((prev) => ({ ...prev, [id]: value }))
   }
 
-  async function handleShare() {
-    setStatus('saving')
+  async function handleSave() {
+    setPhase('saving')
     setError('')
     try {
       const payload = {
@@ -370,19 +453,28 @@ export function MediaProfile() {
         notes: Object.fromEntries(Object.entries(notes).filter(([, v]) => v.trim())),
         ...(broadcaster === undefined ? {} : { broadcaster }),
         ...(name.trim() ? { name: name.trim() } : {}),
+        isPublic,
+        ...(editing ? { id: owned.id, editToken: owned.token } : {}),
       }
       const res = await fetch('/api/mediaProfile/share', {
-        method: 'POST',
+        method: editing ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Could not save that.')
-      setShareUrl(`${window.location.origin}${window.location.pathname}?r=${data.id}`)
-      setStatus('saved')
+
+      if (!editing) {
+        rememberToken(data.id, data.editToken)
+        setOwned({ id: data.id, token: data.editToken })
+        setShareUrl(linkFor(data.id))
+      }
+      setPhase('done')
+      // Publishing, un-publishing and editing all change what the list shows.
+      window.dispatchEvent(new CustomEvent(PUBLISHED_EVENT))
     } catch (e) {
       setError(e.message)
-      setStatus('idle')
+      setPhase('editing')
     }
   }
 
@@ -397,21 +489,40 @@ export function MediaProfile() {
   }
 
   return (
-    <div className="not-prose mb-8 font-neo">
+    <div ref={formRef} className="not-prose mb-8 scroll-mt-6 font-neo">
       {shared?.state === 'ready' && (
-        <div className="mb-6">
+        <div className="mb-8">
           <ResultCard
             result={shared.result}
             title={shared.result.name ? `${shared.result.name}'s card` : 'A shared card'}
+            badge={shared.mine ? 'Yours' : undefined}
+            meta={formatStamp(shared.result)}
+            action={
+              shared.mine ? (
+                <button
+                  type="button"
+                  onClick={() => beginEdit(shared.id, readTokens()[shared.id], shared.result)}
+                  className="border-2 border-black bg-white px-2 py-0.5 font-neo text-[11px] font-extrabold uppercase tracking-tight text-black hover:bg-black hover:text-white"
+                >
+                  Edit
+                </button>
+              ) : undefined
+            }
           />
           <p className="mt-2 font-neo text-sm font-medium text-black">
-            Fill out your own below.
+            {shared.mine ? 'This is your card. Fill it in again below, or edit it.' : 'Fill out your own below.'}
           </p>
         </div>
       )}
       {shared?.state === 'missing' && (
         <p className="mb-6 border-4 border-black bg-white p-3 font-neo text-sm font-medium text-black">
           That shared card has expired or never existed. You can still fill out your own.
+        </p>
+      )}
+
+      {editing && phase !== 'done' && (
+        <p className="mb-3 border-4 border-black bg-black p-3 font-neo text-sm font-extrabold uppercase tracking-tight text-white">
+          Editing your card — saving replaces it at the same link.
         </p>
       )}
 
@@ -431,32 +542,55 @@ export function MediaProfile() {
       </div>
 
       <div className="mt-3 border-4 border-black bg-white p-3">
-        {status !== 'saved' && (
-          <div className="mt-2">
-            <label htmlFor="profile-name" className="font-neo text-xs font-extrabold uppercase text-black">
-              Your name <span className="font-medium normal-case opacity-60">(optional)</span>
-            </label>
-            <input
-              id="profile-name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              maxLength={40}
-              placeholder="Goes on the card you share"
-              className="mt-1 w-full border-2 border-black bg-white p-2 font-neo text-sm text-black placeholder:opacity-50"
-            />
-          </div>
-        )}
+        {phase !== 'done' && (
+          <>
+            <div className="mt-2">
+              <label htmlFor="profile-name" className="font-neo text-xs font-extrabold uppercase text-black">
+                Your name <span className="font-medium normal-case opacity-60">(optional)</span>
+              </label>
+              <input
+                id="profile-name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                maxLength={40}
+                placeholder="Goes on the card you share"
+                className="mt-1 w-full border-2 border-black bg-white p-2 font-neo text-sm text-black placeholder:opacity-50"
+              />
+            </div>
 
-        {status !== 'saved' && (
-          <button
-            type="button"
-            onClick={handleShare}
-            disabled={rated === 0 || status === 'saving'}
-            className="mt-2 w-full border-4 border-black bg-white px-4 py-2 font-neo text-sm font-extrabold uppercase tracking-tight text-black hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-white disabled:hover:text-black"
-          >
-            {status === 'saving' ? 'Saving…' : 'Share my card'}
-          </button>
+            <button
+              type="button"
+              onClick={() => setIsPublic((prev) => !prev)}
+              aria-pressed={isPublic}
+              className="mt-3 flex w-full items-start gap-2 border-2 border-black bg-white p-2 text-left hover:bg-gray-100"
+            >
+              <span
+                aria-hidden="true"
+                className={
+                  'mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center border-2 border-black font-mono text-[10px] font-bold leading-none ' +
+                  (isPublic ? 'bg-black text-white' : 'bg-white text-transparent')
+                }
+              >
+                X
+              </span>
+              <span className="font-neo text-xs font-extrabold uppercase tracking-tight text-black">
+                Show my card in the responses at the bottom
+                <span className="block font-medium normal-case opacity-60">
+                  Anyone reading the post sees it. Untick it later and it comes back down.
+                </span>
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={rated === 0 || phase === 'saving'}
+              className="mt-3 w-full border-4 border-black bg-white px-4 py-2 font-neo text-sm font-extrabold uppercase tracking-tight text-black hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-white disabled:hover:text-black"
+            >
+              {phase === 'saving' ? 'Saving…' : editing ? 'Save changes' : 'Share my card'}
+            </button>
+          </>
         )}
 
         {error && (
@@ -465,7 +599,7 @@ export function MediaProfile() {
           </p>
         )}
 
-        {status === 'saved' && (
+        {phase === 'done' && (
           <div className="mt-2">
             <label htmlFor="share-url" className="font-neo text-xs font-extrabold uppercase text-black">
               Your link
@@ -487,9 +621,137 @@ export function MediaProfile() {
                 {copied ? 'Copied' : 'Copy'}
               </button>
             </div>
+            <p className="mt-2 font-neo text-sm font-medium text-black">
+              {isPublic
+                ? 'It is in the responses at the bottom of the post.'
+                : 'Only people you send the link to can see it.'}
+            </p>
+            <button
+              type="button"
+              onClick={() => setPhase('editing')}
+              className="mt-2 w-full border-4 border-black bg-white px-4 py-2 font-neo text-sm font-extrabold uppercase tracking-tight text-black hover:bg-black hover:text-white"
+            >
+              Edit my card
+            </button>
+            <p className="mt-2 font-neo text-xs font-medium text-black opacity-60">
+              Editing works from this browser only — the key that proves the card is yours is
+              stored here and nowhere else.
+            </p>
           </div>
         )}
       </div>
+    </div>
+  )
+}
+
+export function ResponsesList() {
+  const [revealed, setRevealed] = useState(false)
+  // Zero on a first look; the moment of the save that asked for a re-read
+  // otherwise. It doubles as the cache-buster: the endpoint lets a plain
+  // listing sit in the browser cache for a minute, which is a minute too long
+  // for somebody waiting to see the edit they just made.
+  const [refreshedAt, setRefreshedAt] = useState(0)
+  const [state, setState] = useState({ status: 'idle', cards: [] })
+  const [mine, setMine] = useState({})
+
+  useEffect(() => {
+    setMine(readTokens())
+    function onPublished() {
+      setRevealed(true)
+      setRefreshedAt(Date.now())
+      setMine(readTokens())
+    }
+    window.addEventListener(PUBLISHED_EVENT, onPublished)
+    return () => window.removeEventListener(PUBLISHED_EVENT, onPublished)
+  }, [])
+
+  useEffect(() => {
+    if (!revealed) return
+    let cancelled = false
+    setState((prev) => ({ status: prev.cards.length ? 'ready' : 'loading', cards: prev.cards }))
+    fetch(refreshedAt ? `/api/mediaProfile/public?t=${refreshedAt}` : '/api/mediaProfile/public')
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error('failed'))))
+      .then((data) => {
+        if (!cancelled) setState({ status: 'ready', cards: data.cards ?? [] })
+      })
+      .catch(() => {
+        if (!cancelled) setState({ status: 'error', cards: [] })
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [revealed, refreshedAt])
+
+  if (!revealed) {
+    return (
+      <div className="not-prose border-4 border-black bg-white p-3 font-neo">
+        <div aria-hidden="true" className="space-y-3">
+          {SCALES.slice(0, 5).map((scale) => (
+            <div key={scale.id}>
+              <div className="h-3 w-1/3 bg-gray-200" />
+              <div className="mt-1.5 h-4 w-full border-2 border-gray-200 bg-gray-100" />
+            </div>
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={() => setRevealed(true)}
+          className="mt-4 w-full border-4 border-black bg-white px-4 py-2 font-neo text-sm font-extrabold uppercase tracking-tight text-black hover:bg-black hover:text-white"
+        >
+          Show me
+        </button>
+        <p className="mt-2 font-neo text-xs font-medium text-black opacity-60">
+          Covered so other people's numbers can't anchor yours before you've picked your own.
+        </p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="not-prose font-neo">
+      <ol className="space-y-10">
+        <li>
+          <ResultCard result={TYLERS_CARD} title="Tyler" index={1} badge="Author" />
+        </li>
+        {state.cards.map((card, position) => (
+          <li key={card.id}>
+            <ResultCard
+              result={card.result}
+              title={card.result.name || 'Anonymous'}
+              index={position + 2}
+              badge={mine[card.id] ? 'Yours' : undefined}
+              meta={formatStamp(card.result)}
+              action={
+                mine[card.id] ? (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      window.dispatchEvent(new CustomEvent(EDIT_EVENT, { detail: { id: card.id } }))
+                    }
+                    className="border-2 border-black bg-white px-2 py-0.5 font-neo text-[11px] font-extrabold uppercase tracking-tight text-black hover:bg-black hover:text-white"
+                  >
+                    Edit
+                  </button>
+                ) : undefined
+              }
+            />
+          </li>
+        ))}
+      </ol>
+
+      {state.status === 'loading' && (
+        <p className="mt-6 font-neo text-sm font-medium text-black">Loading responses…</p>
+      )}
+      {state.status === 'error' && (
+        <p className="mt-6 border-4 border-black bg-white p-3 font-neo text-sm font-medium text-black">
+          Could not load the responses right now.
+        </p>
+      )}
+      {state.status === 'ready' && state.cards.length === 0 && (
+        <p className="mt-6 border-4 border-black bg-white p-3 font-neo text-sm font-medium text-black">
+          Nobody else has published one yet. Tick the box above yours and it lands here.
+        </p>
+      )}
     </div>
   )
 }
@@ -498,6 +760,8 @@ export function MediaProfile() {
 
 <div className="mt-4 border-t-4 border-black" />
 
-## My responses
+## Responses
 
-<TylersCard />
+Mine first, then everyone who ticked the box.
+
+<ResponsesList />

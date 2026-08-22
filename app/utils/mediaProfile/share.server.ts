@@ -1,18 +1,31 @@
 // Storage and validation for shared Media Format Appreciation Profile results.
 //
 // Results live in the same Redis instance the chess games use. There is no
-// account system: saving mints an opaque id, and holding the id is the only
-// proof of ownership. Nothing here is editable after the fact, so a leaked id
-// exposes a set of self-reported percentages and nothing else.
+// account system: saving mints an opaque id plus a secret edit token, and
+// holding the token is the only proof of authorship. The id alone is read-only,
+// so a shared link cannot be used to rewrite the card it points at — that is
+// what keeps one person's card out of everyone else's hands.
 
-import { randomBytes } from 'node:crypto';
+import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import { getRedisClient } from '~/utils/redis.server';
 
 const KEY_PREFIX = 'mediaProfile:result:';
 
+/** Where the hashed edit token lives. Never read by the loader, only compared. */
+const EDIT_KEY_PREFIX = 'mediaProfile:edit:';
+
+/** Sorted set of ids the author marked public, scored by creation time. */
+const PUBLIC_KEY = 'mediaProfile:public';
+
 // Sliding, not fixed: a read refreshes the TTL, so a link that people keep
-// opening never expires while one nobody has touched in a year is reclaimed.
-const TTL_SECONDS = 365 * 24 * 60 * 60;
+// opening never expires while one nobody has touched in two years is reclaimed.
+const TTL_SECONDS = 2 * 365 * 24 * 60 * 60;
+
+/** Ids kept in the public index. Older ones fall off as new cards arrive. */
+const PUBLIC_INDEX_MAX = 200;
+
+/** Most cards one call to the public listing will return. */
+export const PUBLIC_PAGE_MAX = 50;
 
 /**
  * The scale ids the client may submit. This list is the validation authority —
@@ -66,7 +79,11 @@ export interface MediaProfileResult {
   notes: Record<string, string>;
   /** The one non-numeric follow-up: "do you have a favorite broadcaster?" */
   broadcaster?: boolean;
+  /** Author opted this card into the list at the bottom of the post. */
+  isPublic?: boolean;
   savedAt: string;
+  /** Set only once the author has come back and changed something. */
+  updatedAt?: string;
 }
 
 export type ValidationResult =
@@ -116,7 +133,7 @@ export function validateResult(body: unknown): ValidationResult {
     return { ok: false, error: 'Body must be an object.' };
   }
 
-  const { scores, notes, broadcaster, name } = body as Record<string, unknown>;
+  const { scores, notes, broadcaster, name, isPublic } = body as Record<string, unknown>;
 
   if (typeof scores !== 'object' || scores === null) {
     return { ok: false, error: 'Missing "scores" object.' };
@@ -164,6 +181,10 @@ export function validateResult(body: unknown): ValidationResult {
     return { ok: false, error: '"broadcaster" must be true or false.' };
   }
 
+  if (isPublic !== undefined && typeof isPublic !== 'boolean') {
+    return { ok: false, error: '"isPublic" must be true or false.' };
+  }
+
   let cleanedName: string | undefined;
   if (name !== undefined) {
     if (typeof name !== 'string') {
@@ -184,6 +205,7 @@ export function validateResult(body: unknown): ValidationResult {
       scores: cleanScores,
       notes: cleanNotes,
       ...(typeof broadcaster === 'boolean' ? { broadcaster } : {}),
+      ...(isPublic ? { isPublic: true } : {}),
       savedAt: new Date().toISOString(),
     },
   };
@@ -206,11 +228,102 @@ export function isValidId(id: string): boolean {
   return /^[a-z2-9]{10}$/.test(id);
 }
 
-export async function saveResult(result: MediaProfileResult): Promise<string> {
+/**
+ * The secret that authorises an edit. Long enough not to be guessable at any
+ * rate, and never rendered on the page — it lives in the author's localStorage
+ * and travels only in the body of their own update request.
+ */
+export function generateEditToken(): string {
+  return randomBytes(24).toString('base64url');
+}
+
+/** Shape check for a token, so a junk value never reaches the hash compare. */
+export function isValidEditToken(token: string): boolean {
+  return /^[A-Za-z0-9_-]{16,128}$/.test(token);
+}
+
+function hashToken(token: string): string {
+  return createHash('sha256').update(token).digest('hex');
+}
+
+/** Constant-time compare of two hex digests. */
+function digestsMatch(a: string, b: string): boolean {
+  const left = Buffer.from(a, 'hex');
+  const right = Buffer.from(b, 'hex');
+  if (left.length !== right.length || left.length === 0) return false;
+  return timingSafeEqual(left, right);
+}
+
+export type UpdateOutcome = 'ok' | 'not-found' | 'forbidden';
+
+export async function saveResult(
+  result: MediaProfileResult
+): Promise<{ id: string; editToken: string }> {
   const redis = getRedisClient();
   const id = generateId();
-  await redis.set(`${KEY_PREFIX}${id}`, JSON.stringify(result), 'EX', TTL_SECONDS);
-  return id;
+  const editToken = generateEditToken();
+
+  await redis
+    .multi()
+    .set(`${KEY_PREFIX}${id}`, JSON.stringify(result), 'EX', TTL_SECONDS)
+    .set(`${EDIT_KEY_PREFIX}${id}`, hashToken(editToken), 'EX', TTL_SECONDS)
+    .exec();
+
+  if (result.isPublic) await addToPublicIndex(id, result.savedAt);
+
+  return { id, editToken };
+}
+
+/**
+ * Overwrite a card in place. The stored creation time wins over whatever the
+ * caller sent, so an edit cannot reorder the public list or backdate itself.
+ */
+export async function updateResult(
+  id: string,
+  editToken: string,
+  result: MediaProfileResult
+): Promise<UpdateOutcome> {
+  const redis = getRedisClient();
+
+  const [storedHash, existingRaw] = await Promise.all([
+    redis.get(`${EDIT_KEY_PREFIX}${id}`),
+    redis.get(`${KEY_PREFIX}${id}`),
+  ]);
+
+  if (!storedHash || !existingRaw) return 'not-found';
+  if (!digestsMatch(storedHash, hashToken(editToken))) return 'forbidden';
+
+  let savedAt = result.savedAt;
+  try {
+    const existing = JSON.parse(existingRaw) as MediaProfileResult;
+    if (typeof existing.savedAt === 'string') savedAt = existing.savedAt;
+  } catch {
+    // A corrupt payload is still the author's to replace; keep the new date.
+  }
+
+  const next: MediaProfileResult = { ...result, savedAt, updatedAt: new Date().toISOString() };
+
+  await redis
+    .multi()
+    .set(`${KEY_PREFIX}${id}`, JSON.stringify(next), 'EX', TTL_SECONDS)
+    .expire(`${EDIT_KEY_PREFIX}${id}`, TTL_SECONDS)
+    .exec();
+
+  if (next.isPublic) await addToPublicIndex(id, savedAt);
+  else await redis.zrem(PUBLIC_KEY, id);
+
+  return 'ok';
+}
+
+async function addToPublicIndex(id: string, savedAt: string): Promise<void> {
+  const parsed = Date.parse(savedAt);
+  const score = Number.isNaN(parsed) ? Date.now() : parsed;
+  await getRedisClient()
+    .multi()
+    .zadd(PUBLIC_KEY, score, id)
+    // Keep the newest N. The index is a display list, not an archive.
+    .zremrangebyrank(PUBLIC_KEY, 0, -(PUBLIC_INDEX_MAX + 1))
+    .exec();
 }
 
 export async function loadResult(id: string): Promise<MediaProfileResult | null> {
@@ -219,9 +332,9 @@ export async function loadResult(id: string): Promise<MediaProfileResult | null>
   const raw = await redis.get(key);
   if (!raw) return null;
 
-  // Refresh the sliding window. A failure here costs the link a year of life
-  // at worst, so it must not fail the read.
-  redis.expire(key, TTL_SECONDS).catch(() => {});
+  // Refresh the sliding window. A failure here costs the link two years of
+  // life at worst, so it must not fail the read.
+  refreshTtl([id]);
 
   try {
     return JSON.parse(raw) as MediaProfileResult;
@@ -229,4 +342,67 @@ export async function loadResult(id: string): Promise<MediaProfileResult | null>
     console.error(`mediaProfile: unparseable payload at ${key}`);
     return null;
   }
+}
+
+/** Push a card and its edit token back out to the full window. Best effort. */
+function refreshTtl(ids: string[]): void {
+  if (ids.length === 0) return;
+  try {
+    const pipeline = getRedisClient().pipeline();
+    for (const id of ids) {
+      pipeline.expire(`${KEY_PREFIX}${id}`, TTL_SECONDS);
+      pipeline.expire(`${EDIT_KEY_PREFIX}${id}`, TTL_SECONDS);
+    }
+    pipeline.exec().catch(() => {});
+  } catch {
+    // Same bargain as the caller's: a refresh is never worth failing a read.
+  }
+}
+
+export interface PublicCard {
+  id: string;
+  result: MediaProfileResult;
+}
+
+/**
+ * The cards people chose to publish, newest first.
+ *
+ * Entries whose payload has expired are dropped from the index as they are
+ * noticed — there is no sweeper, and a stale id costs one null in an MGET.
+ */
+export async function listPublicResults(limit: number): Promise<PublicCard[]> {
+  const redis = getRedisClient();
+  const count = Math.max(1, Math.min(limit, PUBLIC_PAGE_MAX));
+
+  const ids = await redis.zrevrange(PUBLIC_KEY, 0, count - 1);
+  if (ids.length === 0) return [];
+
+  const payloads = await redis.mget(ids.map((id) => `${KEY_PREFIX}${id}`));
+
+  const cards: PublicCard[] = [];
+  const stale: string[] = [];
+
+  ids.forEach((id, index) => {
+    const raw = payloads[index];
+    if (!raw) {
+      stale.push(id);
+      return;
+    }
+    try {
+      const result = JSON.parse(raw) as MediaProfileResult;
+      // An author who turned publishing back off may still sit in the index if
+      // that ZREM lost a race; the payload is the authority either way.
+      if (result.isPublic) cards.push({ id, result });
+      else stale.push(id);
+    } catch {
+      stale.push(id);
+    }
+  });
+
+  if (stale.length > 0) redis.zrem(PUBLIC_KEY, ...stale).catch(() => {});
+
+  // Anything still on display is still in use.
+  refreshTtl(cards.map((card) => card.id));
+
+  return cards;
 }
