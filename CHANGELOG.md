@@ -1,3 +1,10 @@
+# [5.23.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.22.0...5.23.0) (2026-08-22)
+
+
+### Features
+
+* public responses list, editable cards, and clearer card breaks ([64f2c65](https://github.com/trbarron/tylerbarron-dot-com/commit/64f2c65a1154887444d0ecded409f75f15241620))
+
 # [5.22.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.21.1...5.22.0) (2026-08-19)
 
 
