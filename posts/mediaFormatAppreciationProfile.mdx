@@ -204,9 +204,9 @@ export function ReadOnlyScale({ scale, result }) {
 export function CardTitle({ title, index, badge, toggle, open }) {
   return (
     <span className="flex w-full flex-wrap items-center justify-between gap-x-3 gap-y-1">
-      <span className="font-neo text-base font-extrabold uppercase tracking-tight text-white">
+      <span className="font-neo text-base font-extrabold uppercase tracking-tight text-black">
         {index !== undefined && (
-          <span className="mr-2 font-mono text-sm font-bold text-white opacity-50">
+          <span className="mr-2 font-mono text-sm font-bold text-black opacity-50">
             {String(index).padStart(2, '0')}
           </span>
         )}
@@ -214,12 +214,12 @@ export function CardTitle({ title, index, badge, toggle, open }) {
       </span>
       <span className="flex items-center gap-2">
         {badge && (
-          <span className="border-2 border-white px-1.5 py-0.5 font-neo text-[10px] font-extrabold uppercase tracking-widest text-white">
+          <span className="border-2 border-black px-1.5 py-0.5 font-neo text-[10px] font-extrabold uppercase tracking-widest text-black">
             {badge}
           </span>
         )}
         {toggle && (
-          <span className="font-neo text-[11px] font-extrabold uppercase tracking-widest text-white">
+          <span className="font-neo text-[11px] font-extrabold uppercase tracking-widest text-black">
             {open ? 'Hide' : 'Show me'}
           </span>
         )}
@@ -247,14 +247,14 @@ export function ResultCard({ result, title, index, badge, meta, action, open, on
             onClick={onToggle}
             aria-expanded={open}
             className={
-              'flex w-full items-center bg-black px-3 py-2 text-left hover:bg-gray-800 ' +
+              'flex w-full items-center bg-white px-3 py-2 text-left hover:bg-gray-100 ' +
               (showBody ? 'border-b-4 border-black' : '')
             }
           >
             <CardTitle title={title} index={index} badge={badge} toggle open={open} />
           </button>
         ) : (
-          <div className="flex items-center border-b-4 border-black bg-black px-3 py-2">
+          <div className="flex items-center border-b-4 border-black bg-white px-3 py-2">
             <CardTitle title={title} index={index} badge={badge} />
           </div>
         )}
