@@ -1,3 +1,10 @@
+# [5.24.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.23.0...5.24.0) (2026-08-22)
+
+
+### Features
+
+* expand responses one at a time ([09e0ac6](https://github.com/trbarron/tylerbarron-dot-com/commit/09e0ac609fe58409167aef92ccbe4bb708134191))
+
 # [5.23.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.22.0...5.23.0) (2026-08-22)
 
 
