@@ -728,7 +728,7 @@ export function ResponsesList() {
   }, [refreshedAt])
 
   const entries = [
-    { key: 'tyler', title: 'Tyler', result: TYLERS_CARD, badge: 'Author' },
+    { key: 'tyler', title: 'Tyler', result: TYLERS_CARD },
     ...state.cards.map((card) => ({
       key: card.id,
       id: card.id,
