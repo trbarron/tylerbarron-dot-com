@@ -201,29 +201,65 @@ export function ReadOnlyScale({ scale, result }) {
   the same job the numbering is: at a glance, where one card stops and the
   next one starts.
 */}
-export function ResultCard({ result, title, index, badge, meta, action }) {
+export function CardTitle({ title, index, badge, toggle, open }) {
   return (
-    <div className="not-prose border-4 border-black bg-white font-neo shadow-[6px_6px_0_0_#111]">
-      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b-4 border-black bg-black px-3 py-2">
-        <span
-          role="heading"
-          aria-level={3}
-          className="font-neo text-base font-extrabold uppercase tracking-tight text-white"
-        >
-          {index !== undefined && (
-            <span className="mr-2 font-mono text-sm font-bold text-white opacity-50">
-              {String(index).padStart(2, '0')}
-            </span>
-          )}
-          {title}
-        </span>
+    <span className="flex w-full flex-wrap items-center justify-between gap-x-3 gap-y-1">
+      <span className="font-neo text-base font-extrabold uppercase tracking-tight text-white">
+        {index !== undefined && (
+          <span className="mr-2 font-mono text-sm font-bold text-white opacity-50">
+            {String(index).padStart(2, '0')}
+          </span>
+        )}
+        {title}
+      </span>
+      <span className="flex items-center gap-2">
         {badge && (
           <span className="border-2 border-white px-1.5 py-0.5 font-neo text-[10px] font-extrabold uppercase tracking-widest text-white">
             {badge}
           </span>
         )}
+        {toggle && (
+          <span className="font-neo text-[11px] font-extrabold uppercase tracking-widest text-white">
+            {open ? 'Hide' : 'Show me'}
+          </span>
+        )}
+      </span>
+    </span>
+  )
+}
+
+{/*
+  One person's answers. Collapsible in the list, where the title bands stack
+  into the roster: closed, they are the whole list; open, one person's numbers
+  hang off theirs. Without onToggle -- the card a share link opens -- it is
+  always open and the band is inert.
+*/}
+export function ResultCard({ result, title, index, badge, meta, action, open, onToggle }) {
+  const collapsible = typeof onToggle === 'function'
+  const showBody = !collapsible || open
+
+  return (
+    <div className="not-prose border-4 border-black bg-white font-neo shadow-[6px_6px_0_0_#111]">
+      <div role="heading" aria-level={3}>
+        {collapsible ? (
+          <button
+            type="button"
+            onClick={onToggle}
+            aria-expanded={open}
+            className={
+              'flex w-full items-center bg-black px-3 py-2 text-left hover:bg-gray-800 ' +
+              (showBody ? 'border-b-4 border-black' : '')
+            }
+          >
+            <CardTitle title={title} index={index} badge={badge} toggle open={open} />
+          </button>
+        ) : (
+          <div className="flex items-center border-b-4 border-black bg-black px-3 py-2">
+            <CardTitle title={title} index={index} badge={badge} />
+          </div>
+        )}
       </div>
-      {(meta || action) && (
+      {showBody && (meta || action) && (
         <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b-2 border-black bg-gray-100 px-3 py-1">
           <span className="font-mono text-[11px] font-medium uppercase tracking-wide text-black">
             {meta}
@@ -231,9 +267,8 @@ export function ResultCard({ result, title, index, badge, meta, action }) {
           {action}
         </div>
       )}
-      {SCALES.map((scale) => (
-        <ReadOnlyScale key={scale.id} scale={scale} result={result} />
-      ))}
+      {showBody &&
+        SCALES.map((scale) => <ReadOnlyScale key={scale.id} scale={scale} result={result} />)}
     </div>
   )
 }
@@ -471,7 +506,9 @@ export function MediaProfile() {
       }
       setPhase('done')
       // Publishing, un-publishing and editing all change what the list shows.
-      window.dispatchEvent(new CustomEvent(PUBLISHED_EVENT))
+      window.dispatchEvent(
+        new CustomEvent(PUBLISHED_EVENT, { detail: { id: editing ? owned.id : data.id } })
+      )
     } catch (e) {
       setError(e.message)
       setPhase('editing')
@@ -646,7 +683,9 @@ export function nameFor(card) {
 }
 
 export function ResponsesList() {
-  const [revealed, setRevealed] = useState(false)
+  // Which cards are open. Nothing is, to start: the point of the list is to
+  // compare yourself to the population, and you pick your own numbers first.
+  const [openIds, setOpenIds] = useState([])
   // Zero on a first look; the moment of the save that asked for a re-read
   // otherwise. It doubles as the cache-buster: the endpoint lets a plain
   // listing sit in the browser cache for a minute, which is a minute too long
@@ -655,19 +694,24 @@ export function ResponsesList() {
   const [state, setState] = useState({ status: 'loading', cards: [] })
   const [mine, setMine] = useState({})
 
+  function toggle(key) {
+    setOpenIds((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]))
+  }
+
   useEffect(() => {
     setMine(readTokens())
-    function onPublished() {
-      setRevealed(true)
+    function onPublished(event) {
       setRefreshedAt(Date.now())
       setMine(readTokens())
+      // Open the card that was just saved, so the change is visible rather
+      // than filed away behind a row you have to find.
+      const id = event.detail?.id
+      if (id) setOpenIds((prev) => (prev.includes(id) ? prev : [...prev, id]))
     }
     window.addEventListener(PUBLISHED_EVENT, onPublished)
     return () => window.removeEventListener(PUBLISHED_EVENT, onPublished)
   }, [])
 
-  // Fetched whether or not the cover is up: the cover is there to keep other
-  // people's numbers from anchoring yours, and a name is not a number.
   useEffect(() => {
     let cancelled = false
     fetch(refreshedAt ? `/api/mediaProfile/public?t=${refreshedAt}` : '/api/mediaProfile/public')
@@ -683,64 +727,40 @@ export function ResponsesList() {
     }
   }, [refreshedAt])
 
-  const roster = [{ id: null, name: 'Tyler' }, ...state.cards.map((card) => ({ id: card.id, name: nameFor(card) }))]
-
-  if (!revealed) {
-    return (
-      <div className="not-prose border-4 border-black bg-white font-neo">
-        <ol>
-          {roster.map((entry, position) => (
-            <li
-              key={entry.id ?? 'tyler'}
-              className="flex items-baseline gap-2 border-b-2 border-black px-3 py-1.5 last:border-b-0"
-            >
-              <span className="font-mono text-xs font-bold tabular-nums text-black opacity-50">
-                {String(position + 1).padStart(2, '0')}
-              </span>
-              <span className="font-neo text-sm font-extrabold uppercase tracking-tight text-black">
-                {entry.name}
-              </span>
-              {entry.id && mine[entry.id] && (
-                <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-black opacity-50">
-                  Yours
-                </span>
-              )}
-            </li>
-          ))}
-        </ol>
-        <div className="border-t-4 border-black p-3">
-          <button
-            type="button"
-            onClick={() => setRevealed(true)}
-            className="w-full border-4 border-black bg-white px-4 py-2 font-neo text-sm font-extrabold uppercase tracking-tight text-black hover:bg-black hover:text-white"
-          >
-            Show me
-          </button>
-        </div>
-      </div>
-    )
-  }
+  const entries = [
+    { key: 'tyler', title: 'Tyler', result: TYLERS_CARD, badge: 'Author' },
+    ...state.cards.map((card) => ({
+      key: card.id,
+      id: card.id,
+      title: nameFor(card),
+      result: card.result,
+      badge: mine[card.id] ? 'Yours' : undefined,
+      meta: formatStamp(card.result),
+    })),
+  ]
 
   return (
     <div className="not-prose font-neo">
-      <ol className="space-y-10">
-        <li>
-          <ResultCard result={TYLERS_CARD} title="Tyler" index={1} badge="Author" />
-        </li>
-        {state.cards.map((card, position) => (
-          <li key={card.id}>
+      <ol className="list-none space-y-4 pl-0">
+        {entries.map((entry, position) => (
+          // The card prints its own number in its title band, and the post
+          // body is `prose`, whose ordered-list numbering would sit a second
+          // one out in the margin. Inline because it has to beat prose.
+          <li key={entry.key} style={{ listStyle: 'none' }}>
             <ResultCard
-              result={card.result}
-              title={nameFor(card)}
-              index={position + 2}
-              badge={mine[card.id] ? 'Yours' : undefined}
-              meta={formatStamp(card.result)}
+              result={entry.result}
+              title={entry.title}
+              index={position + 1}
+              badge={entry.badge}
+              meta={entry.meta}
+              open={openIds.includes(entry.key)}
+              onToggle={() => toggle(entry.key)}
               action={
-                mine[card.id] ? (
+                entry.id && mine[entry.id] ? (
                   <button
                     type="button"
                     onClick={() =>
-                      window.dispatchEvent(new CustomEvent(EDIT_EVENT, { detail: { id: card.id } }))
+                      window.dispatchEvent(new CustomEvent(EDIT_EVENT, { detail: { id: entry.id } }))
                     }
                     className="border-2 border-black bg-white px-2 py-0.5 font-neo text-[11px] font-extrabold uppercase tracking-tight text-black hover:bg-black hover:text-white"
                   >
