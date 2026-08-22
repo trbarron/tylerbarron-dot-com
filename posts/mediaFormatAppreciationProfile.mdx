@@ -576,9 +576,6 @@ export function MediaProfile() {
               </span>
               <span className="font-neo text-xs font-extrabold uppercase tracking-tight text-black">
                 Show my card in the responses at the bottom
-                <span className="block font-medium normal-case opacity-60">
-                  Anyone reading the post sees it. Untick it later and it comes back down.
-                </span>
               </span>
             </button>
 
@@ -644,6 +641,10 @@ export function MediaProfile() {
   )
 }
 
+export function nameFor(card) {
+  return card.result.name || 'Anonymous'
+}
+
 export function ResponsesList() {
   const [revealed, setRevealed] = useState(false)
   // Zero on a first look; the moment of the save that asked for a re-read
@@ -651,7 +652,7 @@ export function ResponsesList() {
   // listing sit in the browser cache for a minute, which is a minute too long
   // for somebody waiting to see the edit they just made.
   const [refreshedAt, setRefreshedAt] = useState(0)
-  const [state, setState] = useState({ status: 'idle', cards: [] })
+  const [state, setState] = useState({ status: 'loading', cards: [] })
   const [mine, setMine] = useState({})
 
   useEffect(() => {
@@ -665,44 +666,57 @@ export function ResponsesList() {
     return () => window.removeEventListener(PUBLISHED_EVENT, onPublished)
   }, [])
 
+  // Fetched whether or not the cover is up: the cover is there to keep other
+  // people's numbers from anchoring yours, and a name is not a number.
   useEffect(() => {
-    if (!revealed) return
     let cancelled = false
-    setState((prev) => ({ status: prev.cards.length ? 'ready' : 'loading', cards: prev.cards }))
     fetch(refreshedAt ? `/api/mediaProfile/public?t=${refreshedAt}` : '/api/mediaProfile/public')
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error('failed'))))
       .then((data) => {
         if (!cancelled) setState({ status: 'ready', cards: data.cards ?? [] })
       })
       .catch(() => {
-        if (!cancelled) setState({ status: 'error', cards: [] })
+        if (!cancelled) setState((prev) => ({ status: 'error', cards: prev.cards }))
       })
     return () => {
       cancelled = true
     }
-  }, [revealed, refreshedAt])
+  }, [refreshedAt])
+
+  const roster = [{ id: null, name: 'Tyler' }, ...state.cards.map((card) => ({ id: card.id, name: nameFor(card) }))]
 
   if (!revealed) {
     return (
-      <div className="not-prose border-4 border-black bg-white p-3 font-neo">
-        <div aria-hidden="true" className="space-y-3">
-          {SCALES.slice(0, 5).map((scale) => (
-            <div key={scale.id}>
-              <div className="h-3 w-1/3 bg-gray-200" />
-              <div className="mt-1.5 h-4 w-full border-2 border-gray-200 bg-gray-100" />
-            </div>
+      <div className="not-prose border-4 border-black bg-white font-neo">
+        <ol>
+          {roster.map((entry, position) => (
+            <li
+              key={entry.id ?? 'tyler'}
+              className="flex items-baseline gap-2 border-b-2 border-black px-3 py-1.5 last:border-b-0"
+            >
+              <span className="font-mono text-xs font-bold tabular-nums text-black opacity-50">
+                {String(position + 1).padStart(2, '0')}
+              </span>
+              <span className="font-neo text-sm font-extrabold uppercase tracking-tight text-black">
+                {entry.name}
+              </span>
+              {entry.id && mine[entry.id] && (
+                <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-black opacity-50">
+                  Yours
+                </span>
+              )}
+            </li>
           ))}
+        </ol>
+        <div className="border-t-4 border-black p-3">
+          <button
+            type="button"
+            onClick={() => setRevealed(true)}
+            className="w-full border-4 border-black bg-white px-4 py-2 font-neo text-sm font-extrabold uppercase tracking-tight text-black hover:bg-black hover:text-white"
+          >
+            Show me
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={() => setRevealed(true)}
-          className="mt-4 w-full border-4 border-black bg-white px-4 py-2 font-neo text-sm font-extrabold uppercase tracking-tight text-black hover:bg-black hover:text-white"
-        >
-          Show me
-        </button>
-        <p className="mt-2 font-neo text-xs font-medium text-black opacity-60">
-          Covered so other people's numbers can't anchor yours before you've picked your own.
-        </p>
       </div>
     )
   }
@@ -717,7 +731,7 @@ export function ResponsesList() {
           <li key={card.id}>
             <ResultCard
               result={card.result}
-              title={card.result.name || 'Anonymous'}
+              title={nameFor(card)}
               index={position + 2}
               badge={mine[card.id] ? 'Yours' : undefined}
               meta={formatStamp(card.result)}
@@ -739,17 +753,9 @@ export function ResponsesList() {
         ))}
       </ol>
 
-      {state.status === 'loading' && (
-        <p className="mt-6 font-neo text-sm font-medium text-black">Loading responses…</p>
-      )}
       {state.status === 'error' && (
         <p className="mt-6 border-4 border-black bg-white p-3 font-neo text-sm font-medium text-black">
           Could not load the responses right now.
-        </p>
-      )}
-      {state.status === 'ready' && state.cards.length === 0 && (
-        <p className="mt-6 border-4 border-black bg-white p-3 font-neo text-sm font-medium text-black">
-          Nobody else has published one yet. Tick the box above yours and it lands here.
         </p>
       )}
     </div>
@@ -761,7 +767,5 @@ export function ResponsesList() {
 <div className="mt-4 border-t-4 border-black" />
 
 ## Responses
-
-Mine first, then everyone who ticked the box.
 
 <ResponsesList />
