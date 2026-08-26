@@ -10,7 +10,7 @@ I don't feel like different forms of media and how differently people relate to 
 
 The idea of reading a poem just doesn't resonate with me at all. I get that you're supposed to get excited about Mr. Nolan's Odyssey and travel far to see it in 70mm -- to me that sounds fun because it's an adventure and not because the format is that different. So I built this survey to encourage some self-reflection and made it enforce quantification because I think that's funny.
 
-Rate your appreciation of each form **relative to everyone else** -- 50% means you figure you're about average, 100% means you get more out of it than anyone you know. Everyone's cards, mine first, are at the bottom.
+Rate your appreciation of each form **relative to everyone else** -- 50% means you figure you're about average, 100% means you get more out of it than anyone you know.
 
 export const SCALES = [
   { id: 'movies', label: 'Movies' },
@@ -197,9 +197,8 @@ export function ReadOnlyScale({ scale, result }) {
 }
 
 {/*
-  One person's answers. The offset shadow and the black title band are doing
-  the same job the numbering is: at a glance, where one card stops and the
-  next one starts.
+  The title band: the whole of a card when it is closed, so the roster and the
+  cards are one thing rather than two lists to keep in step.
 */}
 export function CardTitle({ title, index, badge, toggle, open }) {
   return (
