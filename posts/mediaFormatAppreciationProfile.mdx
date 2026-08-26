@@ -727,7 +727,10 @@ export function ResponsesList() {
   }, [refreshedAt])
 
   const entries = [
-    { key: 'tyler', title: 'Tyler', result: TYLERS_CARD },
+    // Tagged because a submitted card can carry any name, mine included: the
+    // tag is what separates this one from a response that is merely called
+    // Tyler.
+    { key: 'tyler', title: 'Tyler', result: TYLERS_CARD, badge: 'Author' },
     ...state.cards.map((card) => ({
       key: card.id,
       id: card.id,
