@@ -17,6 +17,10 @@ const LOCK_KEY = "camelup:lock";
 const LOCK_TTL_S = 3 * 3600; // outlasts a worst-case tournament run
 const RATE_KEY = "camelup:ratelimit:";
 const MAX_SUBMISSIONS_PER_HOUR = 3;
+const DAILY_KEY = "camelup:daily:";
+// Each tournament is ~1h on a 10 GB Lambda (~$0.60), so this caps the
+// worst case at ~$2.40/day no matter how many addresses submit.
+export const MAX_TOURNAMENTS_PER_DAY = 4;
 
 export function isTournamentConfigured(): boolean {
   return Boolean(process.env.CAMEL_TOURNAMENT_FUNCTION);
@@ -119,6 +123,34 @@ export function getClientIP(request: Request): string {
   const forwardedFor = request.headers.get("x-forwarded-for");
   if (forwardedFor) return forwardedFor.split(",")[0].trim();
   return request.headers.get("x-real-ip") ?? "unknown";
+}
+
+function dailyKey(): string {
+  return DAILY_KEY + new Date().toISOString().slice(0, 10);
+}
+
+/**
+ * Claim one of today's (UTC) tournament slots; false once the daily cap is
+ * used up. Unlike the per-IP limit this doesn't fail open: it's the cost
+ * backstop, so a Redis error propagates.
+ */
+export async function claimDailyTournamentSlot(): Promise<boolean> {
+  const redis = getRedisClient();
+  const key = dailyKey();
+  const count = await redis.incr(key);
+  if (count === 1) {
+    await redis.expire(key, 2 * 24 * 3600);
+  }
+  return count <= MAX_TOURNAMENTS_PER_DAY;
+}
+
+/** Give back a slot whose tournament never started. Best effort. */
+export async function returnDailyTournamentSlot(): Promise<void> {
+  try {
+    await getRedisClient().decr(dailyKey());
+  } catch {
+    // The slot stays counted; worst case one fewer tournament today.
+  }
 }
 
 /** Sliding-hour submission limit per IP. Fails open if Redis is down. */
