@@ -1,3 +1,10 @@
+# [5.25.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.24.1...5.25.0) (2026-10-02)
+
+
+### Features
+
+* remove planomancer ([c5eaf5a](https://github.com/trbarron/tylerbarron-dot-com/commit/c5eaf5a08c10f3be57c069e26c66fe090e4d0881))
+
 ## [5.24.1](https://github.com/trbarron/tylerbarron-dot-com/compare/5.24.0...5.24.1) (2026-10-02)
 
 
