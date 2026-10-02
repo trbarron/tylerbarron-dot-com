@@ -15,7 +15,7 @@ export function meta() {
         url: "https://tylerbarron.com",
         sameAs: [
           "https://github.com/trbarron",
-          "https://linkedin.com/in/tylerbarron",
+          "https://www.linkedin.com/in/tyler-barron-61972855/",
         ],
       },
     },

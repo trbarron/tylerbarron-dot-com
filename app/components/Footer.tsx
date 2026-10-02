@@ -46,7 +46,7 @@ export default function Footer() {
                   </div>
                 </a>
 
-                <a href="https://linkedin.com/in/tylerbarron"
+                <a href="https://www.linkedin.com/in/tyler-barron-61972855/"
                   className="bg-white  !border-2 border-black  h-12 w-12 flex items-center justify-center hover:bg-accent "
                   type="button">
                   <div className="">
