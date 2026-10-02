@@ -1,3 +1,10 @@
+# [5.26.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.25.0...5.26.0) (2026-10-02)
+
+
+### Features
+
+* readd blog post about planomancer ([afbca67](https://github.com/trbarron/tylerbarron-dot-com/commit/afbca67785c7829d780ebf3c63ab42aa3df564dc))
+
 # [5.25.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.24.1...5.25.0) (2026-10-02)
 
 
