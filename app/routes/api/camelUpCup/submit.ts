@@ -1,7 +1,8 @@
 // POST /api/camelUpCup/submit — multipart form: botName, author, file (.py)
 //
 // Fast-fails obviously invalid bots, rate-limits by IP, takes the
-// single-tournament Redis lock, and dispatches the code to the
+// single-tournament Redis lock and one of the day's tournament slots,
+// and dispatches the code to the
 // camel-up-tournament Lambda for real validation + a 500-game run.
 // Responds with { id } for the client to poll /api/camelUpCup/status.
 
@@ -15,9 +16,11 @@ import {
 } from "~/utils/camelUpCup/validation.server";
 import {
   checkSubmissionRateLimit,
+  claimDailyTournamentSlot,
   dispatchSubmission,
   isTournamentConfigured,
   releaseTournamentLock,
+  returnDailyTournamentSlot,
   tryAcquireTournamentLock,
 } from "~/utils/camelUpCup/tournament.server";
 
@@ -77,6 +80,20 @@ export async function action({ request }: ActionFunctionArgs) {
       );
     }
 
+    // Counted only once we hold the lock, so only real starts use a slot
+    let slotClaimed = false;
+    try {
+      slotClaimed = await claimDailyTournamentSlot();
+    } finally {
+      if (!slotClaimed) await releaseTournamentLock(id);
+    }
+    if (!slotClaimed) {
+      return Response.json(
+        { error: "Today's tournament limit is reached. Try again tomorrow (UTC)." },
+        { status: 429 }
+      );
+    }
+
     try {
       await dispatchSubmission({
         id,
@@ -86,6 +103,7 @@ export async function action({ request }: ActionFunctionArgs) {
       });
     } catch (err) {
       await releaseTournamentLock(id);
+      await returnDailyTournamentSlot();
       console.error("Camel Up Cup dispatch error:", err);
       return Response.json(
         { error: "Couldn't start the tournament — try again shortly." },
