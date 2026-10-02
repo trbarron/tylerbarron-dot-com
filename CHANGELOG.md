@@ -1,3 +1,10 @@
+## [5.24.1](https://github.com/trbarron/tylerbarron-dot-com/compare/5.24.0...5.24.1) (2026-10-02)
+
+
+### Bug Fixes
+
+* cap Camel Up Cup tournaments at four per UTC day ([806a3f9](https://github.com/trbarron/tylerbarron-dot-com/commit/806a3f971ca91b490c4b7d59f54c63ad72618d58))
+
 # [5.24.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.23.0...5.24.0) (2026-08-22)
 
 
