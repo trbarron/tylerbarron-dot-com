@@ -64,7 +64,6 @@ const CATEGORY_BY_KEY: Record<string, CategoryId> = {
   'pizza-rating': 'puzzles',
   // games
   'spheroid-zero': 'games',
-  'planomancer': 'games',
   'SSBM': 'games',
   'stardewLLMDialog': 'games',
   // computer vision
