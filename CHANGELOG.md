@@ -1,3 +1,10 @@
+## [5.26.1](https://github.com/trbarron/tylerbarron-dot-com/compare/5.26.0...5.26.1) (2026-10-09)
+
+
+### Bug Fixes
+
+* point LinkedIn link to correct profile ([9d8492b](https://github.com/trbarron/tylerbarron-dot-com/commit/9d8492bce9f6b512abcfc0b0855db771a08bb33e))
+
 # [5.26.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.25.0...5.26.0) (2026-10-02)
 
 
