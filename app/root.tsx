@@ -158,12 +158,15 @@ export default function App() {
     if (!gaTrackingId) return;
     const { gtag } = window;
     if (typeof gtag !== "function") return;
-    // GA4 SPA page view — fires on initial mount and every navigation
+    // GA4 SPA page view — fires on initial mount and whenever the URL changes.
+    // Keyed on path + query rather than the location object: same-URL
+    // navigations (e.g. Chesser Guesser's navigate(".") to revalidate for the
+    // next position) get a new location key and would log a duplicate view.
     gtag("event", "page_view", {
       page_location: window.location.href,
       page_title: document.title,
     });
-  }, [location, gaTrackingId]);
+  }, [location.pathname, location.search, gaTrackingId]);
 
   return (
     <html lang="en">

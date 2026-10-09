@@ -1,14 +1,24 @@
 import { useEffect } from "react";
-import { Link, data, useLocation } from "react-router";
+import { Link, data, redirect, useLocation } from "react-router";
+import type { LoaderFunctionArgs } from "react-router";
 import { Navbar } from "~/components/Navbar";
 import Footer from "~/components/Footer";
 import { buildMeta } from "~/utils/seo";
 import { trackNotFound } from "~/utils/analytics";
+import { legacyRedirectPath } from "./legacyRedirect";
 
 // Render the 404 page with a 404 status. Matching the URL (instead of letting
 // it fall through to the root ErrorBoundary) keeps the root loader running, so
 // analytics and the full app shell work on not-found pages.
-export function loader() {
+export function loader({ request }: LoaderFunctionArgs) {
+  // Old static-site URLs (/CamelUpCup.html, /B0XX.html, …) still get inbound
+  // traffic. Only .html paths are rewritten here — redirecting any other miss
+  // could loop back onto this route.
+  const url = new URL(request.url);
+  if (/\.html$/i.test(url.pathname)) {
+    const target = legacyRedirectPath(url.pathname, url.search);
+    if (target) throw redirect(target, 301);
+  }
   return data(null, { status: 404 });
 }
 

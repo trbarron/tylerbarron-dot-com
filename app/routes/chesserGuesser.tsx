@@ -7,6 +7,7 @@ import {
 } from "react-router";
 import { Chess } from "chess.js";
 import { buildMeta } from "~/utils/seo";
+import { trackEvent } from "~/utils/analytics";
 
 export function meta() {
   return buildMeta({
@@ -395,6 +396,14 @@ export default function ChesserGuesserUnlimited() {
       setStreak(0);
     }
 
+    trackEvent("guess_submitted", {
+      game: "chesser_guesser",
+      mode: "endless",
+      error_cp: Math.abs(sliderValue - loaderData.evalScore),
+      correct_side: correctSide,
+      streak: correctSide ? streak + 1 : 0,
+    });
+
     setLastEval(loaderData.evalScore / 100);
     setLastSlider(sliderValue / 100);
 
@@ -479,6 +488,21 @@ export default function ChesserGuesserUnlimited() {
 
       setDailyGameState(updatedState);
       saveDailyState(updatedState);
+
+      trackEvent("guess_submitted", {
+        game: "chesser_guesser",
+        mode: "daily",
+        error_cp: Math.abs(sliderValue - currentPuzzle.eval),
+        puzzle_index: currentPuzzleIndex,
+        score,
+      });
+      if (isLastPuzzle) {
+        trackEvent("game_complete", {
+          game: "chesser_guesser",
+          mode: "daily",
+          score: result.totalScore,
+        });
+      }
 
       setDailyTotalScore(result.totalScore);
       setLastDailyScore(score);
