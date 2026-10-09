@@ -1,3 +1,10 @@
+# [5.27.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.26.1...5.27.0) (2026-10-09)
+
+
+### Features
+
+* general GA fixes and redirect help ([985f8b1](https://github.com/trbarron/tylerbarron-dot-com/commit/985f8b14b98f482c4ebdfbc66a0c83735e85a6d6))
+
 ## [5.26.1](https://github.com/trbarron/tylerbarron-dot-com/compare/5.26.0...5.26.1) (2026-10-09)
 
 
