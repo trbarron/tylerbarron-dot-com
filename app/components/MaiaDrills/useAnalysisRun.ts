@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useBlocker } from 'react-router';
 import type { AnalysisProgress } from '~/utils/maiaDrills/analyze';
 import type { DownloadProgress, MaiaBackend, MaiaEngine } from '~/utils/maiaDrills/maiaEngine';
 import type { StockfishPool } from '~/utils/maiaDrills/stockfishPool';
@@ -7,6 +8,11 @@ import { trackAnalysisCancel, trackAnalysisError, trackAnalysisStart } from '~/u
 import type { AnalysisSettings, DeckStats, DrillCard, GameSource } from '~/utils/maiaDrills/types';
 
 export type Stage = 'idle' | 'fetching' | 'engines' | 'analyzing' | 'saving';
+
+/** Shown in place of the engines' own errors, which mean nothing to a player. The raw text goes underneath. */
+const ENGINE_START_FAILED = 'Maia couldn’t start in this browser. Try again, or try another device.';
+const ANALYSIS_FAILED = 'The analysis stopped unexpectedly. Try again with fewer games.';
+const LEAVE_WARNING = 'Leave now? The analysis will stop and nothing will be saved.';
 
 export interface RunRequest {
   source: GameSource;
@@ -47,7 +53,13 @@ export type SaveResult = (result: RunResult) => Promise<string | void>;
  */
 export function useAnalysisRun() {
   const [stage, setStage] = useState<Stage>('idle');
-  const [error, setError] = useState<string | null>(null);
+  const [error, setErrorText] = useState<string | null>(null);
+  /** The engine's own message, under a friendly `error`. */
+  const [errorDetail, setErrorDetail] = useState<string | null>(null);
+  const setError = (message: string | null, detail: string | null = null) => {
+    setErrorText(message);
+    setErrorDetail(detail);
+  };
   const [notice, setNotice] = useState<string | null>(null);
   const [gamesFetched, setGamesFetched] = useState(0);
   const [download, setDownload] = useState<DownloadProgress | null>(null);
@@ -56,6 +68,28 @@ export function useAnalysisRun() {
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => () => abortRef.current?.abort(), []);
+
+  const busy = stage !== 'idle';
+
+  // Runs take minutes on a phone. If the screen locks, the browser suspends
+  // the tab and the run stalls or is killed, so keep the screen on until done.
+  useEffect(() => (busy ? keepScreenOn() : undefined), [busy]);
+
+  // Leaving mid-run throws the analysis away: warn first, for closing the tab
+  // or reloading, and for links within the site.
+  useEffect(() => {
+    if (!busy) return;
+    const warn = (e: BeforeUnloadEvent) => e.preventDefault();
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [busy]);
+  // Not while saving: saving a new deck navigates to it, and that mustn't ask.
+  const blocker = useBlocker(busy && stage !== 'saving');
+  useEffect(() => {
+    if (blocker.state !== 'blocked') return;
+    if (window.confirm(LEAVE_WARNING)) blocker.proceed();
+    else blocker.reset();
+  }, [blocker]);
 
   const start = async (request: RunRequest, save: SaveResult) => {
     setError(null);
@@ -159,7 +193,11 @@ export function useAnalysisRun() {
         trackAnalysisCancel({ mode, stage: stageNow });
       } else {
         const message = err instanceof Error ? err.message : 'Something went wrong.';
-        setError(message);
+        // `enter` updates stageNow from a closure, which TypeScript's narrowing can't see.
+        const at = stageNow as Stage;
+        const friendly = at === 'engines' ? ENGINE_START_FAILED : at === 'analyzing' ? ANALYSIS_FAILED : null;
+        if (friendly) setError(friendly, message);
+        else setError(message);
         trackAnalysisError({ mode, stage: stageNow, backend: backendNow, error: message });
       }
     } finally {
@@ -172,8 +210,9 @@ export function useAnalysisRun() {
 
   return {
     stage,
-    busy: stage !== 'idle',
+    busy,
     error,
+    errorDetail,
     notice,
     setError,
     setNotice,
@@ -187,6 +226,34 @@ export function useAnalysisRun() {
 }
 
 export type AnalysisRun = ReturnType<typeof useAnalysisRun>;
+
+/**
+ * Hold a screen wake lock until the returned function is called. The browser
+ * drops the lock whenever the page is hidden, so it's taken again on return.
+ * A no-op where the Wake Lock API is missing (iOS before 16.4).
+ */
+function keepScreenOn(): () => void {
+  if (typeof navigator === 'undefined' || !('wakeLock' in navigator)) return () => {};
+  let sentinel: WakeLockSentinel | null = null;
+  let stopped = false;
+  const acquire = () => {
+    if (stopped || document.visibilityState !== 'visible') return;
+    navigator.wakeLock.request('screen').then(
+      (s) => {
+        if (stopped) void s.release();
+        else sentinel = s;
+      },
+      () => {} // Denied (e.g. battery saver): the run just goes without it.
+    );
+  };
+  document.addEventListener('visibilitychange', acquire);
+  acquire();
+  return () => {
+    stopped = true;
+    document.removeEventListener('visibilitychange', acquire);
+    void sentinel?.release();
+  };
+}
 
 /** Rejects with an AbortError once `signal` aborts. */
 function rejectOnAbort(signal: AbortSignal): Promise<never> {

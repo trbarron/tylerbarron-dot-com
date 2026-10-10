@@ -78,6 +78,9 @@ Every string a visitor can see, grouped by where it appears. Fill in **Yours** f
 | E12 | Something went wrong. | |
 | E13 | Too many decks saved from this address. Try again later. | |
 | E14 | Could not save the deck right now. | |
+| E15 | Maia couldn’t start in this browser. Try again, or try another device. *(the engine's own error shows underneath in small type)* | |
+| E16 | The analysis stopped unexpectedly. Try again with fewer games. *(same)* | |
+| E17 | Leave now? The analysis will stop and nothing will be saved. *(browser confirm when following a link mid-run; closing the tab shows the browser's own wording)* | |
 
 ## Deck page
 
