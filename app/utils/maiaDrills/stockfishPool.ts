@@ -5,6 +5,7 @@
 // of candidates, so one search scores every candidate from the mover's side.
 
 import { createStockfishWorker } from '~/utils/multipleChoiceChess/stockfishEngine';
+import { isHandheld } from './device';
 
 /** Mates and crushing evals collapse to this, so a won position can't produce a "1500 cp error". */
 export const SCORE_CLAMP = 1000;
@@ -163,14 +164,13 @@ export class StockfishPool {
   }
 
   /**
-   * A pool sized to leave a core for the page and Maia's worker. Phones get at
-   * most two: each worker is its own WebAssembly instance, and iOS refused
-   * Maia's memory ("Out of memory") with four of them running.
+   * A pool sized to leave a core for the page and Maia's worker. Phones and
+   * tablets get at most two: each worker is its own WebAssembly instance, and
+   * iOS refused Maia's memory ("Out of memory") with four of them running.
    */
   static forDevice(): StockfishPool {
     const cores = typeof navigator === 'undefined' ? 2 : navigator.hardwareConcurrency ?? 2;
-    const phone = typeof matchMedia !== 'undefined' && matchMedia('(pointer: coarse)').matches;
-    return new StockfishPool(Math.max(1, Math.min(cores - 1, phone ? 2 : 4)));
+    return new StockfishPool(Math.max(1, Math.min(cores - 1, isHandheld() ? 2 : 4)));
   }
 
   /** Resolves once the workers have started; any that couldn't are dropped, as long as one did. */

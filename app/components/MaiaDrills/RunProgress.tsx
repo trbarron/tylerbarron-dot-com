@@ -1,3 +1,4 @@
+import { isHandheld } from '~/utils/maiaDrills/device';
 import type { AnalysisRun, Stage } from './useAnalysisRun';
 
 const STAGE_LABELS: Record<Stage, string> = {
@@ -59,8 +60,7 @@ export default function RunProgress({ run }: { run: AnalysisRun }) {
       )}
       {progress && (
         <>
-          <ProgressBar label="Games through Maia" value={progress.gamesDone} max={progress.gamesTotal} />
-          <ProgressBar label="Stockfish checks" value={progress.searchesDone} max={progress.searchesQueued} />
+          <ProgressBar label="Games analyzed" value={progress.gamesDone} max={progress.gamesTotal} />
           <p className="font-neo text-sm">
             <span className="font-bold">{progress.cards}</span> cards found
           </p>
@@ -68,7 +68,9 @@ export default function RunProgress({ run }: { run: AnalysisRun }) {
             <p className="font-neo text-xs text-gray-600">
               {backend === 'webgpu'
                 ? 'Maia is running on your GPU.'
-                : 'Maia is running on your CPU (this browser has no usable WebGPU), so this will take a while.'}
+                : isHandheld()
+                  ? 'Phones run Maia on the CPU, so this will take a while. A computer with Chrome or Edge is much faster.'
+                  : 'Maia is running on your CPU (this browser has no usable WebGPU), so this will take a while. Chrome or Edge is much faster.'}
             </p>
           )}
         </>

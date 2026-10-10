@@ -15,10 +15,9 @@ import { MAIA_ELO_RANGE, type AnalysisSettings, type DeckStats, type DrillCard, 
 const MAX_OUTSTANDING_JOBS = 48;
 
 export interface AnalysisProgress {
+  /** Games fully analyzed: through Maia, and every Stockfish check settled. */
   gamesDone: number;
   gamesTotal: number;
-  searchesDone: number;
-  searchesQueued: number;
   cards: number;
   skippedNoRating: number;
 }
@@ -83,8 +82,6 @@ export async function analyzeGames(
   const progress: AnalysisProgress = {
     gamesDone: 0,
     gamesTotal: games.length,
-    searchesDone: 0,
-    searchesQueued: 0,
     cards: 0,
     skippedNoRating: 0,
   };
@@ -119,17 +116,16 @@ export async function analyzeGames(
     stats.games++;
     stats.positions += candidates.length;
 
+    const gameJobs: Promise<void>[] = [];
     candidates.forEach((c, i) => {
       const top = predictions[i][0];
       // Only-move positions can't disagree; neither can Maia matching the user.
       if (!top || top.uci === c.played.uci) return;
       stats.disagreements++;
-      progress.searchesQueued++;
 
       const job = engines.stockfish
         .score(c.fen, [top.uci, c.played.uci], settings.depth)
         .then((scores) => {
-          progress.searchesDone++;
           const evalTarget = scores.get(top.uci);
           const evalPlayed = scores.get(c.played.uci);
           if (evalTarget === undefined || evalPlayed === undefined) return;
@@ -156,14 +152,17 @@ export async function analyzeGames(
         })
         .catch(() => {
           // A stopped or timed-out search just doesn't produce a card.
-          progress.searchesDone++;
-        })
-        .finally(report);
-      outstanding.push(job);
+        });
+      gameJobs.push(job);
     });
 
-    progress.gamesDone++;
-    report();
+    // A game counts as done once its Stockfish checks are, so one bar covers
+    // both engines: Maia alone would race ahead of the real progress.
+    const gameDone = Promise.all(gameJobs).then(() => {
+      progress.gamesDone++;
+      report();
+    });
+    outstanding.push(gameDone);
 
     // Backpressure: don't let Maia race hundreds of games ahead of Stockfish.
     while (engines.stockfish.pending > MAX_OUTSTANDING_JOBS && !aborted()) {

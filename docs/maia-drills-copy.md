@@ -50,14 +50,14 @@ Every string a visitor can see, grouped by where it appears. Fill in **Yours** f
 | R3 | Loading Maia and Stockfish… | |
 | R4 | Maia model (one-time download, MB) *(progress bar label)* | |
 | R5 | Analyzing… | |
-| R6 | Games through Maia *(progress bar label)* | |
-| R7 | Stockfish checks *(progress bar label)* | |
+| R6 | Games analyzed *(progress bar label; a game counts once Maia and its Stockfish checks are both done)* | |
 | R8 | **{n}** cards found | |
 | R9 | Saving deck… | |
 | R10 | Cancel *(button, before analysis starts)* | |
 | R11 | Stop and keep cards so far *(button, during analysis)* | |
 | R12 | Maia is running on your GPU. | |
-| R13 | Maia is running on your CPU (this browser has no usable WebGPU), so this will take a while. | |
+| R13 | Maia is running on your CPU (this browser has no usable WebGPU), so this will take a while. Chrome or Edge is much faster. | |
+| R13b | Phones run Maia on the CPU, so this will take a while. A computer with Chrome or Edge is much faster. | |
 
 ### Problems while building
 

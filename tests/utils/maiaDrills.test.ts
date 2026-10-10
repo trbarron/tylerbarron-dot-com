@@ -4,7 +4,7 @@
  * pin the parts that model check relied on.
  */
 
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { Chess } from 'chess.js';
 import {
   MAIA_MOVE_VOCAB,
@@ -18,6 +18,7 @@ import { parseCandidateScores } from '~/utils/maiaDrills/stockfishPool';
 import { speedFromTimeControl } from '~/utils/maiaDrills/gameSources';
 import { clampElo, userMoves } from '~/utils/maiaDrills/analyze';
 import { validateDeck } from '~/utils/maiaDrills/decks.server';
+import { isHandheld } from '~/utils/maiaDrills/device';
 import type { DrillCard, SourceGame } from '~/utils/maiaDrills/types';
 
 vi.mock('~/utils/redis.server', () => ({ getRedisClient: vi.fn() }));
@@ -182,5 +183,33 @@ describe('validateDeck', () => {
     ['too many cards', { ...deck, cards: Array.from({ length: 401 }, (_, i) => ({ ...card, id: `g-${i}` })) }],
   ])('rejects %s', (_label, body) => {
     expect(validateDeck(body).ok).toBe(false);
+  });
+});
+
+describe('isHandheld', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  function device(userAgent: string, { touchPoints = 0, coarse = false } = {}) {
+    vi.stubGlobal('navigator', { userAgent, maxTouchPoints: touchPoints });
+    vi.stubGlobal('matchMedia', (q: string) => ({ matches: coarse && q === '(pointer: coarse)' }));
+  }
+
+  it('catches phones and tablets, whatever the browser', () => {
+    device('Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.15 CriOS/141.0 Mobile/15E148');
+    expect(isHandheld()).toBe(true);
+    device('Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 Chrome/141.0 Mobile Safari/537.36');
+    expect(isHandheld()).toBe(true);
+    // iPadOS Safari calls itself a Mac; the touch screen gives it away.
+    device('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 Version/26.0 Safari/605.1.15', { touchPoints: 5 });
+    expect(isHandheld()).toBe(true);
+    device('Mozilla/5.0 (X11; Linux x86_64) Gecko/20100101 Firefox/143.0', { coarse: true });
+    expect(isHandheld()).toBe(true);
+  });
+
+  it('leaves computers alone', () => {
+    device('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/141.0 Safari/537.36');
+    expect(isHandheld()).toBe(false);
+    device('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/141.0 Safari/537.36 Edg/141.0', { touchPoints: 10 });
+    expect(isHandheld()).toBe(false);
   });
 });

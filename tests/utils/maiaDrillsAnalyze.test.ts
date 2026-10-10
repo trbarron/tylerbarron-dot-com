@@ -149,4 +149,27 @@ describe('analyzeGames', () => {
     const { cards } = await analyzeGames([game, second], DEFAULT_SETTINGS, { maia, stockfish }, {});
     expect(cards.map((c) => c.id)).toEqual(['g2-5', 'scholar-5']);
   });
+
+  it('counts a game as analyzed only once its Stockfish checks finish', async () => {
+    const maia = fakeMaia({ [BEFORE_NF6]: 'g7g6' });
+    let finishSearch: (scores: Map<string, number>) => void = () => {};
+    const stockfish = {
+      pending: 0,
+      score: vi.fn(() => new Promise<Map<string, number>>((resolve) => (finishSearch = resolve))),
+      terminate: vi.fn(),
+    } as unknown as StockfishPool;
+    const reports: number[] = [];
+
+    const run = analyzeGames([game], DEFAULT_SETTINGS, { maia, stockfish }, {
+      onProgress: (p) => reports.push(p.gamesDone),
+    });
+    await vi.waitFor(() => expect(stockfish.score).toHaveBeenCalled());
+    // Maia is done with the game, but its one Stockfish check isn't.
+    expect(reports.at(-1) ?? 0).toBe(0);
+
+    finishSearch(new Map([['g7g6', 20], ['g8f6', -1000]]));
+    const { cards } = await run;
+    expect(reports.at(-1)).toBe(1);
+    expect(cards).toHaveLength(1);
+  });
 });
