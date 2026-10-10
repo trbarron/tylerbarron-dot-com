@@ -18,7 +18,7 @@ export interface Answer {
   verdict: Verdict;
   /** Every move tried on this card, in order. */
   guesses: Guess[];
-  /** Only a first-try answer counts as answered right. */
+  /** Right or not, whether it came on the first try; shown in the verdict and sent to analytics. */
   firstTry: boolean;
 }
 
@@ -36,8 +36,6 @@ export function formatEval(moverCp: number, mover: 'w' | 'b'): string {
 
 /** A move within this many cp of the stronger player's choice counts too. */
 export const ALSO_GOOD_MARGIN = 30;
-/** A missed card comes back after this many other cards. */
-export const REQUEUE_GAP = 3;
 /** Tries per card. A miss before the last one just resets the board, with no hint. */
 export const MAX_TRIES = 2;
 
@@ -85,11 +83,6 @@ export function answeredRight(answer: Answer): boolean {
   return answer.verdict === 'correct' || answer.verdict === 'also-good';
 }
 
-/** Right on the first try: only these cards leave the queue; a second-try card comes back for practice. */
-export function passed(answer: Answer): boolean {
-  return answer.firstTry && answeredRight(answer);
-}
-
 export function recordProgress(
   progress: Record<string, CardProgress>,
   cardId: string,
@@ -125,14 +118,14 @@ export function initialQueue(
 }
 
 /**
- * The queue after answering its head. A passed card leaves; anything else
- * comes back after REQUEUE_GAP cards. An empty queue starts a new round.
+ * The queue after answering its head. Each card comes up once per round, right
+ * or wrong: the positions rarely recur, so seeing a miss again a few cards
+ * later would test memory, not judgment. An empty queue starts a new round,
+ * which puts the misses first.
  */
-export function advanceQueue(queue: number[], answer: Answer, refill: () => number[]): number[] {
-  const [head, ...rest] = queue;
-  if (passed(answer)) return rest.length ? rest : refill();
-  const at = Math.min(REQUEUE_GAP, rest.length);
-  return [...rest.slice(0, at), head, ...rest.slice(at)];
+export function advanceQueue(queue: number[], refill: () => number[]): number[] {
+  const rest = queue.slice(1);
+  return rest.length ? rest : refill();
 }
 
 /** Tried moves not already drawn as the target or the game move, without repeats. */

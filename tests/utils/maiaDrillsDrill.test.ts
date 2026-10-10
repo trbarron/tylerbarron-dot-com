@@ -1,13 +1,13 @@
 /**
  * Maia Drills flashcard rules: grading, the two-try rule (a first miss gives
- * no hint, a second reveals), scoring, and card order.
+ * no hint, a second reveals), scoring, and card order (once per round, misses
+ * first next round).
  */
 
 import { describe, it, expect } from 'vitest';
 import {
   ALSO_GOOD_MARGIN,
   MAX_TRIES,
-  REQUEUE_GAP,
   advanceQueue,
   afterTry,
   extraGuesses,
@@ -17,7 +17,6 @@ import {
   initialQueue,
   isAlsoGood,
   answeredRight,
-  passed,
   recordProgress,
   reveal,
   type Answer,
@@ -93,7 +92,7 @@ describe('two tries', () => {
 
   it('treats Show answer as a reveal that never passes', () => {
     expect(reveal([gameMove])).toEqual({ verdict: 'revealed', guesses: [gameMove], firstTry: false });
-    expect(passed(reveal([]))).toBe(false);
+    expect(answeredRight(reveal([]))).toBe(false);
   });
 });
 
@@ -105,14 +104,6 @@ describe('scoring', () => {
     expect(answeredRight(answer('also-good', false))).toBe(true);
     expect(answeredRight(answer('wrong', false))).toBe(false);
     expect(answeredRight(answer('revealed', false))).toBe(false);
-  });
-
-  it('passes (lets the card leave the queue) only on the first try', () => {
-    expect(passed(answer('correct', true))).toBe(true);
-    expect(passed(answer('also-good', true))).toBe(true);
-    expect(passed(answer('correct', false))).toBe(false);
-    expect(passed(answer('also-good', false))).toBe(false);
-    expect(passed(answer('wrong', true))).toBe(false);
   });
 
   it('records seen, correct and last result per card, second tries included', () => {
@@ -134,26 +125,13 @@ describe('card order', () => {
     expect(initialQueue(cards, progress, noShuffle)).toEqual([1, 2, 3, 0]);
   });
 
-  it('drops a passed card from the queue', () => {
-    const pass: Answer = { verdict: 'correct', guesses: [], firstTry: true };
-    expect(advanceQueue([0, 1, 2], pass, () => [])).toEqual([1, 2]);
+  it('moves on after every answer, right or wrong, without repeating a miss', () => {
+    expect(advanceQueue([0, 1, 2], () => [])).toEqual([1, 2]);
+    expect(advanceQueue([0, 1], () => [9])).toEqual([1]);
   });
 
-  it(`brings a missed card back after ${REQUEUE_GAP} others`, () => {
-    const miss: Answer = { verdict: 'wrong', guesses: [], firstTry: false };
-    expect(advanceQueue([0, 1, 2, 3, 4, 5], miss, () => [])).toEqual([1, 2, 3, 0, 4, 5]);
-    expect(advanceQueue([0, 1], miss, () => [])).toEqual([1, 0]);
-    expect(advanceQueue([0], miss, () => [])).toEqual([0]);
-  });
-
-  it('requeues a second-try hit like a miss', () => {
-    const late: Answer = { verdict: 'correct', guesses: [], firstTry: false };
-    expect(advanceQueue([0, 1], late, () => [])).toEqual([1, 0]);
-  });
-
-  it('starts a new round when the last card passes', () => {
-    const pass: Answer = { verdict: 'correct', guesses: [], firstTry: true };
-    expect(advanceQueue([2], pass, () => [3, 1])).toEqual([3, 1]);
+  it('starts a new round after the last card', () => {
+    expect(advanceQueue([2], () => [3, 1])).toEqual([3, 1]);
   });
 });
 
