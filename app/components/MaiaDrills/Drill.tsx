@@ -113,6 +113,14 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
     else record(outcome.answer);
   };
 
+  // The board rebuilds itself whenever its onMove changes identity, which on
+  // every render made a miss flash the board. It gets one stable callback.
+  const moveRef = useRef(handleMove);
+  useEffect(() => {
+    moveRef.current = handleMove;
+  });
+  const onBoardMove = useCallback((from: string, to: string) => void moveRef.current(from, to), []);
+
   const reveal = () => record(revealAnswer(misses));
 
   const next = () => {
@@ -186,11 +194,13 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
               />
             ) : (
               <Chessboard
-                key={`${card.id}-${session.attempted}-${misses.length}`}
+                key="drill"
                 initialFen={card.fen}
+                // A miss, or the same card twice in a row, puts the pieces back.
+                resetKey={`${session.attempted}-${misses.length}`}
                 orientation={orientation}
                 playableColor={orientation}
-                onMove={handleMove}
+                onMove={onBoardMove}
                 autoShapes={NO_SHAPES}
                 events={NO_EVENTS}
                 selectable={NO_SELECTABLE}
@@ -234,7 +244,9 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
                 <li>
                   <span className="inline-block w-3 bg-red-600">&nbsp;</span>{' '}
                   In the game you played <strong className="font-mono">{card.played.san}</strong>{' '}
-                  <span className="text-gray-600">(eval {formatCp(card.evalPlayed)}, {gap} cp worse)</span>
+                  <span className="text-gray-600">
+                    (eval {formatCp(card.evalPlayed)}, {gap} cp worse than {card.target.san})
+                  </span>
                 </li>
                 {extraGuesses(card, answer).map((g) => (
                   <li key={g.uci}>
@@ -243,7 +255,7 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
                     {g.loss !== undefined && (
                       <span className="text-gray-600">
                         {' '}
-                        ({g.loss <= 0 ? 'at least as good' : `${g.loss} cp worse`})
+                        ({g.loss <= 0 ? `at least as good as ${card.target.san}` : `${g.loss} cp worse than ${card.target.san}`})
                       </span>
                     )}
                   </li>

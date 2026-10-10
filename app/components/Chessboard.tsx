@@ -8,6 +8,12 @@ import type { DrawShape } from 'chessground/draw';
 
 export interface ChessboardProps {
   initialFen?: string;
+  /**
+   * Change this to put the pieces back on `initialFen` even when it hasn't
+   * changed, e.g. a puzzle's second try. Cheaper than a new `key`, which
+   * rebuilds the board and flashes it empty first.
+   */
+  resetKey?: string | number;
   movable?: boolean;
   viewOnly?: boolean;
   allowDrawing?: boolean;
@@ -68,6 +74,7 @@ export default function Chessboard({
   selectable = {},
   events = {},
   drawable = {},
+  resetKey,
   ref: externalRef
 }: ChessboardProps) {
   const internalRef = useRef<HTMLDivElement>(null);
@@ -177,7 +184,7 @@ export default function Chessboard({
       animated, animationDuration, highlightMoves, lastMove, autoShapes, draggable, events, 
       drawable, selectable, calcMovable, handleMove, externalRef, ref]);
 
-  // Update board if initialFen or lastMove changes
+  // Update board if initialFen, lastMove or resetKey changes
   useEffect(() => {
     if (cgRef.current) {
       chess.load(normalizeFen(initialFen));
@@ -188,7 +195,7 @@ export default function Chessboard({
         lastMove: lastMove as Key[],
       });
     }
-  }, [initialFen, chess, viewOnly, movable, playableColor, lastMove, calcMovable]);
+  }, [initialFen, resetKey, chess, viewOnly, movable, playableColor, lastMove, calcMovable]);
 
   // Update arrow shapes independently so hover doesn't reload the FEN
   useEffect(() => {
