@@ -100,20 +100,29 @@ self.onmessage = async (e) => {
   try {
     if (msg.type === 'init') {
       const gpu = msg.allowGpu && (await hasGpu());
-      loadRuntime(gpu);
-      const bytes = await loadModel(msg.modelUrl, msg.cacheName);
-      let backend = 'wasm';
-      if (gpu) {
-        // A copy, so a failed GPU attempt can't leave the CPU fallback without bytes.
-        try {
-          session = await createSession(bytes.slice(), 'webgpu');
-          backend = 'webgpu';
-        } catch (err) {
-          console.warn('Maia: WebGPU unavailable, using the CPU', err);
-        }
+      // A failed GPU start can't fall back to the CPU in this worker: once ORT's
+      // initWasm() fails it refuses every later call ("previous call to
+      // 'initWasm()' failed"), which is what iOS hit. So report it, and the
+      // page starts a fresh CPU-only worker.
+      const gpuFailed = (err) => postMessage({ type: 'gpu-failed', message: (err && err.message) || String(err) });
+      try {
+        loadRuntime(gpu);
+      } catch (err) {
+        if (gpu) return gpuFailed(err);
+        throw err;
       }
-      if (!session) session = await createSession(bytes, 'wasm');
-      postMessage({ type: 'ready', backend });
+      const bytes = await loadModel(msg.modelUrl, msg.cacheName);
+      if (gpu) {
+        try {
+          session = await createSession(bytes, 'webgpu');
+        } catch (err) {
+          return gpuFailed(err);
+        }
+        postMessage({ type: 'ready', backend: 'webgpu' });
+      } else {
+        session = await createSession(bytes, 'wasm');
+        postMessage({ type: 'ready', backend: 'wasm' });
+      }
     } else if (msg.type === 'infer') {
       const n = msg.n;
       const out = await session.run({
@@ -171,16 +180,19 @@ export class MaiaEngine {
   constructor(opts: { onProgress?: (p: DownloadProgress) => void; allowGpu?: boolean } = {}) {
     this.onProgress = opts.onProgress;
     this.ready = this.start(opts.allowGpu ?? true).then(async (backend) => {
-      if (backend === 'webgpu' && !(await this.passesCanaries())) {
+      if (backend === 'wasm') return backend;
+      if (backend === 'webgpu') {
+        if (await this.passesCanaries()) return backend;
         console.warn('Maia: GPU results failed the sanity check; using the CPU');
-        this.stopWorker();
-        return this.start(false);
       }
-      return backend;
+      this.stopWorker();
+      // Without the GPU the worker only ever reports 'wasm'.
+      return this.start(false) as Promise<MaiaBackend>;
     });
   }
 
-  private start(allowGpu: boolean): Promise<MaiaBackend> {
+  /** 'gpu-failed': the GPU didn't start, and this worker can't fall back (see the worker). */
+  private start(allowGpu: boolean): Promise<MaiaBackend | 'gpu-failed'> {
     this.blobUrl = URL.createObjectURL(new Blob([WORKER_SOURCE], { type: 'application/javascript' }));
     const worker = new Worker(this.blobUrl);
     this.worker = worker;
@@ -190,6 +202,10 @@ export class MaiaEngine {
         const msg = e.data;
         if (msg.type === 'progress') this.onProgress?.({ received: msg.received, total: msg.total });
         else if (msg.type === 'ready') resolveReady(msg.backend);
+        else if (msg.type === 'gpu-failed') {
+          console.warn('Maia: WebGPU unavailable, using the CPU:', msg.message);
+          resolveReady('gpu-failed');
+        }
         else if (msg.type === 'result') {
           this.pending.get(msg.id)?.resolve(new Float32Array(msg.logits));
           this.pending.delete(msg.id);
