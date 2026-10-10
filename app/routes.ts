@@ -19,6 +19,7 @@ export default [
   route("collaborative-checkmate", "routes/collaborativeCheckmate._index.tsx"),
   route("collaborative-checkmate/:gameId/:playerId", "routes/collaborativeCheckmate.$gameId.$playerId.tsx"),
   route("generative-art", "routes/generativeArt.tsx"),
+  route("maia-drills", "routes/maiaDrills.tsx"),
   route("pizza-rating", "routes/pizzaRating.tsx"),
   route("the-riddler", "routes/theRiddler.tsx"),
 
@@ -70,6 +71,9 @@ export default [
   route("api/blunderWatch/game", "routes/api/blunderWatch/game.ts"),
   route("api/blunderWatch/submit", "routes/api/blunderWatch/submit.ts"),
   route("api/blunderWatch/leaderboard", "routes/api/blunderWatch/leaderboard.ts"),
+
+  // API routes for Maia Drills
+  route("api/maiaDrills/decks", "routes/api/maiaDrills/decks.ts"),
 
   // Multiple Choice Chess
   route("multiple-choice-chess", "routes/multipleChoiceChess._index.tsx"),

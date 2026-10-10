@@ -101,7 +101,9 @@ export default function Chessboard({
 
   const handleMove = useCallback((orig: string, dest: string) => {
     try {
-      const move = chess.move({ from: orig, to: dest });
+      // Auto-queen: chess.js rejects a promotion without a piece, and ignores
+      // the field on every other move.
+      const move = chess.move({ from: orig, to: dest, promotion: 'q' });
       if (move) {
         const newFen = chess.fen();
         
@@ -124,6 +126,9 @@ export default function Chessboard({
 
     const config: Config = {
       fen: chess.fen(),
+      // Without this chessground assumes white to move, so a black-to-move
+      // position can't be played.
+      turnColor: chess.turn() === 'w' ? 'white' : 'black',
       orientation,
       viewOnly,
       lastMove: lastMove as Key[],
@@ -178,6 +183,7 @@ export default function Chessboard({
       chess.load(normalizeFen(initialFen));
       cgRef.current.set({
         fen: chess.fen(),
+        turnColor: chess.turn() === 'w' ? 'white' : 'black',
         movable: calcMovable(),
         lastMove: lastMove as Key[],
       });
