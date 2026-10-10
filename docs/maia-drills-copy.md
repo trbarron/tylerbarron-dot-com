@@ -146,10 +146,10 @@ The progress panel while adding is the same as when building (R1–R13).
 | T11 | Here's the answer. *(after Show answer)* | |
 | T12 | A {targetElo} plays **{move}** (Maia {pct}%, eval {eval}) *(green key)* | |
 | T13 | In the game you played **{move}** (eval {eval}) *(red key)* | |
-| T14 | You tried **{move}** (eval {eval}) *(blue or yellow key; one line per move tried)* | |
+| T14 | You tried **{move}** (eval {eval}) *(blue or yellow key; one line per move tried)*. Every {eval} is from White's side (+ good for White, − for Black), whichever side the card is for | |
 | T15 | Open the game ↗ | |
 | T16 | Next card → | |
-| T17 | winning / losing *(shown instead of an eval past ±10)* | |
+| T17 | White is winning / Black is winning *(replaces "eval {eval}" past ±10)* | |
 
 ## Errors you can skip
 

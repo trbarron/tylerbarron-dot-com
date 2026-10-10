@@ -22,6 +22,18 @@ export interface Answer {
   firstTry: boolean;
 }
 
+/**
+ * An eval for display, in the usual convention: + is good for White, − for
+ * Black. Cards store evals from the mover's side, which is what grading
+ * compares, so a Black card's are flipped. Past ±10 (mates clamp to ±1000)
+ * it names the winning side instead of a number.
+ */
+export function formatEval(moverCp: number, mover: 'w' | 'b'): string {
+  const cp = mover === 'w' ? moverCp : -moverCp;
+  if (Math.abs(cp) >= 1000) return cp > 0 ? 'White is winning' : 'Black is winning';
+  return `eval ${cp > 0 ? '+' : ''}${(cp / 100).toFixed(1)}`;
+}
+
 /** A move within this many cp of the stronger player's choice counts too. */
 export const ALSO_GOOD_MARGIN = 30;
 /** A missed card comes back after this many other cards. */

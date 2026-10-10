@@ -11,6 +11,7 @@ import {
   advanceQueue,
   afterTry,
   extraGuesses,
+  formatEval,
   gradeByScores,
   gradeKnown,
   initialQueue,
@@ -157,6 +158,21 @@ describe('card order', () => {
 });
 
 describe('answer display', () => {
+  it('shows evals from White’s side, flipping a Black card’s mover-relative scores', () => {
+    expect(formatEval(60, 'w')).toBe('eval +0.6');
+    expect(formatEval(-230, 'w')).toBe('eval -2.3');
+    // Black's good move (+60 for Black) is −0.6 on the usual scale.
+    expect(formatEval(60, 'b')).toBe('eval -0.6');
+    expect(formatEval(-230, 'b')).toBe('eval +2.3');
+    expect(formatEval(0, 'b')).toBe('eval 0.0');
+  });
+
+  it('names the winning side past ±10', () => {
+    expect(formatEval(1000, 'w')).toBe('White is winning');
+    expect(formatEval(1000, 'b')).toBe('Black is winning');
+    expect(formatEval(-1000, 'b')).toBe('White is winning');
+  });
+
   it('lists only tries that aren’t already drawn, once each', () => {
     const answer: Answer = { verdict: 'wrong', guesses: [gameMove, other], firstTry: false };
     expect(extraGuesses(card, answer)).toEqual([other]);

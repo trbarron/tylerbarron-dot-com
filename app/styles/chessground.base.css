@@ -160,12 +160,18 @@ piece.fading {
   font-size: 9px;
 }
 
+/*
+ * Labels sit inside the edge squares: ranks at the top-left of each a-file
+ * square (h-file from Black's side), files at the bottom-right of each first-
+ * rank square. Upstream offsets them by fixed pixels (top: -20px, left: 24px),
+ * which only lines up on a large board; on a phone the files drifted a whole
+ * square right. Equal flex shares keep each label on its square at any size.
+ */
 .cg-wrap coords.ranks {
-  left: 4px;
-  top: -20px;
+  left: 0;
+  top: 0;
   flex-flow: column-reverse;
   height: 100%;
-  width: 12px;
 }
 
 .cg-wrap coords.ranks.black {
@@ -178,13 +184,13 @@ piece.fading {
 }
 
 .cg-wrap coords.files {
-  bottom: -4px;
-  left: 24px;
+  bottom: 0;
+  left: 0;
   flex-flow: row;
+  align-items: flex-end;
   width: 100%;
-  height: 16px;
   text-transform: uppercase;
-  text-align: center;
+  text-align: right;
 }
 
 .cg-wrap coords.files.black {
@@ -192,11 +198,16 @@ piece.fading {
 }
 
 .cg-wrap coords coord {
-  flex: 1 1 auto;
+  flex: 1 1 0;
+  line-height: 1;
 }
 
 .cg-wrap coords.ranks coord {
-  transform: translateY(39%);
+  padding: 2px 0 0 3px;
+}
+
+.cg-wrap coords.files coord {
+  padding: 0 3px 2px 0;
 }
 
 .cg-wrap coords.squares {

@@ -7,6 +7,7 @@ import {
   advanceQueue,
   afterTry,
   extraGuesses,
+  formatEval,
   gradeByScores,
   gradeKnown,
   initialQueue,
@@ -37,11 +38,6 @@ const NO_SHAPES: DrawShape[] = [];
 
 function arrow(uci: string, brush: string): DrawShape {
   return { orig: uci.slice(0, 2) as Key, dest: uci.slice(2, 4) as Key, brush };
-}
-
-function formatCp(cp: number): string {
-  if (Math.abs(cp) >= 1000) return cp > 0 ? 'winning' : 'losing';
-  return `${cp > 0 ? '+' : ''}${(cp / 100).toFixed(1)}`;
 }
 
 export default function Drill({ deckId, deck, onExit }: DrillProps) {
@@ -243,18 +239,18 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
                 <li>
                   <span className="inline-block w-3 bg-green-600">&nbsp;</span>{' '}
                   A {card.targetElo} plays <strong className="font-mono">{card.target.san}</strong>{' '}
-                  <span className="text-gray-600">(Maia {Math.round(card.target.prob * 100)}%, eval {formatCp(card.evalTarget)})</span>
+                  <span className="text-gray-600">(Maia {Math.round(card.target.prob * 100)}%, {formatEval(card.evalTarget, card.color)})</span>
                 </li>
                 <li>
                   <span className="inline-block w-3 bg-red-600">&nbsp;</span>{' '}
                   In the game you played <strong className="font-mono">{card.played.san}</strong>{' '}
-                  <span className="text-gray-600">(eval {formatCp(card.evalPlayed)})</span>
+                  <span className="text-gray-600">({formatEval(card.evalPlayed, card.color)})</span>
                 </li>
                 {extraGuesses(card, answer).map((g) => (
                   <li key={g.uci}>
                     <span className={`inline-block w-3 ${isAlsoGood(answer, g) ? 'bg-blue-600' : 'bg-yellow-500'}`}>&nbsp;</span>{' '}
                     You tried <strong className="font-mono">{g.san}</strong>
-                    {g.eval !== undefined && <span className="text-gray-600"> (eval {formatCp(g.eval)})</span>}
+                    {g.eval !== undefined && <span className="text-gray-600"> ({formatEval(g.eval, card.color)})</span>}
                   </li>
                 ))}
               </ul>
