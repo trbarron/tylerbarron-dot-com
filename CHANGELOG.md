@@ -1,3 +1,10 @@
+## [5.28.1](https://github.com/trbarron/tylerbarron-dot-com/compare/5.28.0...5.28.1) (2026-10-10)
+
+
+### Performance Improvements
+
+* load the AWS SDK only when starting a Camel Up Cup tournament ([45ac051](https://github.com/trbarron/tylerbarron-dot-com/commit/45ac051eceec18e68a88caa67e0c12285c15e5e1))
+
 # [5.28.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.27.0...5.28.0) (2026-10-10)
 
 
