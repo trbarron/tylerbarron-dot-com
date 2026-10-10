@@ -1,3 +1,10 @@
+# [5.28.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.27.0...5.28.0) (2026-10-10)
+
+
+### Features
+
+* add Maia Drills ([4efcca7](https://github.com/trbarron/tylerbarron-dot-com/commit/4efcca7568514de0529fc4530bbcf7c31722a7cc))
+
 # [5.27.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.26.1...5.27.0) (2026-10-09)
 
 
