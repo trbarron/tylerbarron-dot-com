@@ -8,7 +8,6 @@
 // is ~5 chained Lambda invocations over ~1h), guarded by a Redis lock plus
 // reserved concurrency of 1 on the Lambda itself.
 
-import { LambdaClient, InvokeCommand } from "@aws-sdk/client-lambda";
 import { getRedisClient } from "../redis.server";
 import { getImageUrl } from "../cdn";
 import type { Leaderboard, SubmissionStatus } from "./types";
@@ -34,6 +33,10 @@ export interface SubmissionPayload {
 }
 
 export async function dispatchSubmission(payload: SubmissionPayload): Promise<void> {
+  // Imported here rather than at the top: every route shares one server
+  // bundle, so a top-level import made every cold start load the AWS SDK
+  // (half of the Lambda's node_modules) for a call only a submission makes.
+  const { LambdaClient, InvokeCommand } = await import("@aws-sdk/client-lambda");
   const client = new LambdaClient({});
   await client.send(
     new InvokeCommand({
