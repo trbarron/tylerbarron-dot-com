@@ -42,7 +42,8 @@ export function RunMessages({ run }: { run: AnalysisRun }) {
     <>
       {run.error && (
         <div className="border-2 border-red-500 bg-red-100 p-3 font-neo text-sm text-red-800" role="alert">
-          {run.error}
+          <p>{run.error}</p>
+          {run.errorDetail && <p className="mt-1 break-words font-mono text-xs text-red-700">{run.errorDetail}</p>}
         </div>
       )}
       {run.notice && (

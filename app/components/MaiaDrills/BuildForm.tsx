@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { loadForm, saveForm } from '~/utils/maiaDrills/localStorage';
 import { DEFAULT_SETTINGS, LIMITS, type AnalysisSettings, type Deck, type GameSource } from '~/utils/maiaDrills/types';
+import { isHandheld } from '~/utils/maiaDrills/device';
 import { trackDeckBuilt } from '~/utils/maiaDrills/tracking';
 import RunProgress, { RunMessages } from './RunProgress';
 import { useAnalysisRun } from './useAnalysisRun';
@@ -60,7 +61,8 @@ export default function BuildForm({ onBuilt }: BuildFormProps) {
     if (saved.source) setSource(saved.source);
     if (saved.username) setUsername(saved.username);
     if (typeof saved.excludeBullet === 'boolean') setExcludeBullet(saved.excludeBullet);
-    setFields(toFields(saved.maxGames ?? 200, { ...DEFAULT_SETTINGS, ...saved.settings }));
+    // A phone runs everything on the CPU, so a first run there starts smaller.
+    setFields(toFields(saved.maxGames ?? (isHandheld() ? 50 : 200), { ...DEFAULT_SETTINGS, ...saved.settings }));
   }, []);
 
   const setField = (key: NumberField) => (e: React.ChangeEvent<HTMLInputElement>) =>
