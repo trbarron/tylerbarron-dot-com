@@ -275,13 +275,16 @@ export async function loadDeck(id: string): Promise<Deck | null> {
 export type FavoriteOutcome = 'ok' | 'not-found' | 'forbidden';
 
 /** The stored deck JSON when `editToken` owns deck `id`; otherwise why not. */
+function tokenMatches(storedHash: string, editToken: string): boolean {
+  const expected = Buffer.from(storedHash, 'hex');
+  const given = Buffer.from(hashToken(editToken), 'hex');
+  return expected.length === given.length && timingSafeEqual(expected, given);
+}
+
 async function authorize(id: string, editToken: string): Promise<{ raw: string } | { denied: 'not-found' | 'forbidden' }> {
   const [raw, storedHash] = await getRedisClient().mget(`${DECK_PREFIX}${id}`, `${EDIT_PREFIX}${id}`);
   if (!raw || !storedHash) return { denied: 'not-found' };
-
-  const expected = Buffer.from(storedHash, 'hex');
-  const given = Buffer.from(hashToken(editToken), 'hex');
-  if (expected.length !== given.length || !timingSafeEqual(expected, given)) return { denied: 'forbidden' };
+  if (!tokenMatches(storedHash, editToken)) return { denied: 'forbidden' };
   return { raw };
 }
 
@@ -365,19 +368,27 @@ export type AddOutcome =
   | { outcome: 'forbidden' };
 
 /**
- * Merge new cards into a deck the caller owns. Adding counts as use, so an
- * unfavorited deck's 30 days start over; a favorite stays permanent.
+ * Merge new cards into a deck. Favorites are communal, so anyone can add
+ * newer games to one; any other deck needs its owner's token. Adding counts
+ * as use, so an unfavorited deck's 30 days start over; a favorite stays
+ * permanent.
  *
- * Read-modify-write without a lock: two adds racing on one deck would lose
- * one's cards. Only the browser holding the token can add, so that's one
- * person double-clicking, and the button is disabled while a run is going.
+ * The server can't check that cards really came from the player's games, so
+ * someone could push junk into a favorite. Accepted for a small site; adds
+ * are rate-limited per address.
+ *
+ * Read-modify-write without a lock: two adds landing on one deck within the
+ * same moment would lose one's cards. Each add follows minutes of analysis,
+ * so that needs two people finishing at once on the same deck.
  */
-export async function addToDeck(id: string, editToken: string, addition: DeckAddition): Promise<AddOutcome> {
-  const auth = await authorize(id, editToken);
-  if ('denied' in auth) return auth.denied === 'forbidden' ? { outcome: 'forbidden' } : { outcome: 'not-found' };
-
-  const { deck, added } = mergeIntoDeck(JSON.parse(auth.raw) as Deck, addition, new Date());
+export async function addToDeck(id: string, editToken: string | null, addition: DeckAddition): Promise<AddOutcome> {
   const redis = getRedisClient();
+  const [raw, storedHash] = await redis.mget(`${DECK_PREFIX}${id}`, `${EDIT_PREFIX}${id}`);
+  if (!raw || !storedHash) return { outcome: 'not-found' };
+  const current = JSON.parse(raw) as Deck;
+  if (!current.favorite && !(editToken && tokenMatches(storedHash, editToken))) return { outcome: 'forbidden' };
+
+  const { deck, added } = mergeIntoDeck(current, addition, new Date());
   if (deck.favorite) {
     await redis.set(`${DECK_PREFIX}${id}`, JSON.stringify(deck));
   } else {

@@ -6,7 +6,8 @@ import { useAnalysisRun } from './useAnalysisRun';
 interface AddGamesProps {
   deckId: string;
   deck: Deck;
-  editToken: string;
+  /** The owner's token, if this browser built the deck. A favorite takes adds without one. */
+  editToken: string | null;
   /** Called after the server took new cards, so the page can reload the deck. */
   onUpdated: () => void;
 }
@@ -17,8 +18,8 @@ function plural(n: number, word: string): string {
 
 /**
  * Analyze the player's games since the deck's newest one, with the deck's own
- * settings, and merge the new cards in. Only shown to the browser that built
- * the deck.
+ * settings, and merge the new cards in. Shown to the browser that built the
+ * deck, and to anyone on a favorite.
  */
 export default function AddGames({ deckId, deck, editToken, onUpdated }: AddGamesProps) {
   const run = useAnalysisRun();
@@ -45,7 +46,7 @@ export default function AddGames({ deckId, deck, editToken, onUpdated }: AddGame
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             id: deckId,
-            editToken,
+            ...(editToken ? { editToken } : {}),
             cards: result.cards.slice(0, LIMITS.cardsPerDeck),
             stats: result.stats,
             // A stopped run skipped some games; leaving the date alone means the
