@@ -41,15 +41,19 @@ unpkg CDN; see `app/utils/multipleChoiceChess/stockfishEngine.ts`.
 ## Lambda dependencies: two lists that must stay in sync
 
 The Lambda installs `server/package.json` (a separate, hand-maintained list: the AWS
-preset, `chess.js`, `ioredis`, `isbot`, `react`, `react-dom`, `react-router`,
-`@aws-sdk/client-lambda`) — ~15 MB installed, dominated by `react-dom` (4.4 MB) and
-`react-router` (4 MB).
+preset, `chess.js`, `ioredis`, `isbot`, `react`, `react-dom`, `react-router`) — ~17 MB
+installed, dominated by `react-dom` (7.9 MB) and `react-router` (5 MB).
 
-`@aws-sdk/client-lambda` is the **only** AWS SDK package in the Lambda, and it is there
-on purpose: `app/utils/camelUpCup/tournament.server.ts` invokes the tournament Lambda at
-runtime. `@aws-sdk/client-s3` is *not* — it stays a devDependency used only by the
-upload scripts. Both are devDependencies in the root `package.json`, so the root list
-tells you nothing about what ships; `server/package.json` is the authority.
+No AWS SDK package ships. `app/utils/camelUpCup/tournament.server.ts` does use
+`@aws-sdk/client-lambda` to invoke the tournament Lambda, but Lambda's Node runtime
+includes the AWS SDK v3, so it resolves there; bundling it (with `@smithy/*`) doubled
+the Lambda to 36 MB. It's imported dynamically inside `dispatchSubmission`, so only a
+submission loads it. Locally it resolves from the root devDependency. AWS recommends
+bundling the SDK so a runtime update can't change its version under you; for one
+`InvokeCommand` that risk is small, and it's the first thing to check if Camel Up Cup
+submissions start failing. `@aws-sdk/client-s3` is a devDependency used only by the
+upload scripts. Root membership tells you nothing about what ships;
+`server/package.json` is the authority.
 
 The Vite SSR build externalizes all npm deps, so anything an SSR-rendered module imports
 must either be in `server/package.json` or listed in `ssr.noExternal` in
@@ -64,9 +68,9 @@ touched imports.
 ## Versioning (automated semver in the footer)
 
 Releases are **fully automated by semantic-release** (`.releaserc.json`), driven by
-[Conventional Commits](https://www.conventionalcommits.org): `fix:` → patch, `feat:` →
-minor, `feat!:`/`BREAKING CHANGE:` → major. Other types (`chore:`, `ci:`, `docs:`,
-`refactor:`, `perf:`, `test:`) don't release.
+[Conventional Commits](https://www.conventionalcommits.org): `fix:` and `perf:` → patch,
+`feat:` → minor, `feat!:`/`BREAKING CHANGE:` → major (commit-analyzer's default rules).
+Other types (`chore:`, `ci:`, `docs:`, `refactor:`, `test:`) don't release.
 
 Flow: on push to `master`, the deploy job runs `npx semantic-release` **before** the
 build. It analyzes commits since the last tag, and if a release is warranted it bumps
