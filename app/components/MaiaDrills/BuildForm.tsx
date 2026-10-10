@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { loadForm, saveForm } from '~/utils/maiaDrills/localStorage';
-import { DEFAULT_SETTINGS, LIMITS, LOST_CP, type AnalysisSettings, type Deck, type GameSource } from '~/utils/maiaDrills/types';
+import { DEFAULT_SETTINGS, LIMITS, type AnalysisSettings, type Deck, type GameSource } from '~/utils/maiaDrills/types';
 import { isHandheld } from '~/utils/maiaDrills/device';
 import { trackDeckBuilt } from '~/utils/maiaDrills/tracking';
 import RunProgress, { RunMessages } from './RunProgress';
@@ -263,7 +263,7 @@ export default function BuildForm({ onBuilt }: BuildFormProps) {
                 onChange={(e) => setSkipLost(e.target.checked)}
                 className="h-4 w-4 shrink-0 accent-black"
               />
-              Skip positions you’d already lost (down {LOST_CP / 100} or more before and after your move)
+              Skip positions you’d already lost
             </label>
           </div>
         </details>

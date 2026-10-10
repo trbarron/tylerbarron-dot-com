@@ -39,7 +39,7 @@ Every string a visitor can see, grouped by where it appears. Fill in **Yours** f
 | B15 | Stockfish depth *(label)* | |
 | B16 | Skip moves before move # *(label)* | |
 | B17 | Skip bullet games *(checkbox)* | |
-| B17b | Skip positions you'd already lost (down 7 or more before and after your move) *(checkbox, on by default)* | |
+| B17b | Skip positions you'd already lost *(checkbox, on by default; down 7 or more before and after your move)* | |
 | B18 | Find my errors *(main button)* | |
 
 ### While it runs
