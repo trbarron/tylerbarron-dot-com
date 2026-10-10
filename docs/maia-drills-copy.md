@@ -141,8 +141,8 @@ The progress panel while adding is the same as when building (R1–R13).
 | T10 | Not quite. *(after the second miss)* | |
 | T11 | Here's the answer. *(after Show answer)* | |
 | T12 | A {targetElo} plays **{move}** (Maia {pct}%, eval {eval}) *(green key)* | |
-| T13 | In the game you played **{move}** (eval {eval}, {cp} cp worse than {target}) *(red key)* | |
-| T14 | You tried **{move}** (at least as good as {target} / {cp} cp worse than {target}) *(blue or yellow key; one line per move tried)* | |
+| T13 | In the game you played **{move}** (eval {eval}) *(red key)* | |
+| T14 | You tried **{move}** (eval {eval}) *(blue or yellow key; one line per move tried)* | |
 | T15 | Open the game ↗ | |
 | T16 | Next card → | |
 | T17 | winning / losing *(shown instead of an eval past ±10)* | |
