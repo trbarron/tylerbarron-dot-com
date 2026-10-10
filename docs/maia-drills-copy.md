@@ -99,7 +99,8 @@ Every string a visitor can see, grouped by where it appears. Fill in **Yours** f
 | D11 | Loading… | |
 | D12 | That deck has expired or never existed. | |
 | D13 | Build a new deck *(link under D12)* | |
-| D14 | Only the browser that built this deck can change it. | |
+| D14 | Only the browser that built this deck can change it. *(favoriting)* | |
+| D14b | Only the browser that built this deck can add to it until it’s a favorite. | |
 
 ### Adding new games (deck page, only in the browser that built it)
 

@@ -73,10 +73,10 @@ maiaDrills:favorites                  ZSET of favorited deck ids, scored by when
 ratelimit:maiaDrills:{bucket}:{ip}:{window}
 ```
 
-- Saving a deck mints an id plus a secret edit token, the same pattern as the Media Profile share cards. The browser that processed the games keeps the token in `localStorage`, and only that token can favorite or unfavorite.
+- Saving a deck mints an id plus a secret edit token, the same pattern as the Media Profile share cards. The browser that processed the games keeps the token in `localStorage`, and only that token can favorite or unfavorite, or add games to a deck that isn't a favorite.
 - **Favoriting** persists the deck (removes the TTL) and adds it to one **global** favorites list, shown to every visitor at the bottom of the build page with the player's name on each deck. It's global on purpose: traffic is low, there are no accounts, and a per-player list could be filled by anyone who builds decks from that player's public games. Favorites open on any device with no reprocessing.
 - The list keeps the 50 most recently favorited decks. Favoriting a 51st drops the oldest off the list, and that deck gets its 30-day expiry back, so nothing is blocked and nothing is kept forever off the list.
-- **Adding games.** A deck records when its newest analyzed game was played (`newestGameAt`). On the deck page, the browser that built it can *Add new games*: it fetches only games after that (Lichess `since`, which is inclusive, so +1 ms; for Chess.com it walks monthly archives newest-first and stops at the first month that reaches it). The new games are analyzed with the deck's own settings and bullet choice, and the cards are sent to `PATCH`. The server does the merge, so a stale page can't drop cards: it skips cards it already has (same game and ply), keeps the 400 biggest misses, sums the stats, and moves `newestGameAt` forward. A stopped run sends its cards but not a new date, so the next add looks at those games again. An add restarts an unfavorited deck's 30 days.
+- **Adding games.** A deck records when its newest analyzed game was played (`newestGameAt`). On the deck page, the browser that built it can *Add new games*, and so can anyone on a favorite: favorites are communal. The server can't verify that cards came from the player's games, so someone could push junk into a favorite; that's accepted for a small site, and adds are rate-limited per address (20 an hour). Adding: it fetches only games after that (Lichess `since`, which is inclusive, so +1 ms; for Chess.com it walks monthly archives newest-first and stops at the first month that reaches it). The new games are analyzed with the deck's own settings and bullet choice, and the cards are sent to `PATCH`. The server does the merge, so a stale page can't drop cards: it skips cards it already has (same game and ply), keeps the 400 biggest misses, sums the stats, and moves `newestGameAt` forward. A stopped run sends its cards but not a new date, so the next add looks at those games again. An add restarts an unfavorited deck's 30 days.
 - Per-card drill progress (seen / correct / last result) lives in `localStorage`, keyed by card id. Ids are stable across adds, so progress survives them. It's a convenience, not a record.
 - Limits: 400 cards per deck, 50 decks on the favorites list, 20 deck saves per IP per hour.
 
@@ -129,7 +129,7 @@ A run that starts but never reaches built, added, error or cancel was abandoned 
 
 - Spaced repetition scheduling (cards are shuffled; misses come back sooner in the session).
 - Server-side processing.
-- Accounts. The only identity is "the browser that holds the edit token", and it's needed only to favorite or unfavorite.
+- Accounts. The only identity is "the browser that holds the edit token", and it's needed only to favorite or unfavorite, and to add games to a deck that isn't a favorite.
 - Converting Chess.com ratings to Lichess ratings.
 
 ## Open questions

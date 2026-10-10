@@ -233,7 +233,8 @@ function DeckView({
           open it.
         </p>
       )}
-      {token && (
+      {/* Favorites are communal: anyone can add newer games to one. */}
+      {(token || deck.favorite) && (
         <AddGames
           deckId={deckId}
           deck={deck}

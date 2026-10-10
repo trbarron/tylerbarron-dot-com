@@ -84,19 +84,21 @@ async function handleAdd(request: Request) {
   if (typeof id !== 'string' || !isValidId(id)) {
     return Response.json({ error: 'Missing or malformed id.' }, { status: 400 });
   }
-  if (typeof editToken !== 'string' || !isValidEditToken(editToken)) {
-    return Response.json({ error: 'Only the browser that built this deck can change it.' }, { status: 403 });
-  }
   const validated = validateAddition(parsed.body);
   if (!validated.ok) return Response.json({ error: validated.error }, { status: 400 });
 
   try {
-    const result = await addToDeck(id, editToken, validated.value);
+    // No token is fine for a favorite: anyone can add newer games to one.
+    const token = typeof editToken === 'string' && isValidEditToken(editToken) ? editToken : null;
+    const result = await addToDeck(id, token, validated.value);
     if (result.outcome === 'not-found') {
       return Response.json({ error: 'That deck has expired or never existed.' }, { status: 404 });
     }
     if (result.outcome === 'forbidden') {
-      return Response.json({ error: 'Only the browser that built this deck can change it.' }, { status: 403 });
+      return Response.json(
+        { error: 'Only the browser that built this deck can add to it until it’s a favorite.' },
+        { status: 403 }
+      );
     }
     const { added, cardCount, newestGameAt } = result;
     return Response.json({ added, cardCount, newestGameAt });

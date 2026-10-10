@@ -393,10 +393,27 @@ describe('PATCH /api/maiaDrills/decks', () => {
     expect((await get(`id=${id}`)).body.deck.newestGameAt).toBe(addition.newestGameAt);
   });
 
-  it('refuses a caller without the deck’s token', async () => {
+  it('refuses a caller without the deck’s token, unless the deck is a favorite', async () => {
     const { id } = await saved();
     expect((await patch({ id, editToken: 'x'.repeat(32), ...addition })).status).toBe(403);
+    expect((await patch({ id, ...addition })).status).toBe(403);
     expect((await get(`id=${id}`)).body.deck.cards).toHaveLength(1);
+  });
+
+  it('lets anyone add newer games to a favorite, with or without a token', async () => {
+    const { id, editToken } = await saved();
+    await put({ id, editToken, favorite: true });
+
+    const anonymous = await patch({ id, ...addition });
+    expect(anonymous.status).toBe(200);
+    expect(anonymous.body.added).toBe(1);
+
+    const wrongToken = await patch({ id, editToken: 'x'.repeat(32), ...addition, cards: [cardFrom('newgame2', 250)] });
+    expect(wrongToken.status).toBe(200);
+    expect((await get(`id=${id}`)).body.deck.cards).toHaveLength(3);
+
+    // Still only the owner can unfavorite it.
+    expect((await put({ id, editToken: 'x'.repeat(32), favorite: false })).status).toBe(403);
   });
 
   it('404s an expired deck and 400s malformed cards', async () => {
