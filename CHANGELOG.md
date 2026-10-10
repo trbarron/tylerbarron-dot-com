@@ -1,3 +1,16 @@
+# [5.32.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.31.1...5.32.0) (2026-10-10)
+
+
+### Bug Fixes
+
+* keep the already-lost checkbox full size when its label wraps ([8151df8](https://github.com/trbarron/tylerbarron-dot-com/commit/8151df812a220900c0d231e11fbab8cbd29a57d7))
+* shorten the already-lost checkbox label ([87d46be](https://github.com/trbarron/tylerbarron-dot-com/commit/87d46be73f34ab1a4da6b72bbc7c61513f806c42))
+
+
+### Features
+
+* skip Maia Drills errors made in already-lost positions ([a6f2585](https://github.com/trbarron/tylerbarron-dot-com/commit/a6f2585bbffc86f1124dcce16184b522520fd616))
+
 ## [5.31.1](https://github.com/trbarron/tylerbarron-dot-com/compare/5.31.0...5.31.1) (2026-10-10)
 
 
