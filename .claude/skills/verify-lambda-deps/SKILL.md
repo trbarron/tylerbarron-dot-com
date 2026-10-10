@@ -34,7 +34,8 @@ root, so `react-dom/server` → `react-dom`) and confirm it is satisfied by one 
 2. **`ssr.noExternal` in `vite.config.ts`** — currently `chessground`, `d3-geo`,
    `d3-array`, `topojson-client`. These get bundled into `build/server` instead of being
    imported at runtime, so they must *not* also be in `server/package.json`.
-3. **A transitive peer npm installs on its own** — `react-router` and
+3. **The Lambda runtime** — `@aws-sdk/*` only (see below).
+4. **A transitive peer npm installs on its own** — `react-router` and
    `@react-router/node` come in via the AWS preset. Treat these as satisfied only if you
    can point at the parent that pulls them.
 
@@ -45,14 +46,14 @@ which of the two fixes applies.
 
 - **Small, or needed at runtime** → add it to `server/package.json`.
 - **Large, tree-shakeable, or pulls a heavy tree** → add it to `ssr.noExternal` so it
-  bundles instead. The Lambda is already ~15 MB installed, dominated by `react-dom`
-  (4.4 MB) and `react-router` (4 MB); every runtime dep is cold-start cost.
+  bundles instead. The Lambda is already ~17 MB installed, dominated by `react-dom`
+  (7.9 MB) and `react-router` (5 MB); every runtime dep is cold-start cost.
 
-`@aws-sdk/client-lambda` belongs in the Lambda — `app/utils/camelUpCup/tournament.server.ts`
-invokes the tournament Lambda at runtime. Don't "clean it up". No *other* AWS SDK
-package should ship: `@aws-sdk/client-s3` is used only by the upload scripts and stays a
-devDependency. Both are devDependencies in the root `package.json`, so root membership
-proves nothing either way — `server/package.json` is the authority.
+`@aws-sdk/*` is the exception: Lambda's Node runtime provides the AWS SDK v3, so
+`import("@aws-sdk/client-lambda")` (in `app/utils/camelUpCup/tournament.server.ts`) is
+satisfied without being in `server/package.json`. Keep it out; shipping it doubled the
+Lambda to 36 MB. Don't add any AWS SDK package back to `server/package.json`, and keep
+SDK imports dynamic so pages that don't need them don't load them on a cold start.
 
 ## Confirming the fix
 

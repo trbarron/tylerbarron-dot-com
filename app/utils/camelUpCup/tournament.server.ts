@@ -33,9 +33,10 @@ export interface SubmissionPayload {
 }
 
 export async function dispatchSubmission(payload: SubmissionPayload): Promise<void> {
-  // Imported here rather than at the top: every route shares one server
-  // bundle, so a top-level import made every cold start load the AWS SDK
-  // (half of the Lambda's node_modules) for a call only a submission makes.
+  // Not shipped with the site: Lambda's Node runtime includes the AWS SDK v3,
+  // and bundling it doubled the Lambda's size. Locally it resolves from the
+  // root devDependency. Imported here rather than at the top because every
+  // route shares one server bundle, and only a submission needs it.
   const { LambdaClient, InvokeCommand } = await import("@aws-sdk/client-lambda");
   const client = new LambdaClient({});
   await client.send(
