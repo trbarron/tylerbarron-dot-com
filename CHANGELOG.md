@@ -1,3 +1,10 @@
+## [5.28.4](https://github.com/trbarron/tylerbarron-dot-com/compare/5.28.3...5.28.4) (2026-10-10)
+
+
+### Bug Fixes
+
+* skip the WebGPU attempt on iPhones and iPads in Maia Drills ([59a03bb](https://github.com/trbarron/tylerbarron-dot-com/commit/59a03bb683d587d9af7ce4af4b6c2cfc561ad7e2))
+
 ## [5.28.3](https://github.com/trbarron/tylerbarron-dot-com/compare/5.28.2...5.28.3) (2026-10-10)
 
 
