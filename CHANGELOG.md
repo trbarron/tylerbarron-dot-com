@@ -1,3 +1,17 @@
+# [5.30.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.29.0...5.30.0) (2026-10-10)
+
+
+### Bug Fixes
+
+* plain verdict text and unambiguous GA params in Maia Drills ([4b84774](https://github.com/trbarron/tylerbarron-dot-com/commit/4b84774330a2b9d4d16d4b5959cb89cf7e262540))
+
+
+### Features
+
+* count a right second try in the Maia Drills stats ([9707825](https://github.com/trbarron/tylerbarron-dot-com/commit/970782547d96c6ef915acdc582ae7a1162427613))
+* get Maia Drills ready for beta testers ([412458a](https://github.com/trbarron/tylerbarron-dot-com/commit/412458ae45c525bedb20181211b67e5ef174b805))
+* track Maia Drills usage in GA ([119540c](https://github.com/trbarron/tylerbarron-dot-com/commit/119540ca4d60123a0b1a776fc57a086129a528ab))
+
 # [5.29.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.28.4...5.29.0) (2026-10-10)
 
 
