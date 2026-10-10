@@ -61,7 +61,8 @@ export function useAnalysisRun() {
 
     const controller = new AbortController();
     abortRef.current = controller;
-    let engines: { maia: MaiaEngine; stockfish: StockfishPool } | null = null;
+    let maia: MaiaEngine | null = null;
+    let stockfish: StockfishPool | null = null;
 
     try {
       setStage('fetching');
@@ -81,14 +82,14 @@ export function useAnalysisRun() {
         onProgress: setGamesFetched,
       });
 
-      const startEngines = () => {
-        const maia = new maiaModule.MaiaEngine({ onProgress: setDownload });
-        maia.ready.then(setBackend, () => {});
-        return { maia, stockfish: poolModule.StockfishPool.forDevice() };
+      const startMaia = () => {
+        const engine = new maiaModule.MaiaEngine({ onProgress: setDownload });
+        engine.ready.then(setBackend, () => {});
+        return engine;
       };
-      // A new deck starts the engines while games are fetched. Adding to a deck
+      // A new deck starts loading Maia while games are fetched. Adding to a deck
       // waits: it often finds no new games, and then there's nothing to load.
-      if (request.since === undefined) engines = startEngines();
+      if (request.since === undefined) maia = startMaia();
       const games = await fetching;
       setGamesFetched(games.length);
       const newestGameAt = games.reduce<number | undefined>(
@@ -110,17 +111,19 @@ export function useAnalysisRun() {
         return;
       }
 
-      engines ??= startEngines();
+      maia ??= startMaia();
 
       setStage('engines');
       // The model download can't be interrupted, but Cancel shouldn't have to wait for it.
-      await Promise.race([
-        Promise.all([engines.maia.ready, engines.stockfish.ready()]),
-        rejectOnAbort(controller.signal),
-      ]);
+      await Promise.race([maia.ready, rejectOnAbort(controller.signal)]);
+      // Stockfish starts only once Maia is fully loaded. Started together on an
+      // iPhone, Maia was the one refused memory, and Stockfish copes with
+      // losing a worker where Maia can't.
+      stockfish = poolModule.StockfishPool.forDevice();
+      await Promise.race([stockfish.ready(), rejectOnAbort(controller.signal)]);
 
       setStage('analyzing');
-      const result = await analyzeGames(games, request.settings, engines, {
+      const result = await analyzeGames(games, request.settings, { maia, stockfish }, {
         signal: controller.signal,
         onProgress: setProgress,
       });
@@ -134,8 +137,8 @@ export function useAnalysisRun() {
         setError(err instanceof Error ? err.message : 'Something went wrong.');
       }
     } finally {
-      engines?.maia.terminate();
-      engines?.stockfish.terminate();
+      maia?.terminate();
+      stockfish?.terminate();
       abortRef.current = null;
       setStage('idle');
     }

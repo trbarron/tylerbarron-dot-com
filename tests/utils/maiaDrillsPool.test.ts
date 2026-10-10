@@ -16,12 +16,15 @@ import { SCORE_CLAMP, StockfishPool } from '~/utils/maiaDrills/stockfishPool';
 let scoresByFen: Record<string, Record<string, number>> = {};
 /** Positions whose search never finishes on its own (only `stop` ends it). */
 let hangingFens = new Set<string>();
+/** How many of the next workers fail to start, the way one does when the browser refuses its memory. */
+let workersToFail = 0;
 
 class FakeStockfish {
   onmessage: ((e: MessageEvent<string>) => void) | null = null;
   onerror: ((e: ErrorEvent) => void) | null = null;
   private fen = '';
   private searching: { fen: string; moves: string[] } | null = null;
+  private broken = workersToFail > 0 && workersToFail-- > 0;
 
   private emit(...lines: string[]) {
     // Asynchronous, in order, like a real worker.
@@ -37,6 +40,10 @@ class FakeStockfish {
   }
 
   postMessage(cmd: string) {
+    if (this.broken) {
+      setTimeout(() => this.onerror?.({ message: 'RangeError: Out of memory' } as ErrorEvent), 0);
+      return;
+    }
     if (cmd === 'uci') this.emit('uciok');
     else if (cmd === 'isready') this.emit('readyok');
     else if (cmd.startsWith('position fen ')) this.fen = cmd.slice('position fen '.length);
@@ -67,6 +74,7 @@ beforeEach(() => {
     C: { g1f3: -40, b1c3: -60 },
   };
   hangingFens = new Set();
+  workersToFail = 0;
 });
 
 afterEach(() => {
@@ -125,6 +133,29 @@ describe('StockfishPool', () => {
 
     expect(await stuckResult).toBe('Stockfish search timed out');
     expect(Object.fromEntries(await next)).toEqual({ d2d4: 200, h2h3: 5 });
+    pool.terminate();
+  });
+
+  it('carries on with the workers that started when others fail to', async () => {
+    workersToFail = 2;
+    const pool = new StockfishPool(3);
+    await pool.ready();
+    const [a, b, c] = await Promise.all([
+      pool.score('A', ['e2e4', 'a2a3'], 12),
+      pool.score('B', ['d2d4', 'h2h3'], 12),
+      pool.score('C', ['g1f3', 'b1c3'], 12),
+    ]);
+    expect(Object.fromEntries(a)).toEqual({ e2e4: 30, a2a3: -10 });
+    expect(Object.fromEntries(b)).toEqual({ d2d4: 200, h2h3: 5 });
+    expect(Object.fromEntries(c)).toEqual({ g1f3: -40, b1c3: -60 });
+    expect(pool.pending).toBe(0);
+    pool.terminate();
+  });
+
+  it('fails to start when no worker does', async () => {
+    workersToFail = 2;
+    const pool = new StockfishPool(2);
+    await expect(pool.ready()).rejects.toThrow('Out of memory');
     pool.terminate();
   });
 

@@ -162,14 +162,26 @@ export class StockfishPool {
     for (let i = 0; i < size; i++) this.engines.push(new PooledEngine(() => this.pump()));
   }
 
-  /** A pool sized to leave a core for the page and Maia's worker. */
+  /**
+   * A pool sized to leave a core for the page and Maia's worker. Phones get at
+   * most two: each worker is its own WebAssembly instance, and iOS refused
+   * Maia's memory ("Out of memory") with four of them running.
+   */
   static forDevice(): StockfishPool {
     const cores = typeof navigator === 'undefined' ? 2 : navigator.hardwareConcurrency ?? 2;
-    return new StockfishPool(Math.max(1, Math.min(cores - 1, 4)));
+    const phone = typeof matchMedia !== 'undefined' && matchMedia('(pointer: coarse)').matches;
+    return new StockfishPool(Math.max(1, Math.min(cores - 1, phone ? 2 : 4)));
   }
 
+  /** Resolves once the workers have started; any that couldn't are dropped, as long as one did. */
   async ready(): Promise<void> {
-    await Promise.all(this.engines.map((e) => e.ready));
+    const results = await Promise.allSettled(this.engines.map((e) => e.ready));
+    const failed = this.engines.filter((_, i) => results[i].status === 'rejected');
+    if (failed.length === this.engines.length) {
+      throw (results[0] as PromiseRejectedResult).reason;
+    }
+    for (const engine of failed) engine.terminate();
+    this.engines = this.engines.filter((e) => !failed.includes(e));
   }
 
   /** Score each of `moves` (UCI) in `fen`, from the side to move. */
