@@ -301,9 +301,14 @@ export default function MaiaDrills() {
           <div
             className={`bg-black px-6 py-5 text-white ${deckId ? "" : "border-b-4 border-black"}`}
           >
-            <h1 className="font-neo text-3xl leading-none font-extrabold tracking-tight uppercase md:text-4xl">
-              Maia Drills
-            </h1>
+            <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+              <h1 className="font-neo text-3xl leading-none font-extrabold tracking-tight uppercase md:text-4xl">
+                Maia Drills
+              </h1>
+              <span className="font-neo text-xs tracking-wide text-gray-400 uppercase">
+                Work in progress
+              </span>
+            </div>
           </div>
           {/* Only on the build page: on a deck or a drill it would push the board below the fold on a phone. */}
           {!deckId && (
