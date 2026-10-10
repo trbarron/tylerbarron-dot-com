@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import type { AnalysisProgress } from '~/utils/maiaDrills/analyze';
 import type { DownloadProgress, MaiaBackend, MaiaEngine } from '~/utils/maiaDrills/maiaEngine';
 import type { StockfishPool } from '~/utils/maiaDrills/stockfishPool';
+import { isHandheld } from '~/utils/maiaDrills/device';
+import { trackAnalysisCancel, trackAnalysisError, trackAnalysisStart } from '~/utils/maiaDrills/tracking';
 import type { AnalysisSettings, DeckStats, DrillCard, GameSource } from '~/utils/maiaDrills/types';
 
 export type Stage = 'idle' | 'fetching' | 'engines' | 'analyzing' | 'saving';
@@ -26,6 +28,10 @@ export interface RunResult {
   /** Newest game fetched (ms since epoch), or undefined if none were. */
   newestGameAt?: number;
   cancelled: boolean;
+  /** Where Maia ran, if it was loaded. */
+  backend?: MaiaBackend;
+  /** Since the run started, for analytics. */
+  seconds: number;
 }
 
 /**
@@ -64,8 +70,19 @@ export function useAnalysisRun() {
     let maia: MaiaEngine | null = null;
     let stockfish: StockfishPool | null = null;
 
+    // Plain variables alongside the state, which this closure can't read back.
+    const mode = request.since === undefined ? 'build' : 'add';
+    const startedAt = Date.now();
+    let stageNow: Stage = 'idle';
+    let backendNow: MaiaBackend | undefined;
+    const enter = (next: Stage) => {
+      stageNow = next;
+      setStage(next);
+    };
+    trackAnalysisStart({ mode, source: request.source, games: request.max, handheld: isHandheld() });
+
     try {
-      setStage('fetching');
+      enter('fetching');
       const [maiaModule, poolModule, { analyzeGames }, sources] = await Promise.all([
         import('~/utils/maiaDrills/maiaEngine'),
         import('~/utils/maiaDrills/stockfishPool'),
@@ -84,7 +101,10 @@ export function useAnalysisRun() {
 
       const startMaia = () => {
         const engine = new maiaModule.MaiaEngine({ onProgress: setDownload });
-        engine.ready.then(setBackend, () => {});
+        engine.ready.then((b) => {
+          backendNow = b;
+          setBackend(b);
+        }, () => {});
         return engine;
       };
       // A new deck starts loading Maia while games are fetched. Adding to a deck
@@ -103,17 +123,19 @@ export function useAnalysisRun() {
         skippedNoRating: 0,
         newestGameAt,
         cancelled: false,
+        seconds: 0,
       };
+      const finished = () => ({ backend: backendNow, seconds: Math.round((Date.now() - startedAt) / 1000) });
       if (games.length === 0) {
-        setStage('saving');
-        const message = await save(empty);
+        enter('saving');
+        const message = await save({ ...empty, ...finished() });
         if (message) setNotice(message);
         return;
       }
 
       maia ??= startMaia();
 
-      setStage('engines');
+      enter('engines');
       // The model download can't be interrupted, but Cancel shouldn't have to wait for it.
       await Promise.race([maia.ready, rejectOnAbort(controller.signal)]);
       // Stockfish starts only once Maia is fully loaded. Started together on an
@@ -122,19 +144,23 @@ export function useAnalysisRun() {
       stockfish = poolModule.StockfishPool.forDevice();
       await Promise.race([stockfish.ready(), rejectOnAbort(controller.signal)]);
 
-      setStage('analyzing');
+      enter('analyzing');
       const result = await analyzeGames(games, request.settings, { maia, stockfish }, {
         signal: controller.signal,
         onProgress: setProgress,
       });
 
-      setStage('saving');
+      enter('saving');
       // Games are analyzed newest first, so even a stopped run covers the newest game.
-      const message = await save({ ...empty, ...result });
+      const message = await save({ ...empty, ...result, ...finished() });
       if (message) setNotice(message);
     } catch (err) {
-      if (!(err instanceof DOMException && err.name === 'AbortError')) {
-        setError(err instanceof Error ? err.message : 'Something went wrong.');
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        trackAnalysisCancel({ mode, stage: stageNow });
+      } else {
+        const message = err instanceof Error ? err.message : 'Something went wrong.';
+        setError(message);
+        trackAnalysisError({ mode, stage: stageNow, backend: backendNow, error: message });
       }
     } finally {
       maia?.terminate();

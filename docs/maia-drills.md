@@ -108,6 +108,23 @@ Maia runs on the GPU through WebGPU where the browser supports it, and otherwise
 - The model download (~46 MB) happens once and is then served from Cache Storage. The WebGPU runtime is a larger download than the CPU one, so browsers without a GPU adapter get the small one.
 - Processing can be cancelled, and the cards found so far are still saved.
 
+## Analytics
+
+GA4 events, all sent from `app/utils/maiaDrills/tracking.ts`. No usernames are sent; an error message that quotes one has it blanked.
+
+| Event | When | Params |
+|---|---|---|
+| `maia_analysis_start` | Build or add-games run starts | `mode` (build/add), `source`, `games` (requested), `handheld` |
+| `maia_deck_built` | New deck saved | `source`, `games`, `cards`, `backend`, `seconds`, `stopped` |
+| `maia_games_added` | Add-games run saved | `source`, `games`, `cards` (new), `backend`, `seconds` |
+| `maia_analysis_error` | Run ended in an error, including "no games" and "no errors found" | `mode`, `stage`, `backend`, `error` |
+| `maia_analysis_cancel` | Cancelled before anything was saved | `mode`, `stage` |
+| `maia_drill_start` | "Start drilling" | `cards` (deck size) |
+| `maia_drill_answer` | Each card answered or revealed | `verdict`, `first_try`, `tries` |
+| `maia_deck_favorite` | Favorite toggled | `favorite` |
+
+A run that starts but never reaches built, added, error or cancel was abandoned or crashed: a phone that kills the tab sends nothing else. Event counts work as is; summing `cards` or splitting by a param needs that param registered as a custom metric or dimension in the GA property.
+
 ## Out of scope for v1
 
 - Spaced repetition scheduling (cards are shuffled; misses come back sooner in the session).

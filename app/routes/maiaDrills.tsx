@@ -8,6 +8,7 @@ import BuildForm from "~/components/MaiaDrills/BuildForm";
 import Drill from "~/components/MaiaDrills/Drill";
 import { buildMeta } from "~/utils/seo";
 import { loadEditToken, saveEditToken } from "~/utils/maiaDrills/localStorage";
+import { trackDrillStart, trackFavorite } from "~/utils/maiaDrills/tracking";
 import type { Deck, DeckSummary, GameSource } from "~/utils/maiaDrills/types";
 
 import chessgroundBase from "../styles/chessground.base.css?url";
@@ -157,6 +158,7 @@ function DeckView({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Could not update the deck.");
       onFavoriteChange(data.favorite);
+      trackFavorite(data.favorite);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Could not update the deck.",
@@ -372,7 +374,10 @@ export default function MaiaDrills() {
               <DeckView
                 deckId={deckId}
                 deck={deck}
-                onDrill={() => setDrilling(true)}
+                onDrill={() => {
+                  trackDrillStart({ cards: deck.cards.length });
+                  setDrilling(true);
+                }}
                 onFavoriteChange={(favorite) => setDeck({ ...deck, favorite })}
                 onUpdated={() => setReloads((n) => n + 1)}
               />

@@ -1,3 +1,4 @@
+import { trackGamesAdded } from '~/utils/maiaDrills/tracking';
 import { LIMITS, type Deck } from '~/utils/maiaDrills/types';
 import RunProgress, { RunMessages } from './RunProgress';
 import { useAnalysisRun } from './useAnalysisRun';
@@ -55,6 +56,13 @@ export default function AddGames({ deckId, deck, editToken, onUpdated }: AddGame
         const data = await res.json();
         if (!res.ok) throw new Error(data.error ?? 'Could not update the deck.');
         onUpdated();
+        trackGamesAdded({
+          source: deck.source,
+          games: result.gamesFetched,
+          cards: data.added,
+          backend: result.backend,
+          seconds: result.seconds,
+        });
 
         const games = plural(result.gamesFetched, 'new game');
         const summary =

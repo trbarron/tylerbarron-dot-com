@@ -18,6 +18,7 @@ import {
   type Guess,
 } from '~/utils/maiaDrills/drill';
 import { loadProgress, saveProgress, type CardProgress } from '~/utils/maiaDrills/localStorage';
+import { trackDrillAnswer } from '~/utils/maiaDrills/tracking';
 import type { Deck } from '~/utils/maiaDrills/types';
 
 const Chessboard = lazy(() => import('~/components/Chessboard'));
@@ -68,6 +69,7 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
       if (!card) return;
       const ok = passed(result);
       setAnswer(result);
+      trackDrillAnswer(result);
       setSession((s) => ({ attempted: s.attempted + 1, correct: s.correct + (ok ? 1 : 0) }));
       setProgress((prev) => {
         const next = recordProgress(prev, card.id, result);
