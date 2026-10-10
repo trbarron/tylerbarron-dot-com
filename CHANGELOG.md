@@ -1,3 +1,10 @@
+## [5.31.1](https://github.com/trbarron/tylerbarron-dot-com/compare/5.31.0...5.31.1) (2026-10-10)
+
+
+### Bug Fixes
+
+* line up board coordinates on phones and show evals from White's side ([21767e2](https://github.com/trbarron/tylerbarron-dot-com/commit/21767e22e431239dc4f3e88f3a2c065c58957d12))
+
 # [5.31.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.30.0...5.31.0) (2026-10-10)
 
 
