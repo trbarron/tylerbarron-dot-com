@@ -1,4 +1,4 @@
-# Maia Drills — copy
+# Maia Marginal Mentor — copy
 
 Every string a visitor can see, grouped by where it appears. Fill in **Yours** for anything you want changed and leave it blank to keep the current text. I'll apply the changes.
 
@@ -10,7 +10,7 @@ Every string a visitor can see, grouped by where it appears. Fill in **Yours** f
 
 | # | Where | Current | Yours |
 |---|---|---|---|
-| S1 | Browser tab / share title | Maia Drills | |
+| S1 | Browser tab / share title | Maia Marginal Mentor | |
 | S2 | Search + share description | Flashcards from your own games: the positions where a slightly stronger player would have found a better move. | |
 | S3 | Homepage project card | Flashcards from the moves a slightly stronger you would have played | |
 
@@ -18,7 +18,7 @@ Every string a visitor can see, grouped by where it appears. Fill in **Yours** f
 
 | # | Current | Yours |
 |---|---|---|
-| I1 | Maia Drills *(heading)* | |
+| I1 | Maia Marginal Mentor *(heading)* | |
 | I2 | Flashcards from your own games. For each move you made, Maia predicts what a player a bit stronger than you would have played. Where that move differs from yours and Stockfish says it was clearly better, the position becomes a card. *("Maia" links to maiachess.com)* | |
 | I3 | Everything runs in your browser: a one-time ~44 MB model download, then a few minutes of analysis for a couple of hundred games. Only the finished cards are saved. | |
 
@@ -97,7 +97,7 @@ Every string a visitor can see, grouped by where it appears. Fill in **Yours** f
 | D7 | ☆ Favorite / ★ Favorited *(button, in the browser that built the deck)* | |
 | D8 | ★ Favorite *(badge, anywhere else)* | |
 | D9 | Copy link / Copied *(button)* | |
-| D10 | Unfavorited decks are kept for 30 days. Favorite it to keep it and add it to the favorites list on the Maia Drills page, where anyone can open it. | |
+| D10 | Unfavorited decks are kept for 30 days. Favorite it to keep it and add it to the favorites list on the Maia Marginal Mentor page, where anyone can open it. | |
 | D11 | Loading… | |
 | D12 | That deck has expired or never existed. | |
 | D13 | Build a new deck *(link under D12)* | |

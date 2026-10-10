@@ -1,4 +1,6 @@
-# Maia Drills
+# Maia Marginal Mentor
+
+*Called Maia Drills until 2026-10-10. The URL, code (`maiaDrills`), Redis keys (`maiaDrills:*`) and GA event names (`maia_*`) keep the old name, so links already shared and decks already saved keep working.*
 
 Turn your own games into flashcards: positions where a player a bit stronger than you would have played something different, and the difference actually mattered.
 

@@ -23,7 +23,7 @@ export const links: LinksFunction = () => [
 
 export function meta() {
   return buildMeta({
-    title: "Maia Drills",
+    title: "Maia Marginal Mentor",
     description:
       "Flashcards from your own games: the positions where a slightly stronger player would have found a better move.",
     path: "/maia-drills",
@@ -232,7 +232,7 @@ function DeckView({
       {token && !deck.favorite && (
         <p className="text-xs text-gray-600">
           Unfavorited decks are kept for 30 days. Favorite it to keep it and add
-          it to the favorites list on the Maia Drills page, where anyone can
+          it to the favorites list on the Maia Marginal Mentor page, where anyone can
           open it.
         </p>
       )}
@@ -313,7 +313,7 @@ export default function MaiaDrills() {
               className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 hover:opacity-80"
             >
               <h1 className="font-neo text-3xl leading-none font-extrabold tracking-tight uppercase md:text-4xl">
-                Maia Drills
+                Maia Marginal Mentor
               </h1>
               <span className="font-neo text-xs tracking-wide text-gray-400 uppercase">
                 Work in progress
