@@ -1,3 +1,10 @@
+# [5.31.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.30.0...5.31.0) (2026-10-10)
+
+
+### Features
+
+* let anyone add newer games to a favorited Maia Drills deck ([11bba1e](https://github.com/trbarron/tylerbarron-dot-com/commit/11bba1e232eb3119846b3481f6f86b1048f9390a))
+
 # [5.30.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.29.0...5.30.0) (2026-10-10)
 
 
