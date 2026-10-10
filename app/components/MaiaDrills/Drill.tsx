@@ -11,6 +11,7 @@ import {
   gradeKnown,
   initialQueue,
   isAlsoGood,
+  answeredRight,
   passed,
   recordProgress,
   reveal as revealAnswer,
@@ -67,7 +68,7 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
   const record = useCallback(
     (result: Answer) => {
       if (!card) return;
-      const ok = passed(result);
+      const ok = answeredRight(result);
       setAnswer(result);
       trackDrillAnswer(result);
       setSession((s) => ({ attempted: s.attempted + 1, correct: s.correct + (ok ? 1 : 0) }));
@@ -234,8 +235,9 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
           {answer && (
             <>
               <p
+                // Green for a first-try answer, black for a second-try one, red for a miss.
                 className={`text-lg font-extrabold ${
-                  answer.verdict === 'correct' || answer.verdict === 'also-good' ? 'text-green-700' : 'text-red-700'
+                  passed(answer) ? 'text-green-700' : answeredRight(answer) ? 'text-black' : 'text-red-700'
                 }`}
               >
                 {verdictText(answer)}

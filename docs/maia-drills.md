@@ -60,7 +60,7 @@ For each position `P` in which the user is to move and played `u`:
 
 Optional filters: skip the first N moves of each game (default 0, since the opening is often where the habits are), and skip bullet games.
 
-**Drill grading:** you get two tries per card. A first miss just resets the board, with no hint. A second miss, or *Show answer*, reveals the answer. Only a first-try answer counts as answered right; a second-try answer comes back sooner, like a miss. Playing `m` is correct. Playing anything else triggers a quick Stockfish check of your move against `m` at the same depth. If it scores within 30 cp of `m` (or better), it's accepted as "also good"; a stronger player's choice isn't the only right answer.
+**Drill grading:** you get two tries per card. A first miss just resets the board, with no hint. A second miss, or *Show answer*, reveals the answer. A right answer on either try counts as answered right in the stats, but only a first-try one takes the card out of the round: a second-try card comes back after a few others, like a miss. The verdict is green on a first try, black on a second, red on a miss. Playing `m` is correct. Playing anything else triggers a quick Stockfish check of your move against `m` at the same depth. If it scores within 30 cp of `m` (or better), it's accepted as "also good"; a stronger player's choice isn't the only right answer.
 
 ## Storage
 
