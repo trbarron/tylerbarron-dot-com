@@ -14,11 +14,27 @@ import { MAIA_ELO_RANGE, type AnalysisSettings, type DeckStats, type DrillCard, 
 /** Stockfish jobs allowed in flight before Maia waits for the pool to catch up. */
 const MAX_OUTSTANDING_JOBS = 48;
 
+/** One game's progress through the two engines. */
+export interface GameProgress {
+  /** The user's moves Maia predicts for. */
+  positions: number;
+  positionsDone: number;
+  /** Where Maia disagreed, each scored by Stockfish. Known once Maia is done. */
+  checks: number;
+  checksDone: number;
+  maiaDone: boolean;
+}
+
 export interface AnalysisProgress {
+  /** Games fully analyzed: through Maia, and every Stockfish check settled. */
   gamesDone: number;
   gamesTotal: number;
-  searchesDone: number;
-  searchesQueued: number;
+  /**
+   * The oldest game still in progress: the next one `gamesDone` will count.
+   * Maia can run a few games ahead of Stockfish, so this is the one holding
+   * up the count, not the one Maia is on.
+   */
+  current: GameProgress | null;
   cards: number;
   skippedNoRating: number;
 }
@@ -83,12 +99,21 @@ export async function analyzeGames(
   const progress: AnalysisProgress = {
     gamesDone: 0,
     gamesTotal: games.length,
-    searchesDone: 0,
-    searchesQueued: 0,
+    current: null,
     cards: 0,
     skippedNoRating: 0,
   };
-  const report = () => opts.onProgress?.({ ...progress });
+  // Games in order; skipped ones go straight to finished.
+  const states: (GameProgress & { finished: boolean })[] = [];
+  let oldest = 0;
+  const report = () => {
+    while (oldest < states.length && states[oldest].finished) oldest++;
+    const s = states[oldest];
+    const current = s
+      ? { positions: s.positions, positionsDone: s.positionsDone, checks: s.checks, checksDone: s.checksDone, maiaDone: s.maiaDone }
+      : null;
+    opts.onProgress?.({ ...progress, current });
+  };
   const outstanding: Promise<void>[] = [];
   const aborted = () => opts.signal?.aborted ?? false;
 
@@ -98,6 +123,7 @@ export async function analyzeGames(
     const userIsWhite = game.userColor === 'w';
     const userElo = userIsWhite ? game.whiteElo : game.blackElo;
     if (userElo === null) {
+      states.push({ positions: 0, positionsDone: 0, checks: 0, checksDone: 0, maiaDone: true, finished: true });
       progress.skippedNoRating++;
       progress.gamesDone++;
       report();
@@ -113,23 +139,32 @@ export async function analyzeGames(
       eloSelf: targetElo,
       eloOppo: clampElo(oppElo),
     }));
-    const predictions = queries.length ? await engines.maia.predict(queries) : [];
+    const state = { positions: queries.length, positionsDone: 0, checks: 0, checksDone: 0, maiaDone: false, finished: false };
+    states.push(state);
+    report();
+    const predictions = queries.length
+      ? await engines.maia.predict(queries, (done) => {
+          state.positionsDone = done;
+          report();
+        })
+      : [];
     if (aborted()) break;
+    state.maiaDone = true;
 
     stats.games++;
     stats.positions += candidates.length;
 
+    const gameJobs: Promise<void>[] = [];
     candidates.forEach((c, i) => {
       const top = predictions[i][0];
       // Only-move positions can't disagree; neither can Maia matching the user.
       if (!top || top.uci === c.played.uci) return;
       stats.disagreements++;
-      progress.searchesQueued++;
+      state.checks++;
 
       const job = engines.stockfish
         .score(c.fen, [top.uci, c.played.uci], settings.depth)
         .then((scores) => {
-          progress.searchesDone++;
           const evalTarget = scores.get(top.uci);
           const evalPlayed = scores.get(c.played.uci);
           if (evalTarget === undefined || evalPlayed === undefined) return;
@@ -156,14 +191,23 @@ export async function analyzeGames(
         })
         .catch(() => {
           // A stopped or timed-out search just doesn't produce a card.
-          progress.searchesDone++;
         })
-        .finally(report);
-      outstanding.push(job);
+        .finally(() => {
+          state.checksDone++;
+          report();
+        });
+      gameJobs.push(job);
     });
 
-    progress.gamesDone++;
+    // A game counts as done once its Stockfish checks are, so one bar covers
+    // both engines: Maia alone would race ahead of the real progress.
     report();
+    const gameDone = Promise.all(gameJobs).then(() => {
+      state.finished = true;
+      progress.gamesDone++;
+      report();
+    });
+    outstanding.push(gameDone);
 
     // Backpressure: don't let Maia race hundreds of games ahead of Stockfish.
     while (engines.stockfish.pending > MAX_OUTSTANDING_JOBS && !aborted()) {

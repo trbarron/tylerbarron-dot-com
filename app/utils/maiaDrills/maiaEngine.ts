@@ -13,6 +13,7 @@
 // SSR-rendered file.
 
 import { Chess } from 'chess.js';
+import { isHandheld } from './device';
 import {
   MAIA_MOVE_VOCAB,
   MAIA_TOKENS_PER_POSITION,
@@ -181,18 +182,6 @@ const CANARIES: { fen: string; expect: string[] }[] = [
   { fen: '6k1/5ppp/8/8/8/8/5PPP/R5K1 w - - 0 1', expect: ['a1a8'] },
 ];
 
-/**
- * iPhones and iPads (every browser there is WebKit). WebGPU has failed to start
- * on an iPhone each time, and the attempt loads the larger GPU runtime and the
- * whole model just before the CPU fallback needs its memory: the likeliest
- * reason the tab was being killed. iPadOS reports itself as a Mac, so a touch
- * screen gives it away.
- */
-function isAppleMobile(): boolean {
-  if (typeof navigator === 'undefined') return false;
-  return /iPhone|iPad|iPod/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
-}
-
 export class MaiaEngine {
   private worker: Worker | null = null;
   private blobUrl: string | null = null;
@@ -205,7 +194,7 @@ export class MaiaEngine {
 
   constructor(opts: { onProgress?: (p: DownloadProgress) => void; allowGpu?: boolean } = {}) {
     this.onProgress = opts.onProgress;
-    this.ready = this.start(opts.allowGpu ?? !isAppleMobile())
+    this.ready = this.start(opts.allowGpu ?? !isHandheld())
       .then(async (backend) => {
         if (backend === 'wasm') return backend;
         if (backend === 'webgpu') {
@@ -284,13 +273,16 @@ export class MaiaEngine {
     });
   }
 
-  /** Maia's move distribution for each query, most likely first. */
-  async predict(queries: MaiaQuery[]): Promise<MaiaPrediction[][]> {
+  /**
+   * Maia's move distribution for each query, most likely first. `onProgress`
+   * gets the number of queries done after each batch.
+   */
+  async predict(queries: MaiaQuery[], onProgress?: (done: number) => void): Promise<MaiaPrediction[][]> {
     await this.ready;
-    return this.run(queries);
+    return this.run(queries, onProgress);
   }
 
-  private async run(queries: MaiaQuery[]): Promise<MaiaPrediction[][]> {
+  private async run(queries: MaiaQuery[], onProgress?: (done: number) => void): Promise<MaiaPrediction[][]> {
     const results: MaiaPrediction[][] = [];
 
     // Before `ready` resolves this is the GPU canary check.
@@ -308,6 +300,7 @@ export class MaiaEngine {
         n
       );
       batch.forEach((q, i) => results.push(decodePolicy(logits, i * MAIA_MOVE_VOCAB, q.fen, q.legal)));
+      onProgress?.(results.length);
     }
     return results;
   }

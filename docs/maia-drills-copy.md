@@ -50,14 +50,17 @@ Every string a visitor can see, grouped by where it appears. Fill in **Yours** f
 | R3 | Loading Maia and Stockfish… | |
 | R4 | Maia model (one-time download, MB) *(progress bar label)* | |
 | R5 | Analyzing… | |
-| R6 | Games through Maia *(progress bar label)* | |
-| R7 | Stockfish checks *(progress bar label)* | |
+| R6 | Games analyzed *(progress bar label; a game counts once Maia and its Stockfish checks are both done)* | |
+| R6b | This game: Maia *(smaller bar under R6: the game's moves through Maia)* | |
+| R6c | This game: Stockfish checks *(smaller bar under R6: that game's checks)* | |
+| R6d | after Maia *(in place of R6c's count until Maia has finished the game)* | |
 | R8 | **{n}** cards found | |
 | R9 | Saving deck… | |
 | R10 | Cancel *(button, before analysis starts)* | |
 | R11 | Stop and keep cards so far *(button, during analysis)* | |
 | R12 | Maia is running on your GPU. | |
 | R13 | Maia is running on your CPU (this browser has no usable WebGPU), so this will take a while. | |
+| R13b | Phones run Maia on the CPU, so this will take a while. A computer will be much faster. | |
 
 ### Problems while building
 
@@ -138,8 +141,8 @@ The progress panel while adding is the same as when building (R1–R13).
 | T10 | Not quite. *(after the second miss)* | |
 | T11 | Here's the answer. *(after Show answer)* | |
 | T12 | A {targetElo} plays **{move}** (Maia {pct}%, eval {eval}) *(green key)* | |
-| T13 | In the game you played **{move}** (eval {eval}, {cp} cp worse) *(red key)* | |
-| T14 | You tried **{move}** (at least as good / {cp} cp worse) *(blue or yellow key; one line per move tried)* | |
+| T13 | In the game you played **{move}** (eval {eval}) *(red key)* | |
+| T14 | You tried **{move}** (eval {eval}) *(blue or yellow key; one line per move tried)* | |
 | T15 | Open the game ↗ | |
 | T16 | Next card → | |
 | T17 | winning / losing *(shown instead of an eval past ±10)* | |

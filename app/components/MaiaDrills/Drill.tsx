@@ -7,7 +7,7 @@ import {
   advanceQueue,
   afterTry,
   extraGuesses,
-  gradeByLoss,
+  gradeByScores,
   gradeKnown,
   initialQueue,
   isAlsoGood,
@@ -78,7 +78,11 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
     [card, deckId]
   );
 
-  const scoreGuess = async (fen: string, target: string, guess: string): Promise<number | null> => {
+  const scoreGuess = async (
+    fen: string,
+    target: string,
+    guess: string
+  ): Promise<{ target: number; guess: number } | null> => {
     if (!engineRef.current) {
       const { StockfishPool } = await import('~/utils/maiaDrills/stockfishPool');
       engineRef.current = new StockfishPool(1);
@@ -88,7 +92,7 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
       const scores = await engineRef.current.score(fen, [target, guess], deck.settings.depth);
       const t = scores.get(target);
       const g = scores.get(guess);
-      return t === undefined || g === undefined ? null : t - g;
+      return t === undefined || g === undefined ? null : { target: t, guess: g };
     } catch {
       return null;
     }
@@ -103,7 +107,7 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
     if (!graded) {
       // A third move: it might be just as good as the stronger player's choice.
       setChecking(true);
-      graded = gradeByLoss(guess, await scoreGuess(card.fen, card.target.uci, guess.uci));
+      graded = gradeByScores(guess, await scoreGuess(card.fen, card.target.uci, guess.uci));
       setChecking(false);
     }
 
@@ -112,6 +116,14 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
     if (outcome.kind === 'retry') setMisses(outcome.misses);
     else record(outcome.answer);
   };
+
+  // The board rebuilds itself whenever its onMove changes identity, which on
+  // every render made a miss flash the board. It gets one stable callback.
+  const moveRef = useRef(handleMove);
+  useEffect(() => {
+    moveRef.current = handleMove;
+  });
+  const onBoardMove = useCallback((from: string, to: string) => void moveRef.current(from, to), []);
 
   const reveal = () => record(revealAnswer(misses));
 
@@ -136,7 +148,6 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
   const orientation = card.color === 'w' ? 'white' : 'black';
   const moveNumber = Math.floor(card.ply / 2) + 1;
   const moveLabel = `${moveNumber}${card.color === 'w' ? '.' : '…'}`;
-  const gap = card.evalTarget - card.evalPlayed;
   const mastered = deck.cards.filter((c) => progress[c.id]?.last === 'correct').length;
 
   const verdictText = (a: Answer): string => {
@@ -186,11 +197,13 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
               />
             ) : (
               <Chessboard
-                key={`${card.id}-${session.attempted}-${misses.length}`}
+                key="drill"
                 initialFen={card.fen}
+                // A miss, or the same card twice in a row, puts the pieces back.
+                resetKey={`${session.attempted}-${misses.length}`}
                 orientation={orientation}
                 playableColor={orientation}
-                onMove={handleMove}
+                onMove={onBoardMove}
                 autoShapes={NO_SHAPES}
                 events={NO_EVENTS}
                 selectable={NO_SELECTABLE}
@@ -234,18 +247,13 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
                 <li>
                   <span className="inline-block w-3 bg-red-600">&nbsp;</span>{' '}
                   In the game you played <strong className="font-mono">{card.played.san}</strong>{' '}
-                  <span className="text-gray-600">(eval {formatCp(card.evalPlayed)}, {gap} cp worse)</span>
+                  <span className="text-gray-600">(eval {formatCp(card.evalPlayed)})</span>
                 </li>
                 {extraGuesses(card, answer).map((g) => (
                   <li key={g.uci}>
                     <span className={`inline-block w-3 ${isAlsoGood(answer, g) ? 'bg-blue-600' : 'bg-yellow-500'}`}>&nbsp;</span>{' '}
                     You tried <strong className="font-mono">{g.san}</strong>
-                    {g.loss !== undefined && (
-                      <span className="text-gray-600">
-                        {' '}
-                        ({g.loss <= 0 ? 'at least as good' : `${g.loss} cp worse`})
-                      </span>
-                    )}
+                    {g.eval !== undefined && <span className="text-gray-600"> (eval {formatCp(g.eval)})</span>}
                   </li>
                 ))}
               </ul>

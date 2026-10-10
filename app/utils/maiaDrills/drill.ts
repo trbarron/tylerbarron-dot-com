@@ -10,8 +10,8 @@ export type Verdict = 'correct' | 'also-good' | 'wrong' | 'revealed';
 export interface Guess {
   uci: string;
   san: string;
-  /** cp the guess lost against the target move, when known. */
-  loss?: number;
+  /** Stockfish's eval of the move (cp, from the mover's side), when known. */
+  eval?: number;
 }
 
 export interface Answer {
@@ -31,22 +31,27 @@ export const MAX_TRIES = 2;
 
 /**
  * Grade a move that doesn't need an engine: the target is right, the game move
- * is wrong (and we already know by how much). Anything else returns null and
- * has to be scored by Stockfish, then graded with `gradeByLoss`.
+ * is wrong (both already scored by the deck's analysis). Anything else returns
+ * null and has to be scored by Stockfish, then graded with `gradeByScores`.
  */
 export function gradeKnown(card: DrillCard, guess: Guess): { verdict: Verdict; guess: Guess } | null {
-  if (guess.uci === card.target.uci) return { verdict: 'correct', guess };
-  if (guess.uci === card.played.uci) {
-    return { verdict: 'wrong', guess: { ...guess, loss: card.evalTarget - card.evalPlayed } };
-  }
+  if (guess.uci === card.target.uci) return { verdict: 'correct', guess: { ...guess, eval: card.evalTarget } };
+  if (guess.uci === card.played.uci) return { verdict: 'wrong', guess: { ...guess, eval: card.evalPlayed } };
   return null;
 }
 
-/** Grade a move from Stockfish's verdict. `null` means it couldn't say, which counts as wrong. */
-export function gradeByLoss(guess: Guess, loss: number | null): { verdict: Verdict; guess: Guess } {
+/**
+ * Grade a move from one Stockfish search of it and the target, so the two are
+ * compared like for like. `null` means it couldn't say, which counts as wrong.
+ */
+export function gradeByScores(
+  guess: Guess,
+  scores: { target: number; guess: number } | null
+): { verdict: Verdict; guess: Guess } {
+  if (!scores) return { verdict: 'wrong', guess };
   return {
-    verdict: loss !== null && loss <= ALSO_GOOD_MARGIN ? 'also-good' : 'wrong',
-    guess: { ...guess, loss: loss ?? undefined },
+    verdict: scores.target - scores.guess <= ALSO_GOOD_MARGIN ? 'also-good' : 'wrong',
+    guess: { ...guess, eval: scores.guess },
   };
 }
 

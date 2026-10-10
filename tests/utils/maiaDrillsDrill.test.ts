@@ -11,7 +11,7 @@ import {
   advanceQueue,
   afterTry,
   extraGuesses,
-  gradeByLoss,
+  gradeByScores,
   gradeKnown,
   initialQueue,
   isAlsoGood,
@@ -36,9 +36,9 @@ const gameMove: Guess = { uci: 'a2a3', san: 'a3' };
 const other: Guess = { uci: 'h2h3', san: 'h3' };
 
 describe('grading', () => {
-  it('knows the target is right and the game move is wrong, by the stored gap', () => {
-    expect(gradeKnown(card, target)?.verdict).toBe('correct');
-    expect(gradeKnown(card, gameMove)).toEqual({ verdict: 'wrong', guess: { ...gameMove, loss: 195 } });
+  it('knows the target is right and the game move is wrong, with their stored evals', () => {
+    expect(gradeKnown(card, target)).toEqual({ verdict: 'correct', guess: { ...target, eval: card.evalTarget } });
+    expect(gradeKnown(card, gameMove)).toEqual({ verdict: 'wrong', guess: { ...gameMove, eval: card.evalPlayed } });
   });
 
   it('defers any other move to Stockfish', () => {
@@ -46,13 +46,16 @@ describe('grading', () => {
   });
 
   it('accepts a move within the margin, or better, as also good', () => {
-    expect(gradeByLoss(other, ALSO_GOOD_MARGIN).verdict).toBe('also-good');
-    expect(gradeByLoss(other, -40).verdict).toBe('also-good');
-    expect(gradeByLoss(other, ALSO_GOOD_MARGIN + 1).verdict).toBe('wrong');
+    expect(gradeByScores(other, { target: 50, guess: 50 - ALSO_GOOD_MARGIN })).toEqual({
+      verdict: 'also-good',
+      guess: { ...other, eval: 50 - ALSO_GOOD_MARGIN },
+    });
+    expect(gradeByScores(other, { target: 50, guess: 90 }).verdict).toBe('also-good');
+    expect(gradeByScores(other, { target: 50, guess: 49 - ALSO_GOOD_MARGIN }).verdict).toBe('wrong');
   });
 
   it('counts an engine failure as wrong rather than guessing', () => {
-    expect(gradeByLoss(other, null)).toEqual({ verdict: 'wrong', guess: { ...other, loss: undefined } });
+    expect(gradeByScores(other, null)).toEqual({ verdict: 'wrong', guess: other });
   });
 });
 
