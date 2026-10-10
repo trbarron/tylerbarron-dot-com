@@ -2,9 +2,12 @@
 // consistent. No usernames: error messages that quote one have it blanked.
 //
 // Counts per event work out of the box. To sum or split by a param in GA's
-// reports, register it in the property (Admin → Custom definitions):
-// metrics `cards`, `games`, `seconds`; dimensions `mode`, `source`, `backend`,
-// `stage`, `verdict`, `handheld`, `first_try`, `favorite`, `error`.
+// reports, register it in the property (Admin → Custom definitions), all with
+// event scope: metrics `cards`, `games`, `seconds` (and optionally
+// `games_requested`, `deck_cards`, `tries`); dimensions `mode`, `source`,
+// `backend`, `stage`, `verdict`, `first_try`, `handheld`, `favorite`,
+// `stopped`, `error`. A param name means one thing everywhere, so a metric
+// summed across events never mixes, say, cards found with deck sizes.
 
 import { trackEvent } from '~/utils/analytics';
 import type { Answer } from './drill';
@@ -12,8 +15,8 @@ import type { GameSource } from './types';
 
 type Mode = 'build' | 'add';
 
-export function trackAnalysisStart(p: { mode: Mode; source: GameSource; games: number; handheld: boolean }) {
-  trackEvent('maia_analysis_start', p);
+export function trackAnalysisStart(p: { mode: Mode; source: GameSource; gamesRequested: number; handheld: boolean }) {
+  trackEvent('maia_analysis_start', { mode: p.mode, source: p.source, games_requested: p.gamesRequested, handheld: p.handheld });
 }
 
 /** A run that ended in an error (including "no games" and "no errors found"). */
@@ -41,8 +44,8 @@ export function trackGamesAdded(p: { source: GameSource; games: number; cards: n
   trackEvent('maia_games_added', p);
 }
 
-export function trackDrillStart(p: { cards: number }) {
-  trackEvent('maia_drill_start', p);
+export function trackDrillStart(p: { deckCards: number }) {
+  trackEvent('maia_drill_start', { deck_cards: p.deckCards });
 }
 
 export function trackDrillAnswer(answer: Answer) {

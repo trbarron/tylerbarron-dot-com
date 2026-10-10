@@ -79,7 +79,7 @@ export function useAnalysisRun() {
       stageNow = next;
       setStage(next);
     };
-    trackAnalysisStart({ mode, source: request.source, games: request.max, handheld: isHandheld() });
+    trackAnalysisStart({ mode, source: request.source, gamesRequested: request.max, handheld: isHandheld() });
 
     try {
       enter('fetching');

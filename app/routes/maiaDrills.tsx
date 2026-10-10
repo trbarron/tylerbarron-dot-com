@@ -375,7 +375,7 @@ export default function MaiaDrills() {
                 deckId={deckId}
                 deck={deck}
                 onDrill={() => {
-                  trackDrillStart({ cards: deck.cards.length });
+                  trackDrillStart({ deckCards: deck.cards.length });
                   setDrilling(true);
                 }}
                 onFavoriteChange={(favorite) => setDeck({ ...deck, favorite })}

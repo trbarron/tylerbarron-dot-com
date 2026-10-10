@@ -12,7 +12,6 @@ import {
   initialQueue,
   isAlsoGood,
   answeredRight,
-  passed,
   recordProgress,
   reveal as revealAnswer,
   type Answer,
@@ -235,10 +234,8 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
           {answer && (
             <>
               <p
-                // Green for a first-try answer, black for a second-try one, red for a miss.
-                className={`text-lg font-extrabold ${
-                  passed(answer) ? 'text-green-700' : answeredRight(answer) ? 'text-black' : 'text-red-700'
-                }`}
+                // The words say whether it was right; no colour needed.
+                className="text-lg font-extrabold text-black"
               >
                 {verdictText(answer)}
               </p>

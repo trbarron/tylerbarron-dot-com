@@ -5,8 +5,10 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import {
   trackAnalysisError,
+  trackAnalysisStart,
   trackDeckBuilt,
   trackDrillAnswer,
+  trackDrillStart,
 } from '~/utils/maiaDrills/tracking';
 
 function stubGtag() {
@@ -29,6 +31,14 @@ describe('Maia Drills tracking', () => {
       seconds: 300,
       stopped: false,
     });
+  });
+
+  it('keeps counts that mean different things in differently named params', () => {
+    const gtag = stubGtag();
+    trackAnalysisStart({ mode: 'build', source: 'lichess', gamesRequested: 200, handheld: true });
+    trackDrillStart({ deckCards: 62 });
+    expect(gtag.mock.calls[0][2]).toEqual({ mode: 'build', source: 'lichess', games_requested: 200, handheld: true });
+    expect(gtag.mock.calls[1][2]).toEqual({ deck_cards: 62 });
   });
 
   it('reports a drill answer by verdict and whether it was the first try', () => {

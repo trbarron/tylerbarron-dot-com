@@ -60,7 +60,7 @@ For each position `P` in which the user is to move and played `u`:
 
 Optional filters: skip the first N moves of each game (default 0, since the opening is often where the habits are), and skip bullet games.
 
-**Drill grading:** you get two tries per card. A first miss just resets the board, with no hint. A second miss, or *Show answer*, reveals the answer. A right answer on either try counts as answered right in the stats, but only a first-try one takes the card out of the round: a second-try card comes back after a few others, like a miss. The verdict is green on a first try, black on a second, red on a miss. Playing `m` is correct. Playing anything else triggers a quick Stockfish check of your move against `m` at the same depth. If it scores within 30 cp of `m` (or better), it's accepted as "also good"; a stronger player's choice isn't the only right answer.
+**Drill grading:** you get two tries per card. A first miss just resets the board, with no hint. A second miss, or *Show answer*, reveals the answer. A right answer on either try counts as answered right in the stats, but only a first-try one takes the card out of the round: a second-try card comes back after a few others, like a miss. The verdict is plain black text; its words say whether it was right. Playing `m` is correct. Playing anything else triggers a quick Stockfish check of your move against `m` at the same depth. If it scores within 30 cp of `m` (or better), it's accepted as "also good"; a stronger player's choice isn't the only right answer.
 
 ## Storage
 
@@ -114,16 +114,16 @@ GA4 events, all sent from `app/utils/maiaDrills/tracking.ts`. No usernames are s
 
 | Event | When | Params |
 |---|---|---|
-| `maia_analysis_start` | Build or add-games run starts | `mode` (build/add), `source`, `games` (requested), `handheld` |
+| `maia_analysis_start` | Build or add-games run starts | `mode` (build/add), `source`, `games_requested`, `handheld` |
 | `maia_deck_built` | New deck saved | `source`, `games`, `cards`, `backend`, `seconds`, `stopped` |
 | `maia_games_added` | Add-games run saved | `source`, `games`, `cards` (new), `backend`, `seconds` |
 | `maia_analysis_error` | Run ended in an error, including "no games" and "no errors found" | `mode`, `stage`, `backend`, `error` |
 | `maia_analysis_cancel` | Cancelled before anything was saved | `mode`, `stage` |
-| `maia_drill_start` | "Start drilling" | `cards` (deck size) |
+| `maia_drill_start` | "Start drilling" | `deck_cards` |
 | `maia_drill_answer` | Each card answered or revealed | `verdict`, `first_try`, `tries` |
 | `maia_deck_favorite` | Favorite toggled | `favorite` |
 
-A run that starts but never reaches built, added, error or cancel was abandoned or crashed: a phone that kills the tab sends nothing else. Event counts work as is; summing `cards` or splitting by a param needs that param registered as a custom metric or dimension in the GA property.
+A run that starts but never reaches built, added, error or cancel was abandoned or crashed: a phone that kills the tab sends nothing else. Event counts work as is; summing `cards` or splitting by a param needs that param registered as a custom metric or dimension in the GA property, with event scope. Each param name means one thing in every event, so a metric summed across events never mixes, say, cards found with deck sizes.
 
 ## Out of scope for v1
 
