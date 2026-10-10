@@ -349,6 +349,13 @@ describe('mergeIntoDeck', () => {
     expect(merged.updatedAt).toBe(now.toISOString());
   });
 
+  it('sums the already-lost count when either side has one', () => {
+    const stats = { games: 1, positions: 10, disagreements: 4, lost: 2 };
+    expect(mergeIntoDeck(deck, { cards: [], stats }, now).deck.stats.lost).toBe(2);
+    const both = { ...deck, stats: { ...deck.stats, lost: 3 } };
+    expect(mergeIntoDeck(both, { cards: [], stats }, now).deck.stats.lost).toBe(5);
+  });
+
   it('never moves the newest-game date backwards', () => {
     const { deck: merged } = mergeIntoDeck(deck, { cards: [], stats: { games: 0, positions: 0, disagreements: 0 }, newestGameAt: 10 }, now);
     expect(merged.newestGameAt).toBe(1000);
@@ -444,7 +451,20 @@ describe('saving the fields that adding relies on', () => {
     expect(deck).toMatchObject({ excludeBullet: false, newestGameAt: 1_700_000_000_000 });
   });
 
+  it('keeps the already-lost setting and count', async () => {
+    const { body } = await post({
+      ...deckBody,
+      settings: { ...deckBody.settings, skipLost: true },
+      stats: { ...deckBody.stats, lost: 4 },
+    });
+    const { deck } = (await get(`id=${body.id}`)).body;
+    expect(deck.settings.skipLost).toBe(true);
+    expect(deck.stats.lost).toBe(4);
+  });
+
   it('rejects malformed ones', async () => {
+    expect((await post({ ...deckBody, settings: { ...deckBody.settings, skipLost: 'yes' } })).status).toBe(400);
+    expect((await post({ ...deckBody, stats: { ...deckBody.stats, lost: -1 } })).status).toBe(400);
     expect((await post({ ...deckBody, excludeBullet: 'yes' })).status).toBe(400);
     expect((await post({ ...deckBody, newestGameAt: 'yesterday' })).status).toBe(400);
   });

@@ -74,19 +74,21 @@ const isInt = (v: unknown, min: number, max: number): v is number =>
 
 function validateSettings(raw: unknown): AnalysisSettings | null {
   if (typeof raw !== 'object' || raw === null) return null;
-  const { delta, thresholdCp, depth, skipMoves } = raw as Record<string, unknown>;
+  const { delta, thresholdCp, depth, skipMoves, skipLost } = raw as Record<string, unknown>;
   if (!isInt(delta, LIMITS.delta.min, LIMITS.delta.max)) return null;
   if (!isInt(thresholdCp, LIMITS.thresholdCp.min, LIMITS.thresholdCp.max)) return null;
   if (!isInt(depth, LIMITS.depth.min, LIMITS.depth.max)) return null;
   if (!isInt(skipMoves, LIMITS.skipMoves.min, LIMITS.skipMoves.max)) return null;
-  return { delta, thresholdCp, depth, skipMoves };
+  if (skipLost !== undefined && typeof skipLost !== 'boolean') return null;
+  return { delta, thresholdCp, depth, skipMoves, ...(skipLost !== undefined && { skipLost }) };
 }
 
 function validateStats(raw: unknown): DeckStats | null {
   if (typeof raw !== 'object' || raw === null) return null;
-  const { games, positions, disagreements } = raw as Record<string, unknown>;
+  const { games, positions, disagreements, lost } = raw as Record<string, unknown>;
   if (!isInt(games, 0, 10_000) || !isInt(positions, 0, 1_000_000) || !isInt(disagreements, 0, 1_000_000)) return null;
-  return { games, positions, disagreements };
+  if (lost !== undefined && !isInt(lost, 0, 1_000_000)) return null;
+  return { games, positions, disagreements, ...(lost !== undefined && { lost }) };
 }
 
 function validMove(raw: unknown): { uci: string; san: string } | null {
@@ -241,6 +243,9 @@ export function mergeIntoDeck(deck: Deck, addition: DeckAddition, now: Date): { 
         games: deck.stats.games + addition.stats.games,
         positions: deck.stats.positions + addition.stats.positions,
         disagreements: deck.stats.disagreements + addition.stats.disagreements,
+        ...((deck.stats.lost ?? addition.stats.lost) !== undefined && {
+          lost: (deck.stats.lost ?? 0) + (addition.stats.lost ?? 0),
+        }),
       },
       newestGameAt: newest.length ? Math.max(...newest) : undefined,
       updatedAt: now.toISOString(),

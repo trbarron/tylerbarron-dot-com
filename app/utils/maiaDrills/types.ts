@@ -30,7 +30,19 @@ export interface AnalysisSettings {
   depth: number;
   /** User moves before this move number are skipped. */
   skipMoves: number;
+  /**
+   * Leave out errors made when already lost (see LOST_CP). Absent on decks
+   * built before the option existed, which kept every error.
+   */
+  skipLost?: boolean;
 }
+
+/**
+ * A position counts as already lost when even the stronger player's move
+ * leaves the mover down this much (and the game move, being worse, does too):
+ * time scrambles and swindle attempts aren't worth drilling.
+ */
+export const LOST_CP = 700;
 
 export interface CardMove {
   uci: string;
@@ -62,6 +74,8 @@ export interface DeckStats {
   games: number;
   positions: number;
   disagreements: number;
+  /** Errors left out because the position was already lost (skipLost). */
+  lost?: number;
 }
 
 export interface Deck {
@@ -101,6 +115,7 @@ export const DEFAULT_SETTINGS: AnalysisSettings = {
   thresholdCp: 150,
   depth: 12,
   skipMoves: 0,
+  skipLost: true,
 };
 
 /** Bounds shared by the form and the server-side validation. */

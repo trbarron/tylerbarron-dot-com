@@ -5,10 +5,10 @@
  */
 
 import { describe, it, expect, vi } from 'vitest';
-import { analyzeGames, userMoves, type AnalysisProgress } from '~/utils/maiaDrills/analyze';
+import { alreadyLost, analyzeGames, userMoves, type AnalysisProgress } from '~/utils/maiaDrills/analyze';
 import type { MaiaEngine, MaiaQuery } from '~/utils/maiaDrills/maiaEngine';
 import type { StockfishPool } from '~/utils/maiaDrills/stockfishPool';
-import { DEFAULT_SETTINGS, type SourceGame } from '~/utils/maiaDrills/types';
+import { DEFAULT_SETTINGS, LOST_CP, type SourceGame } from '~/utils/maiaDrills/types';
 
 // stockfishPool imports the worker factory; the fakes below replace the pool.
 vi.mock('~/utils/multipleChoiceChess/stockfishEngine', () => ({ createStockfishWorker: vi.fn() }));
@@ -96,6 +96,25 @@ describe('analyzeGames', () => {
     const under = await analyzeGames([game], DEFAULT_SETTINGS, { maia: maia(), stockfish: fakeStockfish({ g7g6: 149, g8f6: 0 }) }, {});
     expect(at.cards).toHaveLength(1);
     expect(under.cards).toHaveLength(0);
+  });
+
+  it('leaves out an error made when already lost, by default, and counts it', async () => {
+    const maia = () => fakeMaia({ [BEFORE_NF6]: 'g7g6' });
+    const lost = { g7g6: -LOST_CP, g8f6: -1000 };
+    const on = await analyzeGames([game], DEFAULT_SETTINGS, { maia: maia(), stockfish: fakeStockfish(lost) }, {});
+    expect(on.cards).toHaveLength(0);
+    expect(on.stats.lost).toBe(1);
+    // Decks from before the option (no skipLost) kept every error.
+    const off = await analyzeGames([game], { ...DEFAULT_SETTINGS, skipLost: undefined }, { maia: maia(), stockfish: fakeStockfish(lost) }, {});
+    expect(off.cards).toHaveLength(1);
+    expect(off.stats.lost).toBeUndefined();
+  });
+
+  it('counts a position as lost only when down LOST_CP both before and after the move', () => {
+    expect(alreadyLost(-LOST_CP, -LOST_CP - 200)).toBe(true);
+    // Still in it with the stronger move: that's the card worth drilling.
+    expect(alreadyLost(-LOST_CP + 1, -1000)).toBe(false);
+    expect(alreadyLost(-300, -1000)).toBe(false);
   });
 
   it('skips moves before the chosen move number', async () => {

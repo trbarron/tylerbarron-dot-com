@@ -193,6 +193,9 @@ function DeckView({
           your moves. A stronger player chose differently{" "}
           {stats.disagreements.toLocaleString()} times, and {deck.cards.length}{" "}
           of those were worth at least {deck.settings.thresholdCp} cp.
+          {stats.lost
+            ? ` ${stats.lost.toLocaleString()} more came from positions you’d already lost and were left out.`
+            : ""}
         </p>
       </div>
 
