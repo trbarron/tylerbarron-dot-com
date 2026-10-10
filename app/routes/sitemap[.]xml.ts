@@ -13,7 +13,7 @@ const STATIC_PATHS = [
   "/chesser-guesser",
   "/collaborative-checkmate",
   "/generative-art",
-  "/maia-drills",
+  "/maia-marginal-mentor",
   "/multiple-choice-chess",
   "/pizza-rating",
   "/set",

@@ -26,7 +26,7 @@ export function meta() {
     title: "Maia Marginal Mentor",
     description:
       "Flashcards from your own games: the positions where a slightly stronger player would have found a better move.",
-    path: "/maia-drills",
+    path: "/maia-marginal-mentor",
   });
 }
 
@@ -309,7 +309,7 @@ export default function MaiaDrills() {
           >
             {/* Back to building a deck from anywhere: a deck, a drill, or the page itself. */}
             <Link
-              to="/maia-drills"
+              to="/maia-marginal-mentor"
               className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 hover:opacity-80"
             >
               <h1 className="font-neo text-3xl leading-none font-extrabold tracking-tight uppercase md:text-4xl">
@@ -351,7 +351,7 @@ export default function MaiaDrills() {
             <Panel title="Deck">
               <p className="font-neo text-red-700">{loadError}</p>
               <Link
-                to="/maia-drills"
+                to="/maia-marginal-mentor"
                 className="font-neo mt-3 inline-block text-sm underline"
               >
                 Build a new deck
@@ -372,7 +372,7 @@ export default function MaiaDrills() {
               title="Deck"
               aside={
                 <Link
-                  to="/maia-drills"
+                  to="/maia-marginal-mentor"
                   className="font-neo text-xs font-bold tracking-wide uppercase underline"
                 >
                   New deck

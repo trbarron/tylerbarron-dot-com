@@ -1,10 +1,10 @@
 # Maia Marginal Mentor
 
-*Called Maia Drills until 2026-10-10. The URL, code (`maiaDrills`), Redis keys (`maiaDrills:*`) and GA event names (`maia_*`) keep the old name, so links already shared and decks already saved keep working.*
+*Called Maia Drills until 2026-10-10. `/maia-drills` 301-redirects here (query string kept, so shared `?deck=` links work) via `legacyRedirect.ts`. The code (`maiaDrills`), Redis keys (`maiaDrills:*`), model cache and GA event names (`maia_*`) keep the old name: renaming the keys would orphan saved decks, and the cache would re-download the model.*
 
 Turn your own games into flashcards: positions where a player a bit stronger than you would have played something different, and the difference actually mattered.
 
-Route: `/maia-drills` · Status: v1
+Route: `/maia-marginal-mentor` · Status: v1
 
 ## The idea
 

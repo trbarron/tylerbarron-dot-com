@@ -5,6 +5,7 @@ import type { LoaderFunctionArgs } from "react-router";
 // kebab-case counterparts, which left duplicate pages competing in search
 // results. Permanently redirecting consolidates them onto one canonical URL.
 // Keys are lowercase with hyphens stripped, so kebab-case input matches too.
+// Renamed projects redirect the same way.
 const SEGMENT_MAP: Record<string, string> = {
   b0xx: "SSBM",
   boulderingtracker: "bouldering-tracker",
@@ -13,6 +14,7 @@ const SEGMENT_MAP: Record<string, string> = {
   chesserguesser: "chesser-guesser",
   collaborativecheckmate: "collaborative-checkmate",
   generativeart: "generative-art",
+  maiadrills: "maia-marginal-mentor",
   pizzarating: "pizza-rating",
   ssbm: "SSBM",
   theriddler: "the-riddler",
