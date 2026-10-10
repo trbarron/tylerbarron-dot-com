@@ -68,9 +68,9 @@ touched imports.
 ## Versioning (automated semver in the footer)
 
 Releases are **fully automated by semantic-release** (`.releaserc.json`), driven by
-[Conventional Commits](https://www.conventionalcommits.org): `fix:` → patch, `feat:` →
-minor, `feat!:`/`BREAKING CHANGE:` → major. Other types (`chore:`, `ci:`, `docs:`,
-`refactor:`, `perf:`, `test:`) don't release.
+[Conventional Commits](https://www.conventionalcommits.org): `fix:` and `perf:` → patch,
+`feat:` → minor, `feat!:`/`BREAKING CHANGE:` → major (commit-analyzer's default rules).
+Other types (`chore:`, `ci:`, `docs:`, `refactor:`, `test:`) don't release.
 
 Flow: on push to `master`, the deploy job runs `npx semantic-release` **before** the
 build. It analyzes commits since the last tag, and if a release is warranted it bumps
