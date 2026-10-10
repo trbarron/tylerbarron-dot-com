@@ -1,3 +1,15 @@
+## [5.28.3](https://github.com/trbarron/tylerbarron-dot-com/compare/5.28.2...5.28.3) (2026-10-10)
+
+
+### Bug Fixes
+
+* keep Maia Drills within an iPhone's memory ([552f404](https://github.com/trbarron/tylerbarron-dot-com/commit/552f40416e946b95b3cb43d9c108e3add683ff1d))
+
+
+### Performance Improvements
+
+* use the Lambda runtime's AWS SDK instead of shipping it ([4ae3ec8](https://github.com/trbarron/tylerbarron-dot-com/commit/4ae3ec8937b931a191fae0a6b6cba7c1471bcd0b))
+
 ## [5.28.2](https://github.com/trbarron/tylerbarron-dot-com/compare/5.28.1...5.28.2) (2026-10-10)
 
 
