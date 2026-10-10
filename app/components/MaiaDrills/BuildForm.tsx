@@ -261,7 +261,7 @@ export default function BuildForm({ onBuilt }: BuildFormProps) {
                 checked={skipLost}
                 disabled={busy}
                 onChange={(e) => setSkipLost(e.target.checked)}
-                className="h-4 w-4 accent-black"
+                className="h-4 w-4 shrink-0 accent-black"
               />
               Skip positions you’d already lost (down {LOST_CP / 100} or more before and after your move)
             </label>
