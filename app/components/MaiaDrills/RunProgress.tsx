@@ -9,17 +9,25 @@ const STAGE_LABELS: Record<Stage, string> = {
   saving: 'Saving deck…',
 };
 
-function ProgressBar({ value, max, label }: { value: number; max: number; label: string }) {
+interface ProgressBarProps {
+  value: number;
+  max: number;
+  label: string;
+  /** Shown instead of the count, e.g. while the total isn't known yet. */
+  note?: string;
+  /** A thinner bar, for the per-game bars under the main one. */
+  small?: boolean;
+}
+
+function ProgressBar({ value, max, label, note, small }: ProgressBarProps) {
   const pct = max > 0 ? Math.min(100, (value / max) * 100) : 0;
   return (
     <div>
       <div className="mb-1 flex justify-between font-neo text-xs text-gray-700">
         <span>{label}</span>
-        <span className="font-mono">
-          {value.toLocaleString()} / {max.toLocaleString()}
-        </span>
+        <span className="font-mono">{note ?? `${value.toLocaleString()} / ${max.toLocaleString()}`}</span>
       </div>
-      <div className="h-3 border-2 border-black bg-white">
+      <div className={`${small ? 'h-2' : 'h-3'} border-2 border-black bg-white`}>
         {/* Dynamic width has no Tailwind equivalent. */}
         {/* eslint-disable-next-line react/forbid-dom-props */}
         <div className="h-full bg-black transition-[width]" style={{ width: `${pct}%` }} />
@@ -61,6 +69,23 @@ export default function RunProgress({ run }: { run: AnalysisRun }) {
       {progress && (
         <>
           <ProgressBar label="Games analyzed" value={progress.gamesDone} max={progress.gamesTotal} />
+          {progress.current && (
+            <div className="space-y-2 border-l-2 border-black pl-3">
+              <ProgressBar
+                small
+                label="This game: Maia"
+                value={progress.current.positionsDone}
+                max={progress.current.positions}
+              />
+              <ProgressBar
+                small
+                label="This game: Stockfish checks"
+                value={progress.current.checksDone}
+                max={progress.current.checks}
+                note={progress.current.maiaDone ? undefined : 'after Maia'}
+              />
+            </div>
+          )}
           <p className="font-neo text-sm">
             <span className="font-bold">{progress.cards}</span> cards found
           </p>
@@ -69,8 +94,8 @@ export default function RunProgress({ run }: { run: AnalysisRun }) {
               {backend === 'webgpu'
                 ? 'Maia is running on your GPU.'
                 : isHandheld()
-                  ? 'Phones run Maia on the CPU, so this will take a while. A computer with Chrome or Edge is much faster.'
-                  : 'Maia is running on your CPU (this browser has no usable WebGPU), so this will take a while. Chrome or Edge is much faster.'}
+                  ? 'Phones run Maia on the CPU, so this will take a while. A computer will be much faster.'
+                  : 'Maia is running on your CPU (this browser has no usable WebGPU), so this will take a while.'}
             </p>
           )}
         </>

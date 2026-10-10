@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect, vi } from 'vitest';
-import { analyzeGames, userMoves } from '~/utils/maiaDrills/analyze';
+import { analyzeGames, userMoves, type AnalysisProgress } from '~/utils/maiaDrills/analyze';
 import type { MaiaEngine, MaiaQuery } from '~/utils/maiaDrills/maiaEngine';
 import type { StockfishPool } from '~/utils/maiaDrills/stockfishPool';
 import { DEFAULT_SETTINGS, type SourceGame } from '~/utils/maiaDrills/types';
@@ -37,8 +37,9 @@ function fakeMaia(picks: Record<string, string> = {}, seen: MaiaQuery[] = []) {
   const played = new Map<string, string>();
   for (const m of userMoves(game, 0)) played.set(m.fen, m.played.uci);
   return {
-    predict: vi.fn(async (queries: MaiaQuery[]) => {
+    predict: vi.fn(async (queries: MaiaQuery[], onProgress?: (done: number) => void) => {
       seen.push(...queries);
+      onProgress?.(queries.length);
       return queries.map((q) => [{ uci: picks[q.fen] ?? played.get(q.fen)!, prob: 0.5 }]);
     }),
   } as unknown as MaiaEngine;
@@ -158,18 +159,24 @@ describe('analyzeGames', () => {
       score: vi.fn(() => new Promise<Map<string, number>>((resolve) => (finishSearch = resolve))),
       terminate: vi.fn(),
     } as unknown as StockfishPool;
-    const reports: number[] = [];
+    const reports: AnalysisProgress[] = [];
 
     const run = analyzeGames([game], DEFAULT_SETTINGS, { maia, stockfish }, {
-      onProgress: (p) => reports.push(p.gamesDone),
+      onProgress: (p) => reports.push(p),
     });
     await vi.waitFor(() => expect(stockfish.score).toHaveBeenCalled());
     // Maia is done with the game, but its one Stockfish check isn't.
-    expect(reports.at(-1) ?? 0).toBe(0);
+    expect(reports.at(-1)).toMatchObject({
+      gamesDone: 0,
+      current: { positions: 3, positionsDone: 3, maiaDone: true, checks: 1, checksDone: 0 },
+    });
+    // Before Maia finished, the game showed with no checks known yet.
+    expect(reports[0].current).toMatchObject({ positionsDone: 0, maiaDone: false, checks: 0 });
 
     finishSearch(new Map([['g7g6', 20], ['g8f6', -1000]]));
     const { cards } = await run;
-    expect(reports.at(-1)).toBe(1);
+    // Done: the count ticks up and the per-game bars clear.
+    expect(reports.at(-1)).toMatchObject({ gamesDone: 1, current: null });
     expect(cards).toHaveLength(1);
   });
 });

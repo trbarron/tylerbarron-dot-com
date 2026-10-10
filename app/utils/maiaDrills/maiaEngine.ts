@@ -273,13 +273,16 @@ export class MaiaEngine {
     });
   }
 
-  /** Maia's move distribution for each query, most likely first. */
-  async predict(queries: MaiaQuery[]): Promise<MaiaPrediction[][]> {
+  /**
+   * Maia's move distribution for each query, most likely first. `onProgress`
+   * gets the number of queries done after each batch.
+   */
+  async predict(queries: MaiaQuery[], onProgress?: (done: number) => void): Promise<MaiaPrediction[][]> {
     await this.ready;
-    return this.run(queries);
+    return this.run(queries, onProgress);
   }
 
-  private async run(queries: MaiaQuery[]): Promise<MaiaPrediction[][]> {
+  private async run(queries: MaiaQuery[], onProgress?: (done: number) => void): Promise<MaiaPrediction[][]> {
     const results: MaiaPrediction[][] = [];
 
     // Before `ready` resolves this is the GPU canary check.
@@ -297,6 +300,7 @@ export class MaiaEngine {
         n
       );
       batch.forEach((q, i) => results.push(decodePolicy(logits, i * MAIA_MOVE_VOCAB, q.fen, q.legal)));
+      onProgress?.(results.length);
     }
     return results;
   }
