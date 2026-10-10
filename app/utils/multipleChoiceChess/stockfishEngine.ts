@@ -34,7 +34,7 @@ interface PendingAnalysis {
 const INIT_TIMEOUT_MS = 45000;
 const ANALYZE_TIMEOUT_BUFFER_MS = 8000;
 
-function createStockfishWorker(): { worker: Worker; cleanup: () => void } {
+export function createStockfishWorker(): { worker: Worker; cleanup: () => void } {
   // Workers can't be created directly from a cross-origin URL, so bootstrap a
   // same-origin blob worker that importScripts the CDN-hosted Stockfish JS.
   // Stockfish reads location.hash for the wasm path: hash format is `#<wasm-url>`.

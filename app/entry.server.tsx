@@ -23,10 +23,12 @@ const ABORT_DELAY = 5_000;
 //   are inline. Tightening to nonces would require plumbing one through
 //   root.tsx and this file.
 // - blob: workers: Stockfish bootstraps from a Blob URL (it importScripts the
-//   unpkg-hosted engine), and Timer.tsx uses a blob worker.
+//   unpkg-hosted engine), and Timer.tsx uses a blob worker. Maia Drills' worker
+//   does the same with onnxruntime-web from jsDelivr, which then imports its
+//   own .mjs loader from there, hence jsDelivr in script-src.
 const CONTENT_SECURITY_POLICY = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://www.googletagmanager.com https://unpkg.com https://giscus.app",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://www.googletagmanager.com https://unpkg.com https://cdn.jsdelivr.net https://giscus.app",
   "worker-src 'self' blob:",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https://www.googletagmanager.com https://*.google-analytics.com",
@@ -42,6 +44,9 @@ const CONTENT_SECURITY_POLICY = [
     // US state boundaries for the pizza map (jsdelivr). The pizza datasets
     // themselves are same-origin now (/images/pizza/*), so they need no grant.
     "https://cdn.jsdelivr.net",
+    // Maia Drills: players' games, and the Maia model. Hugging Face answers
+    // the model URL with a redirect to its storage CDN on *.hf.co.
+    "https://lichess.org https://api.chess.com https://huggingface.co https://*.hf.co",
     // Collaborative checkmate game server (REST lobby + websocket gameplay)
     "https://collaborative-checkmate-server.fly.dev wss://collaborative-checkmate-server.fly.dev",
   ].join(" "),
