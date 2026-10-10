@@ -1,3 +1,17 @@
+# [5.29.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.28.4...5.29.0) (2026-10-10)
+
+
+### Bug Fixes
+
+* reset the Maia Drills board in place after a miss ([a967d10](https://github.com/trbarron/tylerbarron-dot-com/commit/a967d1006199d92e100b85588d4107acf3d80165))
+* show each move's eval in a Maia Drills answer, not its cp loss ([ce5b1c1](https://github.com/trbarron/tylerbarron-dot-com/commit/ce5b1c10b7d0a94c8272beae47f36492ee11a230))
+
+
+### Features
+
+* run Maia Drills on the CPU on all phones, with one progress bar ([ae118b9](https://github.com/trbarron/tylerbarron-dot-com/commit/ae118b91a7f9444b832db4fbdf426a49ca4a88dd))
+* show the current game's Maia and Stockfish progress ([8f3b9ef](https://github.com/trbarron/tylerbarron-dot-com/commit/8f3b9ef87246277ed8dab3f62defda358807b49a))
+
 ## [5.28.4](https://github.com/trbarron/tylerbarron-dot-com/compare/5.28.3...5.28.4) (2026-10-10)
 
 
