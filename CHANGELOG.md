@@ -1,3 +1,10 @@
+## [5.28.2](https://github.com/trbarron/tylerbarron-dot-com/compare/5.28.1...5.28.2) (2026-10-10)
+
+
+### Bug Fixes
+
+* fall back to the CPU when Maia Drills can't start WebGPU ([8d765c0](https://github.com/trbarron/tylerbarron-dot-com/commit/8d765c026325008ed54656eb17077d660588ec66))
+
 ## [5.28.1](https://github.com/trbarron/tylerbarron-dot-com/compare/5.28.0...5.28.1) (2026-10-10)
 
 
