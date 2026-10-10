@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { loadForm, saveForm } from '~/utils/maiaDrills/localStorage';
 import { DEFAULT_SETTINGS, LIMITS, type AnalysisSettings, type Deck, type GameSource } from '~/utils/maiaDrills/types';
+import { trackDeckBuilt } from '~/utils/maiaDrills/tracking';
 import RunProgress, { RunMessages } from './RunProgress';
 import { useAnalysisRun } from './useAnalysisRun';
 
@@ -86,6 +87,7 @@ export default function BuildForm({ onBuilt }: BuildFormProps) {
             : 'No errors found at these settings. Try a larger rating gap or a smaller threshold.'
         );
       }
+      const cards = result.cards.slice(0, LIMITS.cardsPerDeck);
       await onBuilt({
         v: 1,
         source,
@@ -95,7 +97,15 @@ export default function BuildForm({ onBuilt }: BuildFormProps) {
         newestGameAt: result.newestGameAt,
         stats: result.stats,
         // Biggest misses first; the server caps deck size.
-        cards: result.cards.slice(0, LIMITS.cardsPerDeck),
+        cards,
+      });
+      trackDeckBuilt({
+        source,
+        games: result.gamesFetched,
+        cards: cards.length,
+        backend: result.backend,
+        seconds: result.seconds,
+        stopped: result.cancelled,
       });
       if (result.skippedNoRating) return `${result.skippedNoRating} game(s) had no rating for you and were skipped.`;
     });

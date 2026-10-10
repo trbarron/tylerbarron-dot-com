@@ -68,9 +68,14 @@ export function reveal(misses: Guess[]): Answer {
   return { verdict: 'revealed', guesses: misses, firstTry: false };
 }
 
-/** Answered right: the stronger move (or one as good), first try. */
+/** Answered right, on either try: the stronger move, or one Stockfish rates as good. Drives the stats. */
+export function answeredRight(answer: Answer): boolean {
+  return answer.verdict === 'correct' || answer.verdict === 'also-good';
+}
+
+/** Right on the first try: only these cards leave the queue; a second-try card comes back for practice. */
 export function passed(answer: Answer): boolean {
-  return answer.firstTry && (answer.verdict === 'correct' || answer.verdict === 'also-good');
+  return answer.firstTry && answeredRight(answer);
 }
 
 export function recordProgress(
@@ -78,7 +83,7 @@ export function recordProgress(
   cardId: string,
   answer: Answer
 ): Record<string, CardProgress> {
-  const ok = passed(answer);
+  const ok = answeredRight(answer);
   const old = progress[cardId] ?? { seen: 0, correct: 0, last: 'wrong' as const };
   return {
     ...progress,

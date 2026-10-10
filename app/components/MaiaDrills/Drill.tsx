@@ -11,13 +11,14 @@ import {
   gradeKnown,
   initialQueue,
   isAlsoGood,
-  passed,
+  answeredRight,
   recordProgress,
   reveal as revealAnswer,
   type Answer,
   type Guess,
 } from '~/utils/maiaDrills/drill';
 import { loadProgress, saveProgress, type CardProgress } from '~/utils/maiaDrills/localStorage';
+import { trackDrillAnswer } from '~/utils/maiaDrills/tracking';
 import type { Deck } from '~/utils/maiaDrills/types';
 
 const Chessboard = lazy(() => import('~/components/Chessboard'));
@@ -66,8 +67,9 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
   const record = useCallback(
     (result: Answer) => {
       if (!card) return;
-      const ok = passed(result);
+      const ok = answeredRight(result);
       setAnswer(result);
+      trackDrillAnswer(result);
       setSession((s) => ({ attempted: s.attempted + 1, correct: s.correct + (ok ? 1 : 0) }));
       setProgress((prev) => {
         const next = recordProgress(prev, card.id, result);
@@ -232,9 +234,8 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
           {answer && (
             <>
               <p
-                className={`text-lg font-extrabold ${
-                  answer.verdict === 'correct' || answer.verdict === 'also-good' ? 'text-green-700' : 'text-red-700'
-                }`}
+                // The words say whether it was right; no colour needed.
+                className="text-lg font-extrabold text-black"
               >
                 {verdictText(answer)}
               </p>

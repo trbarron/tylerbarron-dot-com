@@ -60,7 +60,7 @@ For each position `P` in which the user is to move and played `u`:
 
 Optional filters: skip the first N moves of each game (default 0, since the opening is often where the habits are), and skip bullet games.
 
-**Drill grading:** you get two tries per card. A first miss just resets the board, with no hint. A second miss, or *Show answer*, reveals the answer. Only a first-try answer counts as answered right; a second-try answer comes back sooner, like a miss. Playing `m` is correct. Playing anything else triggers a quick Stockfish check of your move against `m` at the same depth. If it scores within 30 cp of `m` (or better), it's accepted as "also good"; a stronger player's choice isn't the only right answer.
+**Drill grading:** you get two tries per card. A first miss just resets the board, with no hint. A second miss, or *Show answer*, reveals the answer. A right answer on either try counts as answered right in the stats, but only a first-try one takes the card out of the round: a second-try card comes back after a few others, like a miss. The verdict is plain black text; its words say whether it was right. Playing `m` is correct. Playing anything else triggers a quick Stockfish check of your move against `m` at the same depth. If it scores within 30 cp of `m` (or better), it's accepted as "also good"; a stronger player's choice isn't the only right answer.
 
 ## Storage
 
@@ -107,6 +107,23 @@ Maia runs on the GPU through WebGPU where the browser supports it, and otherwise
 - **Phones and tablets always use the CPU** and at most two Stockfish workers (`app/utils/maiaDrills/device.ts`). On an iPhone, WebGPU failed to start every time; the attempt loaded the larger GPU runtime and the whole model just before the CPU fallback needed its memory, and iOS killed the tab. Android was never seen to fail but gets the same treatment, since a phone has far less memory to spare than a computer. On the CPU, Maia runs batches of 16 (a ~157 MiB WASM heap, against ~227 MiB for 64, at the same speed) and runs one at startup, before Stockfish loads, so the heap peaks while it's the only engine.
 - The model download (~46 MB) happens once and is then served from Cache Storage. The WebGPU runtime is a larger download than the CPU one, so browsers without a GPU adapter get the small one.
 - Processing can be cancelled, and the cards found so far are still saved.
+
+## Analytics
+
+GA4 events, all sent from `app/utils/maiaDrills/tracking.ts`. No usernames are sent; an error message that quotes one has it blanked.
+
+| Event | When | Params |
+|---|---|---|
+| `maia_analysis_start` | Build or add-games run starts | `mode` (build/add), `source`, `games_requested`, `handheld` |
+| `maia_deck_built` | New deck saved | `source`, `games`, `cards`, `backend`, `seconds`, `stopped` |
+| `maia_games_added` | Add-games run saved | `source`, `games`, `cards` (new), `backend`, `seconds` |
+| `maia_analysis_error` | Run ended in an error, including "no games" and "no errors found" | `mode`, `stage`, `backend`, `error` |
+| `maia_analysis_cancel` | Cancelled before anything was saved | `mode`, `stage` |
+| `maia_drill_start` | "Start drilling" | `deck_cards` |
+| `maia_drill_answer` | Each card answered or revealed | `verdict`, `first_try`, `tries` |
+| `maia_deck_favorite` | Favorite toggled | `favorite` |
+
+A run that starts but never reaches built, added, error or cancel was abandoned or crashed: a phone that kills the tab sends nothing else. Event counts work as is; summing `cards` or splitting by a param needs that param registered as a custom metric or dimension in the GA property, with event scope. Each param name means one thing in every event, so a metric summed across events never mixes, say, cards found with deck sizes.
 
 ## Out of scope for v1
 

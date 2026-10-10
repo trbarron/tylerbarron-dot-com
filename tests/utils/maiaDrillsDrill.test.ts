@@ -1,6 +1,6 @@
 /**
  * Maia Drills flashcard rules: grading, the two-try rule (a first miss gives
- * no hint, a second reveals), first-try-only scoring, and card order.
+ * no hint, a second reveals), scoring, and card order.
  */
 
 import { describe, it, expect } from 'vitest';
@@ -15,6 +15,7 @@ import {
   gradeKnown,
   initialQueue,
   isAlsoGood,
+  answeredRight,
   passed,
   recordProgress,
   reveal,
@@ -98,7 +99,14 @@ describe('two tries', () => {
 describe('scoring', () => {
   const answer = (verdict: Answer['verdict'], firstTry: boolean): Answer => ({ verdict, guesses: [], firstTry });
 
-  it('passes only first-try correct or also-good answers', () => {
+  it('counts a correct or also-good answer as right on either try', () => {
+    expect(answeredRight(answer('correct', true))).toBe(true);
+    expect(answeredRight(answer('also-good', false))).toBe(true);
+    expect(answeredRight(answer('wrong', false))).toBe(false);
+    expect(answeredRight(answer('revealed', false))).toBe(false);
+  });
+
+  it('passes (lets the card leave the queue) only on the first try', () => {
     expect(passed(answer('correct', true))).toBe(true);
     expect(passed(answer('also-good', true))).toBe(true);
     expect(passed(answer('correct', false))).toBe(false);
@@ -106,11 +114,13 @@ describe('scoring', () => {
     expect(passed(answer('wrong', true))).toBe(false);
   });
 
-  it('records seen, correct and last result per card', () => {
+  it('records seen, correct and last result per card, second tries included', () => {
     let progress = recordProgress({}, 'c1', answer('correct', true));
     expect(progress.c1).toEqual({ seen: 1, correct: 1, last: 'correct' });
-    progress = recordProgress(progress, 'c1', answer('correct', false));
-    expect(progress.c1).toEqual({ seen: 2, correct: 1, last: 'wrong' });
+    progress = recordProgress(progress, 'c1', answer('also-good', false));
+    expect(progress.c1).toEqual({ seen: 2, correct: 2, last: 'correct' });
+    progress = recordProgress(progress, 'c1', answer('revealed', false));
+    expect(progress.c1).toEqual({ seen: 3, correct: 2, last: 'wrong' });
   });
 });
 
