@@ -9,7 +9,7 @@
 import { Chess } from 'chess.js';
 import type { MaiaEngine, MaiaQuery } from './maiaEngine';
 import type { StockfishPool } from './stockfishPool';
-import { MAIA_ELO_RANGE, type AnalysisSettings, type DeckStats, type DrillCard, type SourceGame } from './types';
+import { LOST_CP, MAIA_ELO_RANGE, type AnalysisSettings, type DeckStats, type DrillCard, type SourceGame } from './types';
 
 /** Stockfish jobs allowed in flight before Maia waits for the pool to catch up. */
 const MAX_OUTSTANDING_JOBS = 48;
@@ -86,6 +86,11 @@ export function legalUci(fen: string): string[] {
 
 function sanOf(fen: string, uci: string): string {
   return new Chess(fen).move({ from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci[4] }).san;
+}
+
+/** Down at least LOST_CP both before (the stronger move) and after (the game move), from the mover's side. */
+export function alreadyLost(evalTarget: number, evalPlayed: number): boolean {
+  return evalTarget <= -LOST_CP && evalPlayed <= -LOST_CP;
 }
 
 export async function analyzeGames(
@@ -169,6 +174,10 @@ export async function analyzeGames(
           const evalPlayed = scores.get(c.played.uci);
           if (evalTarget === undefined || evalPlayed === undefined) return;
           if (evalTarget - evalPlayed < settings.thresholdCp) return;
+          if (settings.skipLost && alreadyLost(evalTarget, evalPlayed)) {
+            stats.lost = (stats.lost ?? 0) + 1;
+            return;
+          }
 
           cards.push({
             id: `${game.id}-${c.ply}`,

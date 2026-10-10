@@ -57,8 +57,9 @@ For each position `P` in which the user is to move and played `u`:
 3. Otherwise run Stockfish on `P` with `searchmoves m u`, `MultiPV 2`, at fixed depth (default 12). Both scores come from one search, from the mover's point of view.
 4. Clamp each score to ±1000 cp (mate = ±1000). Otherwise every move in a won position is a "1500 cp error" against mate-in-3.
 5. `loss = score(m) − score(u)`. Card if `loss ≥ T`.
+6. Unless the already-lost filter is off: no card if `score(m) ≤ −700` and `score(u) ≤ −700` (`LOST_CP`). Even the stronger player's move leaves you down 7, so the "error" is a time scramble or a swindle attempt in a lost game, not a habit worth drilling. `score(m)` stands in for the position's eval before the move; it's what the search already returns, and a position where the best move is fine but `m` isn't is rare. Dropped cards are counted in `stats.lost` and mentioned on the deck page.
 
-Optional filters: skip the first N moves of each game (default 0, since the opening is often where the habits are), and skip bullet games.
+Optional filters: skip the first N moves of each game (default 0, since the opening is often where the habits are), skip bullet games, and skip already-lost positions (step 6, on by default). The last is stored as `settings.skipLost`, so adding newer games to a deck applies the same rule; decks built before it existed have no `skipLost` and keep every error.
 
 **Drill grading:** you get two tries per card. A first miss just resets the board, with no hint. A second miss, or *Show answer*, reveals the answer. A right answer on either try counts as answered right in the stats, but only a first-try one takes the card out of the round: a second-try card comes back after a few others, like a miss. The verdict is plain black text; its words say whether it was right. Playing `m` is correct. Playing anything else triggers a quick Stockfish check of your move against `m` at the same depth. If it scores within 30 cp of `m` (or better), it's accepted as "also good"; a stronger player's choice isn't the only right answer.
 
