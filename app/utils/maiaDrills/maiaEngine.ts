@@ -31,8 +31,12 @@ const MAIA_MODEL_REVISION = '923df9a2e9396b54a09b168bb858ebbd5e5b76bc';
 export const MAIA_MODEL_URL = `https://huggingface.co/bqrio/maia3-onnx/resolve/${MAIA_MODEL_REVISION}/maia3-23m.fp16.onnx`;
 const MODEL_CACHE = 'maia-drills-models-v1';
 
-/** Keeps a single inference's tensors (and its transfer) to a sensible size. */
-const MAX_BATCH = 64;
+/**
+ * Positions per inference. The GPU gains from big batches; the CPU doesn't
+ * (~68 ms a position either way), and there a 64 batch grows the WASM heap to
+ * ~227 MiB against ~157 MiB for 16, which matters on a phone.
+ */
+const BATCH = { webgpu: 64, wasm: 16 } as const;
 
 export type MaiaBackend = 'webgpu' | 'wasm';
 
@@ -121,6 +125,15 @@ self.onmessage = async (e) => {
         postMessage({ type: 'ready', backend: 'webgpu' });
       } else {
         session = await createSession(bytes, 'wasm');
+        // One full-size batch now, so the heap reaches its peak while Maia is
+        // the only engine loaded. Out of memory then fails here, at startup,
+        // rather than halfway through the games.
+        const n = msg.cpuBatch;
+        await session.run({
+          tokens: new ort.Tensor('float32', new Float32Array(n * 768), [n, 64, 12]),
+          elo_self: new ort.Tensor('float32', new Float32Array(n).fill(1500), [n]),
+          elo_oppo: new ort.Tensor('float32', new Float32Array(n).fill(1500), [n]),
+        });
         postMessage({ type: 'ready', backend: 'wasm' });
       }
     } else if (msg.type === 'infer') {
@@ -176,19 +189,22 @@ export class MaiaEngine {
   private onProgress?: (p: DownloadProgress) => void;
   /** Resolves to where inference runs once the model is loaded and checked. */
   ready: Promise<MaiaBackend>;
+  private backend: MaiaBackend | null = null;
 
   constructor(opts: { onProgress?: (p: DownloadProgress) => void; allowGpu?: boolean } = {}) {
     this.onProgress = opts.onProgress;
-    this.ready = this.start(opts.allowGpu ?? true).then(async (backend) => {
-      if (backend === 'wasm') return backend;
-      if (backend === 'webgpu') {
-        if (await this.passesCanaries()) return backend;
-        console.warn('Maia: GPU results failed the sanity check; using the CPU');
-      }
-      this.stopWorker();
-      // Without the GPU the worker only ever reports 'wasm'.
-      return this.start(false) as Promise<MaiaBackend>;
-    });
+    this.ready = this.start(opts.allowGpu ?? true)
+      .then(async (backend) => {
+        if (backend === 'wasm') return backend;
+        if (backend === 'webgpu') {
+          if (await this.passesCanaries()) return backend;
+          console.warn('Maia: GPU results failed the sanity check; using the CPU');
+        }
+        this.stopWorker();
+        // Without the GPU the worker only ever reports 'wasm'.
+        return this.start(false) as Promise<MaiaBackend>;
+      })
+      .then((backend) => (this.backend = backend));
   }
 
   /** 'gpu-failed': the GPU didn't start, and this worker can't fall back (see the worker). */
@@ -223,7 +239,7 @@ export class MaiaEngine {
         rejectReady(err);
         this.rejectPending(err);
       };
-      worker.postMessage({ type: 'init', modelUrl: MAIA_MODEL_URL, cacheName: MODEL_CACHE, allowGpu });
+      worker.postMessage({ type: 'init', modelUrl: MAIA_MODEL_URL, cacheName: MODEL_CACHE, allowGpu, cpuBatch: BATCH.wasm });
     });
   }
 
@@ -265,8 +281,10 @@ export class MaiaEngine {
   private async run(queries: MaiaQuery[]): Promise<MaiaPrediction[][]> {
     const results: MaiaPrediction[][] = [];
 
-    for (let start = 0; start < queries.length; start += MAX_BATCH) {
-      const batch = queries.slice(start, start + MAX_BATCH);
+    // Before `ready` resolves this is the GPU canary check.
+    const size = BATCH[this.backend ?? 'webgpu'];
+    for (let start = 0; start < queries.length; start += size) {
+      const batch = queries.slice(start, start + size);
       const n = batch.length;
       const tokens = new Float32Array(n * MAIA_TOKENS_PER_POSITION);
       batch.forEach((q, i) => writeTokens(q.fen, tokens, i * MAIA_TOKENS_PER_POSITION));
