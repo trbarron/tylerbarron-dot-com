@@ -103,6 +103,12 @@ export function ErrorBoundary() {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        {/* The site is light-only. Forced dark modes recolour it badly — Brave
+            iOS Night Mode (Dark Reader) inverts the black chess-piece SVGs into
+            white ones. darkreader-lock opts out of Dark Reader; "only light"
+            opts out of Chromium's auto dark mode. */}
+        <meta name="darkreader-lock" />
+        <meta name="color-scheme" content="only light" />
         <title>{`${title} — Barron Wasteland`}</title>
         <Links />
         {/* Error pages have no client navigations, so let gtag auto-send the page view */}
@@ -173,6 +179,12 @@ export default function App() {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        {/* The site is light-only. Forced dark modes recolour it badly — Brave
+            iOS Night Mode (Dark Reader) inverts the black chess-piece SVGs into
+            white ones. darkreader-lock opts out of Dark Reader; "only light"
+            opts out of Chromium's auto dark mode. */}
+        <meta name="darkreader-lock" />
+        <meta name="color-scheme" content="only light" />
         <Meta />
         <Links />
 
