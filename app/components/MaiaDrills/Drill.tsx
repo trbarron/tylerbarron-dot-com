@@ -127,7 +127,7 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
 
   const next = () => {
     if (!answer) return;
-    setQueue((q) => advanceQueue(q, answer, () => initialQueue(deck.cards, progress)));
+    setQueue((q) => advanceQueue(q, () => initialQueue(deck.cards, progress)));
     setAnswer(null);
     setMisses([]);
   };

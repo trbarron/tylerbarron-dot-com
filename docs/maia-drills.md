@@ -61,7 +61,7 @@ For each position `P` in which the user is to move and played `u`:
 
 Optional filters: skip the first N moves of each game (default 0, since the opening is often where the habits are), skip bullet games, and skip already-lost positions (step 6, on by default). The last is stored as `settings.skipLost`, so adding newer games to a deck applies the same rule; decks built before it existed have no `skipLost` and keep every error.
 
-**Drill grading:** you get two tries per card. A first miss just resets the board, with no hint. A second miss, or *Show answer*, reveals the answer. A right answer on either try counts as answered right in the stats, but only a first-try one takes the card out of the round: a second-try card comes back after a few others, like a miss. The verdict is plain black text; its words say whether it was right. Playing `m` is correct. Playing anything else triggers a quick Stockfish check of your move against `m` at the same depth. If it scores within 30 cp of `m` (or better), it's accepted as "also good"; a stronger player's choice isn't the only right answer.
+**Drill grading:** you get two tries per card. A first miss just resets the board, with no hint. A second miss, or *Show answer*, reveals the answer. A right answer on either try counts as answered right. Each card comes up once per round, right or wrong; the next round starts with the cards not yet answered right. A miss isn't repeated a few cards later: the positions rarely recur in real games, so an immediate repeat tests memory of the answer rather than the judgment the tool is for. The verdict is plain black text; its words say whether it was right. Playing `m` is correct. Playing anything else triggers a quick Stockfish check of your move against `m` at the same depth. If it scores within 30 cp of `m` (or better), it's accepted as "also good"; a stronger player's choice isn't the only right answer.
 
 ## Storage
 
@@ -128,7 +128,7 @@ A run that starts but never reaches built, added, error or cancel was abandoned 
 
 ## Out of scope for v1
 
-- Spaced repetition scheduling (cards are shuffled; misses come back sooner in the session).
+- Spaced repetition. It was considered and left out on purpose: drilling a position until it's memorised doesn't fit a tool whose positions rarely come up again (see Drill grading).
 - Server-side processing.
 - Accounts. The only identity is "the browser that holds the edit token", and it's needed only to favorite or unfavorite, and to add games to a deck that isn't a favorite.
 - Converting Chess.com ratings to Lichess ratings.
