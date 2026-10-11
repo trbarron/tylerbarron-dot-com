@@ -1,3 +1,10 @@
+## [5.33.1](https://github.com/trbarron/tylerbarron-dot-com/compare/5.33.0...5.33.1) (2026-10-11)
+
+
+### Bug Fixes
+
+* opt out of forced dark modes that invert chess pieces ([6c3fae2](https://github.com/trbarron/tylerbarron-dot-com/commit/6c3fae29f402d77167a38db531221213a36b18f5))
+
 # [5.33.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.32.0...5.33.0) (2026-10-11)
 
 
