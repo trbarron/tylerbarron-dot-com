@@ -13,7 +13,7 @@ describe('legacyRedirectPath', () => {
   });
 
   it('sends a renamed project to its new URL, keeping shared deck links', () => {
-    expect(legacyRedirectPath('/maia-drills', '?deck=abc123')).toBe('/maia-marginal-mentor?deck=abc123');
+    expect(legacyRedirectPath('/maia-drills', '?deck=abc123')).toBe('/marginal-maia-mentor?deck=abc123');
   });
 
   it('preserves dynamic segments and the query string', () => {

@@ -19,7 +19,7 @@ export default [
   route("collaborative-checkmate", "routes/collaborativeCheckmate._index.tsx"),
   route("collaborative-checkmate/:gameId/:playerId", "routes/collaborativeCheckmate.$gameId.$playerId.tsx"),
   route("generative-art", "routes/generativeArt.tsx"),
-  route("maia-marginal-mentor", "routes/maiaDrills.tsx"),
+  route("marginal-maia-mentor", "routes/maiaDrills.tsx"),
   route("pizza-rating", "routes/pizzaRating.tsx"),
   route("the-riddler", "routes/theRiddler.tsx"),
 

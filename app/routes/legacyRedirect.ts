@@ -14,7 +14,7 @@ const SEGMENT_MAP: Record<string, string> = {
   chesserguesser: "chesser-guesser",
   collaborativecheckmate: "collaborative-checkmate",
   generativeart: "generative-art",
-  maiadrills: "maia-marginal-mentor",
+  maiadrills: "marginal-maia-mentor",
   pizzarating: "pizza-rating",
   ssbm: "SSBM",
   theriddler: "the-riddler",
