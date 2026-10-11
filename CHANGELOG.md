@@ -1,3 +1,13 @@
+# [5.33.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.32.0...5.33.0) (2026-10-11)
+
+
+### Features
+
+* call it Marginal Maia Mentor, at /marginal-maia-mentor ([5d2c0da](https://github.com/trbarron/tylerbarron-dot-com/commit/5d2c0da28d237f74d6a2cd06bdd4676599429910))
+* move Maia Marginal Mentor to /maia-marginal-mentor ([b0fad4e](https://github.com/trbarron/tylerbarron-dot-com/commit/b0fad4eb7d17e5c64f8ccd36928c9ba3b90a61fb))
+* rename Maia Drills to Maia Marginal Mentor ([335e4a4](https://github.com/trbarron/tylerbarron-dot-com/commit/335e4a484acb37e067e16d1cc8474f0a0d4cbe78))
+* show each Maia Drills card once per round instead of repeating misses ([9e81a36](https://github.com/trbarron/tylerbarron-dot-com/commit/9e81a365602f3aa65b131e635831938416c1174e))
+
 # [5.32.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.31.1...5.32.0) (2026-10-10)
 
 
