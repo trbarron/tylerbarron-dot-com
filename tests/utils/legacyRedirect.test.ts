@@ -12,6 +12,10 @@ describe('legacyRedirectPath', () => {
     expect(legacyRedirectPath('/CatTracker/Blog')).toBe('/cat-tracker/blog');
   });
 
+  it('sends a renamed project to its new URL, keeping shared deck links', () => {
+    expect(legacyRedirectPath('/maia-drills', '?deck=abc123')).toBe('/marginal-maia-mentor?deck=abc123');
+  });
+
   it('preserves dynamic segments and the query string', () => {
     expect(legacyRedirectPath('/collaborativeCheckmate/AbC/xYz', '?a=1')).toBe(
       '/collaborative-checkmate/AbC/xYz?a=1',

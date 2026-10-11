@@ -58,7 +58,7 @@ const CATEGORY_BY_KEY: Record<string, CategoryId> = {
   'blunder-watch': 'chess',
   'collaborative-checkmate': 'chess',
   'multiple-choice-chess': 'chess',
-  'maia-drills': 'chess',
+  'marginal-maia-mentor': 'chess',
   // puzzles & data
   'the-riddler': 'puzzles',
   'camel-up-cup': 'puzzles',
@@ -94,7 +94,7 @@ const staticLinks: ProjectLink[] = [
   { to: "/blunder-watch", title: "Blunder Watch", description: "Spot the blunders as a chess game plays out" },
   { to: "/collaborative-checkmate", title: "Collaborative Checkmate", description: "Play chess with your friends" },
   { to: "/multiple-choice-chess", title: "Multiple Choice Chess", description: "Pick the best move from four engine-generated options" },
-  { to: "/maia-drills", title: "Maia Drills", description: "Flashcards from the moves a slightly stronger you would have played" },
+  { to: "/marginal-maia-mentor", title: "Marginal Maia Mentor", description: "Flashcards from the moves a slightly stronger you would have played" },
   { to: "/pizza-rating", title: "National Pizza Ratings", description: "Using Domino's to find the best pizza" },
   { to: "/cat-tracker", title: "Cat Work Tracker", description: "Measuring the cat's time in the office" },
   { to: "https://trbarron.itch.io/spheroid-zero", title: "Spheroid Zero", description: "A Godot game, a game jam submission" },

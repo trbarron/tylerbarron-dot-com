@@ -19,7 +19,7 @@ export default [
   route("collaborative-checkmate", "routes/collaborativeCheckmate._index.tsx"),
   route("collaborative-checkmate/:gameId/:playerId", "routes/collaborativeCheckmate.$gameId.$playerId.tsx"),
   route("generative-art", "routes/generativeArt.tsx"),
-  route("maia-drills", "routes/maiaDrills.tsx"),
+  route("marginal-maia-mentor", "routes/maiaDrills.tsx"),
   route("pizza-rating", "routes/pizzaRating.tsx"),
   route("the-riddler", "routes/theRiddler.tsx"),
 
@@ -42,6 +42,8 @@ export default [
   { path: "PizzaRating", file: "routes/legacyRedirect.ts", id: "legacy-pizza-rating-pascal" },
   { path: "theRiddler", file: "routes/legacyRedirect.ts", id: "legacy-the-riddler" },
   { path: "TheRiddler", file: "routes/legacyRedirect.ts", id: "legacy-the-riddler-pascal" },
+  // Renamed projects: the old URL keeps working, query string and all.
+  { path: "maia-drills", file: "routes/legacyRedirect.ts", id: "legacy-maia-drills" },
 
   // Other routes. Path matching is case-insensitive, so "set" also serves
   // "/Set" (its canonical link tag points crawlers at /set).
