@@ -19,8 +19,8 @@ Every string a visitor can see, grouped by where it appears. Fill in **Yours** f
 | # | Current | Yours |
 |---|---|---|
 | I1 | Marginal Maia Mentor *(heading)* | |
-| I2 | Flashcards from your own games. For each move you made, Maia predicts what a player a bit stronger than you would have played. Where that move differs from yours and Stockfish says it was clearly better, the position becomes a card. *("Maia" links to maiachess.com)* | |
-| I3 | Everything runs in your browser: a one-time ~44 MB model download, then a few minutes of analysis for a couple of hundred games. Only the finished cards are saved. | |
+| I2 | Maia predicts what a slightly stronger player would have played. When that is different from your move and Stockfish says it was clearly better the position becomes a flashcard for you to practice. *("Maia" links to maiachess.com)* | |
+| I3 | Runs in your browser after a one-time ~44 MB download. | |
 
 ## Build a deck
 

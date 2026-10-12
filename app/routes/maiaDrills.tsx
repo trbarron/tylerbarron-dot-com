@@ -324,7 +324,6 @@ export default function MaiaDrills() {
           {!deckId && (
             <div className="font-neo space-y-3 p-6 text-black">
               <p>
-                Flashcards from your own games. For each move you made,{" "}
                 <a
                   href="https://www.maiachess.com/"
                   className="underline"
@@ -333,14 +332,13 @@ export default function MaiaDrills() {
                 >
                   Maia
                 </a>{" "}
-                predicts what a player a bit stronger than you would have
-                played. Where that move differs from yours and Stockfish says it
-                was clearly better, the position becomes a card.
+                predicts what a slightly stronger player would have played.
+                When that is different from your move and Stockfish says it was
+                clearly better the position becomes a flashcard for you to
+                practice.
               </p>
               <p className="text-sm text-gray-600">
-                Everything runs in your browser: a one-time ~44 MB model
-                download, then a few minutes of analysis for a couple of hundred
-                games. Only the finished cards are saved.
+                Runs in your browser after a one-time ~44 MB download.
               </p>
             </div>
           )}
