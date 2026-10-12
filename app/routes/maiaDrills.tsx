@@ -349,7 +349,7 @@ export default function MaiaDrills() {
                 </a>{" "}
                 predicts what a slightly stronger player would have played.
                 When that is different from your move and Stockfish says it was
-                clearly better the position becomes a flashcard. An
+                clearly better, the position becomes a flashcard. An
                 interesting thought experiment if nothing else — give it a try.
               </p>
               <p className="text-sm text-gray-600">
