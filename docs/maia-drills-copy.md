@@ -136,16 +136,14 @@ The progress panel while adding is the same as when building (R1–R13).
 | T2 | {correct}/{attempted} this session · {n}/{total} last answered right | |
 | T3 | {White/Black} to play · move {n}. *(card header; "…" instead of "." for Black)* | |
 | T4 | What would a {targetElo} play? (You were {userElo}, vs {opponent} {oppElo}) | |
-| T5 | Make a move on the board. | |
-| T5b | Not that one. One more try. *(after a first miss; deliberately no hint)* | |
+| T5 | Make a move | |
+| T5b | Nope. One more try *(after a first miss; deliberately no hint)* | |
 | T6 | Show answer *(button)* | |
 | T7 | Checking your move with Stockfish… | |
-| T8 | Correct — that's the stronger move. | |
-| T9 | Not the same move, but Stockfish rates it just as well. Counts. | |
-| T8b | Got it on the second try. | |
-| T9b | Not the same move, but Stockfish rates it just as well. Got it on the second try. | |
-| T10 | Not quite. *(after the second miss)* | |
-| T11 | Here's the answer. *(after Show answer)* | |
+| T8 | Nice! That's the stronger move *(first or second try)* | |
+| T9 | Not what we were going for but also strong. Nice *(first or second try)* | |
+| T10 | Nope *(after the second miss)* | |
+| T11 | Here's the answer *(after Show answer)* | |
 | T12 | A {targetElo} plays **{move}** (Maia {pct}%, eval {eval}) *(green key)* | |
 | T13 | In the game you played **{move}** (eval {eval}) *(red key)* | |
 | T14 | You tried **{move}** (eval {eval}) *(blue or yellow key; one line per move tried)*. Every {eval} is from White's side (+ good for White, − for Black), whichever side the card is for | |
