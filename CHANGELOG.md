@@ -1,3 +1,12 @@
+## [5.33.3](https://github.com/trbarron/tylerbarron-dot-com/compare/5.33.2...5.33.3) (2026-10-12)
+
+
+### Bug Fixes
+
+* **maia:** drop semicolon from deck summary ([65dd7e8](https://github.com/trbarron/tylerbarron-dot-com/commit/65dd7e81173edd7f91d8dd8a13561d5deaf953fb))
+* **maia:** shorten drill feedback copy ([f230fda](https://github.com/trbarron/tylerbarron-dot-com/commit/f230fda2cff6fb15b39aa98896838863e2665bc4))
+* **maia:** simplify deck summary copy ([9ac9848](https://github.com/trbarron/tylerbarron-dot-com/commit/9ac98487eb131ceaae7a5ba37275af746cb43521))
+
 ## [5.33.2](https://github.com/trbarron/tylerbarron-dot-com/compare/5.33.1...5.33.2) (2026-10-12)
 
 
