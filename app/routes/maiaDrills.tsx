@@ -190,7 +190,7 @@ function DeckView({
         </p>
         <p className="mt-2 text-sm text-gray-700">
           {stats.positions.toLocaleString()} moves from {stats.games} games.
-          Maia disagreed on {stats.disagreements.toLocaleString()};{" "}
+          Maia disagreed on {stats.disagreements.toLocaleString()} and{" "}
           {deck.cards.length} of those were worth ≥{deck.settings.thresholdCp}{" "}
           cp.
           {stats.lost
