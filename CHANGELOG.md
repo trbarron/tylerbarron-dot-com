@@ -1,3 +1,13 @@
+## [5.33.2](https://github.com/trbarron/tylerbarron-dot-com/compare/5.33.1...5.33.2) (2026-10-12)
+
+
+### Bug Fixes
+
+* **maia:** add missing comma in intro ([4fcb825](https://github.com/trbarron/tylerbarron-dot-com/commit/4fcb825c447d65f07cfd3c256ac16ade938a1f0b))
+* **maia:** rewrite Marginal Maia Mentor intro around the mentors post ([eafcef5](https://github.com/trbarron/tylerbarron-dot-com/commit/eafcef5d90183832914eac865aafa022a47d2372))
+* **maia:** trim intro to the Maia explanation ([ea4ea28](https://github.com/trbarron/tylerbarron-dot-com/commit/ea4ea2824e0e3c641316cf4438eb9ca07ba6cb08))
+* **maia:** tweak intro wording ([b9f01a5](https://github.com/trbarron/tylerbarron-dot-com/commit/b9f01a5dc9b9aa1c8e80c066ba0b91b5dea8bb94))
+
 ## [5.33.1](https://github.com/trbarron/tylerbarron-dot-com/compare/5.33.0...5.33.1) (2026-10-11)
 
 
