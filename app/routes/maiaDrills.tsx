@@ -324,21 +324,6 @@ export default function MaiaDrills() {
           {!deckId && (
             <div className="font-neo space-y-3 p-6 text-black">
               <p>
-                I made this after reading{" "}
-                <a
-                  href="https://autodidacts.io/how-wise-do-our-mentors-need-to-be/"
-                  className="underline"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  How wise do our mentors need to be?
-                </a>{" "}
-                The idea is the most useful advice comes from someone only a
-                little better than you, because it's advice you can actually
-                understand and apply.
-              </p>
-              <p>
-                So for each move in your games,{" "}
                 <a
                   href="https://www.maiachess.com/"
                   className="underline"
@@ -349,8 +334,8 @@ export default function MaiaDrills() {
                 </a>{" "}
                 predicts what a slightly stronger player would have played.
                 When that is different from your move and Stockfish says it was
-                clearly better, the position becomes a flashcard. An
-                interesting thought experiment if nothing else — give it a try.
+                clearly better the position becomes a flashcard for you to
+                practice.
               </p>
               <p className="text-sm text-gray-600">
                 Runs in your browser after a one-time ~44 MB download.
