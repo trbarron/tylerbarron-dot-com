@@ -19,8 +19,8 @@ Every string a visitor can see, grouped by where it appears. Fill in **Yours** f
 | # | Current | Yours |
 |---|---|---|
 | I1 | Marginal Maia Mentor *(heading)* | |
-| I2 | I made this after reading How wise do our mentors need to be? The idea: the most useful advice comes from someone only a little better than you, because it's advice you can actually understand and apply. *(title links to autodidacts.io/how-wise-do-our-mentors-need-to-be)* | |
-| I2b | So for each move in your games, Maia predicts what a slightly stronger player would have played. Where that differs from your move and Stockfish says it was clearly better, the position becomes a flashcard. An interesting thought experiment if nothing else — give it a try. *("Maia" links to maiachess.com)* | |
+| I2 | I made this after reading How wise do our mentors need to be? The idea is the most useful advice comes from someone only a little better than you, because it's advice you can actually understand and apply. *(title links to autodidacts.io/how-wise-do-our-mentors-need-to-be)* | |
+| I2b | So for each move in your games, Maia predicts what a slightly stronger player would have played. When that is different from your move and Stockfish says it was clearly better the position becomes a flashcard. An interesting thought experiment if nothing else — give it a try. *("Maia" links to maiachess.com)* | |
 | I3 | Runs in your browser after a one-time ~44 MB download. | |
 
 ## Build a deck

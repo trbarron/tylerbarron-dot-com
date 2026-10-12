@@ -333,7 +333,7 @@ export default function MaiaDrills() {
                 >
                   How wise do our mentors need to be?
                 </a>{" "}
-                The idea: the most useful advice comes from someone only a
+                The idea is the most useful advice comes from someone only a
                 little better than you, because it's advice you can actually
                 understand and apply.
               </p>
@@ -348,8 +348,8 @@ export default function MaiaDrills() {
                   Maia
                 </a>{" "}
                 predicts what a slightly stronger player would have played.
-                Where that differs from your move and Stockfish says it was
-                clearly better, the position becomes a flashcard. An
+                When that is different from your move and Stockfish says it was
+                clearly better the position becomes a flashcard. An
                 interesting thought experiment if nothing else — give it a try.
               </p>
               <p className="text-sm text-gray-600">
