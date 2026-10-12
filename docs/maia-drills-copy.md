@@ -91,8 +91,8 @@ Every string a visitor can see, grouped by where it appears. Fill in **Yours** f
 | D2 | New deck *(link, top right)* | |
 | D3 | {n} cards | |
 | D4 | {username} on {Lichess/Chess.com} · +{delta} rating · ≥{threshold} cp · depth {depth} | |
-| D5 | From {games} games and {positions} of your moves. A stronger player chose differently {disagreements} times, and {cards} of those were worth at least {threshold} cp. | |
-| D5b | {lost} more came from positions you'd already lost and were left out. *(appended to D5 when any were)* | |
+| D5 | {positions} moves from {games} games. Maia disagreed on {disagreements}; {cards} of those were worth ≥{threshold} cp. | |
+| D5b | {lost} from already-lost positions were skipped. *(appended to D5 when any were)* | |
 | D6 | Start drilling *(button)* | |
 | D7 | ☆ Favorite / ★ Favorited *(button, in the browser that built the deck)* | |
 | D8 | ★ Favorite *(badge, anywhere else)* | |
