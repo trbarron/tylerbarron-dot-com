@@ -324,7 +324,21 @@ export default function MaiaDrills() {
           {!deckId && (
             <div className="font-neo space-y-3 p-6 text-black">
               <p>
-                Flashcards from your own games. For each move you made,{" "}
+                I made this after reading{" "}
+                <a
+                  href="https://autodidacts.io/how-wise-do-our-mentors-need-to-be/"
+                  className="underline"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  How wise do our mentors need to be?
+                </a>{" "}
+                The idea: the most useful advice comes from someone only a
+                little better than you, because it's advice you can actually
+                understand and apply.
+              </p>
+              <p>
+                So for each move in your games,{" "}
                 <a
                   href="https://www.maiachess.com/"
                   className="underline"
@@ -333,14 +347,13 @@ export default function MaiaDrills() {
                 >
                   Maia
                 </a>{" "}
-                predicts what a player a bit stronger than you would have
-                played. Where that move differs from yours and Stockfish says it
-                was clearly better, the position becomes a card.
+                predicts what a slightly stronger player would have played.
+                Where that differs from your move and Stockfish says it was
+                clearly better, the position becomes a flashcard. An
+                interesting thought experiment if nothing else — give it a try.
               </p>
               <p className="text-sm text-gray-600">
-                Everything runs in your browser: a one-time ~44 MB model
-                download, then a few minutes of analysis for a couple of hundred
-                games. Only the finished cards are saved.
+                Runs in your browser after a one-time ~44 MB download.
               </p>
             </div>
           )}
