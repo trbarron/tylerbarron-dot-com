@@ -149,13 +149,9 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
   const mastered = deck.cards.filter((c) => progress[c.id]?.last === 'correct').length;
 
   const verdictText = (a: Answer): string => {
-    if (a.verdict === 'correct') return a.firstTry ? 'Correct — that’s the stronger move.' : 'Got it on the second try.';
-    if (a.verdict === 'also-good') {
-      return a.firstTry
-        ? 'Not the same move, but Stockfish rates it just as well. Counts.'
-        : 'Not the same move, but Stockfish rates it just as well. Got it on the second try.';
-    }
-    return a.verdict === 'wrong' ? 'Not quite.' : 'Here’s the answer.';
+    if (a.verdict === 'correct') return 'Nice! That’s the stronger move';
+    if (a.verdict === 'also-good') return 'Not what we were going for but also strong. Nice';
+    return a.verdict === 'wrong' ? 'Nope' : 'Here’s the answer';
   };
 
   return (
@@ -215,7 +211,7 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
           {!answer && !checking && (
             <div className="flex flex-wrap items-center justify-between gap-2">
               <p className="text-sm text-gray-700">
-                {misses.length ? 'Not that one. One more try.' : 'Make a move on the board.'}
+                {misses.length ? 'Nope. One more try' : 'Make a move'}
               </p>
               <button
                 onClick={reveal}

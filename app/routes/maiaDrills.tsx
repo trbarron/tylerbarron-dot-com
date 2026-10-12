@@ -189,12 +189,12 @@ function DeckView({
           {describeSettings(deck)}
         </p>
         <p className="mt-2 text-sm text-gray-700">
-          From {stats.games} games and {stats.positions.toLocaleString()} of
-          your moves. A stronger player chose differently{" "}
-          {stats.disagreements.toLocaleString()} times, and {deck.cards.length}{" "}
-          of those were worth at least {deck.settings.thresholdCp} cp.
+          {stats.positions.toLocaleString()} moves from {stats.games} games.
+          Maia disagreed on {stats.disagreements.toLocaleString()} and{" "}
+          {deck.cards.length} of those were worth ≥{deck.settings.thresholdCp}{" "}
+          cp.
           {stats.lost
-            ? ` ${stats.lost.toLocaleString()} more came from positions you’d already lost and were left out.`
+            ? ` ${stats.lost.toLocaleString()} from already-lost positions were skipped.`
             : ""}
         </p>
       </div>
