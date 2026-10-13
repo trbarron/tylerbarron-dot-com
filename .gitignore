@@ -41,10 +41,6 @@ Thumbs.db
 # machine-local overrides are ignored. docs/ is tracked in full.
 .claude/settings.local.json
 
-# spec-kit: templates and scripts are checked in; the generated constitution is
-# not (regenerate with /speckit.constitution when it's needed again).
-.specify/memory/
-
 # Local databases. The Places scrape behind the pizza map lives outside the
 # repo on purpose — see the pizza-map bullet in CLAUDE.md.
 *.db

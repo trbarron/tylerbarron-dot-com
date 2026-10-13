@@ -89,7 +89,7 @@ jobs:
     # Only master deploys. PRs run lint + typecheck above and stop here, so a PR
     # can never publish assets or overwrite production.
     if: github.ref == 'refs/heads/master'
-    # semantic-release pushes the version bump/CHANGELOG commit, tag, and GitHub release.
+    # semantic-release pushes the version bump commit, tag, and GitHub release.
     permissions:
       contents: write
       issues: write
@@ -115,7 +115,7 @@ jobs:
         run: npm ci
 
       # Analyze commits since the last release; if a release is warranted, bump
-      # package.json on disk, write CHANGELOG.md, commit/tag (with [skip ci] so it
+      # package.json on disk, commit/tag (with [skip ci] so it
       # doesn't re-trigger this workflow), and publish a GitHub Release. The bumped
       # package.json is then read by the build below so the footer shows the new
       # version. A no-op when no release-worthy commits exist.

@@ -55,7 +55,6 @@
     "@playwright/test": "^1.57.0",
     "@react-router/dev": "^7.17.0",
     "@react-router/node": "^7.17.0",
-    "@semantic-release/changelog": "^7.0.0",
     "@semantic-release/git": "^11.0.1",
     "@tailwindcss/typography": "^0.5.15",
     "@tailwindcss/vite": "^4.3.3",

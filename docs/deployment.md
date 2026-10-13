@@ -74,14 +74,15 @@ Other types (`chore:`, `ci:`, `docs:`, `refactor:`, `test:`) don't release.
 
 Flow: on push to `master`, the deploy job runs `npx semantic-release` **before** the
 build. It analyzes commits since the last tag, and if a release is warranted it bumps
-`package.json` on disk, writes `CHANGELOG.md`, and commits + tags `X.Y.Z` (prefix-less,
+`package.json` on disk and commits + tags `X.Y.Z` (prefix-less,
 `tagFormat: "${version}"`, matching the legacy `5.0.24` tag). The commit message carries
-`[skip ci]` to avoid re-triggering. The build then reads the bumped `package.json`.
+`[skip ci]` to avoid re-triggering. The build then reads the bumped `package.json`. There is no
+`CHANGELOG.md`: the release notes live in that commit body and the GitHub Release.
 
 Because that release commit lands on `master` mid-deploy, a local push made while a
 deploy is running gets rejected as non-fast-forward. Rebase onto `origin/master` and
 push again — `pull.rebase` is already true, and release commits only touch
-`package.json`, `package-lock.json`, and `CHANGELOG.md`, so conflicts are unlikely.
+`package.json` and `package-lock.json`, so conflicts are unlikely.
 
 The GitHub Release object is created by a separate **non-blocking** `gh release create`
 step in `deploy.yml` (not `@semantic-release/github`): it's the only release action that

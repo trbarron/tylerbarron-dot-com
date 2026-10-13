@@ -369,3 +369,11 @@ Client state is managed in the route component via `useState`/`useReducer`. Disp
 | Q2 | Should fast-forward mode also apply to the opening (moves 1–9)? | **Resolved: Yes** | Openings are typically quiet. Fast-forward applies globally per Section 4.3. |
 | Q3 | How should ties on the leaderboard be broken? | **Resolved: fewer false positives, then earlier timestamp** | Consistent with Chesser Guesser tiebreaking. See Section 6. |
 | Q4 | What is the penalty cap — can repeated false positives zero out a score? | **Open** | AC-24 prevents sub-zero. UX question: should the UI warn when score hits 0 to discourage further guessing? |
+
+## Backlog
+
+- Previous day leaderboard archive selector (AC-33)
+- Blunder replay thumbnails using static board screenshots
+- Colorblind-accessible piece set (AC-39)
+- Rate limiting on submit and leaderboard endpoints
+- Timezone config for daily reset (currently UTC midnight)
