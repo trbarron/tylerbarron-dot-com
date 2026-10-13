@@ -310,14 +310,11 @@ export default function MaiaDrills() {
             {/* Back to building a deck from anywhere: a deck, a drill, or the page itself. */}
             <Link
               to="/marginal-maia-mentor"
-              className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 hover:opacity-80"
+              className="block hover:opacity-80"
             >
               <h1 className="font-neo text-3xl leading-none font-extrabold tracking-tight uppercase md:text-4xl">
                 Marginal Maia Mentor
               </h1>
-              <span className="font-neo text-xs tracking-wide text-gray-400 uppercase">
-                Work in progress
-              </span>
             </Link>
           </div>
           {/* Only on the build page: on a deck or a drill it would push the board below the fold on a phone. */}

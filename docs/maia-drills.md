@@ -128,6 +128,8 @@ GA4 events, all sent from `app/utils/maiaDrills/tracking.ts`. No usernames are s
 
 A run that starts but never reaches built, added, error or cancel was abandoned or crashed: a phone that kills the tab sends nothing else. Event counts work as is; summing `cards` or splitting by a param needs that param registered as a custom metric or dimension in the GA property, with event scope. Each param name means one thing in every event, so a metric summed across events never mixes, say, cards found with deck sizes.
 
+GA is a sample, not a count. Ad blockers and privacy browsers drop every event: in the first week, two of the four outside players who built decks sent nothing at all. Count decks from Redis (`maiaDrills:*`); use GA for timing, device and drop-off.
+
 ## Out of scope for v1
 
 - Spaced repetition. It was considered and left out on purpose: drilling a position until it's memorised doesn't fit a tool whose positions rarely come up again (see Drill grading).
