@@ -4,7 +4,6 @@
 public/images/pizza/*.json
 
 # Generated
-CHANGELOG.md
 package-lock.json
 app/posts/compiled/
 build/

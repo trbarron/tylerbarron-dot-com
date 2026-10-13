@@ -1,8 +1,18 @@
-# Multiple Choice Chess — Design Document
+# Multiple Choice Chess
 
-## Overview
+## The idea
 
-Multiple Choice Chess is a browser-based 1v1 chess game where each player selects from four engine-generated move options on their turn rather than choosing moves freely. The chess engine runs entirely client-side via WebAssembly. Game state is stored in the existing Redis instance and accessed through React Router resource routes — no separate game server is needed. The design is entirely trusting: the server relays and stores what clients submit without validating move choices against engine output.
+Multiple Choice Chess is a two-player chess variant where players never type or drag a move. Instead, on each turn a chess engine secretly analyzes the position and offers four candidate moves. The four options are the engine's 1st, 2nd, 4th, and 6th best moves, presented in shuffled order with no labels. You pick one, it plays on the board, and only then do you find out which rank you chose.
+
+The result is a game that feels like chess trivia as much as chess. You are not just trying to win — you are also trying to identify which move the engine considers best. Stronger players will recognize the best move more often; weaker players will still make reasonable moves because all four options are legal and engine-approved. The format naturally compresses the skill gap without removing it.
+
+Scoring rewards better picks (4 points for rank 1, down to 1 point for rank 6), so you can track your decision quality across a game independently of the match result. You could lose the game while outscoring your opponent in move quality, or win while playing sloppily.
+
+Because the engine runs locally in the browser, no server-side computation is needed beyond coordinating the two players. The game works on any modern device including smartphones.
+
+## How it runs
+
+The chess engine runs entirely client-side via WebAssembly. Game state is stored in the existing Redis instance and accessed through React Router resource routes — no separate game server is needed. The design is entirely trusting: the server relays and stores what clients submit without validating move choices against engine output.
 
 ---
 
@@ -259,18 +269,3 @@ Because the transport is polling rather than WebSockets, disconnection is implic
 - No drag-and-drop required — all interaction is button taps
 - First-load notice for the ~15 MB WASM engine download
 
----
-
-## Phased Implementation
-
-### Phase 1 — Resource Routes + Redis
-API routes for create, join, state, move, resign, and available. Redis schema. Matchmaking logic.
-
-### Phase 2 — Lobby
-`_index` route: create game, join by code, quick match, available games list.
-
-### Phase 3 — Game Board
-Stockfish WASM integration, 4-choice UI, polling loop, move submission, post-pick feedback.
-
-### Phase 4 — Polish
-Shareable link flow, game-over modal with score summary, resignation button, abandoned game detection.

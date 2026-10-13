@@ -568,5 +568,3 @@ These standards are enforced through:
 Refer to:
 - This document for approved patterns
 - ChesserGuesser suite for reference implementations
-- Constitution (`constitution.md`) for overarching principles
-- Project README (`.specify/memory/constitution.md`) for development workflow
