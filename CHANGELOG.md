@@ -1,3 +1,10 @@
+# [5.34.0](https://github.com/trbarron/tylerbarron-dot-com/compare/5.33.3...5.34.0) (2026-10-13)
+
+
+### Features
+
+* drop the work-in-progress label from Marginal Maia Mentor ([a25504c](https://github.com/trbarron/tylerbarron-dot-com/commit/a25504cbb518cb894ae0d490f96fd546ed2ba7ab))
+
 ## [5.33.3](https://github.com/trbarron/tylerbarron-dot-com/compare/5.33.2...5.33.3) (2026-10-12)
 
 
