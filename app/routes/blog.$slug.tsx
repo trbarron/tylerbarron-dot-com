@@ -168,7 +168,7 @@ export default function BlogPost() {
           </div>
           {writtenWithoutAi && (
             <p className="mt-12 pt-4 border-t-2 border-black font-neo text-base font-medium italic text-black">
-              This was not written with AI, nor was it as much as grammar checked with AI. Enjoy.
+              this was not written with AI, nor was it as much as grammar checked with AI. Enjoy
             </p>
           )}
         </article>
