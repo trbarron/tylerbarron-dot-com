@@ -67,7 +67,7 @@ touched imports.
 
 ## Versioning (automated semver in the footer)
 
-Releases are **fully automated by semantic-release** (`.releaserc.json`), driven by
+Releases are **fully automated by semantic-release** (`release` in `package.json`), driven by
 [Conventional Commits](https://www.conventionalcommits.org): `fix:` and `perf:` → patch,
 `feat:` → minor, `feat!:`/`BREAKING CHANGE:` → major (commit-analyzer's default rules).
 Other types (`chore:`, `ci:`, `docs:`, `refactor:`, `test:`) don't release.
@@ -107,7 +107,7 @@ GITHUB_TOKEN=$(gh auth token) npx semantic-release --dry-run --no-ci
 ```
 
 Commit messages are enforced locally: a **Husky** `commit-msg` hook (`.husky/commit-msg`)
-runs **commitlint** (`.commitlintrc.json`, extends `@commitlint/config-conventional`) and
+runs **commitlint** (`commitlint` in `package.json`, extends `@commitlint/config-conventional`) and
 rejects non-conventional messages. The hook installs via the `prepare` script on
 `npm install`; CI sets `HUSKY=0` so it never runs against semantic-release's own release
 commit.
