@@ -116,6 +116,8 @@ export default function BlogPost() {
 
   // Comments are on by default; opt out per post with `comments: false` frontmatter.
   const commentsEnabled = frontmatter.comments !== false;
+  // `ai: no` frontmatter adds a note under the post. YAML reads a bare `no` as the string "no".
+  const writtenWithoutAi = frontmatter.ai === 'no' || frontmatter.ai === false;
 
   return (
     <div className="min-h-screen font-neo relative z-10">
@@ -164,6 +166,11 @@ export default function BlogPost() {
                           ">
             <Component />
           </div>
+          {writtenWithoutAi && (
+            <p className="mt-12 pt-4 border-t-2 border-black font-neo text-base font-medium italic text-black">
+              This was not written with AI, nor was it as much as grammar checked with AI. Enjoy.
+            </p>
+          )}
         </article>
 
         {(newer || older) && (
