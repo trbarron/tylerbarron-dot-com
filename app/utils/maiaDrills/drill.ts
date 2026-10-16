@@ -34,6 +34,14 @@ export function formatEval(moverCp: number, mover: 'w' | 'b'): string {
   return `eval ${cp > 0 ? '+' : ''}${(cp / 100).toFixed(1)}`;
 }
 
+/**
+ * The card's position on Lichess's analysis board, seen from the mover's side.
+ * Lichess takes any FEN, so this works for Chess.com cards too.
+ */
+export function analysisUrl(card: Pick<DrillCard, 'fen' | 'color'>): string {
+  return `https://lichess.org/analysis/standard/${card.fen.replace(/ /g, '_')}?color=${card.color === 'w' ? 'white' : 'black'}`;
+}
+
 /** A move within this many cp of the stronger player's choice counts too. */
 export const ALSO_GOOD_MARGIN = 30;
 /** Tries per card. A miss before the last one just resets the board, with no hint. */

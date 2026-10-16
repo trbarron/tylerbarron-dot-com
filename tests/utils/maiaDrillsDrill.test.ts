@@ -10,6 +10,7 @@ import {
   MAX_TRIES,
   advanceQueue,
   afterTry,
+  analysisUrl,
   extraGuesses,
   formatEval,
   gradeByScores,
@@ -156,6 +157,14 @@ describe('answer display', () => {
     expect(extraGuesses(card, answer)).toEqual([other]);
     const twice: Answer = { verdict: 'wrong', guesses: [other, { ...other }], firstTry: false };
     expect(extraGuesses(card, twice)).toHaveLength(1);
+  });
+
+  it('links the position to Lichess analysis from the mover’s side', () => {
+    const fen = 'r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3';
+    expect(analysisUrl({ fen, color: 'w' })).toBe(
+      'https://lichess.org/analysis/standard/r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R_w_KQkq_-_2_3?color=white'
+    );
+    expect(analysisUrl({ fen, color: 'b' })).toMatch(/\?color=black$/);
   });
 
   it('marks only the accepted final try as also good', () => {

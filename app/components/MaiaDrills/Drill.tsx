@@ -5,6 +5,7 @@ import type { Key } from 'chessground/types';
 import type { StockfishPool } from '~/utils/maiaDrills/stockfishPool';
 import {
   advanceQueue,
+  analysisUrl,
   afterTry,
   extraGuesses,
   formatEval,
@@ -251,18 +252,26 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
                 ))}
               </ul>
               <div className="flex flex-wrap items-center justify-between gap-2">
-                {card.gameUrl ? (
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
                   <a
-                    href={card.gameUrl}
+                    href={analysisUrl(card)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sm underline hover:no-underline"
+                    className="underline hover:no-underline"
                   >
-                    Open the game ↗
+                    Analyze on Lichess ↗
                   </a>
-                ) : (
-                  <span />
-                )}
+                  {card.gameUrl && (
+                    <a
+                      href={card.gameUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline hover:no-underline"
+                    >
+                      Open the game ↗
+                    </a>
+                  )}
+                </div>
                 <button
                   onClick={next}
                   className="border-4 border-black bg-black px-5 py-2 font-extrabold uppercase tracking-wide text-white hover:bg-white hover:text-black"
