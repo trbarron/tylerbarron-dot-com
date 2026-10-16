@@ -226,4 +226,4 @@ Supported features:
 - `react-router.config.ts` - React Router configuration
 - `tsconfig.json` - TypeScript compiler options
 - `app.arc` - AWS Architect infrastructure definition
-- `prettier.config.mjs` - Prettier code formatting rules
+- `package.json` - also holds the Prettier, commitlint and semantic-release (`release`) config
