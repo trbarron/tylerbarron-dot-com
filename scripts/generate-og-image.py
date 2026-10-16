@@ -3,6 +3,8 @@
 
 - public/images/og-default.png — the site-wide default card
 - public/images/og/<slug>.png  — one card per posts/*.mdx (title + date)
+- public/images/og/projects/<slug>.png — one card per app/utils/projectCards.json
+  entry, drawn with the entry's theme (chess projects get a board)
 
 All 1200x630 brutalist black/white cards matching the site's nav brand.
 Run and commit the PNGs; re-run when branding changes or posts are added:
@@ -11,6 +13,7 @@ Run and commit the PNGs; re-run when branding changes or posts are added:
 """
 
 import json
+import math
 import re
 from datetime import date as date_cls
 from pathlib import Path
@@ -138,6 +141,147 @@ def render_post_card(title: str, date_label: str, out: Path) -> None:
     print(f"Wrote {out} ({out.stat().st_size // 1024} KB)")
 
 
+# --- Project cards -----------------------------------------------------------
+# One card per entry in app/utils/projectCards.json, which buildMeta (seo.ts)
+# also reads to point each project page at its card. `theme` picks the
+# template; only "chess" exists so far.
+
+ROOT = Path(__file__).resolve().parent.parent
+# cburnett pieces (Colin M.L. Burnett, GPLv2+), the same set the site's boards use,
+# rasterized from chessground.cburnett.css.
+PIECES_DIR = ROOT / "scripts" / "og-assets" / "pieces"
+
+# The site's brown board (chessground.brown.css): dark squares are the light
+# colour under 20% black.
+LIGHT_SQ = (240, 217, 181)
+DARK_SQ = (192, 174, 145)
+# chessground's arrow brushes, so the cards match the boards on the site.
+BRUSHES = {"green": (21, 120, 27), "red": (136, 32, 32), "blue": (0, 48, 136), "yellow": (230, 143, 0)}
+ARROW_ALPHA = 205
+
+BOARD = 456  # 8 x 57px squares
+BOARD_FRAME = 6
+
+
+def parse_fen_board(fen: str) -> dict:
+    """Map squares like 'e4' to piece codes like 'wP'."""
+    board = {}
+    for rank_idx, row in enumerate(fen.split()[0].split("/")):
+        file_idx = 0
+        for ch in row:
+            if ch.isdigit():
+                file_idx += int(ch)
+                continue
+            color = "w" if ch.isupper() else "b"
+            board[f"{'abcdefgh'[file_idx]}{8 - rank_idx}"] = color + ch.upper()
+            file_idx += 1
+    return board
+
+
+def square_origin(sq: str, x0: int, y0: int, size: int, flipped: bool):
+    f, r = "abcdefgh".index(sq[0]), int(sq[1]) - 1
+    col, row = (7 - f, r) if flipped else (f, 7 - r)
+    return x0 + col * size, y0 + row * size
+
+
+def draw_arrow(overlay, start, end, color, sq):
+    """A chessground-style arrow from square centre to square centre."""
+    draw = ImageDraw.Draw(overlay)
+    (x1, y1), (x2, y2) = start, end
+    angle = math.atan2(y2 - y1, x2 - x1)
+    head_len, head_w, shaft = sq * 0.42, sq * 0.27, sq * 0.17
+    # Stop the shaft where the head begins so the alpha doesn't double up.
+    bx, by = x2 - head_len * math.cos(angle), y2 - head_len * math.sin(angle)
+    nx, ny = -math.sin(angle), math.cos(angle)
+    draw.polygon([
+        (x1 + nx * shaft / 2, y1 + ny * shaft / 2), (bx + nx * shaft / 2, by + ny * shaft / 2),
+        (bx - nx * shaft / 2, by - ny * shaft / 2), (x1 - nx * shaft / 2, y1 - ny * shaft / 2),
+    ], fill=color + (ARROW_ALPHA,))
+    draw.polygon([
+        (x2, y2), (bx + nx * head_w, by + ny * head_w), (bx - nx * head_w, by - ny * head_w),
+    ], fill=color + (ARROW_ALPHA,))
+
+
+def draw_board(img, card, x0, y0):
+    flipped = card.get("orientation", "white") == "black"
+    sq = BOARD // 8
+    draw = ImageDraw.Draw(img)
+    draw.rectangle([x0 - BOARD_FRAME, y0 - BOARD_FRAME, x0 + BOARD + BOARD_FRAME - 1,
+                    y0 + BOARD + BOARD_FRAME - 1], fill=WHITE)
+    for f in "abcdefgh":
+        for r in range(1, 9):
+            x, y = square_origin(f"{f}{r}", x0, y0, sq, flipped)
+            dark = ("abcdefgh".index(f) + r) % 2 == 1
+            draw.rectangle([x, y, x + sq - 1, y + sq - 1], fill=DARK_SQ if dark else LIGHT_SQ)
+    for square, code in parse_fen_board(card["fen"]).items():
+        piece = Image.open(PIECES_DIR / f"{code}.png").resize((sq, sq), Image.LANCZOS)
+        img.paste(piece, square_origin(square, x0, y0, sq, flipped), piece)
+    overlay = Image.new("RGBA", img.size, (0, 0, 0, 0))
+    centre = lambda s: tuple(v + sq / 2 for v in square_origin(s, x0, y0, sq, flipped))
+    for frm, to, brush in card.get("arrows", []):
+        draw_arrow(overlay, centre(frm), centre(to), BRUSHES[brush], sq)
+    img.alpha_composite(overlay)
+
+
+def render_chess_card(card: dict, out: Path) -> None:
+    img, _ = new_card()
+    img = img.convert("RGBA")
+    draw = ImageDraw.Draw(img)
+    board_x = WIDTH - MARGIN - BOARD
+    board_y = (HEIGHT - BOARD) // 2
+    draw_board(img, card, board_x, board_y)
+
+    text_w = board_x - MARGIN - 48
+    draw.text((MARGIN, MARGIN - 8), "BARRON WASTELAND · CHESS", font=load_font(26), fill=WHITE)
+
+    # Title as large as fits in three lines, tagline beneath, both left-aligned
+    # and centred as a block in the space between the brand mark and the URL.
+    text = card["title"].upper()
+    size = 84
+    while size > 40:
+        title_font = load_font(size)
+        title_lines = wrap_to_width(draw, text, title_font, text_w)
+        # A word longer than the column can't wrap, so it has to fit by size.
+        widest = max(draw.textlength(line, font=title_font) for line in title_lines)
+        if len(title_lines) <= 3 and widest <= text_w:
+            break
+        size -= 4
+    tag_font = load_font(30)
+    tag_lines = wrap_to_width(draw, card["tagline"], tag_font, text_w)
+    t_line = sum(title_font.getmetrics())
+    g_line = sum(tag_font.getmetrics()) + 6
+    block_h = len(title_lines) * t_line + 28 + len(tag_lines) * g_line
+    y = (HEIGHT - block_h) // 2
+    for line in title_lines:
+        draw.text((MARGIN, y), line, font=title_font, fill=WHITE)
+        y += t_line
+    y += 28
+    for line in tag_lines:
+        draw.text((MARGIN, y), line, font=tag_font, fill=WHITE)
+        y += g_line
+
+    url = f"{URL}{card['path']}"
+    url_font = fit_font(draw, url, text_w, start=26)
+    draw.text((MARGIN, HEIGHT - MARGIN - 26), url, font=url_font, fill=WHITE)
+
+    out.parent.mkdir(parents=True, exist_ok=True)
+    img.convert("RGB").save(out, "PNG", optimize=True)
+    print(f"Wrote {out} ({out.stat().st_size // 1024} KB)")
+
+
+THEMES = {"chess": render_chess_card}
+
+
+def render_project_cards() -> None:
+    cards = json.loads((ROOT / "app" / "utils" / "projectCards.json").read_text())
+    out_dir = ROOT / "public" / "images" / "og" / "projects"
+    for slug, card in cards.items():
+        THEMES[card["theme"]](card, out_dir / f"{slug}.png")
+    # Same idea as the post manifest: CI compares it to projectCards.json.
+    (out_dir / "manifest.json").write_text(json.dumps(cards, indent=2, sort_keys=True) + "\n")
+    print(f"Wrote {out_dir / 'manifest.json'}")
+
+
 def main() -> None:
     img, draw = new_card()
 
@@ -184,6 +328,8 @@ def main() -> None:
     manifest_path = og_dir / "manifest.json"
     manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
     print(f"Wrote {manifest_path}")
+
+    render_project_cards()
 
 
 if __name__ == "__main__":
