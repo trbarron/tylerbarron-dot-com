@@ -194,7 +194,8 @@ Configuration files:
 Blog posts are written in MDX format and stored in the `posts/` directory.
 
 1. Create a new `.mdx` file in `posts/`
-2. Add frontmatter with metadata (title, date, description, etc.)
+2. Add frontmatter with metadata (title, date, description, etc.). Optional: `comments: false`
+   hides comments, and `ai: no` adds a "not written with AI" note under the post.
 3. Write content using Markdown with React components
 4. Generate the OG share card and commit it:
    ```bash
