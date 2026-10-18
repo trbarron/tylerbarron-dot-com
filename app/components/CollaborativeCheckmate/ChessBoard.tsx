@@ -1,11 +1,16 @@
 import { Suspense, lazy } from 'react';
+import type { DrawShape } from 'chessground/draw';
 import type { ChessboardProps } from '~/components/Chessboard';
-import { GamePhase, type GamePhaseType } from '~/types/generated';
+import { GamePhase, type GamePhaseType } from '~/utils/collaborativeCheckmate/types';
 
 const Chessboard = lazy(() => import('~/components/Chessboard'));
 
 interface ChessBoardProps {
   fen: string;
+  /** Change to put the pieces back on `fen`, e.g. after a move is sent. */
+  resetKey: string;
+  /** Arrows: the last move, and your pending choice. */
+  autoShapes: DrawShape[];
   orientation: 'white' | 'black';
   gamePhase: GamePhaseType;
   playerTeam: number | null;
@@ -16,6 +21,8 @@ interface ChessBoardProps {
 
 export default function ChessBoard({
   fen,
+  resetKey,
+  autoShapes,
   orientation,
   gamePhase,
   playerTeam,
@@ -47,6 +54,8 @@ export default function ChessBoard({
           >
             <Chessboard
               initialFen={fen}
+              resetKey={resetKey}
+              autoShapes={autoShapes}
               orientation={orientation}
               viewOnly={
                 !(

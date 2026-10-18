@@ -1,3 +1,4 @@
+import { openGames } from '~/utils/multiplayer/openGames.server';
 import { getRedisClient } from '~/utils/redis.server';
 
 const PREFIX = 'multipleChoiceChess';
@@ -38,7 +39,7 @@ function gameKey(gameId: string): string {
   return `${PREFIX}:game:${gameId}`;
 }
 
-const AVAILABLE_KEY = `${PREFIX}:available`;
+const available = openGames(`${PREFIX}:available`, TTL * 1000);
 
 export function generateGameId(): string {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
@@ -146,7 +147,7 @@ export async function createGame(gameId: string, playerId: string): Promise<Game
     black_last_seen: '0',
   });
   await redis.expire(gameKey(gameId), TTL);
-  await redis.zadd(AVAILABLE_KEY, now, gameId);
+  await available.add(gameId, now);
 
   return state;
 }
@@ -173,7 +174,7 @@ export async function joinGame(gameId: string, playerId: string): Promise<GameSt
     white_last_seen: String(now), // creator just received the join, so refresh
   });
   await redis.expire(gameKey(gameId), TTL);
-  await redis.zrem(AVAILABLE_KEY, gameId);
+  await available.remove(gameId);
 
   return {
     ...game,
@@ -280,28 +281,9 @@ export interface AvailableGame {
 }
 
 export async function getAvailableGames(): Promise<AvailableGame[]> {
-  const redis = getRedisClient();
-
-  // Prune stale entries (games that joined or expired but weren't removed from set)
-  const cutoff = Date.now() - TTL * 1000;
-  await redis.zremrangebyscore(AVAILABLE_KEY, '-inf', cutoff);
-
-  const results = await redis.zrangebyscore(AVAILABLE_KEY, '-inf', '+inf', 'WITHSCORES');
-
-  const games: AvailableGame[] = [];
-  for (let i = 0; i < results.length; i += 2) {
-    const gameId = results[i];
-    const score = Number(results[i + 1]);
-
-    // Verify it still exists and is waiting
+  // Most recent first; games that were joined or expired drop off the list.
+  return available.list(async (gameId, openedAt) => {
     const game = await getGame(gameId);
-    if (game && game.status === 'waiting') {
-      games.push({ game_id: gameId, created_at: score });
-    } else {
-      // Clean up stale entry
-      await redis.zrem(AVAILABLE_KEY, gameId);
-    }
-  }
-
-  return games.reverse(); // Most recent first
+    return game && game.status === 'waiting' ? { game_id: gameId, created_at: openedAt } : null;
+  });
 }

@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import Footer from '~/components/Footer';
 import { Navbar } from '~/components/Navbar';
+import { usePolling } from '~/hooks/usePolling';
+import { GAME_ID_RE, PLAYER_ID_RE } from '~/utils/collaborativeCheckmate/types';
 import { buildMeta } from '~/utils/seo';
 
 export function meta() {
@@ -27,38 +29,26 @@ export default function CollaborativeCheckmate() {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchGames = async () => {
-      try {
-        setIsLoading(true);
-        const response = await fetch('https://collaborative-checkmate-server.fly.dev/api/games/available');
-
-        if (!response.ok) {
-          throw new Error(`Server responded with ${response.status}`);
-        }
-
-        const data = await response.json();
-        setAvailableGames(data.games || []);
-        setError(null);
-      } catch (err) {
-        console.error('Failed to fetch available games:', err);
-        setError('Could not load available games. Please try again later.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    // Fetch immediately and then every 15 seconds
-    fetchGames();
-    const intervalId = setInterval(fetchGames, 15000);
-
-    return () => clearInterval(intervalId);
-  }, []);
+  // Paused while the tab is hidden.
+  usePolling(async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch('/api/collaborativeCheckmate/available');
+      if (!response.ok) throw new Error(`Server responded with ${response.status}`);
+      const data = await response.json();
+      setAvailableGames(data.games || []);
+      setError(null);
+    } catch (err) {
+      console.error('Failed to fetch available games:', err);
+      setError('Could not load available games. Please try again later.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, 5000);
 
   // Format the time difference
-  const formatTimeSince = (timestamp: number) => {
-    const now = Date.now() / 1000;
-    const diffSeconds = Math.floor(now - timestamp);
+  const formatTimeSince = (timestampMs: number) => {
+    const diffSeconds = Math.max(0, Math.floor((Date.now() - timestampMs) / 1000));
 
     if (diffSeconds < 60) {
       return `${diffSeconds} seconds ago`;
@@ -72,25 +62,22 @@ export default function CollaborativeCheckmate() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!gameCode || !playerId) {
-      alert('Please fill in both game code and username');
+    const code = gameCode.trim().toLowerCase();
+    if (!GAME_ID_RE.test(code) || !PLAYER_ID_RE.test(playerId.trim())) {
+      setError('Use a game code and username of letters, numbers, - or _ (usernames up to 24 characters).');
       return;
     }
 
-    navigate(`/collaborativeCheckmate/${gameCode.toLowerCase()}/${playerId}`, {
-      state: { playerId, isPrivate },
-    });
+    navigate(`/collaborative-checkmate/${code}/${playerId.trim()}`, { state: { isPrivate } });
   };
 
   const joinGame = (gameId: string) => {
-    if (!playerId) {
-      alert('Please enter a username first');
+    if (!PLAYER_ID_RE.test(playerId.trim())) {
+      setError('Enter a username first: letters, numbers, - or _, up to 24 characters.');
       return;
     }
 
-    navigate(`/collaborativeCheckmate/${gameId}/${playerId}`, {
-      state: { playerId },
-    });
+    navigate(`/collaborative-checkmate/${gameId}/${playerId.trim()}`);
   };
 
   return (

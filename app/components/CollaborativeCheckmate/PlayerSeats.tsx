@@ -1,4 +1,4 @@
-import type { SeatKey } from '~/types/generated';
+import type { SeatKey } from '~/utils/collaborativeCheckmate/types';
 
 type PlayersState = {
   [K in SeatKey]: {

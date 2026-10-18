@@ -1,4 +1,5 @@
-type GameLogEntry = {
+export type GameLogEntry = {
+  at?: number;
   type: 'system' | 'move' | 'engine' | 'phase' | 'error' | 'game_over' | 'reconnecting';
   message: string;
   player?: string;

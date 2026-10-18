@@ -1,5 +1,5 @@
 import Timer from '~/components/Timer';
-import { GamePhase, type GamePhaseType } from '~/types/generated';
+import { GamePhase, type GamePhaseType } from '~/utils/collaborativeCheckmate/types';
 
 interface GameControlsProps {
   gamePhase: GamePhaseType;

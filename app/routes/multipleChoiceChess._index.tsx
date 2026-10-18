@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import { Navbar } from '~/components/Navbar';
 import Footer from '~/components/Footer';
+import { usePolling } from '~/hooks/usePolling';
 import { buildMeta } from '~/utils/seo';
 
 export function meta() {
@@ -24,50 +25,16 @@ export default function MultipleChoiceChessLobby() {
   const [isJoining, setIsJoining] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
-    const fetchGames = async () => {
-      try {
-        setIsLoading(true);
-        const res = await fetch('/api/multipleChoiceChess/available');
-        if (!cancelled && res.ok) {
-          const data = await res.json();
-          setAvailableGames(data.games ?? []);
-        }
-      } catch {
-        // silently ignore polling errors
-      } finally {
-        if (!cancelled) setIsLoading(false);
-      }
-    };
-
-    let id: ReturnType<typeof setInterval> | null = null;
-    const start = () => {
-      if (id !== null) return;
-      fetchGames();
-      id = setInterval(fetchGames, 5000);
-    };
-    const stop = () => {
-      if (id !== null) {
-        clearInterval(id);
-        id = null;
-      }
-    };
-
-    if (!document.hidden) start();
-
-    const onVisibility = () => {
-      if (document.hidden) stop();
-      else start();
-    };
-    document.addEventListener('visibilitychange', onVisibility);
-
-    return () => {
-      cancelled = true;
-      document.removeEventListener('visibilitychange', onVisibility);
-      stop();
-    };
-  }, []);
+  // Paused while the tab is hidden.
+  usePolling(async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch('/api/multipleChoiceChess/available');
+      if (res.ok) setAvailableGames((await res.json()).games ?? []);
+    } finally {
+      setIsLoading(false);
+    }
+  }, 5000);
 
   const createGame = async () => {
     setIsJoining(true);
