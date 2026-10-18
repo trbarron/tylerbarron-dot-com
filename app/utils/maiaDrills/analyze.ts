@@ -10,7 +10,15 @@
 import { Chess } from 'chess.js';
 import type { MaiaEngine, MaiaQuery } from './maiaEngine';
 import type { StockfishPool } from './stockfishPool';
-import { DEFAULT_SETTINGS, LOST_CP, MAIA_ELO_RANGE, type AnalysisSettings, type DeckStats, type DrillCard, type SourceGame } from './types';
+import {
+  DEFAULT_SETTINGS,
+  LOST_CP,
+  MAIA_ELO_RANGE,
+  type AnalysisSettings,
+  type DeckStats,
+  type DrillCard,
+  type SourceGame,
+} from './types';
 import { winDrop } from './winChance';
 
 /** Stockfish jobs allowed in flight before Maia waits for the pool to catch up. */

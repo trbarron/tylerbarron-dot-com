@@ -121,9 +121,7 @@ export interface DeckSummary {
   createdAt: string;
 }
 
-// Win-chance defaults are Lichess's "Learn from your mistakes" values: it
-// replays moves that gave up more than 10 points (its "Mistake" label) and
-// passes a retry within 4 points of the best eval.
+// Win-chance defaults match Lichess's "Learn from your mistakes".
 export const DEFAULT_SETTINGS: AnalysisSettings = {
   delta: 200,
   thresholdWin: 10,

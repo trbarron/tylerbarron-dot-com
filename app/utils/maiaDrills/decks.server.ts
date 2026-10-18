@@ -74,10 +74,7 @@ const isInt = (v: unknown, min: number, max: number): v is number =>
 
 function validateSettings(raw: unknown): AnalysisSettings | null {
   if (typeof raw !== 'object' || raw === null) return null;
-  const { delta, thresholdWin, thresholdCp, alsoGoodWin, depth, skipMoves, skipLost } = raw as Record<
-    string,
-    unknown
-  >;
+  const { delta, thresholdWin, thresholdCp, alsoGoodWin, depth, skipMoves, skipLost } = raw as Record<string, unknown>;
   if (!isInt(delta, LIMITS.delta.min, LIMITS.delta.max)) return null;
   // A deck has one error threshold: win chance, or cp on decks built before it.
   if ((thresholdWin === undefined) === (thresholdCp === undefined)) return null;

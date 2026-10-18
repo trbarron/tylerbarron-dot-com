@@ -9,7 +9,12 @@ import Drill from "~/components/MaiaDrills/Drill";
 import { buildMeta } from "~/utils/seo";
 import { loadEditToken, saveEditToken } from "~/utils/maiaDrills/localStorage";
 import { trackDrillStart, trackFavorite } from "~/utils/maiaDrills/tracking";
-import { DEFAULT_SETTINGS, type Deck, type DeckSummary, type GameSource } from "~/utils/maiaDrills/types";
+import {
+  DEFAULT_SETTINGS,
+  type Deck,
+  type DeckSummary,
+  type GameSource,
+} from "~/utils/maiaDrills/types";
 
 import chessgroundBase from "../styles/chessground.base.css?url";
 import chessgroundBrown from "../styles/chessground.brown.css?url";
@@ -37,7 +42,8 @@ const SOURCE_NAMES: Record<GameSource, string> = {
 
 /** The deck's error threshold: win chance, or cp on decks built before win chance. */
 function describeThreshold(settings: Deck["settings"]): string {
-  return settings.thresholdWin === undefined && settings.thresholdCp !== undefined
+  return settings.thresholdWin === undefined &&
+    settings.thresholdCp !== undefined
     ? `≥${settings.thresholdCp} cp`
     : `≥${settings.thresholdWin ?? DEFAULT_SETTINGS.thresholdWin}% win chance`;
 }

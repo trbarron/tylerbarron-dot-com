@@ -286,8 +286,7 @@ export default function BuildForm({ onBuilt }: BuildFormProps) {
           </div>
           <p className="mt-3 font-neo text-sm text-gray-700">
             In a drill, a different move counts as also good when it’s within{' '}
-            <strong>{fields.alsoGoodWin || 0}%</strong> win chance of the stronger move. Both percentages default to
-            what Lichess uses for “Learn from your mistakes”.
+            <strong>{fields.alsoGoodWin || 0}%</strong> win chance of the stronger move.
           </p>
         </details>
       </fieldset>

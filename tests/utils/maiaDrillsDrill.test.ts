@@ -50,7 +50,10 @@ describe('grading', () => {
 
   it('accepts a move within 4 points of win chance, or better, as also good', () => {
     // From level, 4 points is ~44 cp.
-    expect(gradeByScores(other, { target: 50, guess: 10 })).toEqual({ verdict: 'also-good', guess: { ...other, eval: 10 } });
+    expect(gradeByScores(other, { target: 50, guess: 10 })).toEqual({
+      verdict: 'also-good',
+      guess: { ...other, eval: 10 },
+    });
     expect(gradeByScores(other, { target: 50, guess: 90 }).verdict).toBe('also-good');
     expect(gradeByScores(other, { target: 50, guess: -10 }).verdict).toBe('wrong');
   });
@@ -163,7 +166,11 @@ describe('answer display', () => {
 
   it('shows every eval from the search that graded the answer', () => {
     const answer: Answer = { verdict: 'also-good', guesses: [{ ...other, eval: 0 }], firstTry: true };
-    const scores = new Map([['f1b5', 60], ['a2a3', -120], ['h2h3', 40]]);
+    const scores = new Map([
+      ['f1b5', 60],
+      ['a2a3', -120],
+      ['h2h3', 40],
+    ]);
     expect(withSearchEvals(answer, card, scores)).toEqual({
       ...answer,
       guesses: [{ ...other, eval: 40 }],

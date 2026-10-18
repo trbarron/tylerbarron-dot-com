@@ -93,8 +93,18 @@ describe('analyzeGames', () => {
   it('keeps a move that costs the threshold in win chance and drops one just under it', async () => {
     // From level, 10 points of win chance is ~110 cp.
     const maia = () => fakeMaia({ [BEFORE_NF6]: 'g7g6' });
-    const at = await analyzeGames([game], DEFAULT_SETTINGS, { maia: maia(), stockfish: fakeStockfish({ g7g6: 111, g8f6: 0 }) }, {});
-    const under = await analyzeGames([game], DEFAULT_SETTINGS, { maia: maia(), stockfish: fakeStockfish({ g7g6: 110, g8f6: 0 }) }, {});
+    const at = await analyzeGames(
+      [game],
+      DEFAULT_SETTINGS,
+      { maia: maia(), stockfish: fakeStockfish({ g7g6: 111, g8f6: 0 }) },
+      {}
+    );
+    const under = await analyzeGames(
+      [game],
+      DEFAULT_SETTINGS,
+      { maia: maia(), stockfish: fakeStockfish({ g7g6: 110, g8f6: 0 }) },
+      {}
+    );
     expect(at.cards).toHaveLength(1);
     expect(under.cards).toHaveLength(0);
   });
@@ -122,7 +132,12 @@ describe('analyzeGames', () => {
     expect(on.cards).toHaveLength(0);
     expect(on.stats.lost).toBe(1);
     // Decks from before the option (no skipLost) kept every error.
-    const off = await analyzeGames([game], { ...low, skipLost: undefined }, { maia: maia(), stockfish: fakeStockfish(lost) }, {});
+    const off = await analyzeGames(
+      [game],
+      { ...low, skipLost: undefined },
+      { maia: maia(), stockfish: fakeStockfish(lost) },
+      {}
+    );
     expect(off.cards).toHaveLength(1);
     expect(off.stats.lost).toBeUndefined();
   });

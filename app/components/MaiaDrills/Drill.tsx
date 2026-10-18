@@ -239,14 +239,19 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
               </p>
               <ul className="space-y-1 text-sm">
                 <li>
-                  <span className="inline-block w-3 bg-green-600">&nbsp;</span>{' '}
-                  A {card.targetElo} plays <strong className="font-mono">{card.target.san}</strong>{' '}
-                  <span className="text-gray-600">(Maia {Math.round(card.target.prob * 100)}%, {formatEval(answer.evals?.target ?? card.evalTarget, card.color)})</span>
+                  <span className="inline-block w-3 bg-green-600">&nbsp;</span> A {card.targetElo} plays{' '}
+                  <strong className="font-mono">{card.target.san}</strong>{' '}
+                  <span className="text-gray-600">
+                    (Maia {Math.round(card.target.prob * 100)}%,{' '}
+                    {formatEval(answer.evals?.target ?? card.evalTarget, card.color)})
+                  </span>
                 </li>
                 <li>
-                  <span className="inline-block w-3 bg-red-600">&nbsp;</span>{' '}
-                  In the game you played <strong className="font-mono">{card.played.san}</strong>{' '}
-                  <span className="text-gray-600">({formatEval(answer.evals?.played ?? card.evalPlayed, card.color)})</span>
+                  <span className="inline-block w-3 bg-red-600">&nbsp;</span> In the game you played{' '}
+                  <strong className="font-mono">{card.played.san}</strong>{' '}
+                  <span className="text-gray-600">
+                    ({formatEval(answer.evals?.played ?? card.evalPlayed, card.color)})
+                  </span>
                 </li>
                 {extraGuesses(card, answer).map((g) => (
                   <li key={g.uci}>
