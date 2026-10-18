@@ -94,9 +94,9 @@ export default function CollaborativeCheckmate() {
   };
 
   return (
-    <>
+    <div className="flex min-h-screen flex-col relative z-10">
       <Navbar />
-      <div className="min-h-[calc(100vh-theme(spacing.64))] flex flex-col items-center justify-center p-4 relative z-10">
+      <div className="flex-grow flex flex-col items-center justify-center p-4">
         <div className="bg-white  border-4 border-black  p-8 w-full max-w-xl mb-8">
           <h1 className="text-2xl mb-6 text-center text-black  font-neo font-bold uppercase">
             Collaborative Checkmate
@@ -246,6 +246,6 @@ export default function CollaborativeCheckmate() {
           </div>
       </div>
       <Footer />
-    </>
+    </div>
   );
 }

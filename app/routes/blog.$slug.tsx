@@ -120,9 +120,9 @@ export default function BlogPost() {
   const writtenWithoutAi = frontmatter.ai === 'no' || frontmatter.ai === false;
 
   return (
-    <div className="min-h-screen font-neo relative z-10">
+    <div className="min-h-screen font-neo relative z-10 flex flex-col">
       <Navbar />
-      <div className="py-8">
+      <div className="py-8 flex-grow">
         <article className="max-w-4xl mx-auto mb-8 bg-white/95 backdrop-blur-sm px-6 lg:px-12 py-8">
           <header className="mb-8 pb-8">
             <h1 className="text-5xl lg:text-6xl font-extrabold text-black  mb-6 font-neo tracking-tight leading-none text-center">

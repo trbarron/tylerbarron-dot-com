@@ -119,9 +119,9 @@ export default function MultipleChoiceChessLobby() {
   };
 
   return (
-    <>
+    <div className="relative z-10 flex min-h-screen flex-col">
       <Navbar />
-      <div className="relative z-10 flex min-h-[calc(100vh-theme(spacing.64))] flex-col items-center justify-center p-4">
+      <div className="flex flex-grow flex-col items-center justify-center p-4">
 
         {/* Hero card */}
         <div className="mb-6 w-full max-w-xl border-4 border-black bg-white">
@@ -214,6 +214,6 @@ export default function MultipleChoiceChessLobby() {
         </div>
       </div>
       <Footer />
-    </>
+    </div>
   );
 }
