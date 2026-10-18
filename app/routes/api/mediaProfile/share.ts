@@ -21,12 +21,7 @@ import {
   updateResult,
   validateResult,
 } from '~/utils/mediaProfile/share.server';
-import {
-  EDIT_LIMIT,
-  READ_LIMIT,
-  SHARE_LIMIT,
-  checkRateLimit,
-} from '~/utils/mediaProfile/rateLimit.server';
+import { EDIT_LIMIT, READ_LIMIT, SHARE_LIMIT, checkRateLimit } from '~/utils/mediaProfile/rateLimit.server';
 
 /**
  * Read and parse the body, returning a Response instead when it is too large
@@ -55,7 +50,7 @@ export async function action({ request }: ActionFunctionArgs) {
   if (!limit.allowed) {
     return Response.json(
       { error: 'Too many results saved from this address. Try again later.' },
-      { status: 429, headers: { 'Retry-After': String(limit.retryAfter) } }
+      { status: 429, headers: { 'Retry-After': String(limit.retryAfter) } },
     );
   }
 
@@ -81,7 +76,7 @@ async function handleUpdate(request: Request) {
   if (!limit.allowed) {
     return Response.json(
       { error: 'Too many edits from this address. Try again later.' },
-      { status: 429, headers: { 'Retry-After': String(limit.retryAfter) } }
+      { status: 429, headers: { 'Retry-After': String(limit.retryAfter) } },
     );
   }
 
@@ -130,7 +125,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   if (!limit.allowed) {
     return Response.json(
       { error: 'Too many requests.' },
-      { status: 429, headers: { 'Retry-After': String(limit.retryAfter) } }
+      { status: 429, headers: { 'Retry-After': String(limit.retryAfter) } },
     );
   }
 
@@ -144,7 +139,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       // Cards are editable now, so a cached copy is a wrong copy: an author who
       // just saved would be handed their old answers to edit again. One read
       // per page load is not worth caching against that.
-      { headers: { 'Cache-Control': 'no-store' } }
+      { headers: { 'Cache-Control': 'no-store' } },
     );
   } catch (error) {
     console.error('mediaProfile: failed to load result', error);

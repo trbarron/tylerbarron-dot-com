@@ -1,14 +1,14 @@
-import { SITE_URL, SITE_NAME, DEFAULT_DESCRIPTION } from "~/utils/seo";
+import { SITE_URL, SITE_NAME, DEFAULT_DESCRIPTION } from '~/utils/seo';
 
 const FEED_URL = `${SITE_URL}/feed.xml`;
 
 function escapeXml(value: string): string {
   return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&apos;");
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
 }
 
 /** RFC-822 date for RSS pubDate; null on unparseable input. */
@@ -18,7 +18,7 @@ function rfc822(value: string): string | null {
 }
 
 export async function loader() {
-  const { getAllPostMeta } = await import("~/utils/posts.server");
+  const { getAllPostMeta } = await import('~/utils/posts.server');
   const posts = await getAllPostMeta(); // newest first
 
   const items = posts
@@ -29,14 +29,13 @@ export async function loader() {
       return `    <item>
       <title>${escapeXml(post.title)}</title>
       <link>${url}</link>
-      <guid isPermaLink="true">${url}</guid>${pubDate ? `\n      <pubDate>${pubDate}</pubDate>` : ""}
+      <guid isPermaLink="true">${url}</guid>${pubDate ? `\n      <pubDate>${pubDate}</pubDate>` : ''}
       <description>${escapeXml(description)}</description>
     </item>`;
     })
-    .join("\n");
+    .join('\n');
 
-  const lastBuildDate =
-    (posts[0] && rfc822(posts[0].date)) ?? new Date().toUTCString();
+  const lastBuildDate = (posts[0] && rfc822(posts[0].date)) ?? new Date().toUTCString();
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
@@ -54,8 +53,8 @@ ${items}
 
   return new Response(xml, {
     headers: {
-      "Content-Type": "application/rss+xml; charset=utf-8",
-      "Cache-Control": "public, max-age=3600",
+      'Content-Type': 'application/rss+xml; charset=utf-8',
+      'Cache-Control': 'public, max-age=3600',
     },
   });
 }

@@ -24,12 +24,7 @@ import {
   validateAddition,
   validateDeck,
 } from '~/utils/maiaDrills/decks.server';
-import {
-  FAVORITE_LIMIT,
-  READ_LIMIT,
-  SAVE_LIMIT,
-  checkRateLimit,
-} from '~/utils/maiaDrills/rateLimit.server';
+import { FAVORITE_LIMIT, READ_LIMIT, SAVE_LIMIT, checkRateLimit } from '~/utils/maiaDrills/rateLimit.server';
 
 function tooMany(retryAfter: number, message = 'Too many requests. Try again later.') {
   return Response.json({ error: message }, { status: 429, headers: { 'Retry-After': String(retryAfter) } });
@@ -97,7 +92,7 @@ async function handleAdd(request: Request) {
     if (result.outcome === 'forbidden') {
       return Response.json(
         { error: 'Only the browser that built this deck can add to it until it’s a favorite.' },
-        { status: 403 }
+        { status: 403 },
       );
     }
     const { added, cardCount, newestGameAt } = result;

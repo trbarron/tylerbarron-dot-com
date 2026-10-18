@@ -1,4 +1,4 @@
-import type { GameMode } from "~/utils/chesserGuesser/types";
+import type { GameMode } from '~/utils/chesserGuesser/types';
 
 interface PuzzleHistory {
   fen: string;
@@ -45,7 +45,7 @@ export default function ScoreDisplay({
   onCopyFEN,
   onToggleReview,
 }: ScoreDisplayProps) {
-  const shouldShow = (lastEval !== 0 || lastSlider !== 0) || (isReviewMode && reviewPuzzle);
+  const shouldShow = lastEval !== 0 || lastSlider !== 0 || (isReviewMode && reviewPuzzle);
 
   if (!shouldShow) return null;
 
@@ -59,41 +59,38 @@ export default function ScoreDisplay({
     return 'Last Round';
   };
 
-  const yourGuess = isReviewMode && reviewPuzzle
-    ? (reviewPuzzle.guess / 100).toFixed(2)
-    : lastSlider.toFixed(2);
+  const yourGuess = isReviewMode && reviewPuzzle ? (reviewPuzzle.guess / 100).toFixed(2) : lastSlider.toFixed(2);
 
-  const actualEval = isReviewMode && reviewPuzzle
-    ? (reviewPuzzle.eval / 100).toFixed(2)
-    : lastEval.toFixed(2);
+  const actualEval = isReviewMode && reviewPuzzle ? (reviewPuzzle.eval / 100).toFixed(2) : lastEval.toFixed(2);
 
-  const difference = isReviewMode && reviewPuzzle
-    ? Math.abs((reviewPuzzle.eval - reviewPuzzle.guess) / 100).toFixed(2)
-    : Math.abs(lastEval - lastSlider).toFixed(2);
+  const difference =
+    isReviewMode && reviewPuzzle
+      ? Math.abs((reviewPuzzle.eval - reviewPuzzle.guess) / 100).toFixed(2)
+      : Math.abs(lastEval - lastSlider).toFixed(2);
 
   return (
-    <div className="bg-white border-4 border-black w-full">
+    <div className="w-full border-4 border-black bg-white">
       {/* Header */}
-      <div className="bg-black text-white py-2 px-4 font-neo font-extrabold uppercase tracking-tighter text-sm border-b-4 border-black text-center">
+      <div className="font-neo border-b-4 border-black bg-black px-4 py-2 text-center text-sm font-extrabold tracking-tighter text-white uppercase">
         {getHeaderText()}
       </div>
 
       {/* Content */}
-      <div className="p-4 bg-white text-black font-neo space-y-4">
+      <div className="font-neo space-y-4 bg-white p-4 text-black">
         {/* Navigation buttons in review mode */}
         {isReviewMode && reviewPuzzle && (
           <div className="flex gap-2">
             <button
               onClick={() => onNavigateReview('next', filteredHistory)}
               disabled={reviewPuzzleIndex === filteredHistory.length - 1}
-              className="flex-1 px-2 py-1 bg-white text-black border-2 border-black text-xs font-black uppercase hover:bg-black hover:text-white transition-all disabled:opacity-30 disabled:hover:bg-white disabled:hover:text-black"
+              className="flex-1 border-2 border-black bg-white px-2 py-1 text-xs font-black text-black uppercase transition-all hover:bg-black hover:text-white disabled:opacity-30 disabled:hover:bg-white disabled:hover:text-black"
             >
               ← Old
             </button>
             <button
               onClick={() => onNavigateReview('prev', filteredHistory)}
               disabled={reviewPuzzleIndex === 0}
-              className="flex-1 px-2 py-1 bg-white text-black border-2 border-black text-xs font-black uppercase hover:bg-black hover:text-white transition-all disabled:opacity-30 disabled:hover:bg-white disabled:hover:text-black"
+              className="flex-1 border-2 border-black bg-white px-2 py-1 text-xs font-black text-black uppercase transition-all hover:bg-black hover:text-white disabled:opacity-30 disabled:hover:bg-white disabled:hover:text-black"
             >
               New →
             </button>
@@ -102,25 +99,25 @@ export default function ScoreDisplay({
 
         {/* Stats - shown in both modes */}
         <div className="space-y-3">
-          <div className="flex justify-between items-baseline border-b-2 border-black/5 pb-1">
-            <div className="text-black font-extrabold uppercase text-[10px] tracking-wider opacity-60">Your Guess</div>
-            <div className="font-black text-lg tracking-tighter leading-none">{yourGuess}</div>
+          <div className="flex items-baseline justify-between border-b-2 border-black/5 pb-1">
+            <div className="text-[10px] font-extrabold tracking-wider text-black uppercase opacity-60">Your Guess</div>
+            <div className="text-lg leading-none font-black tracking-tighter">{yourGuess}</div>
           </div>
-          <div className="flex justify-between items-baseline border-b-2 border-black/5 pb-1">
-            <div className="text-black font-extrabold uppercase text-[10px] tracking-wider opacity-60">Actual</div>
-            <div className="font-black text-lg tracking-tighter leading-none">{actualEval}</div>
+          <div className="flex items-baseline justify-between border-b-2 border-black/5 pb-1">
+            <div className="text-[10px] font-extrabold tracking-wider text-black uppercase opacity-60">Actual</div>
+            <div className="text-lg leading-none font-black tracking-tighter">{actualEval}</div>
           </div>
         </div>
 
         {/* Difference */}
         <div className="border-t-4 border-black pt-2">
-          <div className="text-black font-extrabold uppercase text-[10px] tracking-widest opacity-60">Difference</div>
-          <div className="font-black text-3xl tracking-tighter text-black leading-tight">{difference}</div>
+          <div className="text-[10px] font-extrabold tracking-widest text-black uppercase opacity-60">Difference</div>
+          <div className="text-3xl leading-tight font-black tracking-tighter text-black">{difference}</div>
         </div>
 
         {/* Showing count indicator in review mode */}
         {isReviewMode && totalCount > displayLimit && (
-          <div className="text-center text-black font-bold text-[10px] uppercase opacity-40">
+          <div className="text-center text-[10px] font-bold text-black uppercase opacity-40">
             (Showing last {displayLimit} of {totalCount})
           </div>
         )}
@@ -130,17 +127,15 @@ export default function ScoreDisplay({
           <div className="space-y-2 pt-2">
             <button
               onClick={() => onCopyFEN(reviewPuzzle.fen)}
-              className={`w-full px-4 py-2 text-xs font-black uppercase border-2 border-black transition-all ${
-                copyFeedback
-                  ? 'bg-black text-white'
-                  : 'bg-white text-black hover:bg-black hover:text-white'
+              className={`w-full border-2 border-black px-4 py-2 text-xs font-black uppercase transition-all ${
+                copyFeedback ? 'bg-black text-white' : 'bg-white text-black hover:bg-black hover:text-white'
               }`}
             >
               {copyFeedback ? 'FEN COPIED' : 'COPY FEN'}
             </button>
             <button
               onClick={onToggleReview}
-              className="w-full px-4 py-3 bg-black text-white font-black text-xs uppercase hover:bg-white hover:text-black border-2 border-black transition-all"
+              className="w-full border-2 border-black bg-black px-4 py-3 text-xs font-black text-white uppercase transition-all hover:bg-white hover:text-black"
             >
               EXIT REVIEW
             </button>
@@ -151,7 +146,7 @@ export default function ScoreDisplay({
         {totalCount > 0 && !isReviewMode && (
           <button
             onClick={onToggleReview}
-            className="w-full mt-2 px-4 py-3 bg-black text-white font-black text-xs uppercase hover:bg-white hover:text-black border-2 border-black transition-all"
+            className="mt-2 w-full border-2 border-black bg-black px-4 py-3 text-xs font-black text-white uppercase transition-all hover:bg-white hover:text-black"
           >
             VIEW ALL
           </button>

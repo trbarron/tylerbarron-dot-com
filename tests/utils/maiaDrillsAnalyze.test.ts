@@ -97,13 +97,13 @@ describe('analyzeGames', () => {
       [game],
       DEFAULT_SETTINGS,
       { maia: maia(), stockfish: fakeStockfish({ g7g6: 111, g8f6: 0 }) },
-      {}
+      {},
     );
     const under = await analyzeGames(
       [game],
       DEFAULT_SETTINGS,
       { maia: maia(), stockfish: fakeStockfish({ g7g6: 110, g8f6: 0 }) },
-      {}
+      {},
     );
     expect(at.cards).toHaveLength(1);
     expect(under.cards).toHaveLength(0);
@@ -134,7 +134,7 @@ describe('analyzeGames', () => {
       [game],
       { ...cpDeck, skipLost: undefined },
       { maia: maia(), stockfish: fakeStockfish(lost) },
-      {}
+      {},
     );
     expect(off.cards).toHaveLength(1);
     expect(off.stats.lost).toBeUndefined();
@@ -143,7 +143,12 @@ describe('analyzeGames', () => {
   it('needs no lost filter at the default win-chance threshold', async () => {
     // From −7 to −10 is under 5 points of win chance: not an error at all.
     const lost = { g7g6: -LOST_CP, g8f6: -1000 };
-    const result = await analyzeGames([game], DEFAULT_SETTINGS, { maia: fakeMaia({ [BEFORE_NF6]: 'g7g6' }), stockfish: fakeStockfish(lost) }, {});
+    const result = await analyzeGames(
+      [game],
+      DEFAULT_SETTINGS,
+      { maia: fakeMaia({ [BEFORE_NF6]: 'g7g6' }), stockfish: fakeStockfish(lost) },
+      {},
+    );
     expect(DEFAULT_SETTINGS.skipLost).toBeUndefined();
     expect(result.cards).toHaveLength(0);
     expect(result.stats.lost).toBeUndefined();
@@ -165,7 +170,12 @@ describe('analyzeGames', () => {
 
   it('skips a game with no rating for the user', async () => {
     const unrated = { ...game, blackElo: null };
-    const result = await analyzeGames([unrated], DEFAULT_SETTINGS, { maia: fakeMaia({}), stockfish: fakeStockfish({}) }, {});
+    const result = await analyzeGames(
+      [unrated],
+      DEFAULT_SETTINGS,
+      { maia: fakeMaia({}), stockfish: fakeStockfish({}) },
+      {},
+    );
     expect(result.skippedNoRating).toBe(1);
     expect(result.stats.games).toBe(0);
   });
@@ -179,7 +189,12 @@ describe('analyzeGames', () => {
 
   it('drops a position whose search fails, without failing the run', async () => {
     const maia = fakeMaia({ [BEFORE_NF6]: 'g7g6' });
-    const result = await analyzeGames([game], DEFAULT_SETTINGS, { maia, stockfish: fakeStockfish({}, { fail: true }) }, {});
+    const result = await analyzeGames(
+      [game],
+      DEFAULT_SETTINGS,
+      { maia, stockfish: fakeStockfish({}, { fail: true }) },
+      {},
+    );
     expect(result.cards).toHaveLength(0);
     expect(result.stats.disagreements).toBe(1);
   });
@@ -189,7 +204,12 @@ describe('analyzeGames', () => {
     controller.abort();
     const maia = fakeMaia({});
     const stockfish = fakeStockfish({});
-    const result = await analyzeGames([game, game], DEFAULT_SETTINGS, { maia, stockfish }, { signal: controller.signal });
+    const result = await analyzeGames(
+      [game, game],
+      DEFAULT_SETTINGS,
+      { maia, stockfish },
+      { signal: controller.signal },
+    );
     expect(result.cancelled).toBe(true);
     expect(maia.predict).not.toHaveBeenCalled();
     expect(stockfish.terminate).toHaveBeenCalled();
@@ -203,7 +223,13 @@ describe('analyzeGames', () => {
       pending: 0,
       terminate: vi.fn(),
       // First game: a 200 cp miss; second: 900.
-      score: vi.fn(async (_f: string, moves: string[]) => new Map([[moves[0], call++ === 0 ? 200 : 900], [moves[1], 0]])),
+      score: vi.fn(
+        async (_f: string, moves: string[]) =>
+          new Map([
+            [moves[0], call++ === 0 ? 200 : 900],
+            [moves[1], 0],
+          ]),
+      ),
     } as unknown as StockfishPool;
     const { cards } = await analyzeGames([game, second], DEFAULT_SETTINGS, { maia, stockfish }, {});
     expect(cards.map((c) => c.id)).toEqual(['g2-5', 'scholar-5']);
@@ -213,14 +239,20 @@ describe('analyzeGames', () => {
     const second: SourceGame = { ...game, id: 'g2', san: ['e4', 'e5', 'Qh5', 'Nc6', 'Bc4', 'Nf6', 'Qxf7#'] };
     const maia = fakeMaia({ [BEFORE_NF6]: 'g7g6' });
     // First game: 150 cp from level (~14 points). Second: 300 cp, but from +7 (~12 points).
-    const evals = [[150, 0], [700, 400]];
+    const evals = [
+      [150, 0],
+      [700, 400],
+    ];
     let call = 0;
     const stockfish = {
       pending: 0,
       terminate: vi.fn(),
       score: vi.fn(async (_f: string, moves: string[]) => {
         const [target, played] = evals[call++];
-        return new Map([[moves[0], target], [moves[1], played]]);
+        return new Map([
+          [moves[0], target],
+          [moves[1], played],
+        ]);
       }),
     } as unknown as StockfishPool;
     const { cards } = await analyzeGames([game, second], DEFAULT_SETTINGS, { maia, stockfish }, {});
@@ -237,9 +269,14 @@ describe('analyzeGames', () => {
     } as unknown as StockfishPool;
     const reports: AnalysisProgress[] = [];
 
-    const run = analyzeGames([game], DEFAULT_SETTINGS, { maia, stockfish }, {
-      onProgress: (p) => reports.push(p),
-    });
+    const run = analyzeGames(
+      [game],
+      DEFAULT_SETTINGS,
+      { maia, stockfish },
+      {
+        onProgress: (p) => reports.push(p),
+      },
+    );
     await vi.waitFor(() => expect(stockfish.score).toHaveBeenCalled());
     // Maia is done with the game, but its one Stockfish check isn't.
     expect(reports.at(-1)).toMatchObject({
@@ -249,7 +286,12 @@ describe('analyzeGames', () => {
     // Before Maia finished, the game showed with no checks known yet.
     expect(reports[0].current).toMatchObject({ positionsDone: 0, maiaDone: false, checks: 0 });
 
-    finishSearch(new Map([['g7g6', 20], ['g8f6', -1000]]));
+    finishSearch(
+      new Map([
+        ['g7g6', 20],
+        ['g8f6', -1000],
+      ]),
+    );
     const { cards } = await run;
     // Done: the count ticks up and the per-game bars clear.
     expect(reports.at(-1)).toMatchObject({ gamesDone: 1, current: null });

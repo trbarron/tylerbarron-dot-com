@@ -1,4 +1,4 @@
-import { useRetroreflectance } from "./retroreflectance-context";
+import { useRetroreflectance } from './retroreflectance-context';
 
 /**
  * Footer control that turns the retroreflective background on and off.
@@ -18,7 +18,7 @@ export default function RetroreflectanceTrigger() {
       aria-expanded={enabled}
       className="mt-4 hidden border-2 px-3 py-1 text-xs md:inline-block"
     >
-      {enabled ? "Click to remove color" : "Click to add color"}
+      {enabled ? 'Click to remove color' : 'Click to add color'}
     </button>
   );
 }

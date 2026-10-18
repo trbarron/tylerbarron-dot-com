@@ -4,7 +4,7 @@
 // bypassing the Lambda; jsDelivr rejects the package for being >150 MB across
 // its WASM variants, so unpkg is the path that works.
 
-import { parseMultiPV, type CandidateMove, shuffle } from "./moveParser";
+import { parseMultiPV, type CandidateMove, shuffle } from './moveParser';
 
 const STOCKFISH_VERSION = '18.0.7';
 const WORKER_URL = `https://unpkg.com/stockfish@${STOCKFISH_VERSION}/bin/stockfish-18-lite-single.js`;
@@ -69,8 +69,14 @@ class StockfishEngine {
         reject(new EngineTimeoutError('Engine init timed out'));
       }, INIT_TIMEOUT_MS);
 
-      this.initResolve = () => { clearTimeout(timeoutId); resolve(); };
-      this.initReject = (err) => { clearTimeout(timeoutId); reject(err); };
+      this.initResolve = () => {
+        clearTimeout(timeoutId);
+        resolve();
+      };
+      this.initReject = (err) => {
+        clearTimeout(timeoutId);
+        reject(err);
+      };
 
       try {
         const { worker, cleanup } = createStockfishWorker();

@@ -130,7 +130,8 @@ function validateCard(raw: unknown): DrillCard | null {
   for (const k of ['evalPlayed', 'evalTarget'] as const) if (!isInt(c[k], -1000, 1000)) return null;
   for (const k of ['userElo', 'targetElo', 'oppElo'] as const) if (!isInt(c[k], 0, 4000)) return null;
   if (typeof c.opponent !== 'string' || c.opponent.length > 60) return null;
-  if (c.gameUrl !== undefined && (typeof c.gameUrl !== 'string' || !/^https:\/\/[^\s]{1,200}$/.test(c.gameUrl))) return null;
+  if (c.gameUrl !== undefined && (typeof c.gameUrl !== 'string' || !/^https:\/\/[^\s]{1,200}$/.test(c.gameUrl)))
+    return null;
   if (c.playedAt !== undefined && !isInt(c.playedAt, 0, 9_999_999_999_999)) return null;
   if (typeof c.speed !== 'string' || !SPEEDS.includes(c.speed as Speed)) return null;
 
@@ -244,9 +245,7 @@ const lossOf = (card: DrillCard) => winDrop(card.evalTarget, card.evalPlayed);
 export function mergeIntoDeck(deck: Deck, addition: DeckAddition, now: Date): { deck: Deck; added: number } {
   const existing = new Set(deck.cards.map((c) => c.id));
   const fresh = addition.cards.filter((c) => !existing.has(c.id));
-  const cards = [...deck.cards, ...fresh]
-    .sort((a, b) => lossOf(b) - lossOf(a))
-    .slice(0, LIMITS.cardsPerDeck);
+  const cards = [...deck.cards, ...fresh].sort((a, b) => lossOf(b) - lossOf(a)).slice(0, LIMITS.cardsPerDeck);
   const kept = new Set(cards.map((c) => c.id));
 
   const newest = [deck.newestGameAt, addition.newestGameAt].filter((t): t is number => t !== undefined);
@@ -301,7 +300,10 @@ function tokenMatches(storedHash: string, editToken: string): boolean {
   return expected.length === given.length && timingSafeEqual(expected, given);
 }
 
-async function authorize(id: string, editToken: string): Promise<{ raw: string } | { denied: 'not-found' | 'forbidden' }> {
+async function authorize(
+  id: string,
+  editToken: string,
+): Promise<{ raw: string } | { denied: 'not-found' | 'forbidden' }> {
   const [raw, storedHash] = await getRedisClient().mget(`${DECK_PREFIX}${id}`, `${EDIT_PREFIX}${id}`);
   if (!raw || !storedHash) return { denied: 'not-found' };
   if (!tokenMatches(storedHash, editToken)) return { denied: 'forbidden' };

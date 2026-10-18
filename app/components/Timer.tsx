@@ -27,10 +27,10 @@ const Timer = memo(function Timer({ timeRemaining: initialTime }: TimerProps) {
         }
       };
     `;
-    
+
     const blob = new Blob([workerCode], { type: 'application/javascript' });
     workerRef.current = new Worker(URL.createObjectURL(blob));
-    
+
     workerRef.current.onmessage = (e) => {
       setDisplayTime(e.data);
     };
@@ -48,19 +48,14 @@ const Timer = memo(function Timer({ timeRemaining: initialTime }: TimerProps) {
 
   return (
     <div className="w-full">
-      <div className="relative h-4 bg-gray-200  rounded-full overflow-hidden border border-black ">
+      <div className="relative h-4 overflow-hidden rounded-full border border-black bg-gray-200">
         {/* eslint-disable react/forbid-dom-props */}
-        <div
-          className="absolute h-full bg-accent transition-all"
-          style={{ width: `${progress}%` }}
-        />
+        <div className="bg-accent absolute h-full transition-all" style={{ width: `${progress}%` }} />
         {/* eslint-enable react/forbid-dom-props */}
       </div>
-      <div className="mt-1 text-sm text-black  text-center font-neo font-bold">
-        {displayTime.toFixed(1)}s
-      </div>
+      <div className="font-neo mt-1 text-center text-sm font-bold text-black">{displayTime.toFixed(1)}s</div>
     </div>
   );
 });
 
-export default Timer; 
+export default Timer;

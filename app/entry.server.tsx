@@ -4,12 +4,12 @@
  * For more information, see https://remix.run/file-conventions/entry.server
  */
 
-import { PassThrough, Readable } from "node:stream";
+import { PassThrough, Readable } from 'node:stream';
 
-import type { AppLoadContext, EntryContext } from "react-router";
-import { ServerRouter } from "react-router";
-import { isbot } from "isbot";
-import { renderToPipeableStream } from "react-dom/server";
+import type { AppLoadContext, EntryContext } from 'react-router';
+import { ServerRouter } from 'react-router';
+import { isbot } from 'isbot';
+import { renderToPipeableStream } from 'react-dom/server';
 
 const ABORT_DELAY = 5_000;
 
@@ -36,35 +36,35 @@ const CONTENT_SECURITY_POLICY = [
   [
     "connect-src 'self' blob:",
     // Google Analytics (incl. regional endpoints)
-    "https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com",
+    'https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com',
     // Stockfish engine + WASM (multiple choice chess)
-    "https://unpkg.com",
+    'https://unpkg.com',
     // Cat tracker camera + chesser guesser puzzle APIs
-    "https://nj3ho46btl.execute-api.us-west-2.amazonaws.com https://f73vgbj1jk.execute-api.us-west-2.amazonaws.com",
+    'https://nj3ho46btl.execute-api.us-west-2.amazonaws.com https://f73vgbj1jk.execute-api.us-west-2.amazonaws.com',
     // US state boundaries for the pizza map (jsdelivr). The pizza datasets
     // themselves are same-origin now (/images/pizza/*), so they need no grant.
-    "https://cdn.jsdelivr.net",
+    'https://cdn.jsdelivr.net',
     // Maia Drills: players' games, and the Maia model. Hugging Face answers
     // the model URL with a redirect to its storage CDN on *.hf.co.
-    "https://lichess.org https://api.chess.com https://huggingface.co https://*.hf.co",
+    'https://lichess.org https://api.chess.com https://huggingface.co https://*.hf.co',
     // Collaborative checkmate game server (REST lobby + websocket gameplay)
-    "https://collaborative-checkmate-server.fly.dev wss://collaborative-checkmate-server.fly.dev",
-  ].join(" "),
+    'https://collaborative-checkmate-server.fly.dev wss://collaborative-checkmate-server.fly.dev',
+  ].join(' '),
   "media-src 'self'",
-  "frame-src https://www.youtube.com https://giscus.app",
+  'frame-src https://www.youtube.com https://giscus.app',
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
   "frame-ancestors 'none'",
-].join("; ");
+].join('; ');
 
 function applySecurityHeaders(headers: Headers) {
-  headers.set("Content-Security-Policy", CONTENT_SECURITY_POLICY);
-  headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
-  headers.set("X-Content-Type-Options", "nosniff");
-  headers.set("X-Frame-Options", "DENY");
-  headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
-  headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  headers.set('Content-Security-Policy', CONTENT_SECURITY_POLICY);
+  headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  headers.set('X-Content-Type-Options', 'nosniff');
+  headers.set('X-Frame-Options', 'DENY');
+  headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
 }
 
 export default function handleRequest(
@@ -75,68 +75,52 @@ export default function handleRequest(
   // This is ignored so we can keep it in the template for visibility.  Feel
   // free to delete this parameter in your app if you're not using it!
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  loadContext: AppLoadContext
+  loadContext: AppLoadContext,
 ) {
-  return isbot(request.headers.get("user-agent") || "")
-    ? handleBotRequest(
-        request,
-        responseStatusCode,
-        responseHeaders,
-        remixContext
-      )
-    : handleBrowserRequest(
-        request,
-        responseStatusCode,
-        responseHeaders,
-        remixContext
-      );
+  return isbot(request.headers.get('user-agent') || '')
+    ? handleBotRequest(request, responseStatusCode, responseHeaders, remixContext)
+    : handleBrowserRequest(request, responseStatusCode, responseHeaders, remixContext);
 }
 
 function handleBotRequest(
   request: Request,
   responseStatusCode: number,
   responseHeaders: Headers,
-  remixContext: EntryContext
+  remixContext: EntryContext,
 ) {
   return new Promise((resolve, reject) => {
     let shellRendered = false;
-    const { pipe, abort } = renderToPipeableStream(
-      <ServerRouter
-        context={remixContext}
-        url={request.url}
-      />,
-      {
-        onAllReady() {
-          shellRendered = true;
-          const body = new PassThrough();
-          const stream = Readable.toWeb(body) as ReadableStream;
+    const { pipe, abort } = renderToPipeableStream(<ServerRouter context={remixContext} url={request.url} />, {
+      onAllReady() {
+        shellRendered = true;
+        const body = new PassThrough();
+        const stream = Readable.toWeb(body) as ReadableStream;
 
-          responseHeaders.set("Content-Type", "text/html");
-          applySecurityHeaders(responseHeaders);
+        responseHeaders.set('Content-Type', 'text/html');
+        applySecurityHeaders(responseHeaders);
 
-          resolve(
-            new Response(stream, {
-              headers: responseHeaders,
-              status: responseStatusCode,
-            })
-          );
+        resolve(
+          new Response(stream, {
+            headers: responseHeaders,
+            status: responseStatusCode,
+          }),
+        );
 
-          pipe(body);
-        },
-        onShellError(error: unknown) {
-          reject(error);
-        },
-        onError(error: unknown) {
-          responseStatusCode = 500;
-          // Log streaming rendering errors from inside the shell.  Don't log
-          // errors encountered during initial shell rendering since they'll
-          // reject and get logged in handleDocumentRequest.
-          if (shellRendered) {
-            console.error(error);
-          }
-        },
-      }
-    );
+        pipe(body);
+      },
+      onShellError(error: unknown) {
+        reject(error);
+      },
+      onError(error: unknown) {
+        responseStatusCode = 500;
+        // Log streaming rendering errors from inside the shell.  Don't log
+        // errors encountered during initial shell rendering since they'll
+        // reject and get logged in handleDocumentRequest.
+        if (shellRendered) {
+          console.error(error);
+        }
+      },
+    });
 
     setTimeout(abort, ABORT_DELAY);
   });
@@ -146,47 +130,41 @@ function handleBrowserRequest(
   request: Request,
   responseStatusCode: number,
   responseHeaders: Headers,
-  remixContext: EntryContext
+  remixContext: EntryContext,
 ) {
   return new Promise((resolve, reject) => {
     let shellRendered = false;
-    const { pipe, abort } = renderToPipeableStream(
-      <ServerRouter
-        context={remixContext}
-        url={request.url}
-      />,
-      {
-        onShellReady() {
-          shellRendered = true;
-          const body = new PassThrough();
-          const stream = Readable.toWeb(body) as ReadableStream;
+    const { pipe, abort } = renderToPipeableStream(<ServerRouter context={remixContext} url={request.url} />, {
+      onShellReady() {
+        shellRendered = true;
+        const body = new PassThrough();
+        const stream = Readable.toWeb(body) as ReadableStream;
 
-          responseHeaders.set("Content-Type", "text/html");
-          applySecurityHeaders(responseHeaders);
+        responseHeaders.set('Content-Type', 'text/html');
+        applySecurityHeaders(responseHeaders);
 
-          resolve(
-            new Response(stream, {
-              headers: responseHeaders,
-              status: responseStatusCode,
-            })
-          );
+        resolve(
+          new Response(stream, {
+            headers: responseHeaders,
+            status: responseStatusCode,
+          }),
+        );
 
-          pipe(body);
-        },
-        onShellError(error: unknown) {
-          reject(error);
-        },
-        onError(error: unknown) {
-          responseStatusCode = 500;
-          // Log streaming rendering errors from inside the shell.  Don't log
-          // errors encountered during initial shell rendering since they'll
-          // reject and get logged in handleDocumentRequest.
-          if (shellRendered) {
-            console.error(error);
-          }
-        },
-      }
-    );
+        pipe(body);
+      },
+      onShellError(error: unknown) {
+        reject(error);
+      },
+      onError(error: unknown) {
+        responseStatusCode = 500;
+        // Log streaming rendering errors from inside the shell.  Don't log
+        // errors encountered during initial shell rendering since they'll
+        // reject and get logged in handleDocumentRequest.
+        if (shellRendered) {
+          console.error(error);
+        }
+      },
+    });
 
     setTimeout(abort, ABORT_DELAY);
   });

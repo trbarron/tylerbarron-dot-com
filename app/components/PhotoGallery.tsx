@@ -53,7 +53,7 @@ export default function PhotoGallery({
   const photos: Photo[] = images.map((img, index) =>
     typeof img === 'string'
       ? { src: img, alt: `${alt} ${index + 1}` }
-      : { ...img, alt: img.alt || `${alt} ${index + 1}` }
+      : { ...img, alt: img.alt || `${alt} ${index + 1}` },
   );
 
   const handleImageClick = (index: number) => {
@@ -80,7 +80,7 @@ export default function PhotoGallery({
     return 'w-full h-auto object-cover rounded-lg hover:opacity-90 transition-opacity';
   };
 
-  const slides = photos.map(photo => ({ src: photo.src }));
+  const slides = photos.map((photo) => ({ src: photo.src }));
 
   const renderPhoto = (photo: Photo, index: number) => (
     <div
@@ -88,14 +88,8 @@ export default function PhotoGallery({
       className={`${lightbox ? 'cursor-pointer' : ''} ${layout === 'inline' ? 'my-5' : ''}`}
       onClick={() => handleImageClick(index)}
     >
-      <img
-        src={photo.src}
-        alt={photo.alt}
-        className={getImageClass()}
-      />
-      {photo.caption && (
-        <p className="italic mt-2.5">{photo.caption}</p>
-      )}
+      <img src={photo.src} alt={photo.alt} className={getImageClass()} />
+      {photo.caption && <p className="mt-2.5 italic">{photo.caption}</p>}
     </div>
   );
 
@@ -113,12 +107,7 @@ export default function PhotoGallery({
       )}
 
       {lightbox && (
-        <LightboxComponent
-          open={isOpen}
-          close={() => setIsOpen(false)}
-          slides={slides}
-          index={currentIndex}
-        />
+        <LightboxComponent open={isOpen} close={() => setIsOpen(false)} slides={slides} index={currentIndex} />
       )}
     </>
   );

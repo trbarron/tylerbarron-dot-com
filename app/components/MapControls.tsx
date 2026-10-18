@@ -1,4 +1,3 @@
-
 interface MapControlsProps {
   showReviews: boolean;
   setShowReviews: (show: boolean) => void;
@@ -8,13 +7,12 @@ interface MapControlsProps {
 }
 
 const MapControls = ({
-    showReviews,
-    setShowReviews,
-    setShowPizzaScore,
-    scoreFilter,
-    setScoreFilter,
-  }: MapControlsProps) => {
-
+  showReviews,
+  setShowReviews,
+  setShowPizzaScore,
+  scoreFilter,
+  setScoreFilter,
+}: MapControlsProps) => {
   const handleVisualizationChange = (mode: string) => {
     if (mode === 'reviews') {
       setShowReviews(true);
@@ -26,33 +24,39 @@ const MapControls = ({
   };
 
   return (
-    <div className="bg-white border-4 border-black p-6 mb-6">
+    <div className="mb-6 border-4 border-black bg-white p-6">
       <div className="space-y-6">
         {/* Visualization Mode Selection */}
         <div className="space-y-3">
-          <div className="font-neo font-extrabold uppercase tracking-widest text-black text-sm border-b-2 border-black pb-2">Visualization Mode</div>
+          <div className="font-neo border-b-2 border-black pb-2 text-sm font-extrabold tracking-widest text-black uppercase">
+            Visualization Mode
+          </div>
           <div className="flex gap-6">
-            <label className="flex items-center space-x-3 cursor-pointer group">
+            <label className="group flex cursor-pointer items-center space-x-3">
               <input
                 type="radio"
                 name="vizMode"
                 value="scores"
                 checked={!showReviews}
                 onChange={() => handleVisualizationChange('scores')}
-                className="w-5 h-5 border-2 border-black text-black focus:ring-0 cursor-pointer appearance-none checked:bg-black"
+                className="h-5 w-5 cursor-pointer appearance-none border-2 border-black text-black checked:bg-black focus:ring-0"
               />
-              <span className="font-neo font-bold text-black group-hover:opacity-70 transition-opacity uppercase tracking-wide">Pizza Scores</span>
+              <span className="font-neo font-bold tracking-wide text-black uppercase transition-opacity group-hover:opacity-70">
+                Pizza Scores
+              </span>
             </label>
-            <label className="flex items-center space-x-3 cursor-pointer group">
+            <label className="group flex cursor-pointer items-center space-x-3">
               <input
                 type="radio"
                 name="vizMode"
                 value="reviews"
                 checked={showReviews}
                 onChange={() => handleVisualizationChange('reviews')}
-                className="w-5 h-5 border-2 border-black text-black focus:ring-0 cursor-pointer appearance-none checked:bg-black"
+                className="h-5 w-5 cursor-pointer appearance-none border-2 border-black text-black checked:bg-black focus:ring-0"
               />
-              <span className="font-neo font-bold text-black group-hover:opacity-70 transition-opacity uppercase tracking-wide">Raw Reviews</span>
+              <span className="font-neo font-bold tracking-wide text-black uppercase transition-opacity group-hover:opacity-70">
+                Raw Reviews
+              </span>
             </label>
           </div>
         </div>
@@ -60,11 +64,11 @@ const MapControls = ({
         {/* Score Filter Slider - only shown when in Pizza Scores mode */}
         {!showReviews && (
           <div className="space-y-3">
-            <div className="flex justify-between items-end border-b-2 border-black pb-2">
-              <div className="font-neo font-extrabold uppercase tracking-widest text-black text-sm">
+            <div className="flex items-end justify-between border-b-2 border-black pb-2">
+              <div className="font-neo text-sm font-extrabold tracking-widest text-black uppercase">
                 Minimum Pizza Score
               </div>
-              <div className="font-neo font-black text-2xl tracking-tighter text-black leading-none">
+              <div className="font-neo text-2xl leading-none font-black tracking-tighter text-black">
                 {scoreFilter.toFixed(1)}
               </div>
             </div>
@@ -78,9 +82,9 @@ const MapControls = ({
                 const value = parseFloat(e.target.value);
                 setScoreFilter(value);
               }}
-              className="w-full h-2 bg-gray-200 rounded-none appearance-none cursor-pointer border-2 border-black accent-black"
+              className="h-2 w-full cursor-pointer appearance-none rounded-none border-2 border-black bg-gray-200 accent-black"
             />
-            <div className="flex justify-between font-neo font-bold text-xs text-black opacity-60 uppercase tracking-widest">
+            <div className="font-neo flex justify-between text-xs font-bold tracking-widest text-black uppercase opacity-60">
               <span>0</span>
               <span>4.9</span>
             </div>

@@ -92,23 +92,22 @@ export function getMillisecondsUntilMidnight(timezone: string = TIMEZONE_CONFIG.
   }
 
   // Create midnight date in UTC
-  const midnight = new Date(Date.UTC(
-    tzDate.year!,
-    (tzDate.month! - 1),
-    tzDate.day! + 1, // Next day
-    0, 0, 0, 0
-  ));
+  const midnight = new Date(
+    Date.UTC(
+      tzDate.year!,
+      tzDate.month! - 1,
+      tzDate.day! + 1, // Next day
+      0,
+      0,
+      0,
+      0,
+    ),
+  );
 
   // Adjust for timezone offset
-  const nowInTz = new Date(Date.UTC(
-    tzDate.year!,
-    (tzDate.month! - 1),
-    tzDate.day!,
-    tzDate.hour!,
-    tzDate.minute!,
-    tzDate.second!,
-    0
-  ));
+  const nowInTz = new Date(
+    Date.UTC(tzDate.year!, tzDate.month! - 1, tzDate.day!, tzDate.hour!, tzDate.minute!, tzDate.second!, 0),
+  );
 
   const offsetMs = now.getTime() - nowInTz.getTime();
   const nextMidnightMs = midnight.getTime() - offsetMs;
@@ -145,11 +144,7 @@ export function isValidDate(dateString: string, timezone: string = TIMEZONE_CONF
   const date = new Date(year, month - 1, day);
 
   // Check if date is valid
-  if (
-    date.getFullYear() !== year ||
-    date.getMonth() !== month - 1 ||
-    date.getDate() !== day
-  ) {
+  if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
     return false;
   }
 
@@ -165,10 +160,7 @@ export function isValidDate(dateString: string, timezone: string = TIMEZONE_CONF
  * @param timezone - IANA timezone identifier
  * @returns Date string in YYYY-MM-DD format
  */
-export function getDateNDaysAgo(
-  daysAgo: number,
-  timezone: string = TIMEZONE_CONFIG.default
-): string {
+export function getDateNDaysAgo(daysAgo: number, timezone: string = TIMEZONE_CONFIG.default): string {
   const now = new Date();
   const past = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000);
   return getDateString(past, timezone);
@@ -198,10 +190,7 @@ export function getTimezoneHeaders(): Record<string, string> {
  * @param timezone - IANA timezone identifier
  * @returns Validated date string or today's date
  */
-export function normalizeDateParam(
-  dateParam: string | null,
-  timezone: string = TIMEZONE_CONFIG.default
-): string {
+export function normalizeDateParam(dateParam: string | null, timezone: string = TIMEZONE_CONFIG.default): string {
   // If no date provided, use today
   if (!dateParam) {
     return getTodayDateString(timezone);
@@ -275,7 +264,7 @@ export const COMMON_TIMEZONES = [
   'Pacific/Auckland',
 ] as const;
 
-export type CommonTimezone = typeof COMMON_TIMEZONES[number];
+export type CommonTimezone = (typeof COMMON_TIMEZONES)[number];
 
 /**
  * Validate timezone string

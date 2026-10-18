@@ -17,9 +17,7 @@ describe('legacyRedirectPath', () => {
   });
 
   it('preserves dynamic segments and the query string', () => {
-    expect(legacyRedirectPath('/collaborativeCheckmate/AbC/xYz', '?a=1')).toBe(
-      '/collaborative-checkmate/AbC/xYz?a=1',
-    );
+    expect(legacyRedirectPath('/collaborativeCheckmate/AbC/xYz', '?a=1')).toBe('/collaborative-checkmate/AbC/xYz?a=1');
   });
 
   it('redirects old .html URLs', () => {

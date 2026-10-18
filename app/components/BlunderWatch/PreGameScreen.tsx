@@ -9,37 +9,46 @@ interface PreGameScreenProps {
 
 export function PreGameScreen({ whiteElo, blackElo, blunderCount, onStart }: PreGameScreenProps) {
   return (
-    <div className="bg-white border-4 border-black p-8 mb-4 w-full">
-
+    <div className="mb-4 w-full border-4 border-black bg-white p-8">
       {/* Matchup */}
-      <div className="flex items-center justify-center gap-8 md:gap-12 mb-10">
+      <div className="mb-10 flex items-center justify-center gap-8 md:gap-12">
         <div className="text-center">
-          <div className="w-12 h-12 bg-white border-4 border-black mx-auto mb-3" />
-          <p className="font-neo font-extrabold text-black text-sm uppercase tracking-wider">White</p>
-          <p className="font-neo text-black opacity-60 text-xs font-bold uppercase">{whiteElo} Elo</p>
+          <div className="mx-auto mb-3 h-12 w-12 border-4 border-black bg-white" />
+          <p className="font-neo text-sm font-extrabold tracking-wider text-black uppercase">White</p>
+          <p className="font-neo text-xs font-bold text-black uppercase opacity-60">{whiteElo} Elo</p>
         </div>
-        <div className="font-neo font-black text-black opacity-20 text-3xl">VS</div>
+        <div className="font-neo text-3xl font-black text-black opacity-20">VS</div>
         <div className="text-center">
-          <div className="w-12 h-12 bg-black border-4 border-black mx-auto mb-3" />
-          <p className="font-neo font-extrabold text-black text-sm uppercase tracking-wider">Black</p>
-          <p className="font-neo text-black opacity-60 text-xs font-bold uppercase">{blackElo} Elo</p>
+          <div className="mx-auto mb-3 h-12 w-12 border-4 border-black bg-black" />
+          <p className="font-neo text-sm font-extrabold tracking-wider text-black uppercase">Black</p>
+          <p className="font-neo text-xs font-bold text-black uppercase opacity-60">{blackElo} Elo</p>
         </div>
       </div>
 
       {/* Blunder count */}
-      <div className="bg-gray-100 border-4 border-black px-4 py-4 mb-10 text-center">
-        <p className="font-neo text-sm md:text-base uppercase tracking-tighter font-bold text-black">
-          There are <span className="font-black text-2xl mx-1">{blunderCount}</span> White blunders in this game
+      <div className="mb-10 border-4 border-black bg-gray-100 px-4 py-4 text-center">
+        <p className="font-neo text-sm font-bold tracking-tighter text-black uppercase md:text-base">
+          There are <span className="mx-1 text-2xl font-black">{blunderCount}</span> White blunders in this game
         </p>
       </div>
 
       {/* How to play */}
-      <div className="border-t-4 border-black pt-8 mb-8">
-        <p className="font-neo font-extrabold text-black text-sm uppercase tracking-widest mb-4 text-center">How to play</p>
-        <ul className="font-neo text-sm md:text-base font-medium text-black space-y-3 max-w-md mx-auto list-disc pl-4 marker:text-black">
+      <div className="mb-8 border-t-4 border-black pt-8">
+        <p className="font-neo mb-4 text-center text-sm font-extrabold tracking-widest text-black uppercase">
+          How to play
+        </p>
+        <ul className="font-neo mx-auto max-w-md list-disc space-y-3 pl-4 text-sm font-medium text-black marker:text-black md:text-base">
           <li>Watch the game play out automatically</li>
-          <li>You are <strong>only looking for White's blunders</strong></li>
-          <li>Press <kbd className="bg-black text-white px-2 py-0.5 border-2 border-black font-mono text-xs font-bold uppercase">Space</kbd> or tap the button when White blunders</li>
+          <li>
+            You are <strong>only looking for White's blunders</strong>
+          </li>
+          <li>
+            Press{' '}
+            <kbd className="border-2 border-black bg-black px-2 py-0.5 font-mono text-xs font-bold text-white uppercase">
+              Space
+            </kbd>{' '}
+            or tap the button when White blunders
+          </li>
           <li>React fast — speed determines your points</li>
           <li>False positives cost you 30 points</li>
         </ul>
@@ -47,7 +56,7 @@ export function PreGameScreen({ whiteElo, blackElo, blunderCount, onStart }: Pre
 
       <button
         onClick={onStart}
-        className="w-full bg-black text-white border-4 border-black px-6 py-5 font-neo font-black text-xl uppercase tracking-tighter hover:bg-white hover:text-black transition-all"
+        className="font-neo w-full border-4 border-black bg-black px-6 py-5 text-xl font-black tracking-tighter text-white uppercase transition-all hover:bg-white hover:text-black"
       >
         START GAME
       </button>

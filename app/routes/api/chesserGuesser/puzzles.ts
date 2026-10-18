@@ -1,11 +1,11 @@
 // API Route: Get daily puzzles
 // GET /api/chesserGuesser/puzzles?date=YYYY-MM-DD
 
-import type { LoaderFunctionArgs } from "react-router";
-import { getRedisClient } from "~/utils/redis.server";
-import { getTodayDateString } from "~/utils/chesserGuesser/seededRandom";
-import type { ChessPuzzle, DailyPuzzleSet } from "~/utils/chesserGuesser/types";
-import { rateLimitMiddleware } from "~/utils/chesserGuesser/rateLimit.server";
+import type { LoaderFunctionArgs } from 'react-router';
+import { getRedisClient } from '~/utils/redis.server';
+import { getTodayDateString } from '~/utils/chesserGuesser/seededRandom';
+import type { ChessPuzzle, DailyPuzzleSet } from '~/utils/chesserGuesser/types';
+import { rateLimitMiddleware } from '~/utils/chesserGuesser/rateLimit.server';
 
 const REDIS_KEY_PREFIX = 'chesserGuesser:dailyPuzzles:';
 const TTL_7_DAYS = 7 * 24 * 60 * 60; // 7 days in seconds
@@ -28,12 +28,9 @@ async function fetchSinglePuzzle(index: number): Promise<ChessPuzzle> {
   let retries = 3;
   while (retries > 0) {
     try {
-      const response = await fetch(
-        'https://f73vgbj1jk.execute-api.us-west-2.amazonaws.com/prod/chesserGuesser',
-        {
-          signal: AbortSignal.timeout(10000), // 10 second timeout
-        }
-      );
+      const response = await fetch('https://f73vgbj1jk.execute-api.us-west-2.amazonaws.com/prod/chesserGuesser', {
+        signal: AbortSignal.timeout(10000), // 10 second timeout
+      });
 
       if (!response.ok) {
         throw new Error(`Failed to fetch puzzle ${index}: ${response.status}`);
@@ -58,7 +55,7 @@ async function fetchSinglePuzzle(index: number): Promise<ChessPuzzle> {
         };
       }
       // Wait a bit before retrying
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
     }
   }
 
@@ -68,7 +65,7 @@ async function fetchSinglePuzzle(index: number): Promise<ChessPuzzle> {
 
 async function fetchDailyPuzzles(): Promise<ChessPuzzle[]> {
   // Fetch all 4 puzzles in parallel since they're independent
-  return Promise.all([0, 1, 2, 3].map(i => fetchSinglePuzzle(i)));
+  return Promise.all([0, 1, 2, 3].map((i) => fetchSinglePuzzle(i)));
 }
 
 /**
@@ -115,10 +112,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     // Validate date format
     if (!/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
-      return Response.json(
-        { error: 'Invalid date format. Use YYYY-MM-DD.' },
-        { status: 400 }
-      );
+      return Response.json({ error: 'Invalid date format. Use YYYY-MM-DD.' }, { status: 400 });
     }
 
     // Check rate limit
@@ -139,9 +133,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
     });
   } catch (error) {
     console.error('Puzzles API error:', error);
-    return Response.json(
-      { error: 'Failed to fetch daily puzzles' },
-      { status: 500 }
-    );
+    return Response.json({ error: 'Failed to fetch daily puzzles' }, { status: 500 });
   }
 }

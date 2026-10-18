@@ -5,12 +5,16 @@ import type { BlunderResult } from './types';
 // One emoji per blunder (ordered by position)
 // 🟩 Great  🟨 Good  🟧 Okay  ⬜ Missed
 export function buildResultEmoji(blunderResults: BlunderResult[]): string {
-  const blunderEmojis = blunderResults.map(r => {
+  const blunderEmojis = blunderResults.map((r) => {
     switch (r.outcome) {
-      case 'caught_fast':   return '🟩';
-      case 'caught_medium': return '🟨';
-      case 'caught_slow':   return '🟧';
-      case 'missed':        return '⬜';
+      case 'caught_fast':
+        return '🟩';
+      case 'caught_medium':
+        return '🟨';
+      case 'caught_slow':
+        return '🟧';
+      case 'missed':
+        return '⬜';
     }
   });
 

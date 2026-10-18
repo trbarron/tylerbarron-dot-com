@@ -53,29 +53,29 @@ export function Leaderboard({ currentUsername, date }: LeaderboardProps) {
   }, [fetchLeaderboard]);
 
   return (
-    <div className="bg-white border-4 border-black">
-      <div className="bg-black text-white py-3 px-4 font-neo font-extrabold uppercase tracking-tighter text-lg border-b-4 border-black text-center md:text-left">
+    <div className="border-4 border-black bg-white">
+      <div className="font-neo border-b-4 border-black bg-black px-4 py-3 text-center text-lg font-extrabold tracking-tighter text-white uppercase md:text-left">
         TODAY'S LEADERBOARD
       </div>
 
       <div className="max-h-[500px] overflow-y-auto">
         {isLoading ? (
-          <div className="p-4 space-y-3">
+          <div className="space-y-3 p-4">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="flex items-center gap-4 h-8">
-                <Skeleton variant="rect" className="w-8 h-full" />
-                <Skeleton variant="rect" className="flex-1 h-full" />
-                <Skeleton variant="rect" className="w-16 h-full" />
+              <div key={i} className="flex h-8 items-center gap-4">
+                <Skeleton variant="rect" className="h-full w-8" />
+                <Skeleton variant="rect" className="h-full flex-1" />
+                <Skeleton variant="rect" className="h-full w-16" />
               </div>
             ))}
           </div>
         ) : error ? (
-          <div className="p-8 text-center font-neo font-bold text-black uppercase">
-            {error}
-          </div>
+          <div className="font-neo p-8 text-center font-bold text-black uppercase">{error}</div>
         ) : leaderboard.length === 0 ? (
-          <div className="p-8 text-center font-neo font-bold text-black opacity-50 uppercase">
-            No scores yet today.<br />Be the first!
+          <div className="font-neo p-8 text-center font-bold text-black uppercase opacity-50">
+            No scores yet today.
+            <br />
+            Be the first!
           </div>
         ) : (
           <>
@@ -85,25 +85,23 @@ export function Leaderboard({ currentUsername, date }: LeaderboardProps) {
               return (
                 <div
                   key={`${entry.username}-${i}`}
-                  className={`
-                    border-b-2 border-black p-3 font-neo
-                    ${isMe
-                      ? 'bg-gray-100 border-l-4 border-l-black text-black'
-                      : 'bg-white text-black'
-                    }
-                  `}
+                  className={`font-neo border-b-2 border-black p-3 ${
+                    isMe ? 'border-l-4 border-l-black bg-gray-100 text-black' : 'bg-white text-black'
+                  } `}
                 >
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <span className={`font-extrabold w-10 flex-shrink-0 text-lg ${entry.rank <= 3 ? 'scale-110' : 'opacity-50'}`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex min-w-0 flex-1 items-center gap-3">
+                      <span
+                        className={`w-10 flex-shrink-0 text-lg font-extrabold ${entry.rank <= 3 ? 'scale-110' : 'opacity-50'}`}
+                      >
                         {medal || `#${entry.rank}`}
                       </span>
-                      <span className="truncate font-bold text-lg tracking-tight">
+                      <span className="truncate text-lg font-bold tracking-tight">
                         {entry.username.toUpperCase()}
                         {isMe && ' (YOU)'}
                       </span>
                     </div>
-                    <div className="flex items-center gap-3 flex-shrink-0 text-right">
+                    <div className="flex flex-shrink-0 items-center gap-3 text-right">
                       <div className="flex flex-col items-end pr-2">
                         <span className="text-[10px] font-bold text-black opacity-60" title="Blunders caught">
                           {entry.blundersCaught}✓
@@ -114,9 +112,7 @@ export function Leaderboard({ currentUsername, date }: LeaderboardProps) {
                           </span>
                         )}
                       </div>
-                      <span className="font-black text-xl min-w-16 text-right text-black">
-                        {entry.score}
-                      </span>
+                      <span className="min-w-16 text-right text-xl font-black text-black">{entry.score}</span>
                     </div>
                   </div>
                 </div>
@@ -126,21 +122,21 @@ export function Leaderboard({ currentUsername, date }: LeaderboardProps) {
             {userRank && (
               <>
                 <div className="border-b-4 border-black" />
-                <div className="bg-gray-100 border-l-4 border-l-black border-b-2 border-black p-3 font-neo text-xs">
-                  <div className="flex justify-between items-center">
+                <div className="font-neo border-b-2 border-l-4 border-black border-l-black bg-gray-100 p-3 text-xs">
+                  <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <span className="font-extrabold w-10 text-lg text-black opacity-50">#{userRank.rank}</span>
-                      <span className="font-bold text-lg tracking-tight text-black">
+                      <span className="w-10 text-lg font-extrabold text-black opacity-50">#{userRank.rank}</span>
+                      <span className="text-lg font-bold tracking-tight text-black">
                         {userRank.username.toUpperCase()} (YOU)
                       </span>
                     </div>
-                    <span className="font-black text-xl min-w-16 text-right text-black">{userRank.score}</span>
+                    <span className="min-w-16 text-right text-xl font-black text-black">{userRank.score}</span>
                   </div>
                 </div>
               </>
             )}
 
-            <div className="p-3 text-center font-neo font-black text-sm uppercase bg-gray-100 border-t-2 border-black">
+            <div className="font-neo border-t-2 border-black bg-gray-100 p-3 text-center text-sm font-black uppercase">
               {totalPlayers} {totalPlayers === 1 ? 'player' : 'players'} competing today
             </div>
           </>

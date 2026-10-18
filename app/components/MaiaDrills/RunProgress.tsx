@@ -23,7 +23,7 @@ export function ProgressBar({ value, max, label, note, small }: ProgressBarProps
   const pct = max > 0 ? Math.min(100, (value / max) * 100) : 0;
   return (
     <div>
-      <div className="mb-1 flex justify-between font-neo text-xs text-gray-700">
+      <div className="font-neo mb-1 flex justify-between text-xs text-gray-700">
         <span>{label}</span>
         <span className="font-mono">{note ?? `${value.toLocaleString()} / ${max.toLocaleString()}`}</span>
       </div>
@@ -41,13 +41,13 @@ export function RunMessages({ run }: { run: AnalysisRun }) {
   return (
     <>
       {run.error && (
-        <div className="border-2 border-red-500 bg-red-100 p-3 font-neo text-sm text-red-800" role="alert">
+        <div className="font-neo border-2 border-red-500 bg-red-100 p-3 text-sm text-red-800" role="alert">
           <p>{run.error}</p>
-          {run.errorDetail && <p className="mt-1 break-words font-mono text-xs text-red-700">{run.errorDetail}</p>}
+          {run.errorDetail && <p className="mt-1 font-mono text-xs break-words text-red-700">{run.errorDetail}</p>}
         </div>
       )}
       {run.notice && (
-        <div className="border-2 border-black bg-gray-50 p-3 font-neo text-sm text-gray-800">{run.notice}</div>
+        <div className="font-neo border-2 border-black bg-gray-50 p-3 text-sm text-gray-800">{run.notice}</div>
       )}
     </>
   );
@@ -58,7 +58,7 @@ export default function RunProgress({ run }: { run: AnalysisRun }) {
   const { stage, gamesFetched, download, progress, backend } = run;
   return (
     <div className="space-y-3 border-2 border-black p-4" aria-live="polite">
-      <p className="font-neo text-sm font-bold uppercase tracking-wide">{STAGE_LABELS[stage]}</p>
+      <p className="font-neo text-sm font-bold tracking-wide uppercase">{STAGE_LABELS[stage]}</p>
       {stage === 'fetching' && <p className="font-neo text-sm">{gamesFetched} games so far</p>}
       {download && download.total > 0 && download.received < download.total && (
         <ProgressBar
@@ -104,7 +104,7 @@ export default function RunProgress({ run }: { run: AnalysisRun }) {
       <button
         onClick={run.cancel}
         disabled={stage === 'saving'}
-        className="border-2 border-black bg-white px-4 py-2 font-neo text-sm font-bold uppercase tracking-wide hover:bg-black hover:text-white disabled:opacity-50"
+        className="font-neo border-2 border-black bg-white px-4 py-2 text-sm font-bold tracking-wide uppercase hover:bg-black hover:text-white disabled:opacity-50"
       >
         {stage === 'analyzing' ? 'Stop and keep cards so far' : 'Cancel'}
       </button>

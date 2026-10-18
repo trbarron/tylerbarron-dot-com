@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 /*
  * Self-hosted from /fonts/*, so no third-party origin for visitors to be
@@ -24,24 +24,24 @@
  * Licence: /fonts/ibm-plex-mono-LICENSE.txt.
  */
 @font-face {
-  font-family: "IBM Plex Mono";
-  src: url("/fonts/ibm-plex-mono-latin-400-normal.woff2") format("woff2");
+  font-family: 'IBM Plex Mono';
+  src: url('/fonts/ibm-plex-mono-latin-400-normal.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "IBM Plex Mono";
-  src: url("/fonts/ibm-plex-mono-latin-700-normal.woff2") format("woff2");
+  font-family: 'IBM Plex Mono';
+  src: url('/fonts/ibm-plex-mono-latin-700-normal.woff2') format('woff2');
   font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "IBM Plex Mono";
-  src: url("/fonts/ibm-plex-mono-latin-400-italic.woff2") format("woff2");
+  font-family: 'IBM Plex Mono';
+  src: url('/fonts/ibm-plex-mono-latin-400-italic.woff2') format('woff2');
   font-weight: 400;
   font-style: italic;
   font-display: swap;
@@ -52,28 +52,24 @@
  * italic. Licence: /fonts/inter-LICENSE.txt.
  */
 @font-face {
-  font-family: "Inter";
-  src: url("/fonts/inter-latin-wght-normal.woff2") format("woff2");
+  font-family: 'Inter';
+  src: url('/fonts/inter-latin-wght-normal.woff2') format('woff2');
   font-weight: 100 900;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Inter";
-  src: url("/fonts/inter-latin-wght-italic.woff2") format("woff2");
+  font-family: 'Inter';
+  src: url('/fonts/inter-latin-wght-italic.woff2') format('woff2');
   font-weight: 100 900;
   font-style: italic;
   font-display: swap;
 }
 
 @theme {
-  --font-mono:
-    "IBM Plex Mono", "SF Mono", "Monaco", "Consolas", "Liberation Mono",
-    "Courier New", monospace;
-  --font-neo:
-    "Inter", system-ui, -apple-system, BlinkMacSystemFont, Helvetica, Arial,
-    sans-serif;
+  --font-mono: 'IBM Plex Mono', 'SF Mono', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
+  --font-neo: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;
 
   --spacing-xl: 49rem;
 
@@ -184,7 +180,7 @@
   }
 
   /* Footer social links - override button styling */
-  footer a[type="button"]:hover {
+  footer a[type='button']:hover {
     background-color: var(--color-accent) !important;
     color: #ffffff !important;
   }
@@ -210,7 +206,7 @@
   }
 
   /* Range slider styles */
-  input[type="range"] {
+  input[type='range'] {
     @apply border-0 bg-transparent p-0;
     -webkit-appearance: none;
     appearance: none;
@@ -219,7 +215,7 @@
     outline: none;
   }
 
-  input[type="range"]::-webkit-slider-thumb {
+  input[type='range']::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
     width: 24px;
@@ -230,7 +226,7 @@
     border-radius: 0;
   }
 
-  input[type="range"]::-moz-range-thumb {
+  input[type='range']::-moz-range-thumb {
     width: 24px;
     height: 24px;
     background: #000000;
@@ -240,7 +236,7 @@
   }
 
   /* Radio button styles */
-  input[type="radio"] {
+  input[type='radio'] {
     @apply border-2;
     -webkit-appearance: none;
     appearance: none;
@@ -255,13 +251,13 @@
     border-color: #000000;
   }
 
-  input[type="radio"]:checked {
+  input[type='radio']:checked {
     background-color: #000000;
     border-color: #000000;
   }
 
-  input[type="radio"]:checked::after {
-    content: "";
+  input[type='radio']:checked::after {
+    content: '';
     width: 8px;
     height: 8px;
     border-radius: 50%;
@@ -273,7 +269,7 @@
   }
 
   /* Checkbox styles */
-  input[type="checkbox"] {
+  input[type='checkbox'] {
     @apply border-2;
     -webkit-appearance: none;
     appearance: none;
@@ -288,13 +284,13 @@
     border-color: #000000;
   }
 
-  input[type="checkbox"]:checked {
+  input[type='checkbox']:checked {
     background-color: #000000;
     border-color: #000000;
   }
 
-  input[type="checkbox"]:checked::after {
-    content: "✓";
+  input[type='checkbox']:checked::after {
+    content: '✓';
     color: #ffffff;
     font-size: 14px;
     font-weight: bold;
@@ -516,18 +512,12 @@
       font-weight: 600;
     }
 
-    &
-      a:not(.block):not([class*="block"]):not(.no-underline):not(
-        [class*="no-underline"]
-      ) {
+    & a:not(.block):not([class*='block']):not(.no-underline):not([class*='no-underline']) {
       border-bottom: 3px solid #000000;
       padding-bottom: 2px;
     }
 
-    &
-      a:not(.block):not([class*="block"]):not(.no-underline):not(
-        [class*="no-underline"]
-      ):hover {
+    & a:not(.block):not([class*='block']):not(.no-underline):not([class*='no-underline']):hover {
       background-color: var(--color-accent);
       color: #ffffff;
       border-bottom: 3px solid var(--color-accent);

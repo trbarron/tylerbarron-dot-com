@@ -1,5 +1,5 @@
-import type { ActionFunctionArgs } from "react-router";
-import { getGame, claimWinByAbandonment } from "~/utils/multipleChoiceChess/gameState.server";
+import type { ActionFunctionArgs } from 'react-router';
+import { getGame, claimWinByAbandonment } from '~/utils/multipleChoiceChess/gameState.server';
 
 // A player can claim a win if their opponent's last_seen is older than this.
 // The threshold is enforced server-side; a stale client can't end a live game.
@@ -11,7 +11,7 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   try {
-    const body = await request.json() as { game_id: string; player_id: string };
+    const body = (await request.json()) as { game_id: string; player_id: string };
     const { game_id: gameId, player_id: playerId } = body;
 
     if (!gameId || !playerId) {
@@ -37,10 +37,7 @@ export async function action({ request }: ActionFunctionArgs) {
     const inactiveFor = Date.now() - opponentLastSeen;
 
     if (opponentLastSeen === 0 || inactiveFor < ABANDONMENT_THRESHOLD_MS) {
-      return Response.json(
-        { error: 'Opponent is still active', inactiveForMs: inactiveFor },
-        { status: 409 },
-      );
+      return Response.json({ error: 'Opponent is still active', inactiveForMs: inactiveFor }, { status: 409 });
     }
 
     await claimWinByAbandonment(gameId, claimingColor);

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 
 interface VideoProps {
   src: string;
@@ -12,12 +12,12 @@ export default function Video({ src, caption }: VideoProps) {
     setIsMounted(true);
   }, []);
 
-  let captionText = "";
-  let captionClassName = "";
+  let captionText = '';
+  let captionClassName = '';
 
   if (caption !== undefined) {
     captionText = caption;
-    captionClassName = "text-center text-gray-light text-sm pt-1";
+    captionClassName = 'text-center text-gray-light text-sm pt-1';
   }
 
   if (!isMounted) {
@@ -26,19 +26,17 @@ export default function Video({ src, caption }: VideoProps) {
   }
 
   return (
-    <section className="justify-center mx-auto w-3/4 h-fit lg:w-1/2">
-      <div className="p-2 bg-gray w-full h-full rounded shadow-md">
+    <section className="mx-auto h-fit w-3/4 justify-center lg:w-1/2">
+      <div className="bg-gray h-full w-full rounded p-2 shadow-md">
         <iframe
           src={src}
           title={src}
           frameBorder="0"
           allow="autoplay; encrypted-media"
           allowFullScreen
-          className="rounded w-full h-60"
+          className="h-60 w-full rounded"
         />
-        <div className={captionClassName}>
-          {captionText}
-        </div>
+        <div className={captionClassName}>{captionText}</div>
       </div>
     </section>
   );

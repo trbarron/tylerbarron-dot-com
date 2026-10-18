@@ -1,5 +1,5 @@
-import Timer from "~/components/Timer";
-import { GamePhase, type GamePhaseType } from "~/types/generated";
+import Timer from '~/components/Timer';
+import { GamePhase, type GamePhaseType } from '~/types/generated';
 
 interface GameControlsProps {
   gamePhase: GamePhaseType;
@@ -18,52 +18,69 @@ export default function GameControls({
   connected,
   selectedMove,
   lockedIn,
-  onLockInMove
+  onLockInMove,
 }: GameControlsProps) {
   return (
     <>
       {/* Game Phase Indicator */}
-      <div className="bg-white  border-2 border-black  p-4 mb-2">
-        <Timer
-          timeRemaining={timeRemaining}
-          key={timeRemainingKey}
-        />
-        <div className="relative h-12 flex items-center">
-          <div className="absolute w-full h-2 bg-gray-200  rounded-full"></div>
+      <div className="mb-2 border-2 border-black bg-white p-4">
+        <Timer timeRemaining={timeRemaining} key={timeRemainingKey} />
+        <div className="relative flex h-12 items-center">
+          <div className="absolute h-2 w-full rounded-full bg-gray-200"></div>
 
           {/* Phase Markers */}
-          <div className={`relative z-10 h-6 w-6 rounded-full border-2 border-black  ${gamePhase === GamePhase.TEAM1_SELECTION ? 'bg-accent' : 'bg-gray-300 '
-            } flex items-center justify-center text-xs text-white font-bold ml-0`}>•</div>
-          <div className="flex-grow h-2"></div>
+          <div
+            className={`relative z-10 h-6 w-6 rounded-full border-2 border-black ${
+              gamePhase === GamePhase.TEAM1_SELECTION ? 'bg-accent' : 'bg-gray-300'
+            } ml-0 flex items-center justify-center text-xs font-bold text-white`}
+          >
+            •
+          </div>
+          <div className="h-2 flex-grow"></div>
 
-          <div className={`relative z-10 h-6 w-6 rounded-full border-2 border-black  ${gamePhase === GamePhase.TEAM1_COMPUTING ? 'bg-accent' : 'bg-gray-300 '
-            } flex items-center justify-center text-xs text-white font-bold`}>•</div>
-          <div className="flex-grow h-2"></div>
+          <div
+            className={`relative z-10 h-6 w-6 rounded-full border-2 border-black ${
+              gamePhase === GamePhase.TEAM1_COMPUTING ? 'bg-accent' : 'bg-gray-300'
+            } flex items-center justify-center text-xs font-bold text-white`}
+          >
+            •
+          </div>
+          <div className="h-2 flex-grow"></div>
 
-          <div className={`relative z-10 h-6 w-6 rounded-full border-2 border-black  ${gamePhase === GamePhase.TEAM2_COMPUTING ? 'bg-accent' : 'bg-gray-300 '
-            } flex items-center justify-center text-xs text-white font-bold mr-0`}>•</div>
-          <div className="flex-grow h-2"></div>
+          <div
+            className={`relative z-10 h-6 w-6 rounded-full border-2 border-black ${
+              gamePhase === GamePhase.TEAM2_COMPUTING ? 'bg-accent' : 'bg-gray-300'
+            } mr-0 flex items-center justify-center text-xs font-bold text-white`}
+          >
+            •
+          </div>
+          <div className="h-2 flex-grow"></div>
 
-          <div className={`relative z-10 h-6 w-6 rounded-full border-2 border-black  ${gamePhase === GamePhase.TEAM2_SELECTION ? 'bg-accent' : 'bg-gray-300 '
-            } flex items-center justify-center text-xs text-white font-bold`}>•</div>
+          <div
+            className={`relative z-10 h-6 w-6 rounded-full border-2 border-black ${
+              gamePhase === GamePhase.TEAM2_SELECTION ? 'bg-accent' : 'bg-gray-300'
+            } flex items-center justify-center text-xs font-bold text-white`}
+          >
+            •
+          </div>
         </div>
-        <div className="flex justify-between text-xs mt-1 font-neo font-bold">
-          <span className="bg-white text-black border border-black  px-2 py-1 uppercase">Select</span>
-          <span className="bg-white text-black border border-black  px-2 py-1 uppercase">Compute</span>
-          <span className="bg-black text-white border border-black  px-2 py-1 uppercase">Compute</span>
-          <span className="bg-black text-white border border-black  px-2 py-1 uppercase">Select</span>
+        <div className="font-neo mt-1 flex justify-between text-xs font-bold">
+          <span className="border border-black bg-white px-2 py-1 text-black uppercase">Select</span>
+          <span className="border border-black bg-white px-2 py-1 text-black uppercase">Compute</span>
+          <span className="border border-black bg-black px-2 py-1 text-white uppercase">Compute</span>
+          <span className="border border-black bg-black px-2 py-1 text-white uppercase">Select</span>
         </div>
       </div>
 
       {/* Lock In Move Button */}
-      <div className="grid grid-cols-1 gap-2 mb-12">
+      <div className="mb-12 grid grid-cols-1 gap-2">
         <button
           onClick={onLockInMove}
-          className={`p-2 border-2 border-black  font-bold transition-colors duration-200 font-neo uppercase
-            ${!connected || !selectedMove || lockedIn
-              ? 'bg-gray-300  text-gray-500  cursor-not-allowed'
-              : 'bg-white  text-black  hover:bg-accent hover:text-white'
-            }`}
+          className={`font-neo border-2 border-black p-2 font-bold uppercase transition-colors duration-200 ${
+            !connected || !selectedMove || lockedIn
+              ? 'cursor-not-allowed bg-gray-300 text-gray-500'
+              : 'hover:bg-accent bg-white text-black hover:text-white'
+          }`}
           disabled={!connected || !selectedMove || lockedIn}
         >
           Lock In Move

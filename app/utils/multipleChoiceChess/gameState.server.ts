@@ -1,4 +1,4 @@
-import { getRedisClient } from "~/utils/redis.server";
+import { getRedisClient } from '~/utils/redis.server';
 
 const PREFIX = 'multipleChoiceChess';
 const TTL = 24 * 60 * 60; // 24 hours
@@ -187,10 +187,7 @@ export async function joinGame(gameId: string, playerId: string): Promise<GameSt
 
 // Mark a player as currently active. Called from the state poller so we can
 // detect abandonment when a player stops polling.
-export async function touchPlayer(
-  gameId: string,
-  color: 'white' | 'black',
-): Promise<void> {
+export async function touchPlayer(gameId: string, color: 'white' | 'black'): Promise<void> {
   const redis = getRedisClient();
   const field = color === 'white' ? 'white_last_seen' : 'black_last_seen';
   await redis.hset(gameKey(gameId), { [field]: String(Date.now()) });
@@ -198,10 +195,7 @@ export async function touchPlayer(
 
 // End a game because the opponent abandoned. Server-side validates the
 // inactivity threshold so the client can't claim a win on a live opponent.
-export async function claimWinByAbandonment(
-  gameId: string,
-  claimingColor: 'white' | 'black',
-): Promise<void> {
+export async function claimWinByAbandonment(gameId: string, claimingColor: 'white' | 'black'): Promise<void> {
   const redis = getRedisClient();
   const now = Date.now();
   await redis.hset(gameKey(gameId), {
@@ -266,10 +260,7 @@ export async function applyMove(gameId: string, update: MoveUpdate): Promise<voi
   await redis.expire(gameKey(gameId), TTL);
 }
 
-export async function resignGame(
-  gameId: string,
-  resigningColor: 'white' | 'black',
-): Promise<void> {
+export async function resignGame(gameId: string, resigningColor: 'white' | 'black'): Promise<void> {
   const redis = getRedisClient();
   const now = Date.now();
   const winner = resigningColor === 'white' ? 'black' : 'white';
@@ -295,12 +286,7 @@ export async function getAvailableGames(): Promise<AvailableGame[]> {
   const cutoff = Date.now() - TTL * 1000;
   await redis.zremrangebyscore(AVAILABLE_KEY, '-inf', cutoff);
 
-  const results = await redis.zrangebyscore(
-    AVAILABLE_KEY,
-    '-inf',
-    '+inf',
-    'WITHSCORES',
-  );
+  const results = await redis.zrangebyscore(AVAILABLE_KEY, '-inf', '+inf', 'WITHSCORES');
 
   const games: AvailableGame[] = [];
   for (let i = 0; i < results.length; i += 2) {

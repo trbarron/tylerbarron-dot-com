@@ -1,5 +1,5 @@
-import type { LoaderFunctionArgs } from "react-router";
-import { getGame, touchPlayer } from "~/utils/multipleChoiceChess/gameState.server";
+import type { LoaderFunctionArgs } from 'react-router';
+import { getGame, touchPlayer } from '~/utils/multipleChoiceChess/gameState.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);

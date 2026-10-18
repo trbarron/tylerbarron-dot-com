@@ -1,53 +1,46 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Link, useLoaderData, useRevalidator } from "react-router";
-import type { LoaderFunctionArgs } from "react-router";
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Link, useLoaderData, useRevalidator } from 'react-router';
+import type { LoaderFunctionArgs } from 'react-router';
 
-import { Navbar } from "../components/Navbar.js";
-import Footer from "../components/Footer.js";
-import Giscus from "~/components/Giscus";
-import TrophyModel from "~/components/TrophyModel";
-import { buildMeta } from "~/utils/seo";
-import {
-  activeTournamentId,
-  fetchLeaderboard,
-  fetchStatus,
-} from "~/utils/camelUpCup/tournament.server";
-import type { Leaderboard, LeaderboardBot, SubmissionStatus } from "~/utils/camelUpCup/types";
+import { Navbar } from '../components/Navbar.js';
+import Footer from '../components/Footer.js';
+import Giscus from '~/components/Giscus';
+import TrophyModel from '~/components/TrophyModel';
+import { buildMeta } from '~/utils/seo';
+import { activeTournamentId, fetchLeaderboard, fetchStatus } from '~/utils/camelUpCup/tournament.server';
+import type { Leaderboard, LeaderboardBot, SubmissionStatus } from '~/utils/camelUpCup/types';
 
 export function meta() {
   return buildMeta({
-    title: "Camel Up Cup",
+    title: 'Camel Up Cup',
     description:
-      "The living Camel Up Cup: upload a Python bot, it plays a tournament against the field, and the leaderboard updates.",
-    path: "/camel-up-cup",
+      'The living Camel Up Cup: upload a Python bot, it plays a tournament against the field, and the leaderboard updates.',
+    path: '/camel-up-cup',
   });
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const [board, activeId] = await Promise.all([
-    fetchLeaderboard(request),
-    activeTournamentId(),
-  ]);
+  const [board, activeId] = await Promise.all([fetchLeaderboard(request), activeTournamentId()]);
   const active = activeId ? await fetchStatus(request, activeId) : null;
   return { board, active };
 }
 
 const POLL_INTERVAL_MS = 5000;
-const TERMINAL_PHASES = new Set(["complete", "rejected", "error"]);
+const TERMINAL_PHASES = new Set(['complete', 'rejected', 'error']);
 
-type SortKey = "elo" | "submitted" | "wins" | "games" | "winPct" | "avgCoins" | "maxMoveMs";
-type SortDir = "asc" | "desc";
+type SortKey = 'elo' | 'submitted' | 'wins' | 'games' | 'winPct' | 'avgCoins' | 'maxMoveMs';
+type SortDir = 'asc' | 'desc';
 
 // Lower is better for max move time; higher is better for everything else.
 // Submitted defaults to newest first.
 const DEFAULT_SORT_DIR: Record<SortKey, SortDir> = {
-  elo: "desc",
-  submitted: "desc",
-  wins: "desc",
-  games: "desc",
-  winPct: "desc",
-  avgCoins: "desc",
-  maxMoveMs: "asc",
+  elo: 'desc',
+  submitted: 'desc',
+  wins: 'desc',
+  games: 'desc',
+  winPct: 'desc',
+  avgCoins: 'desc',
+  maxMoveMs: 'asc',
 };
 
 /** Defensive parse: missing key, null, or garbage all become null (never "Invalid Date"). */
@@ -58,7 +51,7 @@ function parseSubmitted(iso: string | null | undefined): Date | null {
 }
 
 function sortValue(bot: LeaderboardBot, key: SortKey): number | null {
-  if (key === "submitted") return parseSubmitted(bot.submitted)?.getTime() ?? null;
+  if (key === 'submitted') return parseSubmitted(bot.submitted)?.getTime() ?? null;
   return bot[key] ?? null;
 }
 
@@ -71,9 +64,9 @@ function compareStanding(a: LeaderboardBot, b: LeaderboardBot, hasElo: boolean):
 }
 
 const ELO_TOOLTIP =
-  "Winner-take-all Bradley-Terry rating on the Elo scale (anchored at 1500). " +
-  "Only winning counts — 2nd place rates the same as 4th — and beating a " +
-  "strong field pays more than farming a weak one. Wide spreads are normal.";
+  'Winner-take-all Bradley-Terry rating on the Elo scale (anchored at 1500). ' +
+  'Only winning counts — 2nd place rates the same as 4th — and beating a ' +
+  'strong field pays more than farming a weak one. Wide spreads are normal.';
 
 function SortableHeader({
   label,
@@ -81,7 +74,7 @@ function SortableHeader({
   activeKey,
   dir,
   onSort,
-  align = "right",
+  align = 'right',
   title,
   className,
 }: {
@@ -90,36 +83,36 @@ function SortableHeader({
   activeKey: SortKey;
   dir: SortDir;
   onSort: (key: SortKey) => void;
-  align?: "left" | "right";
+  align?: 'left' | 'right';
   title?: string;
   className?: string;
 }) {
   const active = sortKey === activeKey;
   return (
     <th
-      className={`py-2 pr-2 cursor-pointer select-none ${align === "right" ? "text-right" : ""} ${active ? "text-white" : "text-gray-400 hover:text-white"} ${className ?? ""}`}
+      className={`cursor-pointer py-2 pr-2 select-none ${align === 'right' ? 'text-right' : ''} ${active ? 'text-white' : 'text-gray-400 hover:text-white'} ${className ?? ''}`}
       onClick={() => onSort(sortKey)}
-      aria-sort={active ? (dir === "desc" ? "descending" : "ascending") : "none"}
+      aria-sort={active ? (dir === 'desc' ? 'descending' : 'ascending') : 'none'}
       title={title}
     >
       {label}
-      {active ? (dir === "desc" ? " ▼" : " ▲") : ""}
+      {active ? (dir === 'desc' ? ' ▼' : ' ▲') : ''}
     </th>
   );
 }
 
 function LeaderboardTable({ board }: { board: Leaderboard }) {
-  const medals = ["🥇", "🥈", "🥉"];
+  const medals = ['🥇', '🥈', '🥉'];
   // Old cached boards during rollout may predate the rating system —
   // hide the Elo column and fall back to win % ordering.
-  const hasElo = board.bots.some((bot) => typeof bot.elo === "number");
-  const [sortKey, setSortKey] = useState<SortKey>(hasElo ? "elo" : "winPct");
-  const [sortDir, setSortDir] = useState<SortDir>("desc");
+  const hasElo = board.bots.some((bot) => typeof bot.elo === 'number');
+  const [sortKey, setSortKey] = useState<SortKey>(hasElo ? 'elo' : 'winPct');
+  const [sortDir, setSortDir] = useState<SortDir>('desc');
 
   const handleSort = useCallback(
     (key: SortKey) => {
       if (key === sortKey) {
-        setSortDir((d) => (d === "desc" ? "asc" : "desc"));
+        setSortDir((d) => (d === 'desc' ? 'asc' : 'desc'));
       } else {
         setSortKey(key);
         setSortDir(DEFAULT_SORT_DIR[key]);
@@ -131,22 +124,20 @@ function LeaderboardTable({ board }: { board: Leaderboard }) {
   // Rank (and medals) always reflect standing by Elo (win % on boards
   // without ratings), independent of the column the table is sorted by.
   const rankByName = new Map(
-    [...board.bots]
-      .sort((a, b) => compareStanding(a, b, hasElo))
-      .map((bot, i) => [bot.name, i]),
+    [...board.bots].sort((a, b) => compareStanding(a, b, hasElo)).map((bot, i) => [bot.name, i]),
   );
 
   const bots = [...board.bots].sort((a, b) => {
-    if (sortKey === "elo") {
+    if (sortKey === 'elo') {
       const standing = compareStanding(a, b, hasElo);
-      return sortDir === "desc" ? standing : -standing;
+      return sortDir === 'desc' ? standing : -standing;
     }
     const av = sortValue(a, sortKey);
     const bv = sortValue(b, sortKey);
     // Unrated (null elo) or undated bots sort last regardless of direction.
     if (av == null || bv == null) return (av == null ? 1 : 0) - (bv == null ? 1 : 0);
     const diff = av - bv;
-    return sortDir === "desc" ? -diff : diff;
+    return sortDir === 'desc' ? -diff : diff;
   });
 
   return (
@@ -166,13 +157,50 @@ function LeaderboardTable({ board }: { board: Leaderboard }) {
               title="When the bot entered the tournament (house bots predate it)"
             />
             {hasElo && (
-              <SortableHeader label="Elo" sortKey="elo" activeKey={sortKey} dir={sortDir} onSort={handleSort} title={ELO_TOOLTIP} />
+              <SortableHeader
+                label="Elo"
+                sortKey="elo"
+                activeKey={sortKey}
+                dir={sortDir}
+                onSort={handleSort}
+                title={ELO_TOOLTIP}
+              />
             )}
-            <SortableHeader label="Wins" sortKey="wins" activeKey={sortKey} dir={sortDir} onSort={handleSort} className="hidden md:table-cell" />
-            <SortableHeader label="Games" sortKey="games" activeKey={sortKey} dir={sortDir} onSort={handleSort} className="hidden md:table-cell" />
+            <SortableHeader
+              label="Wins"
+              sortKey="wins"
+              activeKey={sortKey}
+              dir={sortDir}
+              onSort={handleSort}
+              className="hidden md:table-cell"
+            />
+            <SortableHeader
+              label="Games"
+              sortKey="games"
+              activeKey={sortKey}
+              dir={sortDir}
+              onSort={handleSort}
+              className="hidden md:table-cell"
+            />
             <SortableHeader label="Win %" sortKey="winPct" activeKey={sortKey} dir={sortDir} onSort={handleSort} />
-            <SortableHeader label="Coins" sortKey="avgCoins" activeKey={sortKey} dir={sortDir} onSort={handleSort} title="Average coins per game" className="hidden lg:table-cell" />
-            <SortableHeader label="Max ms" sortKey="maxMoveMs" activeKey={sortKey} dir={sortDir} onSort={handleSort} title="Slowest move, in milliseconds" className="hidden lg:table-cell" />
+            <SortableHeader
+              label="Coins"
+              sortKey="avgCoins"
+              activeKey={sortKey}
+              dir={sortDir}
+              onSort={handleSort}
+              title="Average coins per game"
+              className="hidden lg:table-cell"
+            />
+            <SortableHeader
+              label="Max ms"
+              sortKey="maxMoveMs"
+              activeKey={sortKey}
+              dir={sortDir}
+              onSort={handleSort}
+              title="Slowest move, in milliseconds"
+              className="hidden lg:table-cell"
+            />
           </tr>
         </thead>
         <tbody>
@@ -199,7 +227,7 @@ function LeaderboardTable({ board }: { board: Leaderboard }) {
                   {(bot.model || bot.note) && (
                     <div className="text-xs text-gray-400">
                       {bot.model ?? bot.note}
-                      {bot.year ? ` · ${bot.year}` : ""}
+                      {bot.year ? ` · ${bot.year}` : ''}
                     </div>
                   )}
                 </td>
@@ -210,16 +238,14 @@ function LeaderboardTable({ board }: { board: Leaderboard }) {
                 >
                   {submittedDate
                     ? submittedDate.toLocaleDateString(undefined, {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
                       })
-                    : "—"}
+                    : '—'}
                 </td>
                 {hasElo && (
-                  <td className="py-2 pr-2 text-right">
-                    {typeof bot.elo === "number" ? bot.elo.toFixed(1) : "—"}
-                  </td>
+                  <td className="py-2 pr-2 text-right">{typeof bot.elo === 'number' ? bot.elo.toFixed(1) : '—'}</td>
                 )}
                 <td className="hidden py-2 pr-2 text-right md:table-cell" title={`${bot.wins}`}>
                   {Math.round(bot.wins)}
@@ -234,14 +260,13 @@ function LeaderboardTable({ board }: { board: Leaderboard }) {
         </tbody>
       </table>
       <p className="mt-2 text-xs text-gray-500">
-        {board.totalGames} games per tournament · random 4-player seatings ·
-        ties split wins ·{" "}
+        {board.totalGames} games per tournament · random 4-player seatings · ties split wins ·{' '}
         {hasElo && (
           <>
             <span title={ELO_TOOLTIP} className="cursor-help underline decoration-dotted">
               Elo
-            </span>{" "}
-            counts only wins, adjusted for opponent strength ·{" "}
+            </span>{' '}
+            counts only wins, adjusted for opponent strength ·{' '}
           </>
         )}
         updated {new Date(board.updated).toLocaleString()}
@@ -254,7 +279,7 @@ function LeaderboardTable({ board }: { board: Leaderboard }) {
  *  pre-rating boards), among bots that have actually played. Null on an
  *  empty or gamesless board. */
 function championOf(board: Leaderboard): LeaderboardBot | null {
-  const hasElo = board.bots.some((bot) => typeof bot.elo === "number");
+  const hasElo = board.bots.some((bot) => typeof bot.elo === 'number');
   const played = board.bots.filter((bot) => bot.games > 0);
   if (played.length === 0) return null;
   return [...played].sort((a, b) => compareStanding(a, b, hasElo))[0];
@@ -263,7 +288,7 @@ function championOf(board: Leaderboard): LeaderboardBot | null {
 function ChampionShowcase({ board }: { board: Leaderboard }) {
   const champion = championOf(board);
   if (!champion) return null;
-  const hasElo = typeof champion.elo === "number";
+  const hasElo = typeof champion.elo === 'number';
   return (
     <section className="subarticle prose">
       <h3 className="subarticle-title">Champion</h3>
@@ -274,9 +299,7 @@ function ChampionShowcase({ board }: { board: Leaderboard }) {
           </div>
           <div className="text-center sm:text-left">
             <div className="mt-1 font-mono text-2xl font-bold break-all">{champion.name}</div>
-            {champion.author && (
-              <div className="text-sm text-gray-600">by {champion.author}</div>
-            )}
+            {champion.author && <div className="text-sm text-gray-600">by {champion.author}</div>}
             <div className="mt-2 text-sm">
               {hasElo && `Elo ${(champion.elo as number).toFixed(1)} · `}
               {champion.winPct}% win rate
@@ -289,22 +312,17 @@ function ChampionShowcase({ board }: { board: Leaderboard }) {
 }
 
 function StatusPanel({ status }: { status: SubmissionStatus }) {
-  const pct =
-    status.totalGames && status.gamesDone
-      ? Math.round((100 * status.gamesDone) / status.totalGames)
-      : 0;
+  const pct = status.totalGames && status.gamesDone ? Math.round((100 * status.gamesDone) / status.totalGames) : 0;
 
-  if (status.phase === "rejected") {
+  if (status.phase === 'rejected') {
     return (
       <div className="mx-4 mt-4 rounded border border-red-300 bg-red-50 p-4 text-sm lg:mx-auto lg:w-11/12">
-        <p className="font-bold">
-          {status.botName ?? "Your bot"} was rejected.
-        </p>
+        <p className="font-bold">{status.botName ?? 'Your bot'} was rejected.</p>
         <p className="mt-1">{status.reason}</p>
       </div>
     );
   }
-  if (status.phase === "error") {
+  if (status.phase === 'error') {
     return (
       <div className="mx-4 mt-4 rounded border border-red-300 bg-red-50 p-4 text-sm lg:mx-auto lg:w-11/12">
         <p className="font-bold">Something broke while running the tournament.</p>
@@ -312,11 +330,11 @@ function StatusPanel({ status }: { status: SubmissionStatus }) {
       </div>
     );
   }
-  if (status.phase === "complete") {
+  if (status.phase === 'complete') {
     return (
       <div className="mx-4 mt-4 rounded border border-green-300 bg-green-50 p-4 text-sm lg:mx-auto lg:w-11/12">
         <p className="font-bold">
-          {status.botName} is in! {status.rank ? `Finished rank #${status.rank}.` : ""}
+          {status.botName} is in! {status.rank ? `Finished rank #${status.rank}.` : ''}
         </p>
         <p className="mt-1">The leaderboard above reflects the new standings.</p>
       </div>
@@ -325,13 +343,13 @@ function StatusPanel({ status }: { status: SubmissionStatus }) {
   return (
     <div className="mx-4 mt-4 rounded border border-black bg-black p-4 text-sm text-white lg:mx-auto lg:w-11/12">
       <div className="font-bold text-white">
-        {status.phase === "running" ? (
+        {status.phase === 'running' ? (
           <>
-            Tournament running — <span className="font-mono">{status.botName ?? "your bot"}</span>{" "}
-            — {status.gamesDone}/{status.totalGames} games
+            Tournament running — <span className="font-mono">{status.botName ?? 'your bot'}</span> — {status.gamesDone}/
+            {status.totalGames} games
           </>
         ) : (
-          `${status.botName ?? "Submission"}: ${status.phase}…`
+          `${status.botName ?? 'Submission'}: ${status.phase}…`
         )}
       </div>
       <div className="mt-2 h-2 w-full rounded bg-gray-700">
@@ -355,30 +373,26 @@ function UploadForm({ onSubmitted }: { onSubmitted: (id: string) => void }) {
     setError(null);
     setBusy(true);
     try {
-      const res = await fetch("/api/camelUpCup/submit", {
-        method: "POST",
+      const res = await fetch('/api/camelUpCup/submit', {
+        method: 'POST',
         body: new FormData(e.currentTarget),
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? "Submission failed.");
+        setError(data.error ?? 'Submission failed.');
         return;
       }
       formRef.current?.reset();
       onSubmitted(data.id);
     } catch {
-      setError("Submission failed — check your connection and try again.");
+      setError('Submission failed — check your connection and try again.');
     } finally {
       setBusy(false);
     }
   };
 
   return (
-    <form
-      ref={formRef}
-      onSubmit={handleSubmit}
-      className="mx-auto mt-4 space-y-3 px-4 lg:w-11/12"
-    >
+    <form ref={formRef} onSubmit={handleSubmit} className="mx-auto mt-4 space-y-3 px-4 lg:w-11/12">
       <div className="flex flex-col gap-3 sm:flex-row">
         <label className="flex-1 text-sm">
           Bot name
@@ -418,7 +432,7 @@ function UploadForm({ onSubmitted }: { onSubmitted: (id: string) => void }) {
         disabled={busy}
         className="mx-auto block rounded bg-black px-4 py-2 text-sm text-white disabled:opacity-50"
       >
-        {busy ? "Submitting…" : "Enter the tournament"}
+        {busy ? 'Submitting…' : 'Enter the tournament'}
       </button>
     </form>
   );
@@ -454,7 +468,7 @@ const CamelUpCupLeaderboard = () => {
   }, [trackedId, status, revalidator]);
 
   return (
-    <div className="flex min-h-screen flex-col bg-black bg-fixed relative z-10">
+    <div className="relative z-10 flex min-h-screen flex-col bg-black bg-fixed">
       <Navbar />
       <main className="flex-grow">
         <section className="article">
@@ -466,15 +480,11 @@ const CamelUpCupLeaderboard = () => {
               <section className="subarticle prose">
                 <div className="overflow-hidden bg-white break-words">
                   <p>
-                    The{" "}
-                    <Link to="/camel-up-cup/2018">
-                      original 2018 bring-your-own-bot tournament
-                    </Link>{" "}
-                    never really ended.
+                    The <Link to="/camel-up-cup/2018">original 2018 bring-your-own-bot tournament</Link> never really
+                    ended.
                     <br />
-                    Write a Python bot that plays Camel Up, upload it below,
-                    and it'll play a batch of games against every bot on this
-                    board.
+                    Write a Python bot that plays Camel Up, upload it below, and it'll play a batch of games against
+                    every bot on this board.
                   </p>
                 </div>
               </section>
@@ -487,10 +497,7 @@ const CamelUpCupLeaderboard = () => {
                   {board ? (
                     <LeaderboardTable board={board} />
                   ) : (
-                    <p>
-                      No tournament results yet — be the first to kick one
-                      off by submitting a bot.
-                    </p>
+                    <p>No tournament results yet — be the first to kick one off by submitting a bot.</p>
                   )}
                 </div>
               </section>
@@ -499,21 +506,15 @@ const CamelUpCupLeaderboard = () => {
                 <h3 className="subarticle-title">Enter your bot</h3>
                 <div className="overflow-hidden bg-white break-words">
                   <p>
-                    One .py file, one class with a{" "}
-                    <code className="font-mono">move(player, gamestate)</code>{" "}
-                    method returning <code className="font-mono">[0]</code>{" "}
-                    (roll), <code className="font-mono">[1, trap_type, pos]</code>,{" "}
-                    <code className="font-mono">[2, camel]</code> (round bet),{" "}
-                    <code className="font-mono">[3, camel]</code> (game winner) or{" "}
-                    <code className="font-mono">[4, camel]</code> (game loser).
-                    Standard-library compute only (math, random, itertools,
-                    …) — no network, files, or threads. Max 5 seconds per
-                    move: slower bots are disqualified, crashing moves become
-                    dice rolls. Grab the engine and full rules from{" "}
-                    <a href="https://github.com/trbarron/Camel_Up_Cup_2K18">
-                      the GitHub repo
-                    </a>{" "}
-                    to test locally first.
+                    One .py file, one class with a <code className="font-mono">move(player, gamestate)</code> method
+                    returning <code className="font-mono">[0]</code> (roll),{' '}
+                    <code className="font-mono">[1, trap_type, pos]</code>,{' '}
+                    <code className="font-mono">[2, camel]</code> (round bet),{' '}
+                    <code className="font-mono">[3, camel]</code> (game winner) or{' '}
+                    <code className="font-mono">[4, camel]</code> (game loser). Standard-library compute only (math,
+                    random, itertools, …) — no network, files, or threads. Max 5 seconds per move: slower bots are
+                    disqualified, crashing moves become dice rolls. Grab the engine and full rules from{' '}
+                    <a href="https://github.com/trbarron/Camel_Up_Cup_2K18">the GitHub repo</a> to test locally first.
                   </p>
                   {status && TERMINAL_PHASES.has(status.phase) ? (
                     <>
@@ -525,8 +526,7 @@ const CamelUpCupLeaderboard = () => {
                       <StatusPanel status={status} />
                     ) : (
                       <p className="mt-4 text-sm text-gray-600">
-                        Submission received — waiting for the tournament to
-                        pick it up…
+                        Submission received — waiting for the tournament to pick it up…
                       </p>
                     )
                   ) : (
@@ -538,8 +538,8 @@ const CamelUpCupLeaderboard = () => {
           </article>
         </section>
 
-        <section className="max-w-4xl mx-auto mb-8 bg-white/95 backdrop-blur-sm px-6 lg:px-12 py-8">
-          <h2 className="text-2xl font-extrabold text-black font-neo uppercase tracking-tight border-b-4 border-black pb-2 mb-6">
+        <section className="mx-auto mb-8 max-w-4xl bg-white/95 px-6 py-8 backdrop-blur-sm lg:px-12">
+          <h2 className="font-neo mb-6 border-b-4 border-black pb-2 text-2xl font-extrabold tracking-tight text-black uppercase">
             Comments
           </h2>
           <Giscus term="camel-up-cup" />

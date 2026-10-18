@@ -15,10 +15,7 @@ import { createSeededRandom, dateSeed, getTodayDateString } from './seededRandom
  * @param totalPuzzles - Total number of puzzles available (default 400)
  * @returns Array of 4 puzzle indices
  */
-export function selectDailyPuzzleIndices(
-  dateString: string,
-  totalPuzzles: number = 400
-): number[] {
+export function selectDailyPuzzleIndices(dateString: string, totalPuzzles: number = 400): number[] {
   const seed = dateSeed(dateString);
   const rng = createSeededRandom(seed);
 
@@ -28,7 +25,7 @@ export function selectDailyPuzzleIndices(
   // Select one puzzle from each quarter to ensure variety
   for (let quarter = 0; quarter < 4; quarter++) {
     const start = quarter * quarterSize;
-    const end = (quarter === 3) ? totalPuzzles : (quarter + 1) * quarterSize;
+    const end = quarter === 3 ? totalPuzzles : (quarter + 1) * quarterSize;
     const index = start + Math.floor(rng() * (end - start));
     indices.push(index);
   }
@@ -44,26 +41,23 @@ export function selectDailyPuzzleIndices(
  */
 export function selectDailyPuzzles(
   allPuzzles: ChessPuzzle[],
-  dateString: string = getTodayDateString()
+  dateString: string = getTodayDateString(),
 ): DailyPuzzleSet {
   const seed = dateSeed(dateString);
   const _rng = createSeededRandom(seed);
 
   // Simple selection: pick 4 random puzzles deterministically
   const indices = selectDailyPuzzleIndices(dateString, allPuzzles.length);
-  const selectedPuzzles = indices.map(i => allPuzzles[i]);
+  const selectedPuzzles = indices.map((i) => allPuzzles[i]);
 
   return {
     date: dateString,
     puzzles: selectedPuzzles,
-    seed
+    seed,
   };
 }
 
-export function calculatePuzzleScore(
-  guess: number,
-  actual: number
-): number {
+export function calculatePuzzleScore(guess: number, actual: number): number {
   return Math.abs(guess - actual);
 }
 

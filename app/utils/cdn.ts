@@ -71,14 +71,9 @@ export function preloadImage(path: string): string {
  *   src={getImageUrl('SSBM/falco1.jpg')}
  * />
  */
-export function getResponsiveSrcSet(
-  basePath: string,
-  extension: string = 'jpg'
-): string {
+export function getResponsiveSrcSet(basePath: string, extension: string = 'jpg'): string {
   const sizes = [400, 800, 1200];
-  return sizes
-    .map(width => `${getImageUrl(`${basePath}-${width}.${extension}`)} ${width}w`)
-    .join(', ');
+  return sizes.map((width) => `${getImageUrl(`${basePath}-${width}.${extension}`)} ${width}w`).join(', ');
 }
 
 /**
@@ -98,10 +93,7 @@ export function getResponsiveSrcSet(
  *   <img src={sources.fallback} alt="..." />
  * </picture>
  */
-export function getModernImageSources(
-  basePath: string,
-  originalExt: string = 'jpg'
-) {
+export function getModernImageSources(basePath: string, originalExt: string = 'jpg') {
   return {
     avif: getResponsiveSrcSet(basePath, 'avif'),
     webp: getResponsiveSrcSet(basePath, 'webp'),
@@ -114,14 +106,7 @@ export function getModernImageSources(
  * Add your image directories here for autocomplete
  */
 export type ImageDirectory =
-  | 'SSBM'
-  | 'CamelUpCup'
-  | 'CatTracker'
-  | 'ChesserGuesser'
-  | 'GenerativeArt'
-  | 'Global'
-  | 'Riddler'
-  | 'Set';
+  'SSBM' | 'CamelUpCup' | 'CatTracker' | 'ChesserGuesser' | 'GenerativeArt' | 'Global' | 'Riddler' | 'Set';
 
 /**
  * Helper to ensure type-safe image paths

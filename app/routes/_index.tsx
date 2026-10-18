@@ -1,22 +1,19 @@
-import { useEffect, useState } from "react";
-import Footer from "~/components/Footer";
+import { useEffect, useState } from 'react';
+import Footer from '~/components/Footer';
 import { Link, useLoaderData } from 'react-router';
-import { buildMeta } from "~/utils/seo";
+import { buildMeta } from '~/utils/seo';
 
 export function meta() {
   return [
-    ...buildMeta({ path: "/" }),
+    ...buildMeta({ path: '/' }),
     // Person structured data so search engines connect the site to its author.
     {
-      "script:ld+json": {
-        "@context": "https://schema.org",
-        "@type": "Person",
-        name: "Tyler Barron",
-        url: "https://tylerbarron.com",
-        sameAs: [
-          "https://github.com/trbarron",
-          "https://www.linkedin.com/in/tyler-barron-61972855/",
-        ],
+      'script:ld+json': {
+        '@context': 'https://schema.org',
+        '@type': 'Person',
+        name: 'Tyler Barron',
+        url: 'https://tylerbarron.com',
+        sameAs: ['https://github.com/trbarron', 'https://www.linkedin.com/in/tyler-barron-61972855/'],
       },
     },
   ];
@@ -65,16 +62,16 @@ const CATEGORY_BY_KEY: Record<string, CategoryId> = {
   'pizza-rating': 'puzzles',
   // games
   'spheroid-zero': 'games',
-  'planomancer': 'games',
-  'SSBM': 'games',
-  'stardewLLMDialog': 'games',
+  planomancer: 'games',
+  SSBM: 'games',
+  stardewLLMDialog: 'games',
   // computer vision
-  'set': 'vision',
+  set: 'vision',
   'bouldering-tracker': 'vision',
   'cat-tracker': 'vision',
   // gadgets & toys
-  'vestaboardController': 'gadgets',
-  'smartCyclingFanController': 'gadgets',
+  vestaboardController: 'gadgets',
+  smartCyclingFanController: 'gadgets',
   'generative-art': 'gadgets',
   'youtube-speed-sense': 'gadgets',
 };
@@ -88,21 +85,41 @@ function categoryOf(to: string): CategoryId | null {
 }
 
 const staticLinks: ProjectLink[] = [
-  { to: "/the-riddler", title: "FiveThirtyEight's The Riddler", description: "Math puzzles and problems" },
-  { to: "/camel-up-cup", title: "Camel Up Cup", description: "\"Bring your own board game playing bot\" competition" },
-  { to: "/chesser-guesser", title: "Chesser Guesser", description: "Can you tell who is winning the chess game?" },
-  { to: "/blunder-watch", title: "Blunder Watch", description: "Spot the blunders as a chess game plays out" },
-  { to: "/collaborative-checkmate", title: "Collaborative Checkmate", description: "Play chess with your friends" },
-  { to: "/multiple-choice-chess", title: "Multiple Choice Chess", description: "Pick the best move from four engine-generated options" },
-  { to: "/marginal-maia-mentor", title: "Marginal Maia Mentor", description: "Flashcards from the moves a slightly stronger you would have played" },
-  { to: "/pizza-rating", title: "National Pizza Ratings", description: "Using Domino's to find the best pizza" },
-  { to: "/cat-tracker", title: "Cat Work Tracker", description: "Measuring the cat's time in the office" },
-  { to: "https://trbarron.itch.io/spheroid-zero", title: "Spheroid Zero", description: "A Godot game, a game jam submission" },
-  { to: "/set", title: "Set", description: "Using computer vision to play a board game" },
-  { to: "/bouldering-tracker", title: "Bouldering Tracker", description: "Using computer vision to track climbing style" },
-  { to: "/SSBM", title: "Super Smash Bros. Melee Mods", description: "Collection of hardware and software mods" },
-  { to: "/generative-art", title: "Generative Art", description: "Dive into plotters and generative art" },
-  { to: "https://chromewebstore.google.com/detail/youtube-speed-sense/efgmcojhefjjdpdnnmclekblhpaiaedo", title: "YouTube Speed Sense", description: "Adjust video playback speed based on categories" },
+  { to: '/the-riddler', title: "FiveThirtyEight's The Riddler", description: 'Math puzzles and problems' },
+  { to: '/camel-up-cup', title: 'Camel Up Cup', description: '"Bring your own board game playing bot" competition' },
+  { to: '/chesser-guesser', title: 'Chesser Guesser', description: 'Can you tell who is winning the chess game?' },
+  { to: '/blunder-watch', title: 'Blunder Watch', description: 'Spot the blunders as a chess game plays out' },
+  { to: '/collaborative-checkmate', title: 'Collaborative Checkmate', description: 'Play chess with your friends' },
+  {
+    to: '/multiple-choice-chess',
+    title: 'Multiple Choice Chess',
+    description: 'Pick the best move from four engine-generated options',
+  },
+  {
+    to: '/marginal-maia-mentor',
+    title: 'Marginal Maia Mentor',
+    description: 'Flashcards from the moves a slightly stronger you would have played',
+  },
+  { to: '/pizza-rating', title: 'National Pizza Ratings', description: "Using Domino's to find the best pizza" },
+  { to: '/cat-tracker', title: 'Cat Work Tracker', description: "Measuring the cat's time in the office" },
+  {
+    to: 'https://trbarron.itch.io/spheroid-zero',
+    title: 'Spheroid Zero',
+    description: 'A Godot game, a game jam submission',
+  },
+  { to: '/set', title: 'Set', description: 'Using computer vision to play a board game' },
+  {
+    to: '/bouldering-tracker',
+    title: 'Bouldering Tracker',
+    description: 'Using computer vision to track climbing style',
+  },
+  { to: '/SSBM', title: 'Super Smash Bros. Melee Mods', description: 'Collection of hardware and software mods' },
+  { to: '/generative-art', title: 'Generative Art', description: 'Dive into plotters and generative art' },
+  {
+    to: 'https://chromewebstore.google.com/detail/youtube-speed-sense/efgmcojhefjjdpdnnmclekblhpaiaedo',
+    title: 'YouTube Speed Sense',
+    description: 'Adjust video playback speed based on categories',
+  },
 ];
 
 const LS_KEY = 'bw.homepage.cats';
@@ -114,9 +131,9 @@ function pad2(n: number) {
 function ProjectCard({ to, title, description }: ProjectLink) {
   return (
     <div className="border-4 border-black bg-white/90 backdrop-blur-sm transition-transform duration-150 ease-out motion-reduce:transition-none [@media(hover:hover)]:hover:-translate-x-[3px] [@media(hover:hover)]:hover:-translate-y-[3px] [@media(hover:hover)]:hover:shadow-[6px_6px_0_0_#111]">
-      <Link to={to} className="block p-6 no-underline hover:no-underline h-full">
-        <div className="font-neo font-bold text-xl text-black tracking-wide">{title.toUpperCase()}</div>
-        <div className="font-neo text-sm mt-2 opacity-75 text-black font-medium">{description}</div>
+      <Link to={to} className="block h-full p-6 no-underline hover:no-underline">
+        <div className="font-neo text-xl font-bold tracking-wide text-black">{title.toUpperCase()}</div>
+        <div className="font-neo mt-2 text-sm font-medium text-black opacity-75">{description}</div>
       </Link>
     </div>
   );
@@ -134,16 +151,16 @@ function CategorySection({ id, label, projects, open, onToggle }: CategorySectio
   if (projects.length === 0) return null;
   const bodyId = `cat-body-${id}`;
   return (
-    <div className="w-full mb-8">
+    <div className="mb-8 w-full">
       <button
         type="button"
         onClick={onToggle}
         aria-expanded={open}
         aria-controls={bodyId}
-        className="w-full flex items-center gap-4 py-3 px-0 cursor-pointer text-left border-0 bg-transparent hover:bg-transparent hover:text-black"
+        className="flex w-full cursor-pointer items-center gap-4 border-0 bg-transparent px-0 py-3 text-left hover:bg-transparent hover:text-black"
       >
-        <span aria-hidden="true" className="inline-block w-12 h-1 bg-black" />
-        <span className="font-neo font-semibold text-lg tracking-wide text-black uppercase">{label}</span>
+        <span aria-hidden="true" className="inline-block h-1 w-12 bg-black" />
+        <span className="font-neo text-lg font-semibold tracking-wide text-black uppercase">{label}</span>
         <svg
           aria-hidden="true"
           width="14"
@@ -160,7 +177,7 @@ function CategorySection({ id, label, projects, open, onToggle }: CategorySectio
         className={`relative grid transition-[grid-template-rows] duration-[250ms] ease-out motion-reduce:transition-none ${open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}
       >
         <div className="overflow-hidden">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 pb-3 pl-1 pr-2">
+          <div className="grid grid-cols-1 gap-6 pt-6 pr-2 pb-3 pl-1 md:grid-cols-2">
             {projects.map((p) => (
               <ProjectCard key={p.to} {...p} />
             ))}
@@ -172,12 +189,14 @@ function CategorySection({ id, label, projects, open, onToggle }: CategorySectio
 }
 
 function formatPostDate(iso: string) {
-  return new Date(iso).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    timeZone: 'UTC',
-  }).toUpperCase();
+  return new Date(iso)
+    .toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      timeZone: 'UTC',
+    })
+    .toUpperCase();
 }
 
 function groupPostsByYear(posts: Post[]) {
@@ -209,7 +228,11 @@ export default function Index() {
   const allProjects: ProjectLink[] = [...staticLinks, ...projectPosts];
 
   const byCategory: Record<CategoryId, ProjectLink[]> = {
-    chess: [], puzzles: [], games: [], vision: [], gadgets: [],
+    chess: [],
+    puzzles: [],
+    games: [],
+    vision: [],
+    gadgets: [],
   };
   for (const p of allProjects) {
     const cat = categoryOf(p.to);
@@ -217,7 +240,11 @@ export default function Index() {
   }
 
   const [openMap, setOpenMap] = useState<Record<CategoryId, boolean>>({
-    chess: true, puzzles: true, games: true, vision: true, gadgets: true,
+    chess: true,
+    puzzles: true,
+    games: true,
+    vision: true,
+    gadgets: true,
   });
 
   useEffect(() => {
@@ -236,7 +263,11 @@ export default function Index() {
   const toggle = (id: CategoryId) => {
     setOpenMap((prev) => {
       const next = { ...prev, [id]: !prev[id] };
-      try { localStorage.setItem(LS_KEY, JSON.stringify(next)); } catch { /* noop */ }
+      try {
+        localStorage.setItem(LS_KEY, JSON.stringify(next));
+      } catch {
+        /* noop */
+      }
       return next;
     });
   };
@@ -245,26 +276,26 @@ export default function Index() {
   const writingByYear = groupPostsByYear(writingPosts);
 
   return (
-    <main className="min-h-screen relative font-neo z-10">
-      <section className="w-full py-20 top-0 z-10 flex items-center justify-center border-b-4 border-black bg-white/95 backdrop-blur-sm">
-        <div className="text-center px-4">
-          <h1 className="text-5xl md:text-7xl xl:text-8xl text-black font-neo font-extrabold tracking-tighter">
+    <main className="font-neo relative z-10 min-h-screen">
+      <section className="top-0 z-10 flex w-full items-center justify-center border-b-4 border-black bg-white/95 py-20 backdrop-blur-sm">
+        <div className="px-4 text-center">
+          <h1 className="font-neo text-5xl font-extrabold tracking-tighter text-black md:text-7xl xl:text-8xl">
             BARRON WASTELAND
           </h1>
-          <p className="text-black text-xl xl:text-2xl font-neo font-semibold mt-4 tracking-wide opacity-80 uppercase">
+          <p className="font-neo mt-4 text-xl font-semibold tracking-wide text-black uppercase opacity-80 xl:text-2xl">
             A SERIES OF FLAT CIRCLES
           </p>
         </div>
       </section>
 
-      <section className="relative w-full flex items-center justify-center py-20">
+      <section className="relative flex w-full items-center justify-center py-20">
         {/* Vertical white runner behind the projects/writing column so the links read clearly over the dichroic background. */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[min(100%,1024px)] bg-white z-0"
+          className="pointer-events-none absolute top-0 bottom-0 left-1/2 z-0 w-[min(100%,1024px)] -translate-x-1/2 bg-white"
         />
-        <div className="relative z-10 flex flex-col items-center w-full max-w-5xl">
-          <h2 className="inline-block text-4xl lg:text-5xl font-neo font-extrabold mb-12 border-b-8 border-black pb-2 tracking-tighter uppercase text-black bg-white px-4">
+        <div className="relative z-10 flex w-full max-w-5xl flex-col items-center">
+          <h2 className="font-neo mb-12 inline-block border-b-8 border-black bg-white px-4 pb-2 text-4xl font-extrabold tracking-tighter text-black uppercase lg:text-5xl">
             PROJECTS
           </h2>
 
@@ -281,19 +312,19 @@ export default function Index() {
             ))}
           </div>
 
-          <div className="w-full px-8 mt-16">
+          <div className="mt-16 w-full px-8">
             <hr className="border-0 border-t-[3px] border-black" />
           </div>
 
-          <h2 className="inline-block text-4xl lg:text-5xl font-neo font-extrabold mt-16 mb-12 border-b-8 border-black pb-2 tracking-tighter uppercase text-black bg-white px-4">
+          <h2 className="font-neo mt-16 mb-12 inline-block border-b-8 border-black bg-white px-4 pb-2 text-4xl font-extrabold tracking-tighter text-black uppercase lg:text-5xl">
             WRITING
           </h2>
 
-          <div className="w-full px-8 space-y-12">
+          <div className="w-full space-y-12 px-8">
             {writingByYear.map(({ year, items }) => (
               <div key={year}>
                 <div className="flex items-baseline border-b-[2.5px] border-black pb-2">
-                  <span className="font-neo font-black text-2xl md:text-3xl text-black tracking-tight">{year}</span>
+                  <span className="font-neo text-2xl font-black tracking-tight text-black md:text-3xl">{year}</span>
                   <span className="ml-auto font-mono text-[11px] text-neutral-500 uppercase">
                     {pad2(items.length)} {items.length === 1 ? 'POST' : 'POSTS'}
                   </span>
@@ -303,15 +334,20 @@ export default function Index() {
                     <li key={post.slug} className="border-b border-black/10 last:border-b-0">
                       <Link
                         to={`/blog/${post.slug}`}
-                        className="grid grid-cols-[110px_1fr_24px] md:grid-cols-[140px_1fr_24px] gap-5 items-center px-3 py-3 no-underline hover:no-underline group transition-all duration-150 [@media(hover:hover)]:hover:bg-black [@media(hover:hover)]:hover:pl-6 motion-reduce:transition-none"
+                        className="group grid grid-cols-[110px_1fr_24px] items-center gap-5 px-3 py-3 no-underline transition-all duration-150 hover:no-underline motion-reduce:transition-none md:grid-cols-[140px_1fr_24px] [@media(hover:hover)]:hover:bg-black [@media(hover:hover)]:hover:pl-6"
                       >
-                        <span className="font-mono text-xs text-neutral-500 [@media(hover:hover)]:group-hover:text-white/80 uppercase">
+                        <span className="font-mono text-xs text-neutral-500 uppercase [@media(hover:hover)]:group-hover:text-white/80">
                           {formatPostDate(post.date)}
                         </span>
-                        <span className="font-neo font-black text-base md:text-lg text-black [@media(hover:hover)]:group-hover:text-white tracking-tight">
+                        <span className="font-neo text-base font-black tracking-tight text-black md:text-lg [@media(hover:hover)]:group-hover:text-white">
                           {post.title}
                         </span>
-                        <span aria-hidden="true" className="text-right text-black/40 [@media(hover:hover)]:group-hover:text-white">→</span>
+                        <span
+                          aria-hidden="true"
+                          className="text-right text-black/40 [@media(hover:hover)]:group-hover:text-white"
+                        >
+                          →
+                        </span>
                       </Link>
                     </li>
                   ))}

@@ -2,17 +2,17 @@ import { Link } from 'react-router';
 
 export function Navbar() {
   return (
-    <nav className="border-b-4 border-black flex flex-wrap items-center justify-between px-4 py-6 bg-white/90 backdrop-blur-sm relative z-10">
-      <Link 
+    <nav className="relative z-10 flex flex-wrap items-center justify-between border-b-4 border-black bg-white/90 px-4 py-6 backdrop-blur-sm">
+      <Link
         to="/"
-        className="container px-4 mx-auto flex flex-wrap items-center justify-between hover:bg-accent  hover:text-white group no-underline hover:no-underline"
+        className="hover:bg-accent group container mx-auto flex flex-wrap items-center justify-between px-4 no-underline hover:text-white hover:no-underline"
       >
-        <div className="w-full relative flex justify-between lg:w-auto lg:static lg:block lg:justify-start font-neo">
-          <div className="leading-tight whitespace-no-wrap">
-            <div className="text-4xl text-black  font-extrabold group-hover:text-white tracking-tighter">
+        <div className="font-neo relative flex w-full justify-between lg:static lg:block lg:w-auto lg:justify-start">
+          <div className="whitespace-no-wrap leading-tight">
+            <div className="text-4xl font-extrabold tracking-tighter text-black group-hover:text-white">
               BARRON WASTELAND
             </div>
-            <div className="text-lg text-black  group-hover:text-white font-semibold tracking-wide">
+            <div className="text-lg font-semibold tracking-wide text-black group-hover:text-white">
               A SERIES OF FLAT CIRCLES
             </div>
           </div>

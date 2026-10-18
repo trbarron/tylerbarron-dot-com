@@ -79,7 +79,7 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
         return next;
       });
     },
-    [card, deckId]
+    [card, deckId],
   );
 
   const scoreMoves = async (fen: string, moves: string[]): Promise<Map<string, number> | null> => {
@@ -113,7 +113,7 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
       graded = gradeByScores(
         guess,
         target === undefined || mine === undefined ? null : { target, guess: mine },
-        deck.settings.alsoGoodWin
+        deck.settings.alsoGoodWin,
       );
       setChecking(false);
     }
@@ -176,8 +176,8 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
   };
 
   const header = (
-    <div className="flex flex-wrap items-center justify-between gap-2 font-neo text-sm">
-      <button onClick={onExit} className="font-bold uppercase tracking-wide text-gray-600 hover:text-black">
+    <div className="font-neo flex flex-wrap items-center justify-between gap-2 text-sm">
+      <button onClick={onExit} className="font-bold tracking-wide text-gray-600 uppercase hover:text-black">
         ← Deck
       </button>
       <span className="font-mono text-gray-700">
@@ -207,7 +207,7 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
 
       <div className="border-4 border-black bg-white">
         <div className="border-b-4 border-black bg-black px-4 py-3 text-white">
-          <p className="font-neo text-sm font-bold uppercase tracking-wide">
+          <p className="font-neo text-sm font-bold tracking-wide uppercase">
             {orientation} to play · move {moveLabel}
           </p>
           <p className="font-neo text-xs text-white/70">
@@ -247,15 +247,13 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
           </Suspense>
         </div>
 
-        <div className="space-y-3 border-t-4 border-black p-4 font-neo text-black" aria-live="polite">
+        <div className="font-neo space-y-3 border-t-4 border-black p-4 text-black" aria-live="polite">
           {!answer && !checking && (
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="text-sm text-gray-700">
-                {misses.length ? 'Nope. One more try' : 'Make a move'}
-              </p>
+              <p className="text-sm text-gray-700">{misses.length ? 'Nope. One more try' : 'Make a move'}</p>
               <button
                 onClick={reveal}
-                className="border-2 border-black px-3 py-1 text-xs font-bold uppercase tracking-wide hover:bg-black hover:text-white"
+                className="border-2 border-black px-3 py-1 text-xs font-bold tracking-wide uppercase hover:bg-black hover:text-white"
               >
                 Show answer
               </button>
@@ -289,7 +287,9 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
                 </li>
                 {extraGuesses(card, answer).map((g) => (
                   <li key={g.uci}>
-                    <span className={`inline-block w-3 ${isAlsoGood(answer, g) ? 'bg-blue-600' : 'bg-yellow-500'}`}>&nbsp;</span>{' '}
+                    <span className={`inline-block w-3 ${isAlsoGood(answer, g) ? 'bg-blue-600' : 'bg-yellow-500'}`}>
+                      &nbsp;
+                    </span>{' '}
                     You tried <strong className="font-mono">{g.san}</strong>
                     {g.eval !== undefined && <span className="text-gray-600"> ({formatEval(g.eval, card.color)})</span>}
                   </li>
@@ -318,7 +318,7 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
                 </div>
                 <button
                   onClick={next}
-                  className="border-4 border-black bg-black px-5 py-2 font-extrabold uppercase tracking-wide text-white hover:bg-white hover:text-black"
+                  className="border-4 border-black bg-black px-5 py-2 font-extrabold tracking-wide text-white uppercase hover:bg-white hover:text-black"
                 >
                   Next card →
                 </button>

@@ -40,7 +40,7 @@ function getClientIp(request: Request): string {
 export async function checkRateLimit(
   request: Request,
   bucket: string,
-  limit: { max: number; windowSeconds: number }
+  limit: { max: number; windowSeconds: number },
 ): Promise<RateLimitVerdict> {
   try {
     const redis = getRedisClient();

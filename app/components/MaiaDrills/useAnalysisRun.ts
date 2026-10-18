@@ -135,10 +135,13 @@ export function useAnalysisRun() {
 
       const startMaia = () => {
         const engine = new maiaModule.MaiaEngine({ onProgress: setDownload });
-        engine.ready.then((b) => {
-          backendNow = b;
-          setBackend(b);
-        }, () => {});
+        engine.ready.then(
+          (b) => {
+            backendNow = b;
+            setBackend(b);
+          },
+          () => {},
+        );
         return engine;
       };
       // A new deck starts loading Maia while games are fetched. Adding to a deck
@@ -147,8 +150,9 @@ export function useAnalysisRun() {
       const games = await fetching;
       setGamesFetched(games.length);
       const newestGameAt = games.reduce<number | undefined>(
-        (newest, g) => (g.playedAt !== undefined && (newest === undefined || g.playedAt > newest) ? g.playedAt : newest),
-        undefined
+        (newest, g) =>
+          g.playedAt !== undefined && (newest === undefined || g.playedAt > newest) ? g.playedAt : newest,
+        undefined,
       );
       const empty: RunResult = {
         cards: [],
@@ -179,10 +183,15 @@ export function useAnalysisRun() {
       await Promise.race([stockfish.ready(), rejectOnAbort(controller.signal)]);
 
       enter('analyzing');
-      const result = await analyzeGames(games, request.settings, { maia, stockfish }, {
-        signal: controller.signal,
-        onProgress: setProgress,
-      });
+      const result = await analyzeGames(
+        games,
+        request.settings,
+        { maia, stockfish },
+        {
+          signal: controller.signal,
+          onProgress: setProgress,
+        },
+      );
 
       enter('saving');
       // Games are analyzed newest first, so even a stopped run covers the newest game.
@@ -243,7 +252,7 @@ function keepScreenOn(): () => void {
         if (stopped) void s.release();
         else sentinel = s;
       },
-      () => {} // Denied (e.g. battery saver): the run just goes without it.
+      () => {}, // Denied (e.g. battery saver): the run just goes without it.
     );
   };
   document.addEventListener('visibilitychange', acquire);

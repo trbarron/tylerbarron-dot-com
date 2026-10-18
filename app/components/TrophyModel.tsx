@@ -46,11 +46,7 @@ export default function TrophyModel({
 
   if (!ready) {
     return (
-      <div
-        className={`flex items-center justify-center ${className}`}
-        role="img"
-        aria-label={alt}
-      >
+      <div className={`flex items-center justify-center ${className}`} role="img" aria-label={alt}>
         <span className="animate-pulse text-6xl motion-reduce:animate-none">🏆</span>
       </div>
     );

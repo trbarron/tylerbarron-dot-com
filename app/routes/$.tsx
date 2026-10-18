@@ -1,11 +1,11 @@
-import { useEffect } from "react";
-import { Link, data, redirect, useLocation } from "react-router";
-import type { LoaderFunctionArgs } from "react-router";
-import { Navbar } from "~/components/Navbar";
-import Footer from "~/components/Footer";
-import { buildMeta } from "~/utils/seo";
-import { trackNotFound } from "~/utils/analytics";
-import { legacyRedirectPath } from "./legacyRedirect";
+import { useEffect } from 'react';
+import { Link, data, redirect, useLocation } from 'react-router';
+import type { LoaderFunctionArgs } from 'react-router';
+import { Navbar } from '~/components/Navbar';
+import Footer from '~/components/Footer';
+import { buildMeta } from '~/utils/seo';
+import { trackNotFound } from '~/utils/analytics';
+import { legacyRedirectPath } from './legacyRedirect';
 
 // Render the 404 page with a 404 status. Matching the URL (instead of letting
 // it fall through to the root ErrorBoundary) keeps the root loader running, so
@@ -23,7 +23,7 @@ export function loader({ request }: LoaderFunctionArgs) {
 }
 
 export function meta() {
-  return buildMeta({ title: "404", noIndex: true });
+  return buildMeta({ title: '404', noIndex: true });
 }
 
 export default function NotFound() {
@@ -34,25 +34,21 @@ export default function NotFound() {
   }, [location]);
 
   return (
-    <div className="min-h-screen flex flex-col relative z-10">
+    <div className="relative z-10 flex min-h-screen flex-col">
       <Navbar />
-      <main className="flex-grow flex items-center justify-center px-4 py-16">
-        <div className="border-4 border-black bg-white/95 w-full max-w-lg">
+      <main className="flex flex-grow items-center justify-center px-4 py-16">
+        <div className="w-full max-w-lg border-4 border-black bg-white/95">
           {/* Big number */}
           <div className="border-b-4 border-black px-8 pt-8 pb-6">
-            <p className="font-neo font-black text-[10rem] leading-none tracking-tighter text-black select-none">
-              404
-            </p>
+            <p className="font-neo text-[10rem] leading-none font-black tracking-tighter text-black select-none">404</p>
           </div>
 
           {/* Message */}
           <div className="border-b-4 border-black px-8 py-6">
-            <p className="font-neo font-black text-xl uppercase tracking-tight text-black mb-3">
-              Page Not Found
-            </p>
-            <p className="font-neo font-medium text-base text-black leading-relaxed">
-              Whatever you were looking for isn&apos;t here. It may have moved,
-              been deleted, or never existed in the wasteland.
+            <p className="font-neo mb-3 text-xl font-black tracking-tight text-black uppercase">Page Not Found</p>
+            <p className="font-neo text-base leading-relaxed font-medium text-black">
+              Whatever you were looking for isn&apos;t here. It may have moved, been deleted, or never existed in the
+              wasteland.
             </p>
           </div>
 
@@ -60,7 +56,7 @@ export default function NotFound() {
           <div className="px-8 py-6">
             <Link
               to="/"
-              className="inline-block border-4 border-black bg-black text-white font-neo font-black uppercase tracking-wide px-6 py-3 hover:bg-white hover:text-black transition-all duration-100"
+              className="font-neo inline-block border-4 border-black bg-black px-6 py-3 font-black tracking-wide text-white uppercase transition-all duration-100 hover:bg-white hover:text-black"
             >
               Back to Home
             </Link>

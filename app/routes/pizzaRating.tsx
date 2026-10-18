@@ -1,22 +1,22 @@
 // Import components
-import { lazy, Suspense } from "react";
-import { Navbar } from "../components/Navbar.js";
-import Footer from "../components/Footer.js";
+import { lazy, Suspense } from 'react';
+import { Navbar } from '../components/Navbar.js';
+import Footer from '../components/Footer.js';
 
-const PizzaScoringMap = lazy(() => import("~/components/PizzaScoringMap"));
-import { buildMeta } from "~/utils/seo";
+const PizzaScoringMap = lazy(() => import('~/components/PizzaScoringMap'));
+import { buildMeta } from '~/utils/seo';
 
 export function meta() {
   return buildMeta({
-    title: "Pizza Ratings",
-    description: "Personal pizza ratings and an interactive map of pizza coverage.",
-    path: "/pizza-rating",
+    title: 'Pizza Ratings',
+    description: 'Personal pizza ratings and an interactive map of pizza coverage.',
+    path: '/pizza-rating',
   });
 }
 
 const PizzaRating = () => {
   return (
-    <div className="flex min-h-screen flex-col bg-fixed relative z-10">
+    <div className="relative z-10 flex min-h-screen flex-col bg-fixed">
       <Navbar />
       <main className="flex-grow">
         <section className="article">

@@ -37,9 +37,7 @@ describe('computeCdnBase', () => {
 describe('rewriteAssetSrcs', () => {
   it('rewrites /images/ src to the CDN base', () => {
     const code = 'src:"/images/acpl_timecontrol_analysis_all_combined.jpg"';
-    expect(rewriteAssetSrcs(code, CDN)).toBe(
-      `src:"${CDN}/images/acpl_timecontrol_analysis_all_combined.jpg"`,
-    );
+    expect(rewriteAssetSrcs(code, CDN)).toBe(`src:"${CDN}/images/acpl_timecontrol_analysis_all_combined.jpg"`);
   });
 
   it('rewrites /fonts/ src to the CDN base', () => {
@@ -49,9 +47,7 @@ describe('rewriteAssetSrcs', () => {
 
   it('rewrites every occurrence', () => {
     const code = 'src:"/images/a.jpg" then src:"/images/b.png"';
-    expect(rewriteAssetSrcs(code, CDN)).toBe(
-      `src:"${CDN}/images/a.jpg" then src:"${CDN}/images/b.png"`,
-    );
+    expect(rewriteAssetSrcs(code, CDN)).toBe(`src:"${CDN}/images/a.jpg" then src:"${CDN}/images/b.png"`);
   });
 
   it('leaves the code unchanged when no CDN base is provided', () => {

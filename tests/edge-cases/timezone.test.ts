@@ -120,7 +120,7 @@ describe('Timezone Boundary Tests', () => {
         '2024-01-15', // Monday
       ];
 
-      const puzzleSets = dates.map(date => selectDailyPuzzleIndices(date, 400));
+      const puzzleSets = dates.map((date) => selectDailyPuzzleIndices(date, 400));
 
       expect(puzzleSets[0]).not.toEqual(puzzleSets[1]);
     });
@@ -241,7 +241,7 @@ describe('Timezone Boundary Tests', () => {
       }
     });
 
-    it('should use today\'s date when date parameter is empty', async () => {
+    it("should use today's date when date parameter is empty", async () => {
       mockRedis.get.mockResolvedValue(null);
       const response = await puzzlesLoader(createLoaderArgs('/api/chesserGuesser/puzzles?date='));
       // Empty string is treated as "no date param", uses today's date

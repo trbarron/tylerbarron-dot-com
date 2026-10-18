@@ -49,7 +49,7 @@ function getClientIP(request: Request): string {
 
   // Use first IP from X-Forwarded-For
   if (forwardedFor) {
-    const ips = forwardedFor.split(',').map(ip => ip.trim());
+    const ips = forwardedFor.split(',').map((ip) => ip.trim());
     return ips[0];
   }
 
@@ -69,11 +69,7 @@ function getClientIP(request: Request): string {
  * Check rate limit using Redis
  * Implements sliding window counter algorithm
  */
-async function checkRateLimit(
-  key: string,
-  maxRequests: number,
-  windowSeconds: number
-): Promise<RateLimitResult> {
+async function checkRateLimit(key: string, maxRequests: number, windowSeconds: number): Promise<RateLimitResult> {
   const redis = getRedisClient();
   const now = Date.now();
   const windowStart = now - windowSeconds * 1000;
@@ -90,9 +86,8 @@ async function checkRateLimit(
 
     // Calculate when the limit will reset
     const oldestEntry = await redis.zrange(zKey, 0, 0, 'WITHSCORES');
-    const resetAt = oldestEntry.length > 1
-      ? parseInt(oldestEntry[1], 10) + windowSeconds * 1000
-      : now + windowSeconds * 1000;
+    const resetAt =
+      oldestEntry.length > 1 ? parseInt(oldestEntry[1], 10) + windowSeconds * 1000 : now + windowSeconds * 1000;
 
     if (currentCount >= maxRequests) {
       // Rate limit exceeded
@@ -131,67 +126,42 @@ async function checkRateLimit(
  * Check rate limit for puzzle submissions
  * Enforces maximum 4 submissions per day per user
  */
-export async function checkSubmissionRateLimit(
-  username: string,
-  date: string
-): Promise<RateLimitResult> {
+export async function checkSubmissionRateLimit(username: string, date: string): Promise<RateLimitResult> {
   const key = `submission:${date}:${username}`;
 
-  return checkRateLimit(
-    key,
-    RATE_LIMITS.submission.maxPerDay,
-    RATE_LIMITS.submission.windowSeconds
-  );
+  return checkRateLimit(key, RATE_LIMITS.submission.maxPerDay, RATE_LIMITS.submission.windowSeconds);
 }
 
 /**
  * Check cooldown between submissions
  * Prevents rapid-fire submissions
  */
-export async function checkSubmissionCooldown(
-  username: string
-): Promise<RateLimitResult> {
+export async function checkSubmissionCooldown(username: string): Promise<RateLimitResult> {
   const key = `cooldown:${username}`;
 
-  return checkRateLimit(
-    key,
-    1,
-    RATE_LIMITS.submission.cooldownSeconds
-  );
+  return checkRateLimit(key, 1, RATE_LIMITS.submission.cooldownSeconds);
 }
 
 /**
  * Check rate limit for leaderboard queries
  * Prevents excessive API calls
  */
-export async function checkLeaderboardRateLimit(
-  request: Request
-): Promise<RateLimitResult> {
+export async function checkLeaderboardRateLimit(request: Request): Promise<RateLimitResult> {
   const ip = getClientIP(request);
   const key = `leaderboard:${ip}`;
 
-  return checkRateLimit(
-    key,
-    RATE_LIMITS.leaderboard.maxPerMinute,
-    RATE_LIMITS.leaderboard.windowSeconds
-  );
+  return checkRateLimit(key, RATE_LIMITS.leaderboard.maxPerMinute, RATE_LIMITS.leaderboard.windowSeconds);
 }
 
 /**
  * Check rate limit for puzzle fetches
  * Prevents excessive API calls
  */
-export async function checkPuzzleRateLimit(
-  request: Request
-): Promise<RateLimitResult> {
+export async function checkPuzzleRateLimit(request: Request): Promise<RateLimitResult> {
   const ip = getClientIP(request);
   const key = `puzzles:${ip}`;
 
-  return checkRateLimit(
-    key,
-    RATE_LIMITS.puzzles.maxPerMinute,
-    RATE_LIMITS.puzzles.windowSeconds
-  );
+  return checkRateLimit(key, RATE_LIMITS.puzzles.maxPerMinute, RATE_LIMITS.puzzles.windowSeconds);
 }
 
 /**
@@ -233,7 +203,7 @@ export function createRateLimitError(result: RateLimitResult): {
 export async function rateLimitMiddleware(
   request: Request,
   endpoint: 'submission' | 'leaderboard' | 'puzzles',
-  identifier?: string
+  identifier?: string,
 ): Promise<{ error: ReturnType<typeof createRateLimitError>; headers: Record<string, string> } | null> {
   let result: RateLimitResult;
 
@@ -284,7 +254,7 @@ export async function resetRateLimit(key: string): Promise<void> {
 export async function getRateLimitInfo(
   key: string,
   maxRequests: number,
-  windowSeconds: number
+  windowSeconds: number,
 ): Promise<RateLimitResult> {
   const redis = getRedisClient();
   const now = Date.now();
@@ -297,17 +267,14 @@ export async function getRateLimitInfo(
     const currentCount = await redis.zcount(zKey, windowStart, now);
 
     const oldestEntry = await redis.zrange(zKey, 0, 0, 'WITHSCORES');
-    const resetAt = oldestEntry.length > 1
-      ? parseInt(oldestEntry[1], 10) + windowSeconds * 1000
-      : now + windowSeconds * 1000;
+    const resetAt =
+      oldestEntry.length > 1 ? parseInt(oldestEntry[1], 10) + windowSeconds * 1000 : now + windowSeconds * 1000;
 
     return {
       allowed: currentCount < maxRequests,
       remaining: Math.max(0, maxRequests - currentCount),
       resetAt,
-      retryAfter: currentCount >= maxRequests
-        ? Math.ceil((resetAt - now) / 1000)
-        : undefined,
+      retryAfter: currentCount >= maxRequests ? Math.ceil((resetAt - now) / 1000) : undefined,
     };
   } catch (error) {
     console.error('Rate limit info error:', error);

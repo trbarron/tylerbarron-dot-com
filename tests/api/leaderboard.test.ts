@@ -63,19 +63,11 @@ describe('Leaderboard API', () => {
 
       expect(data.leaderboard).toHaveLength(50);
       expect(data.totalPlayers).toBe(100);
-      expect(mockRedis.zrange).toHaveBeenCalledWith(
-        'chesserGuesser:leaderboard:2024-01-15',
-        0,
-        49,
-        'WITHSCORES'
-      );
+      expect(mockRedis.zrange).toHaveBeenCalledWith('chesserGuesser:leaderboard:2024-01-15', 0, 49, 'WITHSCORES');
     });
 
     it('should respect custom limit parameter', async () => {
-      const mockLeaderboardData = Array.from({ length: 10 }, (_, i) => [
-        `user${i}`,
-        String(400 - i * 10),
-      ]).flat();
+      const mockLeaderboardData = Array.from({ length: 10 }, (_, i) => [`user${i}`, String(400 - i * 10)]).flat();
 
       mockRedis.zrange.mockResolvedValue(mockLeaderboardData);
       mockRedis.zcard.mockResolvedValue(50);
@@ -85,12 +77,7 @@ describe('Leaderboard API', () => {
       const data = await response.json();
 
       expect(data.leaderboard).toHaveLength(10);
-      expect(mockRedis.zrange).toHaveBeenCalledWith(
-        'chesserGuesser:leaderboard:2024-01-15',
-        0,
-        9,
-        'WITHSCORES'
-      );
+      expect(mockRedis.zrange).toHaveBeenCalledWith('chesserGuesser:leaderboard:2024-01-15', 0, 9, 'WITHSCORES');
     });
 
     it('should enforce maximum limit of 100', async () => {
@@ -112,11 +99,7 @@ describe('Leaderboard API', () => {
     });
 
     it('should calculate ranks correctly', async () => {
-      const mockLeaderboardData = [
-        'alice', '400',
-        'bob', '395',
-        'charlie', '390',
-      ];
+      const mockLeaderboardData = ['alice', '400', 'bob', '395', 'charlie', '390'];
 
       mockRedis.zrange.mockResolvedValue(mockLeaderboardData);
       mockRedis.zcard.mockResolvedValue(3);
@@ -140,10 +123,7 @@ describe('Leaderboard API', () => {
     });
 
     it('should include user rank even if outside top N', async () => {
-      const mockLeaderboardData = Array.from({ length: 50 }, (_, i) => [
-        `user${i}`,
-        String(400 - i * 5),
-      ]).flat();
+      const mockLeaderboardData = Array.from({ length: 50 }, (_, i) => [`user${i}`, String(400 - i * 5)]).flat();
 
       mockRedis.zrange.mockResolvedValue(mockLeaderboardData);
       mockRedis.zrank.mockResolvedValue(75); // User is rank 76
@@ -153,11 +133,14 @@ describe('Leaderboard API', () => {
       // For the user rank lookup (individual gets)
       mockRedis.get.mockImplementation((key: string) => {
         if (key.includes(':completed:')) return Promise.resolve('4');
-        if (key.includes(':summary:')) return Promise.resolve(JSON.stringify({
-          username: 'myuser',
-          totalScore: 200,
-          lastUpdated: Date.now(),
-        }));
+        if (key.includes(':summary:'))
+          return Promise.resolve(
+            JSON.stringify({
+              username: 'myuser',
+              totalScore: 200,
+              lastUpdated: Date.now(),
+            }),
+          );
         return Promise.resolve(null);
       });
 
@@ -172,10 +155,7 @@ describe('Leaderboard API', () => {
     });
 
     it('should not include userRank if user in top N', async () => {
-      const mockLeaderboardData = [
-        'myuser', '400',
-        'user2', '395',
-      ];
+      const mockLeaderboardData = ['myuser', '400', 'user2', '395'];
 
       mockRedis.zrange.mockResolvedValue(mockLeaderboardData);
       mockRedis.zrank.mockResolvedValue(0); // User is rank 1
@@ -224,11 +204,13 @@ describe('Leaderboard API', () => {
       mockRedis.zrange.mockResolvedValue(['alice', '400']);
       mockRedis.mget
         .mockResolvedValueOnce(['4']) // completed keys
-        .mockResolvedValueOnce([JSON.stringify({
-          username: 'alice',
-          totalScore: 400,
-          lastUpdated: testTimestamp,
-        })]); // summary keys
+        .mockResolvedValueOnce([
+          JSON.stringify({
+            username: 'alice',
+            totalScore: 400,
+            lastUpdated: testTimestamp,
+          }),
+        ]); // summary keys
       mockRedis.zcard.mockResolvedValue(1);
 
       const url = '/api/chesserGuesser/leaderboard?date=2024-01-15&limit=1';
@@ -238,7 +220,7 @@ describe('Leaderboard API', () => {
       expect(data.leaderboard[0].timestamp).toBe(testTimestamp);
     });
 
-    it('should use today\'s date if no date parameter', async () => {
+    it("should use today's date if no date parameter", async () => {
       const today = new Date();
       const expectedDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
@@ -248,12 +230,7 @@ describe('Leaderboard API', () => {
       const url = '/api/chesserGuesser/leaderboard';
       const response = await loader(createLoaderArgs(url));
 
-      expect(mockRedis.zrange).toHaveBeenCalledWith(
-        `chesserGuesser:leaderboard:${expectedDate}`,
-        0,
-        49,
-        'WITHSCORES'
-      );
+      expect(mockRedis.zrange).toHaveBeenCalledWith(`chesserGuesser:leaderboard:${expectedDate}`, 0, 49, 'WITHSCORES');
     });
 
     it('should reject invalid date format', async () => {
@@ -302,11 +279,7 @@ describe('Leaderboard API', () => {
 
   describe('Leaderboard Sorting', () => {
     it('should sort by score descending', async () => {
-      const mockData = [
-        'alice', '400',
-        'bob', '350',
-        'charlie', '300',
-      ];
+      const mockData = ['alice', '400', 'bob', '350', 'charlie', '300'];
 
       mockRedis.zrange.mockResolvedValue(mockData);
       mockRedis.zcard.mockResolvedValue(3);
@@ -321,11 +294,7 @@ describe('Leaderboard API', () => {
     });
 
     it('should handle tied scores', async () => {
-      const mockData = [
-        'alice', '400',
-        'bob', '400',
-        'charlie', '350',
-      ];
+      const mockData = ['alice', '400', 'bob', '400', 'charlie', '350'];
 
       mockRedis.zrange.mockResolvedValue(mockData);
       mockRedis.zcard.mockResolvedValue(3);

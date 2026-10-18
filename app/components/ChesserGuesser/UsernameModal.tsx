@@ -1,7 +1,7 @@
 // Username Input Modal Component
 // Shown before starting ranked mode
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from 'react';
 
 interface UsernameModalProps {
   isOpen: boolean;
@@ -11,12 +11,12 @@ interface UsernameModalProps {
   cancelLabel?: string;
 }
 
-export function UsernameModal({ 
-  isOpen, 
-  initialUsername = '', 
-  onSubmit, 
+export function UsernameModal({
+  isOpen,
+  initialUsername = '',
+  onSubmit,
   onCancel,
-  cancelLabel = 'Cancel'
+  cancelLabel = 'Cancel',
 }: UsernameModalProps) {
   const [username, setUsername] = useState(initialUsername);
   const [error, setError] = useState('');
@@ -60,18 +60,16 @@ export function UsernameModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-      <div className="bg-white  border-4 border-black  max-w-md w-full">
+    <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black p-4">
+      <div className="w-full max-w-md border-4 border-black bg-white">
         {/* Header */}
-        <div className="border-b-4 border-black  p-4 bg-white ">
-          <h2 className="font-neo font-bold text-xl uppercase text-black  text-center">
-            Enter Your Username
-          </h2>
+        <div className="border-b-4 border-black bg-white p-4">
+          <h2 className="font-neo text-center text-xl font-bold text-black uppercase">Enter Your Username</h2>
         </div>
 
         {/* Body */}
         <div className="p-6">
-          <p className="font-neo text-black  mb-4 text-center text-sm">
+          <p className="font-neo mb-4 text-center text-sm text-black">
             Your username will appear on the daily leaderboard
           </p>
 
@@ -83,19 +81,19 @@ export function UsernameModal({
               onChange={handleChange}
               placeholder="Enter username..."
               maxLength={20}
-              className="w-full border-2 border-black  bg-white  text-black  px-4 py-3 font-neo focus:outline-none focus:ring-2 focus:ring-accent mb-2"
+              className="font-neo focus:ring-accent mb-2 w-full border-2 border-black bg-white px-4 py-3 text-black focus:ring-2 focus:outline-none"
               autoComplete="off"
             />
 
             {error && (
-              <div className="bg-red-100  border-2 border-red-500  text-red-800  px-3 py-2 mb-4 font-neo text-sm">
+              <div className="font-neo mb-4 border-2 border-red-500 bg-red-100 px-3 py-2 text-sm text-red-800">
                 {error}
               </div>
             )}
 
-            <div className="text-xs font-neo text-gray-600  mb-4">
-              • Less than 20 characters<br />
-              • Letters, numbers, and underscores only
+            <div className="font-neo mb-4 text-xs text-gray-600">
+              • Less than 20 characters
+              <br />• Letters, numbers, and underscores only
             </div>
 
             {/* Buttons */}
@@ -103,14 +101,14 @@ export function UsernameModal({
               <button
                 type="button"
                 onClick={onCancel}
-                className="bg-white  text-black  border-2 border-black  px-4 py-3 font-neo font-bold uppercase tracking-wide hover:bg-gray-100  transition-colors"
+                className="font-neo border-2 border-black bg-white px-4 py-3 font-bold tracking-wide text-black uppercase transition-colors hover:bg-gray-100"
               >
                 {cancelLabel}
               </button>
               <button
                 type="submit"
                 disabled={!username}
-                className="bg-black  text-white  border-2 border-black  px-4 py-3 font-neo font-bold uppercase tracking-wide hover:bg-accent  hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="font-neo hover:bg-accent border-2 border-black bg-black px-4 py-3 font-bold tracking-wide text-white uppercase transition-colors hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Submit
               </button>

@@ -40,7 +40,8 @@ export default function Button({
     lg: 'px-8 py-4 text-lg',
   };
 
-  const baseClasses = 'font-bold font-neo uppercase tracking-wider transition-all duration-100 disabled:bg-gray-200 disabled:text-gray-500 disabled:border-gray-300 disabled:cursor-not-allowed';
+  const baseClasses =
+    'font-bold font-neo uppercase tracking-wider transition-all duration-100 disabled:bg-gray-200 disabled:text-gray-500 disabled:border-gray-300 disabled:cursor-not-allowed';
 
   return (
     <button

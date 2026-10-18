@@ -43,7 +43,14 @@ describe('Maia Drills tracking', () => {
 
   it('reports a drill answer by verdict and whether it was the first try', () => {
     const gtag = stubGtag();
-    trackDrillAnswer({ verdict: 'correct', firstTry: false, guesses: [{ uci: 'a2a3', san: 'a3' }, { uci: 'g7g6', san: 'g6' }] });
+    trackDrillAnswer({
+      verdict: 'correct',
+      firstTry: false,
+      guesses: [
+        { uci: 'a2a3', san: 'a3' },
+        { uci: 'g7g6', san: 'g6' },
+      ],
+    });
     expect(gtag).toHaveBeenCalledWith('event', 'maia_drill_answer', { verdict: 'correct', first_try: false, tries: 2 });
   });
 

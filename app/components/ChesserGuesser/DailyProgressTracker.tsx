@@ -12,27 +12,23 @@ export function DailyProgressTracker({
   currentPuzzle,
   completedPuzzles,
   totalScore,
-  lastPuzzleScore
+  lastPuzzleScore,
 }: DailyProgressTrackerProps) {
   const puzzles = [0, 1, 2, 3];
 
   return (
-    <div className="bg-white border-4 border-black">
+    <div className="border-4 border-black bg-white">
       {/* Header */}
-      <div className="bg-black text-white py-2 px-4 font-neo font-extrabold uppercase tracking-tighter text-sm border-b-4 border-black text-center">
+      <div className="font-neo border-b-4 border-black bg-black px-4 py-2 text-center text-sm font-extrabold tracking-tighter text-white uppercase">
         Progress
       </div>
 
       {/* Score Display */}
-      <div className="p-4 text-center border-b-4 border-black">
-        <div className="font-neo text-4xl font-black text-black tracking-tighter">
-          {totalScore}
-        </div>
-        <div className="font-neo text-[10px] uppercase text-black font-extrabold tracking-widest mt-1">
-          Total Score
-        </div>
+      <div className="border-b-4 border-black p-4 text-center">
+        <div className="font-neo text-4xl font-black tracking-tighter text-black">{totalScore}</div>
+        <div className="font-neo mt-1 text-[10px] font-extrabold tracking-widest text-black uppercase">Total Score</div>
         {lastPuzzleScore !== undefined && lastPuzzleScore >= 0 && (
-          <div className="mt-2 font-neo text-xs font-bold text-black border-2 border-black inline-block px-2 py-0.5 uppercase">
+          <div className="font-neo mt-2 inline-block border-2 border-black px-2 py-0.5 text-xs font-bold text-black uppercase">
             Last: +{lastPuzzleScore}
           </div>
         )}
@@ -49,30 +45,21 @@ export function DailyProgressTracker({
             return (
               <div
                 key={puzzleIndex}
-                className={`
-                  aspect-square flex flex-col items-center justify-center
-                  border-2 font-neo text-xs
-                  ${isCompleted
-                    ? 'bg-accent text-white border-accent'
+                className={`font-neo flex aspect-square flex-col items-center justify-center border-2 text-xs ${
+                  isCompleted
+                    ? 'bg-accent border-accent text-white'
                     : isCurrent
-                      ? 'bg-white  text-black  border-black  animate-pulse'
-                      : 'bg-gray-100  text-gray-400  border-gray-300 '
-                  }
-                `}
+                      ? 'animate-pulse border-black bg-white text-black'
+                      : 'border-gray-300 bg-gray-100 text-gray-400'
+                } `}
               >
-                <div className="font-bold text-lg">
-                  {puzzleIndex + 1}
-                </div>
-                {isCompleted && (
-                  <div className="text-xs">✓</div>
-                )}
+                <div className="text-lg font-bold">{puzzleIndex + 1}</div>
+                {isCompleted && <div className="text-xs">✓</div>}
               </div>
             );
           })}
         </div>
-        <div className="text-center mt-2 font-neo text-xs text-gray-600 ">
-          {completedPuzzles}/4 Completed
-        </div>
+        <div className="font-neo mt-2 text-center text-xs text-gray-600">{completedPuzzles}/4 Completed</div>
       </div>
     </div>
   );

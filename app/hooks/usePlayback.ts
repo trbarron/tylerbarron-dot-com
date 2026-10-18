@@ -7,15 +7,15 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import type { BlunderWatchGame, Flag, GamePhase } from '~/utils/blunderWatch/types';
 
 const INITIAL_PAUSE_MS = 1500; // How long to show the starting position before move 1
-const FAST_FORWARD_MS = 400;   // Speed when fast-forwarding
+const FAST_FORWARD_MS = 400; // Speed when fast-forwarding
 
 export interface PlaybackState {
   phase: GamePhase;
-  currentMoveIndex: number;   // -1 = pre-first-move, 0+ = after that move was played
+  currentMoveIndex: number; // -1 = pre-first-move, 0+ = after that move was played
   isFastForward: boolean;
   hasFlaggedCurrentMove: boolean;
-  missedBlunderAt: number;     // timestamp of last missed blunder
-  blundersMissed: number;      // count of blunders missed
+  missedBlunderAt: number; // timestamp of last missed blunder
+  blundersMissed: number; // count of blunders missed
   flags: Flag[];
   liveScore: number;
   lastFlagResult: 'correct' | 'false_positive' | null;
@@ -49,7 +49,7 @@ export function usePlayback(game: BlunderWatchGame | null): PlaybackState & Play
 
   // Advance the game one step
   const advance = useCallback(() => {
-    setCurrentMoveIndex(prev => prev + 1);
+    setCurrentMoveIndex((prev) => prev + 1);
   }, []);
 
   const lastBlunderIndex = useMemo(() => {
@@ -81,7 +81,7 @@ export function usePlayback(game: BlunderWatchGame | null): PlaybackState & Play
       // If this was a blunder move and it wasn't flagged, mark it as missed
       if (currentMoveIndex >= 0 && game.blunderIndices.includes(currentMoveIndex) && !hasFlaggedRef.current) {
         setMissedBlunderAt(Date.now());
-        setBlundersMissed(prev => prev + 1);
+        setBlundersMissed((prev) => prev + 1);
       }
 
       if (isLastMove) {
@@ -125,16 +125,16 @@ export function usePlayback(game: BlunderWatchGame | null): PlaybackState & Play
     const isBlunder = game.blunderIndices.includes(currentMoveIndex);
 
     const newFlag: Flag = { moveIndex: currentMoveIndex, reactionTimeMs };
-    setFlags(prev => [...prev, newFlag]);
+    setFlags((prev) => [...prev, newFlag]);
     setHasFlaggedCurrentMove(true);
     hasFlaggedRef.current = true;
 
     if (isBlunder) {
       const points = reactionTimeMs <= 500 ? 100 : reactionTimeMs <= 1000 ? 90 : 80;
-      setLiveScore(prev => prev + points);
+      setLiveScore((prev) => prev + points);
       setLastFlagResult('correct');
     } else {
-      setLiveScore(prev => prev - 30);
+      setLiveScore((prev) => prev - 30);
       setLastFlagResult('false_positive');
     }
   }, [phase, hasFlaggedCurrentMove, currentMoveIndex, game, lastBlunderIndex]);

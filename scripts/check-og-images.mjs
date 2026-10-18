@@ -103,10 +103,16 @@ const projectsManifest = fs.existsSync(projectsManifestPath)
   ? JSON.parse(fs.readFileSync(projectsManifestPath, 'utf-8'))
   : {};
 /** JSON with sorted keys, matching the generator's json.dumps(sort_keys=True). */
-const canonical = (value) => JSON.stringify(value, (_, v) =>
-  v && typeof v === 'object' && !Array.isArray(v)
-    ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, v[k]]))
-    : v);
+const canonical = (value) =>
+  JSON.stringify(value, (_, v) =>
+    v && typeof v === 'object' && !Array.isArray(v)
+      ? Object.fromEntries(
+          Object.keys(v)
+            .sort()
+            .map((k) => [k, v[k]]),
+        )
+      : v,
+  );
 for (const [slug, card] of Object.entries(projectCards)) {
   if (!projectsManifest[slug] || !fs.existsSync(path.join(projectsDir, `${slug}.png`))) {
     problems.push(`project ${slug}: OG card missing`);

@@ -1,18 +1,9 @@
-import type { ActionFunctionArgs } from "react-router";
-import { Chess } from "chess.js";
-import {
-  getGame,
-  applyMove,
-} from "~/utils/multipleChoiceChess/gameState.server";
-import { pointsForRank } from "~/utils/multipleChoiceChess/scoring";
+import type { ActionFunctionArgs } from 'react-router';
+import { Chess } from 'chess.js';
+import { getGame, applyMove } from '~/utils/multipleChoiceChess/gameState.server';
+import { pointsForRank } from '~/utils/multipleChoiceChess/scoring';
 
-function incrementRankCounts(
-  rank: number,
-  rank1: number,
-  rank2: number,
-  rank4: number,
-  rank6: number,
-) {
+function incrementRankCounts(rank: number, rank1: number, rank2: number, rank4: number, rank6: number) {
   return {
     rank1: rank1 + (rank === 1 ? 1 : 0),
     rank2: rank2 + (rank === 2 ? 1 : 0),
@@ -27,12 +18,12 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   try {
-    const body = await request.json() as {
+    const body = (await request.json()) as {
       game_id: string;
       player_id: string;
-      move: string;       // UCI notation e.g. "e2e4"
-      rank: number;       // 1 | 2 | 4 | 6
-      choices: string[];  // all four UCI moves that were shown
+      move: string; // UCI notation e.g. "e2e4"
+      rank: number; // 1 | 2 | 4 | 6
+      choices: string[]; // all four UCI moves that were shown
     };
 
     const { game_id: gameId, player_id: playerId, move, rank, choices } = body;
@@ -81,13 +72,7 @@ export async function action({ request }: ActionFunctionArgs) {
     const newWhiteMoves = game.white_moves + (isWhite ? 1 : 0);
     const newBlackMoves = game.black_moves + (isBlack ? 1 : 0);
     const whiteRanks = isWhite
-      ? incrementRankCounts(
-          rank,
-          game.white_rank_1,
-          game.white_rank_2,
-          game.white_rank_4,
-          game.white_rank_6,
-        )
+      ? incrementRankCounts(rank, game.white_rank_1, game.white_rank_2, game.white_rank_4, game.white_rank_6)
       : {
           rank1: game.white_rank_1,
           rank2: game.white_rank_2,
@@ -95,13 +80,7 @@ export async function action({ request }: ActionFunctionArgs) {
           rank6: game.white_rank_6,
         };
     const blackRanks = isBlack
-      ? incrementRankCounts(
-          rank,
-          game.black_rank_1,
-          game.black_rank_2,
-          game.black_rank_4,
-          game.black_rank_6,
-        )
+      ? incrementRankCounts(rank, game.black_rank_1, game.black_rank_2, game.black_rank_4, game.black_rank_6)
       : {
           rank1: game.black_rank_1,
           rank2: game.black_rank_2,

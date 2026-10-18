@@ -34,8 +34,10 @@ class FakeStockfish {
   private finish(search: { fen: string; moves: string[] }) {
     const scores = scoresByFen[search.fen] ?? {};
     this.emit(
-      ...search.moves.map((m, i) => `info depth 12 seldepth 14 multipv ${i + 1} score cp ${scores[m] ?? 0} nodes 1 pv ${m}`),
-      `bestmove ${search.moves[0]}`
+      ...search.moves.map(
+        (m, i) => `info depth 12 seldepth 14 multipv ${i + 1} score cp ${scores[m] ?? 0} nodes 1 pv ${m}`,
+      ),
+      `bestmove ${search.moves[0]}`,
     );
   }
 

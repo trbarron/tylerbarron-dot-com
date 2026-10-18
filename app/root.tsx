@@ -1,4 +1,4 @@
-import type { LinksFunction } from "react-router";
+import type { LinksFunction } from 'react-router';
 import {
   Links,
   Meta,
@@ -11,8 +11,8 @@ import {
   useRouteLoaderData,
   isRouteErrorResponse,
   Link,
-} from "react-router";
-import { useEffect } from "react";
+} from 'react-router';
+import { useEffect } from 'react';
 import styles from './styles/index.css?url';
 import { buildMeta } from './utils/seo';
 import { trackNotFound } from './utils/analytics';
@@ -30,9 +30,38 @@ export async function loader() {
 // EEA + UK + CH: analytics cookies denied by default in these regions (Consent
 // Mode v2); GA falls back to cookieless pings there. Granted everywhere else.
 const CONSENT_DENIED_REGIONS = [
-  "AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "DE", "GR",
-  "HU", "IE", "IT", "LV", "LT", "LU", "MT", "NL", "PL", "PT", "RO", "SK",
-  "SI", "ES", "SE", "IS", "LI", "NO", "GB", "CH",
+  'AT',
+  'BE',
+  'BG',
+  'HR',
+  'CY',
+  'CZ',
+  'DK',
+  'EE',
+  'FI',
+  'FR',
+  'DE',
+  'GR',
+  'HU',
+  'IE',
+  'IT',
+  'LV',
+  'LT',
+  'LU',
+  'MT',
+  'NL',
+  'PL',
+  'PT',
+  'RO',
+  'SK',
+  'SI',
+  'ES',
+  'SE',
+  'IS',
+  'LI',
+  'NO',
+  'GB',
+  'CH',
 ];
 
 function GtagScripts({ gaTrackingId, sendPageView }: { gaTrackingId: string; sendPageView: boolean }) {
@@ -67,11 +96,11 @@ function GtagScripts({ gaTrackingId, sendPageView }: { gaTrackingId: string; sen
 }
 
 export const links: LinksFunction = () => [
-  { rel: "icon", type: "image/png", href: faviconUrl },
-  { rel: "apple-touch-icon", href: faviconUrl },
-  { rel: "stylesheet", href: styles },
+  { rel: 'icon', type: 'image/png', href: faviconUrl },
+  { rel: 'apple-touch-icon', href: faviconUrl },
+  { rel: 'stylesheet', href: styles },
   // RSS feed autodiscovery (consumed by feed readers).
-  { rel: "alternate", type: "application/rss+xml", title: "Barron Wasteland", href: "/feed.xml" },
+  { rel: 'alternate', type: 'application/rss+xml', title: 'Barron Wasteland', href: '/feed.xml' },
 ];
 
 export const meta = () => {
@@ -82,7 +111,7 @@ export function ErrorBoundary() {
   const error = useRouteError();
   // Root loader data is available when a child route threw (e.g. 404), but not
   // when the root loader itself failed — degrade to no analytics in that case.
-  const rootData = useRouteLoaderData<typeof loader>("root");
+  const rootData = useRouteLoaderData<typeof loader>('root');
   const gaTrackingId = rootData?.gaTrackingId ?? null;
   const is404 = isRouteErrorResponse(error) && error.status === 404;
   const isServerError = isRouteErrorResponse(error) && error.status >= 500;
@@ -93,10 +122,13 @@ export function ErrorBoundary() {
     trackNotFound(window.location.pathname + window.location.search);
   }, [gaTrackingId, is404]);
 
-  const title = is404 ? "404" : String(status);
-  const heading = is404 ? "Page Not Found" : "Something Went Wrong";
+  const title = is404 ? '404' : String(status);
+  const heading = is404 ? 'Page Not Found' : 'Something Went Wrong';
   const message = is404
-    ? "Whatever you were looking for isn't here." : isServerError ? "A server error occurred. Try again in a moment." : "An unexpected error occurred.";
+    ? "Whatever you were looking for isn't here."
+    : isServerError
+      ? 'A server error occurred. Try again in a moment.'
+      : 'An unexpected error occurred.';
 
   return (
     <html lang="en">
@@ -115,34 +147,30 @@ export function ErrorBoundary() {
         {gaTrackingId && <GtagScripts gaTrackingId={gaTrackingId} sendPageView={true} />}
       </head>
       <body>
-        <nav className="border-b-4 border-black flex flex-wrap items-center justify-between px-4 py-6 bg-white">
+        <nav className="flex flex-wrap items-center justify-between border-b-4 border-black bg-white px-4 py-6">
           <Link
             to="/"
-            className="font-neo font-extrabold text-2xl tracking-tighter text-black uppercase hover:bg-black hover:text-white px-2 py-1 transition-all duration-100"
+            className="font-neo px-2 py-1 text-2xl font-extrabold tracking-tighter text-black uppercase transition-all duration-100 hover:bg-black hover:text-white"
           >
             Barron Wasteland
           </Link>
         </nav>
 
-        <main className="min-h-[80vh] flex items-center justify-center px-4 py-16 bg-white">
-          <div className="border-4 border-black bg-white w-full max-w-lg">
+        <main className="flex min-h-[80vh] items-center justify-center bg-white px-4 py-16">
+          <div className="w-full max-w-lg border-4 border-black bg-white">
             <div className="border-b-4 border-black px-8 pt-8 pb-6">
-              <p className="font-neo font-black text-[10rem] leading-none tracking-tighter text-black select-none">
+              <p className="font-neo text-[10rem] leading-none font-black tracking-tighter text-black select-none">
                 {title}
               </p>
             </div>
             <div className="border-b-4 border-black px-8 py-6">
-              <p className="font-neo font-black text-xl uppercase tracking-tight text-black mb-3">
-                {heading}
-              </p>
-              <p className="font-neo font-medium text-base text-black leading-relaxed">
-                {message}
-              </p>
+              <p className="font-neo mb-3 text-xl font-black tracking-tight text-black uppercase">{heading}</p>
+              <p className="font-neo text-base leading-relaxed font-medium text-black">{message}</p>
             </div>
             <div className="px-8 py-6">
               <Link
                 to="/"
-                className="inline-block border-4 border-black bg-black text-white font-neo font-black uppercase tracking-wide px-6 py-3 hover:bg-white hover:text-black transition-all duration-100"
+                className="font-neo inline-block border-4 border-black bg-black px-6 py-3 font-black tracking-wide text-white uppercase transition-all duration-100 hover:bg-white hover:text-black"
               >
                 Back to Home
               </Link>
@@ -163,12 +191,12 @@ export default function App() {
   useEffect(() => {
     if (!gaTrackingId) return;
     const { gtag } = window;
-    if (typeof gtag !== "function") return;
+    if (typeof gtag !== 'function') return;
     // GA4 SPA page view — fires on initial mount and whenever the URL changes.
     // Keyed on path + query rather than the location object: same-URL
     // navigations (e.g. Chesser Guesser's navigate(".") to revalidate for the
     // next position) get a new location key and would log a duplicate view.
-    gtag("event", "page_view", {
+    gtag('event', 'page_view', {
       page_location: window.location.href,
       page_title: document.title,
     });

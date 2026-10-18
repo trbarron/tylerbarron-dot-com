@@ -1,19 +1,18 @@
-import { useId, useState } from "react";
+import { useId, useState } from 'react';
 
 import {
   DEFAULT_RETRO_PARAMS,
   RETRO_PARAM_SPECS,
   type RetroParamSpec,
   type RetroParams,
-} from "./retroreflectance-params";
+} from './retroreflectance-params';
 
-const clamp = (value: number, min: number, max: number) =>
-  Math.min(max, Math.max(min, value));
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
 /** Decimal places implied by a step, so 0.005 shows as 0.005 and not 0.01. */
 const decimalsFor = (step: number) => {
   const text = String(step);
-  const dot = text.indexOf(".");
+  const dot = text.indexOf('.');
   return dot === -1 ? 0 : text.length - dot - 1;
 };
 
@@ -43,10 +42,7 @@ function ParamRow({ spec, value, onChange }: RowProps) {
   return (
     <div className="border-b-2 border-black/10 py-2 last:border-b-0">
       <div className="flex items-center justify-between gap-2">
-        <label
-          htmlFor={id}
-          className="text-[0.7rem] font-bold tracking-wide uppercase"
-        >
+        <label htmlFor={id} className="text-[0.7rem] font-bold tracking-wide uppercase">
           {spec.label}
         </label>
         <input
@@ -86,12 +82,7 @@ interface Props {
  * The parameter console. Opened from the footer trigger, and hidden below md
  * along with it - it is a fixed side panel with nowhere to sit on a phone.
  */
-export default function RetroreflectanceControls({
-  enabled,
-  params,
-  onEnabledChange,
-  onParamsChange,
-}: Props) {
+export default function RetroreflectanceControls({ enabled, params, onEnabledChange, onParamsChange }: Props) {
   if (!enabled) return null;
 
   return (
@@ -101,9 +92,7 @@ export default function RetroreflectanceControls({
         className="flex max-h-[min(32rem,calc(100vh-2rem))] w-80 max-w-[calc(100vw-2rem)] flex-col border-4 border-black bg-white"
       >
         <header className="flex shrink-0 items-center justify-between gap-2 border-b-4 border-black px-3 py-2">
-          <h2 className="text-xs font-extrabold tracking-wider uppercase">
-            Retroreflectance
-          </h2>
+          <h2 className="text-xs font-extrabold tracking-wider uppercase">Retroreflectance</h2>
           <button
             type="button"
             onClick={() => onEnabledChange(false)}
@@ -120,9 +109,7 @@ export default function RetroreflectanceControls({
               key={spec.key}
               spec={spec}
               value={params[spec.key]}
-              onChange={(value) =>
-                onParamsChange({ ...params, [spec.key]: value })
-              }
+              onChange={(value) => onParamsChange({ ...params, [spec.key]: value })}
             />
           ))}
         </div>

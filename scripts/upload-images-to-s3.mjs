@@ -19,10 +19,7 @@ const BUCKET_NAME = process.env.AWS_BUCKET_NAME || 'remix-website-writing-posts'
 const REGION = process.env.AWS_REGION || 'us-west-2';
 
 // Image directories to upload
-const IMAGE_DIRS = [
-  join(projectRoot, 'app/images'),
-  join(projectRoot, 'public/images'),
-];
+const IMAGE_DIRS = [join(projectRoot, 'app/images'), join(projectRoot, 'public/images')];
 
 const s3Client = new S3Client({ region: REGION });
 
@@ -158,7 +155,7 @@ async function main() {
 
   if (results.failed.length > 0) {
     console.log('\n❌ Failed files:');
-    results.failed.forEach(f => console.log(`   - ${f.key}: ${f.error}`));
+    results.failed.forEach((f) => console.log(`   - ${f.key}: ${f.error}`));
   }
 
   console.log('\n✨ Done! Images are now available via CloudFront');

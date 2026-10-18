@@ -180,7 +180,10 @@ describe('validateDeck', () => {
     ['bad uci', { ...deck, cards: [{ ...card, played: { uci: 'z9z9', san: 'a3' } }] }],
     ['non-https link', { ...deck, cards: [{ ...card, gameUrl: 'javascript:alert(1)' }] }],
     ['duplicate ids', { ...deck, cards: [card, card] }],
-    ['too many cards', { ...deck, cards: Array.from({ length: LIMITS.cardsPerDeck + 1 }, (_, i) => ({ ...card, id: `g-${i}` })) }],
+    [
+      'too many cards',
+      { ...deck, cards: Array.from({ length: LIMITS.cardsPerDeck + 1 }, (_, i) => ({ ...card, id: `g-${i}` })) },
+    ],
   ])('rejects %s', (_label, body) => {
     expect(validateDeck(body).ok).toBe(false);
   });
@@ -200,7 +203,9 @@ describe('isHandheld', () => {
     device('Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 Chrome/141.0 Mobile Safari/537.36');
     expect(isHandheld()).toBe(true);
     // iPadOS Safari calls itself a Mac; the touch screen gives it away.
-    device('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 Version/26.0 Safari/605.1.15', { touchPoints: 5 });
+    device('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 Version/26.0 Safari/605.1.15', {
+      touchPoints: 5,
+    });
     expect(isHandheld()).toBe(true);
     device('Mozilla/5.0 (X11; Linux x86_64) Gecko/20100101 Firefox/143.0', { coarse: true });
     expect(isHandheld()).toBe(true);
@@ -209,7 +214,9 @@ describe('isHandheld', () => {
   it('leaves computers alone', () => {
     device('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/141.0 Safari/537.36');
     expect(isHandheld()).toBe(false);
-    device('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/141.0 Safari/537.36 Edg/141.0', { touchPoints: 10 });
+    device('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/141.0 Safari/537.36 Edg/141.0', {
+      touchPoints: 10,
+    });
     expect(isHandheld()).toBe(false);
   });
 });

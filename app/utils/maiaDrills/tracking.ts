@@ -16,7 +16,12 @@ import type { GameSource } from './types';
 type Mode = 'build' | 'add';
 
 export function trackAnalysisStart(p: { mode: Mode; source: GameSource; gamesRequested: number; handheld: boolean }) {
-  trackEvent('maia_analysis_start', { mode: p.mode, source: p.source, games_requested: p.gamesRequested, handheld: p.handheld });
+  trackEvent('maia_analysis_start', {
+    mode: p.mode,
+    source: p.source,
+    games_requested: p.gamesRequested,
+    handheld: p.handheld,
+  });
 }
 
 /** A run that ended in an error (including "no games" and "no errors found"). */
@@ -40,7 +45,13 @@ export function trackDeckBuilt(p: {
   trackEvent('maia_deck_built', p);
 }
 
-export function trackGamesAdded(p: { source: GameSource; games: number; cards: number; backend?: string; seconds: number }) {
+export function trackGamesAdded(p: {
+  source: GameSource;
+  games: number;
+  cards: number;
+  backend?: string;
+  seconds: number;
+}) {
   trackEvent('maia_games_added', p);
 }
 

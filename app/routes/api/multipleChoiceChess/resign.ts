@@ -1,5 +1,5 @@
-import type { ActionFunctionArgs } from "react-router";
-import { getGame, resignGame } from "~/utils/multipleChoiceChess/gameState.server";
+import type { ActionFunctionArgs } from 'react-router';
+import { getGame, resignGame } from '~/utils/multipleChoiceChess/gameState.server';
 
 export async function action({ request }: ActionFunctionArgs) {
   if (request.method !== 'POST') {
@@ -7,7 +7,7 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   try {
-    const body = await request.json() as { game_id: string; player_id: string };
+    const body = (await request.json()) as { game_id: string; player_id: string };
     const { game_id: gameId, player_id: playerId } = body;
 
     if (!gameId || !playerId) {

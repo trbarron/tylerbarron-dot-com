@@ -7,11 +7,7 @@ interface DailyCompletionMessageProps {
   totalPlayers?: number;
 }
 
-export function DailyCompletionMessage({
-  totalScore,
-  rank,
-  totalPlayers
-}: DailyCompletionMessageProps) {
+export function DailyCompletionMessage({ totalScore, rank, totalPlayers }: DailyCompletionMessageProps) {
   const getRankMessage = () => {
     if (!rank) return '';
     if (rank === 1) return "🥇 You're in 1st place!";
@@ -23,25 +19,17 @@ export function DailyCompletionMessage({
   };
 
   return (
-    <div className="bg-accent border-4 border-black  p-6 mb-4">
+    <div className="bg-accent mb-4 border-4 border-black p-6">
       <div className="text-center">
-        <h2 className="font-neo font-bold uppercase text-2xl text-white mb-4">
-          Complete! Nice!
-        </h2>
+        <h2 className="font-neo mb-4 text-2xl font-bold text-white uppercase">Complete! Nice!</h2>
 
-        <div className="bg-white  border-2 border-black  p-4 mb-4">
-          <div className="font-neo text-4xl font-bold text-black ">
-            {totalScore}
-          </div>
-          <div className="font-neo text-sm text-gray-600  uppercase">
-            Total Points
-          </div>
+        <div className="mb-4 border-2 border-black bg-white p-4">
+          <div className="font-neo text-4xl font-bold text-black">{totalScore}</div>
+          <div className="font-neo text-sm text-gray-600 uppercase">Total Points</div>
         </div>
 
-        <div className="space-y-2 text-white font-neo">
-          {rank && (
-            <p className="text-md">{getRankMessage()}</p>
-          )}
+        <div className="font-neo space-y-2 text-white">
+          {rank && <p className="text-md">{getRankMessage()}</p>}
           {totalPlayers && rank && (
             <p className="text-sm">
               Rank: #{rank} out of {totalPlayers} players

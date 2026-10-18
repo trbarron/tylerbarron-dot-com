@@ -4,15 +4,15 @@ export type GamePhase = 'pregame' | 'playing' | 'finished';
 
 export interface BlunderWatchGame {
   gameNumber: number;
-  date: string;           // YYYY-MM-DD
+  date: string; // YYYY-MM-DD
   whiteElo: number;
   blackElo: number;
-  moves: string[];        // SAN notation, 0-indexed
+  moves: string[]; // SAN notation, 0-indexed
   blunderCount: number;
   blunderIndices: number[]; // 0-based ply indices; included for live feedback, re-validated server-side
-  evals: number[];          // centipawns after each move, White-positive
-  pacing: number[];         // ms to display each move before advancing (pre-computed server-side)
-  gameUrl?: string;         // URL to the original Lichess game for post-game analysis
+  evals: number[]; // centipawns after each move, White-positive
+  pacing: number[]; // ms to display each move before advancing (pre-computed server-side)
+  gameUrl?: string; // URL to the original Lichess game for post-game analysis
 }
 
 export interface Flag {

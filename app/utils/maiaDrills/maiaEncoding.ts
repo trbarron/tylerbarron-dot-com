@@ -107,7 +107,7 @@ export function decodePolicy(
   logits: Float32Array,
   offset: number,
   fen: string,
-  legalUci: string[]
+  legalUci: string[],
 ): { uci: string; prob: number }[] {
   const black = fen.split(' ')[1] === 'b';
   const scored = legalUci.map((uci) => ({
@@ -119,7 +119,5 @@ export function decodePolicy(
   const exps = scored.map((m) => Math.exp(m.logit - max));
   const total = exps.reduce((a, b) => a + b, 0);
 
-  return scored
-    .map((m, i) => ({ uci: m.uci, prob: exps[i] / total }))
-    .sort((a, b) => b.prob - a.prob);
+  return scored.map((m, i) => ({ uci: m.uci, prob: exps[i] / total })).sort((a, b) => b.prob - a.prob);
 }

@@ -1,24 +1,24 @@
-import { SITE_URL } from "~/utils/seo";
+import { SITE_URL } from '~/utils/seo';
 
 // Indexable static routes. Live-game and legacy-redirect URLs are
 // intentionally excluded.
 const STATIC_PATHS = [
-  "/",
-  "/blunder-watch",
-  "/bouldering-tracker",
-  "/camel-up-cup",
-  "/camel-up-cup/2018",
-  "/cat-tracker",
-  "/cat-tracker/blog",
-  "/chesser-guesser",
-  "/collaborative-checkmate",
-  "/generative-art",
-  "/marginal-maia-mentor",
-  "/multiple-choice-chess",
-  "/pizza-rating",
-  "/set",
-  "/SSBM",
-  "/the-riddler",
+  '/',
+  '/blunder-watch',
+  '/bouldering-tracker',
+  '/camel-up-cup',
+  '/camel-up-cup/2018',
+  '/cat-tracker',
+  '/cat-tracker/blog',
+  '/chesser-guesser',
+  '/collaborative-checkmate',
+  '/generative-art',
+  '/marginal-maia-mentor',
+  '/multiple-choice-chess',
+  '/pizza-rating',
+  '/set',
+  '/SSBM',
+  '/the-riddler',
 ];
 
 function isoDate(value: string): string | null {
@@ -27,29 +27,27 @@ function isoDate(value: string): string | null {
 }
 
 export async function loader() {
-  const { getAllPostMeta } = await import("~/utils/posts.server");
+  const { getAllPostMeta } = await import('~/utils/posts.server');
   const posts = await getAllPostMeta();
 
   const entries = [
     ...STATIC_PATHS.map((path) => `  <url><loc>${SITE_URL}${path}</loc></url>`),
     ...posts.map((post) => {
       const lastmod = isoDate(post.date);
-      return `  <url><loc>${SITE_URL}/blog/${post.slug}</loc>${
-        lastmod ? `<lastmod>${lastmod}</lastmod>` : ""
-      }</url>`;
+      return `  <url><loc>${SITE_URL}/blog/${post.slug}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ''}</url>`;
     }),
   ];
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${entries.join("\n")}
+${entries.join('\n')}
 </urlset>
 `;
 
   return new Response(xml, {
     headers: {
-      "Content-Type": "application/xml",
-      "Cache-Control": "public, max-age=3600",
+      'Content-Type': 'application/xml',
+      'Cache-Control': 'public, max-age=3600',
     },
   });
 }

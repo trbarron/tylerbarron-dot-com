@@ -30,7 +30,7 @@ type Stop = { at: number; hex: string };
 const SCORE_RAMP: Stop[] = [
   { at: 0, hex: '#1c5cab' },
   { at: 1.25, hex: '#3987e5' },
-  { at: 2.5, hex: '#e9e7e2' },  // neutral: at the median, deliberately recessive
+  { at: 2.5, hex: '#e9e7e2' }, // neutral: at the median, deliberately recessive
   { at: 3.75, hex: '#d03b3b' },
   { at: 5, hex: '#8f1f1f' },
 ];
@@ -58,7 +58,7 @@ function RampBar({ stops, id }: { stops: Stop[]; id: string }) {
   const span = stops[stops.length - 1].at - lo;
   return (
     <svg
-      className="w-full h-4 border-2 border-black block"
+      className="block h-4 w-full border-2 border-black"
       preserveAspectRatio="none"
       viewBox="0 0 100 10"
       // Decorative: the endpoint captions beside it carry the meaning.
@@ -66,7 +66,7 @@ function RampBar({ stops, id }: { stops: Stop[]; id: string }) {
     >
       <defs>
         <linearGradient id={id} x1="0" x2="1" y1="0" y2="0">
-          {stops.map(s => (
+          {stops.map((s) => (
             <stop key={s.at} offset={`${(((s.at - lo) / span) * 100).toFixed(1)}%`} stopColor={s.hex} />
           ))}
         </linearGradient>
@@ -82,14 +82,14 @@ function rampColor(stops: Stop[], value: number): string {
   if (!(value > first.at)) return first.hex;
   if (value >= last.at) return last.hex;
 
-  const upper = stops.findIndex(s => s.at > value);
+  const upper = stops.findIndex((s) => s.at > value);
   const lo = stops[upper - 1];
   const hi = stops[upper];
   const t = (value - lo.at) / (hi.at - lo.at);
 
   const channel = (hex: string, i: number) => parseInt(hex.slice(1 + i * 2, 3 + i * 2), 16);
   const mix = (i: number) => Math.round(channel(lo.hex, i) + (channel(hi.hex, i) - channel(lo.hex, i)) * t);
-  return `#${[0, 1, 2].map(i => mix(i).toString(16).padStart(2, '0')).join('')}`;
+  return `#${[0, 1, 2].map((i) => mix(i).toString(16).padStart(2, '0')).join('')}`;
 }
 
 type LocationData = {
@@ -98,7 +98,7 @@ type LocationData = {
   rating: number;
   total_ratings: number;
   state: string;
-}
+};
 
 type PizzaScoreData = {
   latitude: number;
@@ -107,7 +107,7 @@ type PizzaScoreData = {
   /** Domino's within the smoothing radius — how much this cell rests on. */
   stores: number;
   reviews: number;
-}
+};
 
 export default function PizzaLocationMap() {
   const [reviewData, setReviewData] = useState<LocationData[]>([]);
@@ -121,7 +121,6 @@ export default function PizzaLocationMap() {
   const [usStates, setUsStates] = useState<FeatureCollection | null>(null);
   const [scoreFilter, setScoreFilter] = useState(0);
 
-
   // Constants
   const width = 1200;
   const height = 800;
@@ -134,7 +133,7 @@ export default function PizzaLocationMap() {
     const fetchStates = async () => {
       try {
         const response = await fetch('https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json');
-        const topology = await response.json() as Topology<{ states: GeometryCollection }>;
+        const topology = (await response.json()) as Topology<{ states: GeometryCollection }>;
         setUsStates(feature(topology, topology.objects.states));
       } catch (error) {
         console.error('Error loading US states:', error);
@@ -149,7 +148,7 @@ export default function PizzaLocationMap() {
       try {
         setLoading(true);
         const response = await fetch(LOCATIONS_URL);
-        const locations = await response.json() as LocationData[];
+        const locations = (await response.json()) as LocationData[];
         setReviewData(locations);
         setLoading(false);
       } catch (error) {
@@ -167,7 +166,7 @@ export default function PizzaLocationMap() {
     const loadScoreData = async () => {
       try {
         const response = await fetch(NETWORK_URL);
-        const scores = await response.json() as PizzaScoreData[];
+        const scores = (await response.json()) as PizzaScoreData[];
         setScoreData(scores);
       } catch (error) {
         console.error('Error loading score data:', error);
@@ -192,7 +191,7 @@ export default function PizzaLocationMap() {
           .filter((feature: Feature) => {
             // Filter out Alaska (02) and Hawaii (15)
             const id = feature.id as string;
-            return id !== "02" && id !== "15";
+            return id !== '02' && id !== '15';
           })
           .map((feature: Feature, i: number) => (
             <path
@@ -210,39 +209,41 @@ export default function PizzaLocationMap() {
   // Render pizza score heatmap (continental US only)
   const renderPizzaScoreHeatmap = () => {
     if (!showPizzaScore || !scoreData.length) return null;
-  
-    return scoreData
-      // No geographic filter: the one this replaced was a lat/lng box that also
-      // contains southern Ontario, Quebec and New Brunswick, and Canadian
-      // Domino's rate about half a star higher — since the score inverts, that
-      // rendered the Buffalo/Niagara/Detroit corridor as the worst pizza in
-      // America. The generator now filters *stores* to US states, which fixes
-      // the scores. It does not mask the grid, though: cells are emitted
-      // wherever 3+ US stores fall within the smoothing radius, so a handful
-      // still land over Lake Ontario and the Gulf. Cosmetic, not a data bug.
-      .filter(point => Number(point.pizza_score) >= scoreFilter)
-      .map((point, i) => {
-        const projected = projection([point.longitude, point.latitude]);
-        if (!projected) return null;
-        const [x, y] = projected;
 
-        return (
-          <circle
-            key={`score-${i}`}
-            cx={x}
-            cy={y}
-            r={5.5}
-            fill={getScoreColor(point.pizza_score)}
-            // Cells nearly tile at this radius, so heavy transparency is no
-            // longer needed to see the map beneath — and overlapping alpha was
-            // compounding into false intensity where the grid is dense.
-            opacity={0.9}
-            onMouseEnter={() => setHoveredScore(point)}
-            onMouseLeave={() => setHoveredScore(null)}
-            className="cursor-pointer"
-          />
-        );
-      });
+    return (
+      scoreData
+        // No geographic filter: the one this replaced was a lat/lng box that also
+        // contains southern Ontario, Quebec and New Brunswick, and Canadian
+        // Domino's rate about half a star higher — since the score inverts, that
+        // rendered the Buffalo/Niagara/Detroit corridor as the worst pizza in
+        // America. The generator now filters *stores* to US states, which fixes
+        // the scores. It does not mask the grid, though: cells are emitted
+        // wherever 3+ US stores fall within the smoothing radius, so a handful
+        // still land over Lake Ontario and the Gulf. Cosmetic, not a data bug.
+        .filter((point) => Number(point.pizza_score) >= scoreFilter)
+        .map((point, i) => {
+          const projected = projection([point.longitude, point.latitude]);
+          if (!projected) return null;
+          const [x, y] = projected;
+
+          return (
+            <circle
+              key={`score-${i}`}
+              cx={x}
+              cy={y}
+              r={5.5}
+              fill={getScoreColor(point.pizza_score)}
+              // Cells nearly tile at this radius, so heavy transparency is no
+              // longer needed to see the map beneath — and overlapping alpha was
+              // compounding into false intensity where the grid is dense.
+              opacity={0.9}
+              onMouseEnter={() => setHoveredScore(point)}
+              onMouseLeave={() => setHoveredScore(null)}
+              className="cursor-pointer"
+            />
+          );
+        })
+    );
   };
 
   // Render review points (continental US only)
@@ -250,26 +251,25 @@ export default function PizzaLocationMap() {
     if (!showReviews || !reviewData.length) return null;
 
     // US-only by construction — see the note in renderPizzaScoreHeatmap.
-    return reviewData
-      .map((location, i) => {
-        const projected = projection([location.longitude, location.latitude]);
-        if (!projected) return null;
-        const [x, y] = projected;
+    return reviewData.map((location, i) => {
+      const projected = projection([location.longitude, location.latitude]);
+      if (!projected) return null;
+      const [x, y] = projected;
 
-        return (
-          <circle
-            key={`review-${i}`}
-            cx={x}
-            cy={y}
-            r={4}
-            fill={getRatingColor(location.rating)}
-            opacity={0.85}
-            onMouseEnter={() => setHoveredLocation(location)}
-            onMouseLeave={() => setHoveredLocation(null)}
-            className="cursor-pointer"
-          />
-        );
-      });
+      return (
+        <circle
+          key={`review-${i}`}
+          cx={x}
+          cy={y}
+          r={4}
+          fill={getRatingColor(location.rating)}
+          opacity={0.85}
+          onMouseEnter={() => setHoveredLocation(location)}
+          onMouseLeave={() => setHoveredLocation(null)}
+          className="cursor-pointer"
+        />
+      );
+    });
   };
 
   // Render hover information
@@ -338,33 +338,33 @@ export default function PizzaLocationMap() {
 
   if (loading) {
     return (
-      <div className="w-full bg-white border-4 border-black p-8 text-center mt-4">
-        <p className="font-neo font-bold text-black uppercase tracking-widest animate-pulse">Loading location data…</p>
+      <div className="mt-4 w-full border-4 border-black bg-white p-8 text-center">
+        <p className="font-neo animate-pulse font-bold tracking-widest text-black uppercase">Loading location data…</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="w-full bg-white border-4 border-red-600 p-6 mt-4">
-        <p className="font-neo font-bold text-red-600 uppercase mb-2 tracking-widest">Failed to Load Map</p>
-        <p className="font-neo text-red-600 font-bold text-sm uppercase">{error}</p>
+      <div className="mt-4 w-full border-4 border-red-600 bg-white p-6">
+        <p className="font-neo mb-2 font-bold tracking-widest text-red-600 uppercase">Failed to Load Map</p>
+        <p className="font-neo text-sm font-bold text-red-600 uppercase">{error}</p>
       </div>
     );
   }
 
   return (
-    <div className="w-full h-full bg-white border-4 border-black mt-4">
+    <div className="mt-4 h-full w-full border-4 border-black bg-white">
       <div className="p-4 md:p-6">
-      <MapControls
-  showReviews={showReviews}
-  setShowReviews={setShowReviews}
-  setShowPizzaScore={setShowPizzaScore}
-  scoreFilter={scoreFilter}
-  setScoreFilter={setScoreFilter}
-/>
+        <MapControls
+          showReviews={showReviews}
+          setShowReviews={setShowReviews}
+          setShowPizzaScore={setShowPizzaScore}
+          scoreFilter={scoreFilter}
+          setScoreFilter={setScoreFilter}
+        />
 
-        <div className="h-[50vh] max-h-[800px] relative bg-white border-4 border-black overflow-hidden">
+        <div className="relative h-[50vh] max-h-[800px] overflow-hidden border-4 border-black bg-white">
           {/*
             role="img" + a summary label rather than per-mark focus handlers:
             the two layers are ~2,300 grid cells and ~5,700 store dots, so making
@@ -392,31 +392,32 @@ export default function PizzaLocationMap() {
           </svg>
         </div>
 
-        <div className="mt-4 bg-white border-4 border-black p-4">
+        <div className="mt-4 border-4 border-black bg-white p-4">
           {showReviews ? (
             <>
-              <div className="font-neo font-extrabold uppercase tracking-widest text-black text-sm border-b-2 border-black pb-2 mb-3">
+              <div className="font-neo mb-3 border-b-2 border-black pb-2 text-sm font-extrabold tracking-widest text-black uppercase">
                 Domino&apos;s Google Rating
               </div>
               <RampBar stops={RATING_RAMP} id="ratingRamp" />
-              <div className="flex justify-between mt-1 font-neo font-bold text-[10px] md:text-xs uppercase tracking-widest text-black opacity-60">
+              <div className="font-neo mt-1 flex justify-between text-[10px] font-bold tracking-widest text-black uppercase opacity-60 md:text-xs">
                 <span>3.0★ or below</span>
                 <span>4.5★ or above</span>
               </div>
             </>
           ) : (
             <>
-              <div className="font-neo font-extrabold uppercase tracking-widest text-black text-sm border-b-2 border-black pb-2 mb-3">
+              <div className="font-neo mb-3 border-b-2 border-black pb-2 text-sm font-extrabold tracking-widest text-black uppercase">
                 Pizza Score
               </div>
               <RampBar stops={SCORE_RAMP} id="scoreRamp" />
-              <div className="flex justify-between mt-1 font-neo font-bold text-[10px] md:text-xs uppercase tracking-widest text-black opacity-60">
+              <div className="font-neo mt-1 flex justify-between text-[10px] font-bold tracking-widest text-black uppercase opacity-60 md:text-xs">
                 <span>Domino&apos;s rates well</span>
                 <span>Typical</span>
                 <span>Domino&apos;s rates poorly</span>
               </div>
-              <div className="mt-3 font-neo font-medium text-xs md:text-sm text-black">
-                A percentile, not a star rating: it ranks each area against the national median. The full sweep covers well under half a star of real variation.
+              <div className="font-neo mt-3 text-xs font-medium text-black md:text-sm">
+                A percentile, not a star rating: it ranks each area against the national median. The full sweep covers
+                well under half a star of real variation.
               </div>
             </>
           )}
@@ -424,32 +425,52 @@ export default function PizzaLocationMap() {
 
         <div className="mt-8 grid gap-8 border-t-4 border-black pt-6">
           <div>
-            <div className="text-xl font-black font-neo uppercase tracking-tighter text-black mb-3">Background</div>
-            <div className="text-sm md:text-base font-neo font-medium text-black space-y-2">
+            <div className="font-neo mb-3 text-xl font-black tracking-tighter text-black uppercase">Background</div>
+            <div className="font-neo space-y-2 text-sm font-medium text-black md:text-base">
               <div>This map reveals America's best pizza regions through Domino's Pizza ratings.</div>
               <div>The methodology builds on three assumptions:</div>
-              <div className="pl-4">1. Domino's pizza is Domino's pizza. It is highly standardized nationwide, making it a reliable control variable.</div>
-              <div className="pl-4">2. Pizza shop employees are constant enough that they impact the ratings in a standardized way.</div>
-              <div className="pl-4 pb-2">3. As a result of (1) and (2), the differentiating factor for the reviews is not the pizza but the competitors in the area. The better the local pizza is, the worse Domino's will be rated.</div>
-              <div className="pb-2">My Pizza Score inverts Domino's Google Maps ratings: lower Domino's ratings suggest higher-quality local pizza alternatives. This creates a proxy measure for regional pizza - areas where Domino's struggles are areas where local pizzerias are best.</div>
+              <div className="pl-4">
+                1. Domino's pizza is Domino's pizza. It is highly standardized nationwide, making it a reliable control
+                variable.
+              </div>
+              <div className="pl-4">
+                2. Pizza shop employees are constant enough that they impact the ratings in a standardized way.
+              </div>
+              <div className="pb-2 pl-4">
+                3. As a result of (1) and (2), the differentiating factor for the reviews is not the pizza but the
+                competitors in the area. The better the local pizza is, the worse Domino's will be rated.
+              </div>
+              <div className="pb-2">
+                My Pizza Score inverts Domino's Google Maps ratings: lower Domino's ratings suggest higher-quality local
+                pizza alternatives. This creates a proxy measure for regional pizza - areas where Domino's struggles are
+                areas where local pizzerias are best.
+              </div>
             </div>
             <div className="mt-8">
-              <div className="text-xl font-black font-neo uppercase tracking-tighter text-black mb-4">Statistics</div>
-              <div className="text-sm md:text-base font-neo font-medium text-black space-y-3">
+              <div className="font-neo mb-4 text-xl font-black tracking-tighter text-black uppercase">Statistics</div>
+              <div className="font-neo space-y-3 text-sm font-medium text-black md:text-base">
                 <div className="flex justify-between border-b-2 border-black/10 pb-1">
-                  <span className="uppercase font-bold tracking-widest opacity-60 text-[10px] md:text-xs">Total Locations Sampled</span>
-                  <span className="font-black text-lg md:text-xl tracking-tighter">{reviewData.length.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between border-b-2 border-black/10 pb-1">
-                  <span className="uppercase font-bold tracking-widest opacity-60 text-[10px] md:text-xs">Average Rating</span>
-                  <span className="font-black text-lg md:text-xl tracking-tighter">
-                  {(reviewData.reduce((sum, loc) => sum + loc.rating, 0) / reviewData.length).toFixed(2)}
+                  <span className="text-[10px] font-bold tracking-widest uppercase opacity-60 md:text-xs">
+                    Total Locations Sampled
+                  </span>
+                  <span className="text-lg font-black tracking-tighter md:text-xl">
+                    {reviewData.length.toLocaleString()}
                   </span>
                 </div>
                 <div className="flex justify-between border-b-2 border-black/10 pb-1">
-                  <span className="uppercase font-bold tracking-widest opacity-60 text-[10px] md:text-xs">Total Reviews</span>
-                  <span className="font-black text-lg md:text-xl tracking-tighter">
-                  {reviewData.reduce((sum, loc) => sum + loc.total_ratings, 0).toLocaleString()}
+                  <span className="text-[10px] font-bold tracking-widest uppercase opacity-60 md:text-xs">
+                    Average Rating
+                  </span>
+                  <span className="text-lg font-black tracking-tighter md:text-xl">
+                    {(reviewData.reduce((sum, loc) => sum + loc.rating, 0) / reviewData.length).toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex justify-between border-b-2 border-black/10 pb-1">
+                  <span className="text-[10px] font-bold tracking-widest uppercase opacity-60 md:text-xs">
+                    Total Reviews
+                  </span>
+                  <span className="text-lg font-black tracking-tighter md:text-xl">
+                    {reviewData.reduce((sum, loc) => sum + loc.total_ratings, 0).toLocaleString()}
                   </span>
                 </div>
               </div>

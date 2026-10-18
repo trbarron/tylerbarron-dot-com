@@ -7,18 +7,18 @@ type EventParams = Record<string, string | number | boolean | undefined>;
  * params flat — GA only reports a param once it's registered as a custom
  * dimension/metric in the property, so prefer reusing existing param names. */
 export function trackEvent(name: string, params: EventParams = {}): void {
-  if (typeof window === "undefined") return;
+  if (typeof window === 'undefined') return;
   const { gtag } = window;
-  if (typeof gtag !== "function") return;
-  gtag("event", name, params);
+  if (typeof gtag !== 'function') return;
+  gtag('event', name, params);
 }
 
 /** Fire a GA4 custom event when a route 404s, so broken links are queryable
  * directly — the page title alone is the same ("404 — Barron Wasteland") for
  * every miss, which makes the default pages report useless for finding them. */
 export function trackNotFound(path: string): void {
-  trackEvent("page_not_found", {
+  trackEvent('page_not_found', {
     path,
-    referrer: document.referrer || "(none)",
+    referrer: document.referrer || '(none)',
   });
 }

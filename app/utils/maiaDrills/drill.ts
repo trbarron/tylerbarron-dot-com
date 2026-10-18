@@ -74,7 +74,7 @@ export function gradeKnown(card: DrillCard, guess: Guess): { verdict: Verdict; g
 export function gradeByScores(
   guess: Guess,
   scores: { target: number; guess: number } | null,
-  marginWin: number = DEFAULT_SETTINGS.alsoGoodWin!
+  marginWin: number = DEFAULT_SETTINGS.alsoGoodWin!,
 ): { verdict: Verdict; guess: Guess } {
   if (!scores) return { verdict: 'wrong', guess };
   return {
@@ -124,7 +124,7 @@ export function answeredRight(answer: Answer): boolean {
 export function recordProgress(
   progress: Record<string, CardProgress>,
   cardId: string,
-  answer: Answer
+  answer: Answer,
 ): Record<string, CardProgress> {
   const ok = answeredRight(answer);
   const old = progress[cardId] ?? { seen: 0, correct: 0, last: 'wrong' as const };
@@ -147,7 +147,7 @@ export function shuffle<T>(items: T[], random: () => number = Math.random): T[] 
 export function initialQueue(
   cards: DrillCard[],
   progress: Record<string, CardProgress>,
-  random: () => number = Math.random
+  random: () => number = Math.random,
 ): number[] {
   const indices = cards.map((_, i) => i);
   const due = indices.filter((i) => progress[cards[i].id]?.last !== 'correct');

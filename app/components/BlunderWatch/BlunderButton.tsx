@@ -38,13 +38,22 @@ function TimerBar({ durationMs, moveKey }: { durationMs: number; moveKey: number
   }, [durationMs, moveKey]);
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 h-1.5">
+    <div className="absolute right-0 bottom-0 left-0 h-1.5">
       <div ref={barRef} className="h-full bg-black opacity-30" />
     </div>
   );
 }
 
-export function BlunderButton({ onFlag, disabled, lastFlagResult, isPreGame = false, moveTimeMs, moveKey = 0, isWhiteMove = true, isFastForward = false }: BlunderButtonProps) {
+export function BlunderButton({
+  onFlag,
+  disabled,
+  lastFlagResult,
+  isPreGame = false,
+  moveTimeMs,
+  moveKey = 0,
+  isWhiteMove = true,
+  isFastForward = false,
+}: BlunderButtonProps) {
   const [feedback, setFeedback] = useState<FeedbackState>('idle');
 
   // Flash feedback when a flag result comes in, reset when it clears (next move)
@@ -61,20 +70,27 @@ export function BlunderButton({ onFlag, disabled, lastFlagResult, isPreGame = fa
   // During Black's move or fast-forward, show active style but no text/timer (cutscene)
   const isInactive = !isPreGame && (!isWhiteMove || isFastForward);
 
-  const bgClass =
-    isPreGame ? 'bg-black border-black text-white hover:bg-white hover:text-black' :
-    feedback === 'correct' ? 'bg-black border-black text-white' :
-    feedback === 'false_positive' ? 'bg-gray-200 border-black text-black' :
-    disabled ? 'bg-gray-200 border-gray-200 text-gray-700 cursor-not-allowed' :
-    'bg-black border-black text-white hover:bg-white hover:text-black active:scale-[0.98]';
+  const bgClass = isPreGame
+    ? 'bg-black border-black text-white hover:bg-white hover:text-black'
+    : feedback === 'correct'
+      ? 'bg-black border-black text-white'
+      : feedback === 'false_positive'
+        ? 'bg-gray-200 border-black text-black'
+        : disabled
+          ? 'bg-gray-200 border-gray-200 text-gray-700 cursor-not-allowed'
+          : 'bg-black border-black text-white hover:bg-white hover:text-black active:scale-[0.98]';
 
-  const buttonText =
-    isPreGame ? 'START GAME' :
-    feedback === 'correct' ? 'BLUNDER!' :
-    feedback === 'false_positive' ? 'NOT A BLUNDER' :
-    disabled ? 'ALREADY FLAGGED' :
-    isInactive ? '\u00A0' :
-    'BLUNDER';
+  const buttonText = isPreGame
+    ? 'START GAME'
+    : feedback === 'correct'
+      ? 'BLUNDER!'
+      : feedback === 'false_positive'
+        ? 'NOT A BLUNDER'
+        : disabled
+          ? 'ALREADY FLAGGED'
+          : isInactive
+            ? '\u00A0'
+            : 'BLUNDER';
 
   const isDisabled = !isPreGame && disabled;
   const showTimer = !isPreGame && !disabled && !isInactive && moveTimeMs != null && moveTimeMs > 0;
@@ -85,12 +101,7 @@ export function BlunderButton({ onFlag, disabled, lastFlagResult, isPreGame = fa
       <button
         onClick={() => !isDisabled && onFlag()}
         disabled={isDisabled}
-        className={`
-          relative overflow-hidden
-          hidden md:block w-full border-4 px-6 py-5 font-neo font-black text-xl uppercase tracking-tighter
-          transition-all duration-100 mt-4
-          ${bgClass}
-        `}
+        className={`font-neo relative mt-4 hidden w-full overflow-hidden border-4 px-6 py-5 text-xl font-black tracking-tighter uppercase transition-all duration-100 md:block ${bgClass} `}
         aria-label={isPreGame ? 'Start the game' : 'Flag this move as a blunder'}
       >
         {buttonText}
@@ -101,12 +112,7 @@ export function BlunderButton({ onFlag, disabled, lastFlagResult, isPreGame = fa
       <button
         onClick={() => !isDisabled && onFlag()}
         disabled={isDisabled}
-        className={`
-          relative overflow-hidden
-          md:hidden w-full border-4 px-6 min-h-[4rem] font-neo font-black text-xl uppercase tracking-tighter
-          transition-all duration-100 mt-4
-          ${bgClass}
-        `}
+        className={`font-neo relative mt-4 min-h-[4rem] w-full overflow-hidden border-4 px-6 text-xl font-black tracking-tighter uppercase transition-all duration-100 md:hidden ${bgClass} `}
         aria-label={isPreGame ? 'Start the game' : 'Flag this move as a blunder'}
       >
         {buttonText}

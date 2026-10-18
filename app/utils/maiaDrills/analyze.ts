@@ -119,7 +119,7 @@ export async function analyzeGames(
   games: SourceGame[],
   settings: AnalysisSettings,
   engines: { maia: MaiaEngine; stockfish: StockfishPool },
-  opts: { signal?: AbortSignal; onProgress?: (p: AnalysisProgress) => void }
+  opts: { signal?: AbortSignal; onProgress?: (p: AnalysisProgress) => void },
 ): Promise<AnalysisResult> {
   const cards: DrillCard[] = [];
   const stats: DeckStats = { games: 0, positions: 0, disagreements: 0 };
@@ -137,7 +137,13 @@ export async function analyzeGames(
     while (oldest < states.length && states[oldest].finished) oldest++;
     const s = states[oldest];
     const current = s
-      ? { positions: s.positions, positionsDone: s.positionsDone, checks: s.checks, checksDone: s.checksDone, maiaDone: s.maiaDone }
+      ? {
+          positions: s.positions,
+          positionsDone: s.positionsDone,
+          checks: s.checks,
+          checksDone: s.checksDone,
+          maiaDone: s.maiaDone,
+        }
       : null;
     opts.onProgress?.({ ...progress, current });
   };
@@ -166,7 +172,14 @@ export async function analyzeGames(
       eloSelf: targetElo,
       eloOppo: clampElo(oppElo),
     }));
-    const state = { positions: queries.length, positionsDone: 0, checks: 0, checksDone: 0, maiaDone: false, finished: false };
+    const state = {
+      positions: queries.length,
+      positionsDone: 0,
+      checks: 0,
+      checksDone: 0,
+      maiaDone: false,
+      finished: false,
+    };
     states.push(state);
     report();
     const predictions = queries.length

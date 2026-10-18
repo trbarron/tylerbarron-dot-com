@@ -86,9 +86,7 @@ export interface MediaProfileResult {
   updatedAt?: string;
 }
 
-export type ValidationResult =
-  | { ok: true; value: MediaProfileResult }
-  | { ok: false; error: string };
+export type ValidationResult = { ok: true; value: MediaProfileResult } | { ok: false; error: string };
 
 /**
  * The sliders move in tenths, so a stored value that is not a multiple of ten
@@ -104,21 +102,17 @@ export const SCORE_STEP = 10;
  * as text (React escapes it) — never used as a Redis key or in a URL.
  */
 function cleanName(value: string): string {
-  return value
-    // eslint-disable-next-line no-control-regex
-    .replace(/[\u0000-\u001f\u007f]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
+  return (
+    value
+      // eslint-disable-next-line no-control-regex
+      .replace(/[\u0000-\u001f\u007f]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+  );
 }
 
 function isPercent(value: unknown): value is number {
-  return (
-    typeof value === 'number' &&
-    Number.isInteger(value) &&
-    value >= 0 &&
-    value <= 100 &&
-    value % SCORE_STEP === 0
-  );
+  return typeof value === 'number' && Number.isInteger(value) && value >= 0 && value <= 100 && value % SCORE_STEP === 0;
 }
 
 /**
@@ -256,9 +250,7 @@ function digestsMatch(a: string, b: string): boolean {
 
 export type UpdateOutcome = 'ok' | 'not-found' | 'forbidden';
 
-export async function saveResult(
-  result: MediaProfileResult
-): Promise<{ id: string; editToken: string }> {
+export async function saveResult(result: MediaProfileResult): Promise<{ id: string; editToken: string }> {
   const redis = getRedisClient();
   const id = generateId();
   const editToken = generateEditToken();
@@ -278,11 +270,7 @@ export async function saveResult(
  * Overwrite a card in place. The stored creation time wins over whatever the
  * caller sent, so an edit cannot reorder the public list or backdate itself.
  */
-export async function updateResult(
-  id: string,
-  editToken: string,
-  result: MediaProfileResult
-): Promise<UpdateOutcome> {
+export async function updateResult(id: string, editToken: string, result: MediaProfileResult): Promise<UpdateOutcome> {
   const redis = getRedisClient();
 
   const [storedHash, existingRaw] = await Promise.all([

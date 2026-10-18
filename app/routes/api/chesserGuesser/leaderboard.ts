@@ -1,11 +1,11 @@
 // API Route: Get daily leaderboard
 // GET /api/chesserGuesser/leaderboard?date=YYYY-MM-DD&limit=50
 
-import type { LoaderFunctionArgs } from "react-router";
-import { getRedisClient } from "~/utils/redis.server";
-import { getTodayDateString } from "~/utils/chesserGuesser/seededRandom";
-import type { LeaderboardEntry } from "~/utils/chesserGuesser/types";
-import { rateLimitMiddleware } from "~/utils/chesserGuesser/rateLimit.server";
+import type { LoaderFunctionArgs } from 'react-router';
+import { getRedisClient } from '~/utils/redis.server';
+import { getTodayDateString } from '~/utils/chesserGuesser/seededRandom';
+import type { LeaderboardEntry } from '~/utils/chesserGuesser/types';
+import { rateLimitMiddleware } from '~/utils/chesserGuesser/rateLimit.server';
 
 /**
  * Get leaderboard for a specific date
@@ -22,18 +22,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     // Validate date format
     if (!/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
-      return Response.json(
-        { error: 'Invalid date format. Use YYYY-MM-DD.' },
-        { status: 400 }
-      );
+      return Response.json({ error: 'Invalid date format. Use YYYY-MM-DD.' }, { status: 400 });
     }
 
     // Validate limit
     if (isNaN(limit) || limit < 1 || limit > 100) {
-      return Response.json(
-        { error: 'Invalid limit. Must be 1-100.' },
-        { status: 400 }
-      );
+      return Response.json({ error: 'Invalid limit. Must be 1-100.' }, { status: 400 });
     }
 
     // Check rate limit
@@ -49,12 +43,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const leaderboardKey = `chesserGuesser:leaderboard:${dateString}`;
 
     // Get top N users from sorted set (ascending by score - lowest diff is best)
-    const topUsers = await redis.zrange(
-      leaderboardKey,
-      0,
-      limit - 1,
-      'WITHSCORES'
-    );
+    const topUsers = await redis.zrange(leaderboardKey, 0, limit - 1, 'WITHSCORES');
 
     // Parse usernames and scores from ZRANGE result
     const usernames: string[] = [];
@@ -65,8 +54,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
 
     // Batch-fetch completed counts and summaries in two round trips instead of 2N
-    const completedKeys = usernames.map(u => `chesserGuesser:completed:${dateString}:${u}`);
-    const summaryKeys = usernames.map(u => `chesserGuesser:summary:${dateString}:${u}`);
+    const completedKeys = usernames.map((u) => `chesserGuesser:completed:${dateString}:${u}`);
+    const summaryKeys = usernames.map((u) => `chesserGuesser:summary:${dateString}:${u}`);
     const [completedResults, summaryResults] = await Promise.all([
       completedKeys.length > 0 ? redis.mget(...completedKeys) : [],
       summaryKeys.length > 0 ? redis.mget(...summaryKeys) : [],
@@ -114,21 +103,21 @@ export async function loader({ request }: LoaderFunctionArgs) {
     // Get total number of players
     const totalPlayers = await redis.zcard(leaderboardKey);
 
-    return Response.json({
-      leaderboard,
-      userRank,
-      totalPlayers,
-      date: dateString,
-    }, {
-      headers: {
-        'Cache-Control': 'public, max-age=60', // Cache for 1 minute
+    return Response.json(
+      {
+        leaderboard,
+        userRank,
+        totalPlayers,
+        date: dateString,
       },
-    });
+      {
+        headers: {
+          'Cache-Control': 'public, max-age=60', // Cache for 1 minute
+        },
+      },
+    );
   } catch (error) {
     console.error('Leaderboard API error:', error);
-    return Response.json(
-      { error: 'Failed to fetch leaderboard' },
-      { status: 500 }
-    );
+    return Response.json({ error: 'Failed to fetch leaderboard' }, { status: 500 });
   }
 }

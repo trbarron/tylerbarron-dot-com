@@ -95,7 +95,7 @@ export default function BuildForm({ onBuilt }: BuildFormProps) {
         throw new Error(
           result.cancelled
             ? 'Stopped before any cards were found.'
-            : 'No errors found at these settings. Try a larger rating gap or a smaller threshold.'
+            : 'No errors found at these settings. Try a larger rating gap or a smaller threshold.',
         );
       }
       const cards = result.cards.slice(0, LIMITS.cardsPerDeck);
@@ -132,7 +132,7 @@ export default function BuildForm({ onBuilt }: BuildFormProps) {
             aria-selected={source === s}
             disabled={busy}
             onClick={() => setSource(s)}
-            className={`flex-1 px-3 py-2 font-neo text-sm font-bold uppercase tracking-wide ${
+            className={`font-neo flex-1 px-3 py-2 text-sm font-bold tracking-wide uppercase ${
               source === s ? 'bg-black text-white' : 'bg-white text-black hover:bg-gray-100'
             }`}
           >
@@ -174,7 +174,7 @@ export default function BuildForm({ onBuilt }: BuildFormProps) {
       </div>
 
       <fieldset className="border-2 border-black p-4">
-        <legend className="px-1 font-neo text-xs font-bold uppercase tracking-wide">What counts as an error</legend>
+        <legend className="font-neo px-1 text-xs font-bold tracking-wide uppercase">What counts as an error</legend>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label htmlFor="md-delta" className={labelClass}>
@@ -205,15 +205,16 @@ export default function BuildForm({ onBuilt }: BuildFormProps) {
             />
           </div>
         </div>
-        <p className="mt-3 font-neo text-sm text-gray-700">
+        <p className="font-neo mt-3 text-sm text-gray-700">
           A move is an error when a player <strong>{fields.delta || 0} points</strong> stronger would have played
           something else, and Stockfish says yours cost at least <strong>{fields.thresholdWin || 0}%</strong> of your
           winning chances.
-          {source === 'chesscom' && ' Maia was trained on Lichess ratings, which run higher than Chess.com’s; consider a bigger gap.'}
+          {source === 'chesscom' &&
+            ' Maia was trained on Lichess ratings, which run higher than Chess.com’s; consider a bigger gap.'}
         </p>
 
         <details className="mt-3">
-          <summary className="cursor-pointer font-neo text-xs font-bold uppercase tracking-wide text-gray-600 hover:text-black">
+          <summary className="font-neo cursor-pointer text-xs font-bold tracking-wide text-gray-600 uppercase hover:text-black">
             More settings
           </summary>
           <div className="mt-3 grid gap-4 sm:grid-cols-2">
@@ -257,7 +258,7 @@ export default function BuildForm({ onBuilt }: BuildFormProps) {
                 onChange={setField('skipMoves')}
               />
             </div>
-            <label className="flex items-center gap-2 font-neo text-sm text-black sm:col-span-2">
+            <label className="font-neo flex items-center gap-2 text-sm text-black sm:col-span-2">
               <input
                 type="checkbox"
                 checked={excludeBullet}
@@ -268,7 +269,7 @@ export default function BuildForm({ onBuilt }: BuildFormProps) {
               Skip bullet games
             </label>
           </div>
-          <p className="mt-3 font-neo text-sm text-gray-700">
+          <p className="font-neo mt-3 text-sm text-gray-700">
             In a drill, a different move counts as also good when it’s within{' '}
             <strong>{fields.alsoGoodWin || 0}%</strong> win chance of the stronger move.
           </p>
@@ -282,7 +283,7 @@ export default function BuildForm({ onBuilt }: BuildFormProps) {
       ) : (
         <button
           onClick={start}
-          className="w-full border-4 border-black bg-black px-6 py-4 font-neo text-lg font-extrabold uppercase tracking-wide text-white hover:bg-white hover:text-black"
+          className="font-neo w-full border-4 border-black bg-black px-6 py-4 text-lg font-extrabold tracking-wide text-white uppercase hover:bg-white hover:text-black"
         >
           Find my errors
         </button>

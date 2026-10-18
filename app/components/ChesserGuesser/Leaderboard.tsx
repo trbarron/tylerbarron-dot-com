@@ -1,19 +1,16 @@
 // Leaderboard Display Component
 // Shows top players and user's rank
 
-import { useState, useEffect, useCallback } from "react";
-import type { LeaderboardEntry } from "~/utils/chesserGuesser/types";
-import Skeleton from "~/components/Skeleton";
+import { useState, useEffect, useCallback } from 'react';
+import type { LeaderboardEntry } from '~/utils/chesserGuesser/types';
+import Skeleton from '~/components/Skeleton';
 
 interface LeaderboardProps {
   currentUsername?: string;
   date?: string;
 }
 
-export function Leaderboard({
-  currentUsername,
-  date
-}: LeaderboardProps) {
+export function Leaderboard({ currentUsername, date }: LeaderboardProps) {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [totalPlayers, setTotalPlayers] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -56,25 +53,27 @@ export function Leaderboard({
   };
 
   return (
-    <div className="bg-white border-4 border-black">
-      <div className="bg-black text-white py-3 px-4 font-neo font-extrabold uppercase tracking-tighter text-lg border-b-4 border-black">
+    <div className="border-4 border-black bg-white">
+      <div className="font-neo border-b-4 border-black bg-black px-4 py-3 text-lg font-extrabold tracking-tighter text-white uppercase">
         LEADERBOARD
       </div>
 
       <div className="max-h-[500px] overflow-y-auto">
         {isLoading ? (
-          <div className="p-4 space-y-3">
+          <div className="space-y-3 p-4">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="flex items-center gap-4 h-8">
-                <Skeleton variant="rect" className="w-8 h-full" />
-                <Skeleton variant="rect" className="flex-1 h-full" />
-                <Skeleton variant="rect" className="w-16 h-full" />
+              <div key={i} className="flex h-8 items-center gap-4">
+                <Skeleton variant="rect" className="h-full w-8" />
+                <Skeleton variant="rect" className="h-full flex-1" />
+                <Skeleton variant="rect" className="h-full w-16" />
               </div>
             ))}
           </div>
         ) : leaderboard.length === 0 ? (
-          <div className="p-8 text-center font-neo font-bold text-black opacity-50 uppercase">
-            No scores yet today.<br />Be the first!
+          <div className="font-neo p-8 text-center font-bold text-black uppercase opacity-50">
+            No scores yet today.
+            <br />
+            Be the first!
           </div>
         ) : (
           <>
@@ -85,26 +84,24 @@ export function Leaderboard({
               return (
                 <div
                   key={`${entry.username}-${index}`}
-                  className={`
-                    border-b-2 border-black p-3 font-neo
-                    ${isCurrentUser
-                      ? 'bg-gray-100 border-l-4 border-l-black text-black'
-                      : 'bg-white text-black'
-                    }
-                  `}
+                  className={`font-neo border-b-2 border-black p-3 ${
+                    isCurrentUser ? 'border-l-4 border-l-black bg-gray-100 text-black' : 'bg-white text-black'
+                  } `}
                 >
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <span className={`font-extrabold w-10 flex-shrink-0 text-lg ${entry.rank <= 3 ? 'scale-110' : 'opacity-50'}`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex min-w-0 flex-1 items-center gap-3">
+                      <span
+                        className={`w-10 flex-shrink-0 text-lg font-extrabold ${entry.rank <= 3 ? 'scale-110' : 'opacity-50'}`}
+                      >
                         {medal || `#${entry.rank}`}
                       </span>
-                      <span className="truncate font-bold text-lg tracking-tight">
+                      <span className="truncate text-lg font-bold tracking-tight">
                         {entry.username.toUpperCase()}
                         {isCurrentUser && ' (YOU)'}
                       </span>
                     </div>
-                    <div className="flex items-center gap-3 flex-shrink-0">
-                      <span className="font-black text-xl min-w-16 text-right text-black" title="Total Difference">
+                    <div className="flex flex-shrink-0 items-center gap-3">
+                      <span className="min-w-16 text-right text-xl font-black text-black" title="Total Difference">
                         {entry.score}
                       </span>
                     </div>
@@ -113,7 +110,7 @@ export function Leaderboard({
               );
             })}
 
-            <div className="p-3 text-center font-neo font-black text-sm uppercase bg-gray-100 border-t-2 border-black">
+            <div className="font-neo border-t-2 border-black bg-gray-100 p-3 text-center text-sm font-black uppercase">
               {totalPlayers} {totalPlayers === 1 ? 'player' : 'players'} competing today
             </div>
           </>

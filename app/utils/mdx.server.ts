@@ -15,7 +15,7 @@ export async function processMdx(source: string) {
         rehypeKatex,
         // Keep options in sync with scripts/compile-mdx.mjs (prod compile path).
         [rehypePrettyCode, { theme: 'github-light', keepBackground: false }],
-        [rehypeImgSize, { dir: "public" }]
+        [rehypeImgSize, { dir: 'public' }],
       ];
       return options;
     },

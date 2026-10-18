@@ -1,8 +1,8 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef } from 'react';
 
-import RetroreflectanceControls from "./RetroreflectanceControls";
-import { useRetroreflectance } from "./retroreflectance-context";
-import { DEFAULT_RETRO_PARAMS } from "./retroreflectance-params";
+import RetroreflectanceControls from './RetroreflectanceControls';
+import { useRetroreflectance } from './retroreflectance-context';
+import { DEFAULT_RETRO_PARAMS } from './retroreflectance-params';
 
 // Vertex shader - just passes through coordinates
 const vertexShaderSource = `
@@ -295,11 +295,7 @@ const fragmentShaderSource = `
   }
 `;
 
-function createShader(
-  gl: WebGLRenderingContext,
-  type: number,
-  source: string,
-): WebGLShader | null {
+function createShader(gl: WebGLRenderingContext, type: number, source: string): WebGLShader | null {
   const shader = gl.createShader(type);
   if (!shader) return null;
 
@@ -307,7 +303,7 @@ function createShader(
   gl.compileShader(shader);
 
   if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-    console.error("Shader compile error:", gl.getShaderInfoLog(shader));
+    console.error('Shader compile error:', gl.getShaderInfoLog(shader));
     gl.deleteShader(shader);
     return null;
   }
@@ -328,7 +324,7 @@ function createProgram(
   gl.linkProgram(program);
 
   if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-    console.error("Program link error:", gl.getProgramInfoLog(program));
+    console.error('Program link error:', gl.getProgramInfoLog(program));
     gl.deleteProgram(program);
     return null;
   }
@@ -377,7 +373,7 @@ export default function DichroicBackground() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const gl = canvas.getContext("webgl", {
+    const gl = canvas.getContext('webgl', {
       alpha: false,
       antialias: true,
       preserveDrawingBuffer: false,
@@ -391,11 +387,7 @@ export default function DichroicBackground() {
 
     // Create shaders
     const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
-    const fragmentShader = createShader(
-      gl,
-      gl.FRAGMENT_SHADER,
-      fragmentShaderSource,
-    );
+    const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
 
     if (!vertexShader || !fragmentShader) return;
 
@@ -405,37 +397,29 @@ export default function DichroicBackground() {
     // Set up geometry (full-screen quad)
     const positionBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-    gl.bufferData(
-      gl.ARRAY_BUFFER,
-      new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]),
-      gl.STATIC_DRAW,
-    );
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]), gl.STATIC_DRAW);
 
     const texCoordBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
-    gl.bufferData(
-      gl.ARRAY_BUFFER,
-      new Float32Array([0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1]),
-      gl.STATIC_DRAW,
-    );
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1]), gl.STATIC_DRAW);
 
     // Get attribute and uniform locations
-    const positionLocation = gl.getAttribLocation(program, "a_position");
-    const texCoordLocation = gl.getAttribLocation(program, "a_texCoord");
-    const timeLocation = gl.getUniformLocation(program, "u_time");
-    const resolutionLocation = gl.getUniformLocation(program, "u_resolution");
-    const scrollLocation = gl.getUniformLocation(program, "u_scroll");
-    const amountLocation = gl.getUniformLocation(program, "u_amount");
+    const positionLocation = gl.getAttribLocation(program, 'a_position');
+    const texCoordLocation = gl.getAttribLocation(program, 'a_texCoord');
+    const timeLocation = gl.getUniformLocation(program, 'u_time');
+    const resolutionLocation = gl.getUniformLocation(program, 'u_resolution');
+    const scrollLocation = gl.getUniformLocation(program, 'u_scroll');
+    const amountLocation = gl.getUniformLocation(program, 'u_amount');
     const paramLocations = {
-      saturation: gl.getUniformLocation(program, "u_saturation"),
-      hueA: gl.getUniformLocation(program, "u_hueA"),
-      hueB: gl.getUniformLocation(program, "u_hueB"),
-      greyPoint: gl.getUniformLocation(program, "u_greyPoint"),
-      colorPoint: gl.getUniformLocation(program, "u_colorPoint"),
-      dispersion: gl.getUniformLocation(program, "u_dispersion"),
-      scrollHue: gl.getUniformLocation(program, "u_scrollHue"),
-      sparkle: gl.getUniformLocation(program, "u_sparkle"),
-      greyscale: gl.getUniformLocation(program, "u_greyscale"),
+      saturation: gl.getUniformLocation(program, 'u_saturation'),
+      hueA: gl.getUniformLocation(program, 'u_hueA'),
+      hueB: gl.getUniformLocation(program, 'u_hueB'),
+      greyPoint: gl.getUniformLocation(program, 'u_greyPoint'),
+      colorPoint: gl.getUniformLocation(program, 'u_colorPoint'),
+      dispersion: gl.getUniformLocation(program, 'u_dispersion'),
+      scrollHue: gl.getUniformLocation(program, 'u_scrollHue'),
+      sparkle: gl.getUniformLocation(program, 'u_sparkle'),
+      greyscale: gl.getUniformLocation(program, 'u_greyscale'),
     } as const;
 
     /*
@@ -452,7 +436,7 @@ export default function DichroicBackground() {
     const onScroll = () => {
       scrollTarget = readScroll();
     };
-    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener('scroll', onScroll, { passive: true });
 
     /*
      * Resizing reallocates the drawing buffer, which comes back cleared to
@@ -470,8 +454,8 @@ export default function DichroicBackground() {
       const dpr = Math.min(window.devicePixelRatio, 2);
       canvas.width = window.innerWidth * dpr;
       canvas.height = window.innerHeight * dpr;
-      canvas.style.width = window.innerWidth + "px";
-      canvas.style.height = window.innerHeight + "px";
+      canvas.style.width = window.innerWidth + 'px';
+      canvas.style.height = window.innerHeight + 'px';
       gl.viewport(0, 0, canvas.width, canvas.height);
       if (frame === null) paintWhite();
     };
@@ -549,15 +533,15 @@ export default function DichroicBackground() {
     };
 
     resize();
-    window.addEventListener("resize", resize);
+    window.addEventListener('resize', resize);
 
     // Default state: a pure white page, with the loop parked.
     paintWhite();
     if (enabledRef.current) startLoopRef.current();
 
     return () => {
-      window.removeEventListener("resize", resize);
-      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener('resize', resize);
+      window.removeEventListener('scroll', onScroll);
       startLoopRef.current = null;
       if (frame !== null) cancelAnimationFrame(frame);
       gl.deleteProgram(program);
@@ -568,11 +552,7 @@ export default function DichroicBackground() {
 
   return (
     <>
-      <canvas
-        ref={canvasRef}
-        className="pointer-events-none fixed inset-0 z-0"
-        aria-hidden="true"
-      />
+      <canvas ref={canvasRef} className="pointer-events-none fixed inset-0 z-0" aria-hidden="true" />
       {retro && (
         <RetroreflectanceControls
           enabled={enabled}

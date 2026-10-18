@@ -1,17 +1,14 @@
-import { Chess } from "chess.js";
+import { Chess } from 'chess.js';
 
 export interface CandidateMove {
-  uci: string;   // "e2e4"
-  san: string;   // "e4"
+  uci: string; // "e2e4"
+  san: string; // "e4"
   rank: 0 | 1 | 2 | 4 | 6; // 0 = fallback/unranked (engine unavailable)
 }
 
 // Parse MultiPV lines from Stockfish output.
 // Keeps the latest depth line seen for each multipv rank.
-export function parseMultiPV(
-  lines: string[],
-  fen: string,
-): CandidateMove[] {
+export function parseMultiPV(lines: string[], fen: string): CandidateMove[] {
   const chess = new Chess(fen);
   const best: Map<number, string> = new Map(); // rank → uci
 

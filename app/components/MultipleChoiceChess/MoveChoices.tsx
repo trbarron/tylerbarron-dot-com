@@ -1,5 +1,5 @@
-import type { CandidateMove } from "~/utils/multipleChoiceChess/moveParser";
-import SanText from "./SanText";
+import type { CandidateMove } from '~/utils/multipleChoiceChess/moveParser';
+import SanText from './SanText';
 
 interface MoveChoicesProps {
   moves: CandidateMove[];
@@ -9,13 +9,7 @@ interface MoveChoicesProps {
   disabled: boolean;
 }
 
-export default function MoveChoices({
-  moves,
-  pickedUci,
-  onPick,
-  onHover,
-  disabled,
-}: MoveChoicesProps) {
+export default function MoveChoices({ moves, pickedUci, onPick, onHover, disabled }: MoveChoicesProps) {
   const hasPicked = pickedUci !== null;
 
   return (
@@ -34,11 +28,11 @@ export default function MoveChoices({
             onTouchCancel={() => !hasPicked && onHover?.(null)}
             disabled={disabled || hasPicked}
             className={[
-              'touch-manipulation border-4 border-black px-4 py-5 font-neo font-extrabold uppercase tracking-wide transition-colors',
+              'font-neo touch-manipulation border-4 border-black px-4 py-5 font-extrabold tracking-wide uppercase transition-colors',
               isPicked
                 ? 'bg-black text-white'
                 : hasPicked
-                  ? 'bg-white text-gray-400 border-gray-300'
+                  ? 'border-gray-300 bg-white text-gray-400'
                   : 'bg-white text-black hover:bg-black hover:text-white active:bg-black active:text-white',
             ].join(' ')}
           >

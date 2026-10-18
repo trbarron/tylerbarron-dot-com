@@ -13,10 +13,7 @@ import { useState, useEffect } from 'react';
  * const [username, setUsername] = useLocalStorage('username', 'Guest');
  * ```
  */
-export function useLocalStorage<T>(
-  key: string,
-  initialValue: T
-): [T, (value: T | ((val: T) => T)) => void] {
+export function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T | ((val: T) => T)) => void] {
   // Initialize with initialValue to ensure server and client match during SSR
   const [storedValue, setStoredValue] = useState<T>(initialValue);
 

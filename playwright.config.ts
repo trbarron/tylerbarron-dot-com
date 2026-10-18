@@ -20,10 +20,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
 
   // Reporter to use
-  reporter: [
-    ['html'],
-    ['list']
-  ],
+  reporter: [['html'], ['list']],
 
   use: {
     // Base URL to use in actions like `await page.goto('/')`

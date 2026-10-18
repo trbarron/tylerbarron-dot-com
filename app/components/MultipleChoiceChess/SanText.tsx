@@ -9,7 +9,7 @@ export default function SanText({ san, captureClassName = 'text-[0.7em] mx-px' }
   const idx = san.indexOf('x');
   if (idx === -1) return <span className="uppercase">{san}</span>;
   return (
-    <span className="inline-flex items-center uppercase leading-none">
+    <span className="inline-flex items-center leading-none uppercase">
       <span>{san.slice(0, idx)}</span>
       <span className={captureClassName}>x</span>
       <span>{san.slice(idx + 1)}</span>

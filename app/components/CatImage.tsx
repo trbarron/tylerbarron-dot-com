@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 const ImageDisplay = () => {
   const [imageData, setImageData] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [timestamp, setTimestamp] = useState("");
+  const [timestamp, setTimestamp] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -15,9 +15,11 @@ const ImageDisplay = () => {
   useEffect(() => {
     const fetchImage = async () => {
       if (!isMounted) return;
-      
+
       try {
-        const response = await fetch('https://nj3ho46btl.execute-api.us-west-2.amazonaws.com/checoStage/checoRestEndpoint/image');
+        const response = await fetch(
+          'https://nj3ho46btl.execute-api.us-west-2.amazonaws.com/checoStage/checoRestEndpoint/image',
+        );
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -48,19 +50,19 @@ const ImageDisplay = () => {
   }
 
   if (error) {
-    return <div className="text-center text-black font-bold">{error}</div>;
+    return <div className="text-center font-bold text-black">{error}</div>;
   }
 
   return (
-    <div className="text-center mb-4">
+    <div className="mb-4 text-center">
       {imageData && (
         <div>
           <img
             src={`data:image/jpeg;base64,${imageData}`}
             alt="Cat"
-            className="mx-auto max-w-full h-auto border-2 border-black "
+            className="mx-auto h-auto max-w-full border-2 border-black"
           />
-          <h4 className="text-black  mt-2 font-neo">{timestamp}</h4>
+          <h4 className="font-neo mt-2 text-black">{timestamp}</h4>
         </div>
       )}
     </div>

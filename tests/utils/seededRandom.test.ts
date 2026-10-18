@@ -56,7 +56,7 @@ describe('Seeded Random Utils', () => {
       }
 
       // Each bucket should have roughly 1000 values (±30%)
-      buckets.forEach(count => {
+      buckets.forEach((count) => {
         expect(count).toBeGreaterThan(700);
         expect(count).toBeLessThan(1300);
       });
@@ -231,7 +231,7 @@ describe('Seeded Random Utils', () => {
 
       const selected = seededSelect(array, 5, rng);
 
-      selected.forEach(item => {
+      selected.forEach((item) => {
         expect(array).toContain(item);
       });
     });

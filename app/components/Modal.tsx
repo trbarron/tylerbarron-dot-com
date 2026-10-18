@@ -23,13 +23,7 @@ interface ModalProps {
  * </Modal>
  * ```
  */
-export default function Modal({
-  isOpen,
-  onClose,
-  title,
-  children,
-  className = '',
-}: ModalProps) {
+export default function Modal({ isOpen, onClose, title, children, className = '' }: ModalProps) {
   // Handle escape key press
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
@@ -58,20 +52,17 @@ export default function Modal({
   if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
-      onClick={onClose}
-    >
+    <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black" onClick={onClose}>
       <div
-        className={`bg-white border-4 border-black p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto ${className}`}
+        className={`mx-4 max-h-[90vh] w-full max-w-md overflow-y-auto border-4 border-black bg-white p-6 ${className}`}
         onClick={(e) => e.stopPropagation()}
       >
         {title && (
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold font-neo">{title}</h2>
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="font-neo text-2xl font-bold">{title}</h2>
             <button
               onClick={onClose}
-              className="text-2xl font-bold hover:opacity-70 transition-opacity"
+              className="text-2xl font-bold transition-opacity hover:opacity-70"
               aria-label="Close modal"
             >
               ×
