@@ -32,7 +32,7 @@ export async function action({ request }: ActionFunctionArgs) {
     if (!validateUsername(username)) {
       return Response.json(
         { error: 'Invalid username. Use 1–20 alphanumeric characters or underscores.' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -64,12 +64,12 @@ export async function action({ request }: ActionFunctionArgs) {
 
     // Validate flags are within bounds
     const validFlags: Flag[] = (flags as Flag[]).filter(
-      f =>
+      (f) =>
         typeof f.moveIndex === 'number' &&
         f.moveIndex >= 0 &&
         f.moveIndex < game.moves.length &&
         typeof f.reactionTimeMs === 'number' &&
-        f.reactionTimeMs >= 0
+        f.reactionTimeMs >= 0,
     );
 
     // Server-side score calculation — ignores any client-side score claims
@@ -89,13 +89,7 @@ export async function action({ request }: ActionFunctionArgs) {
     };
 
     // Store submission (atomic NX to guard against race conditions)
-    const wasSet = await redis.set(
-      submissionKey,
-      JSON.stringify(submission),
-      'EX',
-      TTL_7_DAYS,
-      'NX'
-    );
+    const wasSet = await redis.set(submissionKey, JSON.stringify(submission), 'EX', TTL_7_DAYS, 'NX');
 
     if (!wasSet) {
       return Response.json({ error: 'You already submitted for today.' }, { status: 409 });

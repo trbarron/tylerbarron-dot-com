@@ -1,25 +1,25 @@
-import { useState } from "react";
-import { Link, useLoaderData } from "react-router";
+import { useState } from 'react';
+import { Link, useLoaderData } from 'react-router';
 
-import { Navbar } from "~/components/Navbar";
-import Footer from "~/components/Footer";
-import CustomLightbox from "~/components/CustomLightbox";
-import LightboxPhoto from "~/components/LightboxPhoto";
-import { buildMeta } from "~/utils/seo";
+import { Navbar } from '~/components/Navbar';
+import Footer from '~/components/Footer';
+import CustomLightbox from '~/components/CustomLightbox';
+import LightboxPhoto from '~/components/LightboxPhoto';
+import { buildMeta } from '~/utils/seo';
 
 export function meta() {
   return buildMeta({
-    title: "Cat Tracker Blog",
-    description: "How the cat tracker was built — hardware, software, and lessons learned.",
-    path: "/cat-tracker/blog",
+    title: 'Cat Tracker Blog',
+    description: 'How the cat tracker was built — hardware, software, and lessons learned.',
+    path: '/cat-tracker/blog',
   });
 }
 
-import { getImageUrl } from "~/utils/cdn";
+import { getImageUrl } from '~/utils/cdn';
 
-const vestaboard = getImageUrl("CatTracker/vestaboardDisplay.jpg");
-const checoWorking = getImageUrl("CatTracker/checoWorking.jpg");
-const checoSetup = getImageUrl("CatTracker/checoSetup.jpg");
+const vestaboard = getImageUrl('CatTracker/vestaboardDisplay.jpg');
+const checoWorking = getImageUrl('CatTracker/checoWorking.jpg');
+const checoSetup = getImageUrl('CatTracker/checoSetup.jpg');
 export const loader = async () => {
   // You can fetch data here if needed
   return {
@@ -36,18 +36,18 @@ export default function CatTrackerBlog() {
   const photos = [
     {
       src: checoSetup,
-      alt: "Checo Setup",
-      caption: "Hardware setup for tracking Checo",
+      alt: 'Checo Setup',
+      caption: 'Hardware setup for tracking Checo',
     },
     {
       src: checoWorking,
-      alt: "Checo Working",
-      caption: "Checo hard at work, seen from camera",
+      alt: 'Checo Working',
+      caption: 'Checo hard at work, seen from camera',
     },
     {
       src: vestaboard,
       alt: "Checo's Work Log",
-      caption: "Work time displayed on a Vestaboard",
+      caption: 'Work time displayed on a Vestaboard',
     },
   ];
 
@@ -57,7 +57,7 @@ export default function CatTrackerBlog() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-black bg-fixed relative z-10">
+    <div className="relative z-10 flex min-h-screen flex-col bg-black bg-fixed">
       <Navbar />
       <main className="flex-grow">
         <section className="article">
@@ -69,60 +69,37 @@ export default function CatTrackerBlog() {
               <section className="subarticle prose">
                 <div className="overflow-hidden bg-white break-words">
                   <p>
-                    This project started with a simple curiosity: just how much
-                    does one of our cats, Checo, work next to me? He seemed to
-                    always be there, clocking in hours by sleeping in his circle
-                    next to my desk. With a free weekend, I decided to turn this
-                    into a project to track his effort.
+                    This project started with a simple curiosity: just how much does one of our cats, Checo, work next
+                    to me? He seemed to always be there, clocking in hours by sleeping in his circle next to my desk.
+                    With a free weekend, I decided to turn this into a project to track his effort.
                   </p>
 
-                  <LightboxPhoto
-                    photo={photos[0]}
-                    index={0}
-                    onClick={openLightbox}
-                  />
+                  <LightboxPhoto photo={photos[0]} index={0} onClick={openLightbox} />
 
                   <p>
-                    To measure Checo&apos;s presence, I built a system using a
-                    Raspberry Pi W Zero 2 and a Raspberry Pi AI Camera. The
-                    software stack includes using DynamoDB, a custom trained
-                    ONNX AI Model, API Gateway, and Python in Lambda functions
-                    and on the RPi.
+                    To measure Checo&apos;s presence, I built a system using a Raspberry Pi W Zero 2 and a Raspberry Pi
+                    AI Camera. The software stack includes using DynamoDB, a custom trained ONNX AI Model, API Gateway,
+                    and Python in Lambda functions and on the RPi.
                   </p>
 
-                  <LightboxPhoto
-                    photo={photos[1]}
-                    index={1}
-                    onClick={openLightbox}
-                  />
+                  <LightboxPhoto photo={photos[1]} index={1} onClick={openLightbox} />
 
                   <p>
-                    The camera captures photos at ~40 second intervals, which
-                    are then processed to determine if there&apos;s a cat in the
-                    image via the custom AI model run on the edge. Based on the
-                    results it may add an entry to our database with details
-                    about which cat is in the image.
+                    The camera captures photos at ~40 second intervals, which are then processed to determine if
+                    there&apos;s a cat in the image via the custom AI model run on the edge. Based on the results it may
+                    add an entry to our database with details about which cat is in the image.
                   </p>
 
                   <p>
-                    When a user visits the website, we use API Gateway to hit a
-                    Lambda function to calculate the time worked and display
-                    that to the user.
+                    When a user visits the website, we use API Gateway to hit a Lambda function to calculate the time
+                    worked and display that to the user.
                   </p>
-                  <p>
-                    It&apos;s a fun way to keep my manager, the Checo, on task!
-                  </p>
+                  <p>It&apos;s a fun way to keep my manager, the Checo, on task!</p>
 
-                  <LightboxPhoto
-                    photo={photos[2]}
-                    index={2}
-                    onClick={openLightbox}
-                  />
+                  <LightboxPhoto photo={photos[2]} index={2} onClick={openLightbox} />
 
                   <p>
-                    <Link to="/cat-tracker">
-                      See the cat&apos;s current status here
-                    </Link>
+                    <Link to="/cat-tracker">See the cat&apos;s current status here</Link>
                   </p>
                 </div>
               </section>

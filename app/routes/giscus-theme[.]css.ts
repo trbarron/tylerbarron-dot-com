@@ -146,10 +146,10 @@ main .gsc-comment > div {
 export function loader() {
   return new Response(THEME_CSS, {
     headers: {
-      "Content-Type": "text/css; charset=utf-8",
+      'Content-Type': 'text/css; charset=utf-8',
       // giscus fetches this from its own (giscus.app) origin.
-      "Access-Control-Allow-Origin": "*",
-      "Cache-Control": "public, max-age=3600",
+      'Access-Control-Allow-Origin': '*',
+      'Cache-Control': 'public, max-age=3600',
     },
   });
 }

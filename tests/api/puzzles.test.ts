@@ -73,7 +73,7 @@ describe('Daily Puzzles API', () => {
       expect(mockRedis.setex).toHaveBeenCalledWith(
         'chesserGuesser:dailyPuzzles:2024-01-15',
         7 * 24 * 60 * 60,
-        expect.any(String)
+        expect.any(String),
       );
     });
 
@@ -85,7 +85,7 @@ describe('Daily Puzzles API', () => {
       expect(body.error).toContain('Invalid date format');
     });
 
-    it('should use today\'s date if no date parameter provided', async () => {
+    it("should use today's date if no date parameter provided", async () => {
       const today = new Date();
       const expectedDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
@@ -117,11 +117,13 @@ describe('Daily Puzzles API', () => {
     });
 
     it('should set proper cache headers', async () => {
-      mockRedis.get.mockResolvedValue(JSON.stringify({
-        date: '2024-01-15',
-        puzzles: [],
-        seed: 12345,
-      }));
+      mockRedis.get.mockResolvedValue(
+        JSON.stringify({
+          date: '2024-01-15',
+          puzzles: [],
+          seed: 12345,
+        }),
+      );
 
       const response = await loader(createLoaderArgs('/api/chesserGuesser/puzzles?date=2024-01-15'));
 
@@ -157,7 +159,7 @@ describe('Daily Puzzles API', () => {
           json: async () => ({
             body: JSON.stringify(mockPuzzles[callIndex++ % 4]),
           }),
-        })
+        }),
       );
 
       // First call
@@ -189,11 +191,7 @@ describe('Daily Puzzles API', () => {
       await loader(createLoaderArgs('/api/chesserGuesser/puzzles?date=2024-01-15'));
 
       const TTL_7_DAYS = 7 * 24 * 60 * 60;
-      expect(mockRedis.setex).toHaveBeenCalledWith(
-        expect.any(String),
-        TTL_7_DAYS,
-        expect.any(String)
-      );
+      expect(mockRedis.setex).toHaveBeenCalledWith(expect.any(String), TTL_7_DAYS, expect.any(String));
     });
 
     it('should return different puzzles for different dates', async () => {
@@ -226,7 +224,7 @@ describe('Daily Puzzles API', () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         'https://f73vgbj1jk.execute-api.us-west-2.amazonaws.com/prod/chesserGuesser',
-        expect.objectContaining({ signal: expect.anything() })
+        expect.objectContaining({ signal: expect.anything() }),
       );
       expect(global.fetch).toHaveBeenCalledTimes(4); // 4 puzzles
     });

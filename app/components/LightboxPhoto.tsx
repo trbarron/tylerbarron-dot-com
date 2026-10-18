@@ -1,4 +1,3 @@
-
 interface Photo {
   src: string;
   alt: string;
@@ -13,23 +12,23 @@ interface LightboxPhotoProps {
 
 export default function LightboxPhoto({ photo, index, onClick }: LightboxPhotoProps) {
   return (
-    <div 
+    <div
       onClick={() => onClick(index)}
       onKeyDown={(e) => e.key === 'Enter' && onClick(index)}
       role="button"
       tabIndex={0}
-      className="cursor-pointer my-8 group transition-all duration-200 hover:scale-105"
+      className="group my-8 cursor-pointer transition-all duration-200 hover:scale-105"
     >
-      <div className="border-4 border-black bg-white p-2 hover:shadow-lg transition-all duration-200">
-        <img 
-          src={photo.src} 
-          alt={photo.alt} 
-          className="w-full h-auto border-2 border-black transition-all duration-200" 
+      <div className="border-4 border-black bg-white p-2 transition-all duration-200 hover:shadow-lg">
+        <img
+          src={photo.src}
+          alt={photo.alt}
+          className="h-auto w-full border-2 border-black transition-all duration-200"
         />
-        <p className="text-black font-semibold uppercase tracking-wide text-center mt-4 p-2 border-t-2 border-black">
+        <p className="mt-4 border-t-2 border-black p-2 text-center font-semibold tracking-wide text-black uppercase">
           {photo.caption}
         </p>
       </div>
     </div>
   );
-} 
+}

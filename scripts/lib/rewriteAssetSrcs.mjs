@@ -14,9 +14,7 @@
  * @returns {string} CDN base without trailing slash, or '' when unset.
  */
 export function computeCdnBase(env = process.env) {
-  return (env.VITE_CDN_URL || env.CDN_URL || '')
-    .replace(/\/$/, '')
-    .replace(/\/images$/, '');
+  return (env.VITE_CDN_URL || env.CDN_URL || '').replace(/\/$/, '').replace(/\/images$/, '');
 }
 
 /**

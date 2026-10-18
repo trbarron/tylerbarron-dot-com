@@ -8,15 +8,15 @@
 // is ~5 chained Lambda invocations over ~1h), guarded by a Redis lock plus
 // reserved concurrency of 1 on the Lambda itself.
 
-import { getRedisClient } from "../redis.server";
-import { getImageUrl } from "../cdn";
-import type { Leaderboard, SubmissionStatus } from "./types";
+import { getRedisClient } from '../redis.server';
+import { getImageUrl } from '../cdn';
+import type { Leaderboard, SubmissionStatus } from './types';
 
-const LOCK_KEY = "camelup:lock";
+const LOCK_KEY = 'camelup:lock';
 const LOCK_TTL_S = 3 * 3600; // outlasts a worst-case tournament run
-const RATE_KEY = "camelup:ratelimit:";
+const RATE_KEY = 'camelup:ratelimit:';
 const MAX_SUBMISSIONS_PER_HOUR = 3;
-const DAILY_KEY = "camelup:daily:";
+const DAILY_KEY = 'camelup:daily:';
 // Each tournament is ~1h on a 10 GB Lambda (~$0.60), so this caps the
 // worst case at ~$2.40/day no matter how many addresses submit.
 export const MAX_TOURNAMENTS_PER_DAY = 4;
@@ -37,14 +37,14 @@ export async function dispatchSubmission(payload: SubmissionPayload): Promise<vo
   // and bundling it doubled the Lambda's size. Locally it resolves from the
   // root devDependency. Imported here rather than at the top because every
   // route shares one server bundle, and only a submission needs it.
-  const { LambdaClient, InvokeCommand } = await import("@aws-sdk/client-lambda");
+  const { LambdaClient, InvokeCommand } = await import('@aws-sdk/client-lambda');
   const client = new LambdaClient({});
   await client.send(
     new InvokeCommand({
       FunctionName: process.env.CAMEL_TOURNAMENT_FUNCTION,
-      InvocationType: "Event",
+      InvocationType: 'Event',
       Payload: new TextEncoder().encode(JSON.stringify(payload)),
-    })
+    }),
   );
 }
 
@@ -59,7 +59,7 @@ function cdnJsonUrl(request: Request, path: string): string {
 async function fetchCdnJson<T>(request: Request, path: string): Promise<T | null> {
   try {
     const res = await fetch(cdnJsonUrl(request, path), {
-      headers: { accept: "application/json" },
+      headers: { accept: 'application/json' },
     });
     if (!res.ok) return null;
     return (await res.json()) as T;
@@ -69,7 +69,7 @@ async function fetchCdnJson<T>(request: Request, path: string): Promise<T | null
 }
 
 export function fetchLeaderboard(request: Request): Promise<Leaderboard | null> {
-  return fetchCdnJson<Leaderboard>(request, "camel-up/leaderboard.json");
+  return fetchCdnJson<Leaderboard>(request, 'camel-up/leaderboard.json');
 }
 
 export function fetchStatus(request: Request, id: string): Promise<SubmissionStatus | null> {
@@ -81,8 +81,8 @@ export function fetchStatus(request: Request, id: string): Promise<SubmissionSta
 /** Returns true if this submission now holds the single-tournament lock. */
 export async function acquireTournamentLock(id: string): Promise<boolean> {
   const redis = getRedisClient();
-  const result = await redis.set(LOCK_KEY, id, "EX", LOCK_TTL_S, "NX");
-  return result === "OK";
+  const result = await redis.set(LOCK_KEY, id, 'EX', LOCK_TTL_S, 'NX');
+  return result === 'OK';
 }
 
 /** The submission id currently holding the lock, if any. */
@@ -99,15 +99,12 @@ export async function activeTournamentId(): Promise<string | null> {
  * terminal phase (covers runs that finished with nobody polling /status —
  * otherwise the stale lock would block submissions until its TTL).
  */
-export async function tryAcquireTournamentLock(
-  request: Request,
-  id: string
-): Promise<boolean> {
+export async function tryAcquireTournamentLock(request: Request, id: string): Promise<boolean> {
   if (await acquireTournamentLock(id)) return true;
   const holder = await activeTournamentId();
   if (!holder) return acquireTournamentLock(id);
   const status = await fetchStatus(request, holder);
-  if (status && ["complete", "rejected", "error"].includes(status.phase)) {
+  if (status && ['complete', 'rejected', 'error'].includes(status.phase)) {
     await releaseTournamentLock(holder);
     return acquireTournamentLock(id);
   }
@@ -124,9 +121,9 @@ export async function releaseTournamentLock(id: string): Promise<void> {
 }
 
 export function getClientIP(request: Request): string {
-  const forwardedFor = request.headers.get("x-forwarded-for");
-  if (forwardedFor) return forwardedFor.split(",")[0].trim();
-  return request.headers.get("x-real-ip") ?? "unknown";
+  const forwardedFor = request.headers.get('x-forwarded-for');
+  if (forwardedFor) return forwardedFor.split(',')[0].trim();
+  return request.headers.get('x-real-ip') ?? 'unknown';
 }
 
 function dailyKey(): string {

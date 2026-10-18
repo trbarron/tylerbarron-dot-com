@@ -3,7 +3,7 @@
 // After the last blunder, the client switches to fast-forward automatically,
 // so this array only needs to cover normal-speed pacing.
 
-const OPENING_MS = 1000;    // moves 0–17 (first 9 full moves)
+const OPENING_MS = 1000; // moves 0–17 (first 9 full moves)
 const MIDGAME_MS = 2000;
 
 export function computePacing(moveCount: number): number[] {

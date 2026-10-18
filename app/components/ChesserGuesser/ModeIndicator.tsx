@@ -1,7 +1,7 @@
 // Mode Indicator Component
 // Small badge showing current game mode
 
-import { GameMode } from "~/utils/chesserGuesser/types";
+import { GameMode } from '~/utils/chesserGuesser/types';
 
 interface ModeIndicatorProps {
   mode: GameMode;
@@ -10,14 +10,9 @@ interface ModeIndicatorProps {
 export function ModeIndicator({ mode }: ModeIndicatorProps) {
   return (
     <div
-      className={`
-        w-full px-3 py-2 font-neo font-bold uppercase text-sm text-center
-        border-4
-        ${mode === 'daily'
-          ? 'bg-accent text-white border-accent'
-          : 'bg-white  text-black  border-black '
-        }
-      `}
+      className={`font-neo w-full border-4 px-3 py-2 text-center text-sm font-bold uppercase ${
+        mode === 'daily' ? 'bg-accent border-accent text-white' : 'border-black bg-white text-black'
+      } `}
     >
       {mode === 'daily' ? '🏆 Ranked' : '♾️ Endless Mode'}
     </div>

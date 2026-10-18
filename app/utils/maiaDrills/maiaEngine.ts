@@ -14,12 +14,7 @@
 
 import { Chess } from 'chess.js';
 import { isHandheld } from './device';
-import {
-  MAIA_MOVE_VOCAB,
-  MAIA_TOKENS_PER_POSITION,
-  decodePolicy,
-  writeTokens,
-} from './maiaEncoding';
+import { MAIA_MOVE_VOCAB, MAIA_TOKENS_PER_POSITION, decodePolicy, writeTokens } from './maiaEncoding';
 
 // 1.30 or later: 1.22's WebGPU backend computes this graph wrong (its top move
 // matched the CPU's on 4 of 48 positions; 1.30 matches on all of them).
@@ -222,8 +217,7 @@ export class MaiaEngine {
         else if (msg.type === 'gpu-failed') {
           console.warn('Maia: WebGPU unavailable, using the CPU:', msg.message);
           resolveReady('gpu-failed');
-        }
-        else if (msg.type === 'result') {
+        } else if (msg.type === 'result') {
           this.pending.get(msg.id)?.resolve(new Float32Array(msg.logits));
           this.pending.delete(msg.id);
         } else if (msg.type === 'error') {
@@ -240,7 +234,13 @@ export class MaiaEngine {
         rejectReady(err);
         this.rejectPending(err);
       };
-      worker.postMessage({ type: 'init', modelUrl: MAIA_MODEL_URL, cacheName: MODEL_CACHE, allowGpu, cpuBatch: BATCH.wasm });
+      worker.postMessage({
+        type: 'init',
+        modelUrl: MAIA_MODEL_URL,
+        cacheName: MODEL_CACHE,
+        allowGpu,
+        cpuBatch: BATCH.wasm,
+      });
     });
   }
 
@@ -252,7 +252,7 @@ export class MaiaEngine {
           legal: new Chess(fen).moves({ verbose: true }).map((m) => m.from + m.to + (m.promotion ?? '')),
           eloSelf: 1500,
           eloOppo: 1500,
-        }))
+        })),
       );
       return results.every((r, i) => CANARIES[i].expect.includes(r[0]?.uci));
     } catch {
@@ -268,7 +268,7 @@ export class MaiaEngine {
       this.pending.set(id, { resolve, reject });
       worker.postMessage(
         { type: 'infer', id, n, tokens: tokens.buffer, eloSelf: eloSelf.buffer, eloOppo: eloOppo.buffer },
-        [tokens.buffer, eloSelf.buffer, eloOppo.buffer]
+        [tokens.buffer, eloSelf.buffer, eloOppo.buffer],
       );
     });
   }
@@ -297,7 +297,7 @@ export class MaiaEngine {
         tokens,
         Float32Array.from(batch.map((q) => q.eloSelf)),
         Float32Array.from(batch.map((q) => q.eloOppo)),
-        n
+        n,
       );
       batch.forEach((q, i) => results.push(decodePolicy(logits, i * MAIA_MOVE_VOCAB, q.fen, q.legal)));
       onProgress?.(results.length);

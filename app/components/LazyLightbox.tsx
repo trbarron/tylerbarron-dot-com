@@ -1,8 +1,8 @@
-import { lazy, Suspense, type ComponentProps } from "react";
-import "yet-another-react-lightbox/styles.css";
-import type LightboxImport from "yet-another-react-lightbox";
+import { lazy, Suspense, type ComponentProps } from 'react';
+import 'yet-another-react-lightbox/styles.css';
+import type LightboxImport from 'yet-another-react-lightbox';
 
-const Lightbox = lazy(() => import("yet-another-react-lightbox"));
+const Lightbox = lazy(() => import('yet-another-react-lightbox'));
 
 type LightboxProps = ComponentProps<typeof LightboxImport>;
 

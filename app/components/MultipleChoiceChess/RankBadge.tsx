@@ -23,12 +23,10 @@ interface RankBadgeProps {
 export default function RankBadge({ rank, inverted, className = '' }: RankBadgeProps) {
   const styles = inverted
     ? 'bg-white text-black border-white'
-    : RANK_STYLES[rank] ?? 'bg-gray-100 text-gray-600 border-gray-300';
+    : (RANK_STYLES[rank] ?? 'bg-gray-100 text-gray-600 border-gray-300');
 
   return (
-    <span
-      className={`shrink-0 border-2 px-1 py-0.5 text-xs leading-none ${styles} ${className}`}
-    >
+    <span className={`shrink-0 border-2 px-1 py-0.5 text-xs leading-none ${styles} ${className}`}>
       {RANK_LABEL[rank] ?? `#${rank}`}
     </span>
   );

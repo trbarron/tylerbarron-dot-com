@@ -1,10 +1,5 @@
-import type { ActionFunctionArgs } from "react-router";
-import {
-  joinGame,
-  generatePlayerId,
-  getAvailableGames,
-  getGame,
-} from "~/utils/multipleChoiceChess/gameState.server";
+import type { ActionFunctionArgs } from 'react-router';
+import { joinGame, generatePlayerId, getAvailableGames, getGame } from '~/utils/multipleChoiceChess/gameState.server';
 
 export async function action({ request }: ActionFunctionArgs) {
   if (request.method !== 'POST') {

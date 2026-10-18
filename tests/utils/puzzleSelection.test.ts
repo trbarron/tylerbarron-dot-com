@@ -20,7 +20,7 @@ describe('Puzzle Selection Utils', () => {
       const totalPuzzles = 400;
       const indices = selectDailyPuzzleIndices('2024-01-15', totalPuzzles);
 
-      indices.forEach(index => {
+      indices.forEach((index) => {
         expect(index).toBeGreaterThanOrEqual(0);
         expect(index).toBeLessThan(totalPuzzles);
       });
@@ -47,7 +47,7 @@ describe('Puzzle Selection Utils', () => {
 
       // Check that we have one from each quarter (roughly)
       const quarters = [0, 0, 0, 0];
-      indices.forEach(index => {
+      indices.forEach((index) => {
         const quarter = Math.floor(index / quarterSize);
         quarters[quarter]++;
       });
@@ -59,24 +59,19 @@ describe('Puzzle Selection Utils', () => {
     it('should handle different total puzzle counts', () => {
       const counts = [100, 200, 400, 1000];
 
-      counts.forEach(count => {
+      counts.forEach((count) => {
         const indices = selectDailyPuzzleIndices('2024-01-15', count);
         expect(indices).toHaveLength(4);
-        indices.forEach(index => {
+        indices.forEach((index) => {
           expect(index).toBeLessThan(count);
         });
       });
     });
 
     it('should handle year boundaries', () => {
-      const dates = [
-        '2023-12-31',
-        '2024-01-01',
-        '2024-12-31',
-        '2025-01-01',
-      ];
+      const dates = ['2023-12-31', '2024-01-01', '2024-12-31', '2025-01-01'];
 
-      const allIndices = dates.map(date => selectDailyPuzzleIndices(date, 400));
+      const allIndices = dates.map((date) => selectDailyPuzzleIndices(date, 400));
 
       // Each date should produce unique indices
       for (let i = 0; i < allIndices.length - 1; i++) {
@@ -132,7 +127,7 @@ describe('Puzzle Selection Utils', () => {
         calculatePuzzleScore(-50, -75),
       ];
 
-      scores.forEach(score => {
+      scores.forEach((score) => {
         expect(Number.isInteger(score)).toBe(true);
       });
     });

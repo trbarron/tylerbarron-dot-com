@@ -22,10 +22,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const raw = await redis.get(`blunderWatch:game:${date}`);
 
     if (!raw) {
-      return Response.json(
-        { error: `No game scheduled for ${date}. Check back soon!` },
-        { status: 404 }
-      );
+      return Response.json({ error: `No game scheduled for ${date}. Check back soon!` }, { status: 404 });
     }
 
     const stored = JSON.parse(raw);
@@ -46,7 +43,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       },
       {
         headers: { 'Cache-Control': 'public, max-age=3600' },
-      }
+      },
     );
   } catch (error) {
     console.error('BlunderWatch game API error:', error);

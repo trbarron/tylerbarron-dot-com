@@ -10,14 +10,21 @@ import type { Key } from 'chessground/types';
 
 interface GameBoardProps {
   initialFen: string;
-  moves: string[];          // full SAN move list
+  moves: string[]; // full SAN move list
   currentMoveIndex: number; // -1 = initial position, 0+ = after that move played
   orientation: 'white' | 'black';
   isFastForward: boolean;
   missedBlunderAt?: number;
 }
 
-export function GameBoard({ initialFen, moves, currentMoveIndex, orientation, isFastForward, missedBlunderAt }: GameBoardProps) {
+export function GameBoard({
+  initialFen,
+  moves,
+  currentMoveIndex,
+  orientation,
+  isFastForward,
+  missedBlunderAt,
+}: GameBoardProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const cgRef = useRef<Api | undefined>(undefined);
   const chessRef = useRef(new Chess(initialFen));
@@ -25,7 +32,9 @@ export function GameBoard({ initialFen, moves, currentMoveIndex, orientation, is
   const [isClient, setIsClient] = useState(false);
   const [isFlashingRed, setIsFlashingRed] = useState(false);
 
-  useEffect(() => { setIsClient(true); }, []);
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // Flash red on missed blunder
   useEffect(() => {
@@ -102,17 +111,12 @@ export function GameBoard({ initialFen, moves, currentMoveIndex, orientation, is
   return (
     <div className="w-full">
       {/* Board */}
-      <div className={`w-full max-w-2xl mx-auto border-4 transition-colors duration-300 ${
-        isFlashingRed
-          ? 'border-red-500'
-          : isFastForward
-            ? 'border-yellow-400'
-            : 'border-black'
-      }`}>
-        <div
-          ref={containerRef}
-          className={`aspect-square w-full ${!isClient ? 'min-h-[300px] bg-gray-100' : ''}`}
-        />
+      <div
+        className={`mx-auto w-full max-w-2xl border-4 transition-colors duration-300 ${
+          isFlashingRed ? 'border-red-500' : isFastForward ? 'border-yellow-400' : 'border-black'
+        }`}
+      >
+        <div ref={containerRef} className={`aspect-square w-full ${!isClient ? 'min-h-[300px] bg-gray-100' : ''}`} />
       </div>
     </div>
   );

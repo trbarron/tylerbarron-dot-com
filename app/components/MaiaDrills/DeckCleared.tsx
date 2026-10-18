@@ -18,7 +18,7 @@ export default function DeckCleared({ cardCount, onReset, onReview, onExit }: De
   const [confirming, setConfirming] = useState(false);
 
   return (
-    <div className="space-y-4 border-4 border-black bg-white p-6 font-neo text-black" aria-live="polite">
+    <div className="font-neo space-y-4 border-4 border-black bg-white p-6 text-black" aria-live="polite">
       <p className="text-3xl font-extrabold">Deck cleared</p>
       <p className="text-sm text-gray-700">All {cardCount} solved: your latest answer on every card was right.</p>
       {confirming ? (

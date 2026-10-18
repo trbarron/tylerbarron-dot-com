@@ -3,52 +3,40 @@
 // Mirrors the style of DailyProgressTracker
 
 interface EndlessProgressTrackerProps {
-    streak: number;
-    gamesPlayed: number;
-    maxStreak: number;
+  streak: number;
+  gamesPlayed: number;
+  maxStreak: number;
 }
 
-export function EndlessProgressTracker({
-    streak,
-    gamesPlayed,
-    maxStreak
-}: EndlessProgressTrackerProps) {
-    return (
-        <div className="bg-white border-4 border-black">
-            {/* Header */}
-            <div className="bg-black text-white py-2 px-4 font-neo font-extrabold uppercase tracking-tighter text-sm border-b-4 border-black text-center">
-                Endless Mode
-            </div>
+export function EndlessProgressTracker({ streak, gamesPlayed, maxStreak }: EndlessProgressTrackerProps) {
+  return (
+    <div className="border-4 border-black bg-white">
+      {/* Header */}
+      <div className="font-neo border-b-4 border-black bg-black px-4 py-2 text-center text-sm font-extrabold tracking-tighter text-white uppercase">
+        Endless Mode
+      </div>
 
-            {/* Streak Display */}
-            <div className="p-4 text-center border-b-4 border-black">
-                <div className="font-neo text-4xl font-black text-black tracking-tighter">
-                    {streak}
-                </div>
-                <div className="font-neo text-[10px] uppercase text-black font-extrabold tracking-widest mt-1">
-                    Current Streak
-                </div>
-            </div>
-
-            {/* Max Streak */}
-            <div className="p-4 text-center border-b-4 border-black">
-                <div className="font-neo text-4xl font-black text-black tracking-tighter">
-                    {maxStreak}
-                </div>
-                <div className="font-neo text-[10px] uppercase text-black font-extrabold tracking-widest mt-1">
-                    Best Streak
-                </div>
-            </div>
-
-            {/* Games Played */}
-            <div className="p-4 text-center bg-gray-100">
-                <div className="font-neo text-2xl font-black text-black ">
-                    {gamesPlayed}
-                </div>
-                <div className="font-neo text-[10px] uppercase text-black font-extrabold tracking-widest mt-1">
-                    Rounds Played
-                </div>
-            </div>
+      {/* Streak Display */}
+      <div className="border-b-4 border-black p-4 text-center">
+        <div className="font-neo text-4xl font-black tracking-tighter text-black">{streak}</div>
+        <div className="font-neo mt-1 text-[10px] font-extrabold tracking-widest text-black uppercase">
+          Current Streak
         </div>
-    );
+      </div>
+
+      {/* Max Streak */}
+      <div className="border-b-4 border-black p-4 text-center">
+        <div className="font-neo text-4xl font-black tracking-tighter text-black">{maxStreak}</div>
+        <div className="font-neo mt-1 text-[10px] font-extrabold tracking-widest text-black uppercase">Best Streak</div>
+      </div>
+
+      {/* Games Played */}
+      <div className="bg-gray-100 p-4 text-center">
+        <div className="font-neo text-2xl font-black text-black">{gamesPlayed}</div>
+        <div className="font-neo mt-1 text-[10px] font-extrabold tracking-widest text-black uppercase">
+          Rounds Played
+        </div>
+      </div>
+    </div>
+  );
 }

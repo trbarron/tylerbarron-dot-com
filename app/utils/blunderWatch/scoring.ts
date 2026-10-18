@@ -3,10 +3,10 @@
 import type { Flag, BlunderResult, BlunderOutcome, ScoreResult } from './types';
 import { buildResultEmoji } from './resultEmoji';
 
-const POINTS_FAST = 100;   // ≤ 500ms
-const POINTS_MEDIUM = 90;  // 501–1000ms
-const POINTS_SLOW = 80;    // 1001–2000ms
-const PENALTY_FP = 30;     // false positive deduction
+const POINTS_FAST = 100; // ≤ 500ms
+const POINTS_MEDIUM = 90; // 501–1000ms
+const POINTS_SLOW = 80; // 1001–2000ms
+const PENALTY_FP = 30; // false positive deduction
 
 function reactionToOutcome(ms: number): BlunderOutcome {
   if (ms <= 500) return 'caught_fast';
@@ -21,11 +21,7 @@ function outcomeToPoints(outcome: BlunderOutcome): number {
   return 0;
 }
 
-export function calculateScore(
-  flags: Flag[],
-  blunderIndices: number[],
-  evals: number[],
-): ScoreResult {
+export function calculateScore(flags: Flag[], blunderIndices: number[], evals: number[]): ScoreResult {
   const blunderSet = new Set(blunderIndices);
   const flagMap = new Map<number, number>(); // moveIndex → reactionTimeMs
   for (const flag of flags) {

@@ -136,7 +136,7 @@ export function shouldShowEndlessPrompt(): boolean {
         show: false,
         hasShown: false,
         gamesPlayed: count,
-        threshold: THRESHOLD
+        threshold: THRESHOLD,
       };
 
       // If we already hit the threshold on first load (edge case), mark as shown to trigger
@@ -217,7 +217,7 @@ export function loadMaxStreak(): number {
  */
 export function clearAllData(): void {
   try {
-    Object.values(STORAGE_KEYS).forEach(key => {
+    Object.values(STORAGE_KEYS).forEach((key) => {
       localStorage.removeItem(key);
     });
   } catch (e) {

@@ -1,24 +1,18 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Chess } from "chess.js";
-import type { Key } from "chessground/types";
-import { getEngine, getThinkTime, isEngineTimeoutError } from "~/utils/multipleChoiceChess/stockfishEngine";
-import type { CandidateMove } from "~/utils/multipleChoiceChess/moveParser";
-import type { GameState } from "~/utils/multipleChoiceChess/gameState.server";
-import type { MoveHistoryEntry } from "~/utils/multipleChoiceChess/types";
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Chess } from 'chess.js';
+import type { Key } from 'chessground/types';
+import { getEngine, getThinkTime, isEngineTimeoutError } from '~/utils/multipleChoiceChess/stockfishEngine';
+import type { CandidateMove } from '~/utils/multipleChoiceChess/moveParser';
+import type { GameState } from '~/utils/multipleChoiceChess/gameState.server';
+import type { MoveHistoryEntry } from '~/utils/multipleChoiceChess/types';
 
 export type Phase =
-  | 'loading_engine'
-  | 'waiting_opponent'
-  | 'my_thinking'
-  | 'my_choosing'
-  | 'submitting'
-  | 'opp_turn'
-  | 'game_over';
+  'loading_engine' | 'waiting_opponent' | 'my_thinking' | 'my_choosing' | 'submitting' | 'opp_turn' | 'game_over';
 
-const ACTIVE_POLL_INTERVAL = 1200;   // opponent's turn — fast feedback
-const WAITING_POLL_INTERVAL = 4000;  // pre-game lobby wait — quieter
+const ACTIVE_POLL_INTERVAL = 1200; // opponent's turn — fast feedback
+const WAITING_POLL_INTERVAL = 4000; // pre-game lobby wait — quieter
 const MOVE_PAUSE = 800;
-const NOW_TICK_INTERVAL = 2000;      // re-render cadence for elapsed-time displays
+const NOW_TICK_INTERVAL = 2000; // re-render cadence for elapsed-time displays
 
 // Random legal moves used when the engine fails. Marked rank 0 so the server
 // doesn't award points or increment rank counters — those would silently
@@ -64,22 +58,29 @@ export function useMultipleChoiceChessGame({ gameId, playerId }: UseMultipleChoi
   const pollRef = useRef<NodeJS.Timeout | null>(null);
   const myColorRef = useRef<'white' | 'black' | null>(null);
 
-  const getMyColor = useCallback((gs: GameState): 'white' | 'black' | null => {
-    if (gs.white_id === playerId) return 'white';
-    if (gs.black_id === playerId) return 'black';
-    return null;
-  }, [playerId]);
+  const getMyColor = useCallback(
+    (gs: GameState): 'white' | 'black' | null => {
+      if (gs.white_id === playerId) return 'white';
+      if (gs.black_id === playerId) return 'black';
+      return null;
+    },
+    [playerId],
+  );
 
-  const isMyTurn = useCallback((gs: GameState): boolean => {
-    const c = getMyColor(gs);
-    return c !== null && gs.turn === c;
-  }, [getMyColor]);
+  const isMyTurn = useCallback(
+    (gs: GameState): boolean => {
+      const c = getMyColor(gs);
+      return c !== null && gs.turn === c;
+    },
+    [getMyColor],
+  );
 
   // Engine boot
   const initEngine = useCallback(() => {
     setError(null);
     const engine = getEngine();
-    engine.init()
+    engine
+      .init()
       .then(() => setEngineReady(true))
       .catch((err) => setError(`Engine failed to load: ${err.message}`));
   }, []);
@@ -102,7 +103,7 @@ export function useMultipleChoiceChessGame({ gameId, playerId }: UseMultipleChoi
         `/api/multipleChoiceChess/state?gameId=${gameId}&playerId=${encodeURIComponent(playerId)}`,
       );
       if (!res.ok) return null;
-      return await res.json() as GameState;
+      return (await res.json()) as GameState;
     } catch {
       return null;
     }
@@ -166,149 +167,167 @@ export function useMultipleChoiceChessGame({ gameId, playerId }: UseMultipleChoi
     }
   }, []);
 
-  const submitMove = useCallback(async (gs: GameState, move: CandidateMove) => {
-    setPickedUci(move.uci);
-    setHoveredUci(null);
-    setPhase('submitting');
+  const submitMove = useCallback(
+    async (gs: GameState, move: CandidateMove) => {
+      setPickedUci(move.uci);
+      setHoveredUci(null);
+      setPhase('submitting');
 
-    const from = move.uci.slice(0, 2);
-    const to = move.uci.slice(2, 4);
-    const promotion = move.uci.length === 5 ? move.uci[4] : undefined;
+      const from = move.uci.slice(0, 2);
+      const to = move.uci.slice(2, 4);
+      const promotion = move.uci.length === 5 ? move.uci[4] : undefined;
 
-    let optimisticFen = gs.fen;
-    try {
-      const optimistic = new Chess(gs.fen);
-      optimistic.move({ from, to, promotion });
-      optimisticFen = optimistic.fen();
-      setGameState({
-        ...gs,
-        fen: optimisticFen,
-        turn: gs.turn === 'white' ? 'black' : 'white',
-      });
-      setLastMove([from, to]);
-    } catch {
-      // engine moves should be legal; fall through
-    }
-
-    setMoveHistory(prev => [...prev, {
-      color: myColorRef.current ?? gs.turn,
-      san: move.san,
-      uci: move.uci,
-      rank: move.rank,
-      fenBefore: gs.fen,
-      fenAfter: optimisticFen,
-    }]);
-    setViewingMoveIndex(null);
-
-    try {
-      const res = await fetch('/api/multipleChoiceChess/move', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          game_id: gameId,
-          player_id: playerId,
-          move: move.uci,
-          rank: move.rank,
-          choices: candidates.map((c) => c.uci),
-        }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        setGameState(gs);
-        setLastMove(undefined);
-        setMoveHistory(prev => prev.slice(0, -1));
-        throw new Error(data.error ?? 'Move rejected');
-      }
-
-      const updated = await fetchState();
-      if (updated) {
-        setGameState(updated);
-        setLastUpdated(updated.last_updated);
-        setPhase(updated.status === 'complete' ? 'game_over' : 'opp_turn');
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to submit move');
-      setPickedUci(null);
-      setPhase('my_choosing');
-    }
-  }, [gameId, playerId, candidates, fetchState]);
-
-  const handleOpponentMove = useCallback((gs: GameState, prevFen: string) => {
-    stopPolling();
-
-    if (gs.last_move) {
-      const from = gs.last_move.slice(0, 2);
-      const to = gs.last_move.slice(2, 4);
-      setLastMove([from, to]);
-
-      const movedColor: 'white' | 'black' = gs.turn === 'white' ? 'black' : 'white';
+      let optimisticFen = gs.fen;
       try {
-        const chess = new Chess(prevFen);
-        const promotion = gs.last_move.length === 5 ? gs.last_move[4] : undefined;
-        const result = chess.move({ from, to, promotion });
-        setMoveHistory(prev => [...prev, {
-          color: movedColor,
-          san: result.san,
-          uci: gs.last_move,
-          rank: gs.last_move_rank,
-          fenBefore: prevFen,
-          fenAfter: gs.fen,
-        }]);
+        const optimistic = new Chess(gs.fen);
+        optimistic.move({ from, to, promotion });
+        optimisticFen = optimistic.fen();
+        setGameState({
+          ...gs,
+          fen: optimisticFen,
+          turn: gs.turn === 'white' ? 'black' : 'white',
+        });
+        setLastMove([from, to]);
       } catch {
-        setMoveHistory(prev => [...prev, {
-          color: movedColor,
-          san: gs.last_move,
-          uci: gs.last_move,
-          rank: gs.last_move_rank,
-          fenBefore: prevFen,
-          fenAfter: gs.fen,
-        }]);
+        // engine moves should be legal; fall through
       }
-    }
 
-    setTimeout(() => {
-      if (gs.status === 'complete') {
-        setPhase('game_over');
-      } else {
-        runAnalysis(gs.fen);
+      setMoveHistory((prev) => [
+        ...prev,
+        {
+          color: myColorRef.current ?? gs.turn,
+          san: move.san,
+          uci: move.uci,
+          rank: move.rank,
+          fenBefore: gs.fen,
+          fenAfter: optimisticFen,
+        },
+      ]);
+      setViewingMoveIndex(null);
+
+      try {
+        const res = await fetch('/api/multipleChoiceChess/move', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            game_id: gameId,
+            player_id: playerId,
+            move: move.uci,
+            rank: move.rank,
+            choices: candidates.map((c) => c.uci),
+          }),
+        });
+
+        if (!res.ok) {
+          const data = await res.json();
+          setGameState(gs);
+          setLastMove(undefined);
+          setMoveHistory((prev) => prev.slice(0, -1));
+          throw new Error(data.error ?? 'Move rejected');
+        }
+
+        const updated = await fetchState();
+        if (updated) {
+          setGameState(updated);
+          setLastUpdated(updated.last_updated);
+          setPhase(updated.status === 'complete' ? 'game_over' : 'opp_turn');
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to submit move');
+        setPickedUci(null);
+        setPhase('my_choosing');
       }
-    }, MOVE_PAUSE);
-  }, [runAnalysis, stopPolling]);
+    },
+    [gameId, playerId, candidates, fetchState],
+  );
 
-  const startPolling = useCallback((interval: number = ACTIVE_POLL_INTERVAL) => {
-    stopPolling();
-    pollRef.current = setInterval(async () => {
-      const gs = await fetchState();
-      if (!gs) return;
+  const handleOpponentMove = useCallback(
+    (gs: GameState, prevFen: string) => {
+      stopPolling();
 
-      // Transition from waiting → active when opponent joins
-      if (gs.status === 'active' && (!gameState || gameState.status === 'waiting')) {
-        setGameState(gs);
-        setLastUpdated(gs.last_updated);
-        myColorRef.current = getMyColor(gs);
-        if (isMyTurn(gs)) {
-          stopPolling();
+      if (gs.last_move) {
+        const from = gs.last_move.slice(0, 2);
+        const to = gs.last_move.slice(2, 4);
+        setLastMove([from, to]);
+
+        const movedColor: 'white' | 'black' = gs.turn === 'white' ? 'black' : 'white';
+        try {
+          const chess = new Chess(prevFen);
+          const promotion = gs.last_move.length === 5 ? gs.last_move[4] : undefined;
+          const result = chess.move({ from, to, promotion });
+          setMoveHistory((prev) => [
+            ...prev,
+            {
+              color: movedColor,
+              san: result.san,
+              uci: gs.last_move,
+              rank: gs.last_move_rank,
+              fenBefore: prevFen,
+              fenAfter: gs.fen,
+            },
+          ]);
+        } catch {
+          setMoveHistory((prev) => [
+            ...prev,
+            {
+              color: movedColor,
+              san: gs.last_move,
+              uci: gs.last_move,
+              rank: gs.last_move_rank,
+              fenBefore: prevFen,
+              fenAfter: gs.fen,
+            },
+          ]);
+        }
+      }
+
+      setTimeout(() => {
+        if (gs.status === 'complete') {
+          setPhase('game_over');
+        } else {
           runAnalysis(gs.fen);
         }
-        return;
-      }
+      }, MOVE_PAUSE);
+    },
+    [runAnalysis, stopPolling],
+  );
 
-      if (gs.last_updated > lastUpdated && gs.status !== 'waiting') {
-        const prevFen = gameState?.fen ?? gs.fen;
-        setGameState(gs);
-        setLastUpdated(gs.last_updated);
-        if (gs.status === 'complete') {
-          stopPolling();
-          setPhase('game_over');
+  const startPolling = useCallback(
+    (interval: number = ACTIVE_POLL_INTERVAL) => {
+      stopPolling();
+      pollRef.current = setInterval(async () => {
+        const gs = await fetchState();
+        if (!gs) return;
+
+        // Transition from waiting → active when opponent joins
+        if (gs.status === 'active' && (!gameState || gameState.status === 'waiting')) {
+          setGameState(gs);
+          setLastUpdated(gs.last_updated);
+          myColorRef.current = getMyColor(gs);
+          if (isMyTurn(gs)) {
+            stopPolling();
+            runAnalysis(gs.fen);
+          }
           return;
         }
-        if (isMyTurn(gs)) {
-          handleOpponentMove(gs, prevFen);
+
+        if (gs.last_updated > lastUpdated && gs.status !== 'waiting') {
+          const prevFen = gameState?.fen ?? gs.fen;
+          setGameState(gs);
+          setLastUpdated(gs.last_updated);
+          if (gs.status === 'complete') {
+            stopPolling();
+            setPhase('game_over');
+            return;
+          }
+          if (isMyTurn(gs)) {
+            handleOpponentMove(gs, prevFen);
+          }
         }
-      }
-    }, interval);
-  }, [fetchState, gameState, getMyColor, handleOpponentMove, isMyTurn, lastUpdated, runAnalysis, stopPolling]);
+      }, interval);
+    },
+    [fetchState, gameState, getMyColor, handleOpponentMove, isMyTurn, lastUpdated, runAnalysis, stopPolling],
+  );
 
   // Boot once engine is ready
   useEffect(() => {
@@ -327,8 +346,15 @@ export function useMultipleChoiceChessGame({ gameId, playerId }: UseMultipleChoi
       setLastUpdated(gs.last_updated);
       myColorRef.current = getMyColor(gs);
 
-      if (gs.status === 'complete') { setPhase('game_over'); return; }
-      if (gs.status === 'waiting') { setPhase('waiting_opponent'); startPolling(WAITING_POLL_INTERVAL); return; }
+      if (gs.status === 'complete') {
+        setPhase('game_over');
+        return;
+      }
+      if (gs.status === 'waiting') {
+        setPhase('waiting_opponent');
+        startPolling(WAITING_POLL_INTERVAL);
+        return;
+      }
 
       if (isMyTurn(gs)) {
         runAnalysis(gs.fen);
@@ -342,7 +368,7 @@ export function useMultipleChoiceChessGame({ gameId, playerId }: UseMultipleChoi
       cancelled = true;
       stopPolling();
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [engineReady]);
 
   // Poll while waiting / opponent's turn
@@ -354,7 +380,7 @@ export function useMultipleChoiceChessGame({ gameId, playerId }: UseMultipleChoi
     } else {
       stopPolling();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
   // Keyboard navigation through history
@@ -365,7 +391,7 @@ export function useMultipleChoiceChessGame({ gameId, playerId }: UseMultipleChoi
       const target = e.target as HTMLElement | null;
       if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return;
       e.preventDefault();
-      setViewingMoveIndex(prev => {
+      setViewingMoveIndex((prev) => {
         const lastIdx = moveHistory.length - 1;
         if (e.key === 'ArrowDown') return null;
         if (e.key === 'ArrowLeft') {
@@ -380,10 +406,13 @@ export function useMultipleChoiceChessGame({ gameId, playerId }: UseMultipleChoi
     return () => window.removeEventListener('keydown', onKey);
   }, [moveHistory.length]);
 
-  const pick = useCallback((move: CandidateMove) => {
-    if (!gameState || phase !== 'my_choosing') return;
-    submitMove(gameState, move);
-  }, [gameState, phase, submitMove]);
+  const pick = useCallback(
+    (move: CandidateMove) => {
+      if (!gameState || phase !== 'my_choosing') return;
+      submitMove(gameState, move);
+    },
+    [gameState, phase, submitMove],
+  );
 
   // Tick `now` while the game is in a state where elapsed-time matters
   // (waiting opponent or opponent's turn) so abandonment banners update.
@@ -448,20 +477,23 @@ export function useMultipleChoiceChessGame({ gameId, playerId }: UseMultipleChoi
     return Math.max(0, now - oppLastSeen);
   })();
 
-  const displayedFen = viewingMoveIndex !== null
-    ? moveHistory[viewingMoveIndex]?.fenAfter ?? (gameState?.fen ?? 'start')
-    : (gameState?.fen ?? 'start');
+  const displayedFen =
+    viewingMoveIndex !== null
+      ? (moveHistory[viewingMoveIndex]?.fenAfter ?? gameState?.fen ?? 'start')
+      : (gameState?.fen ?? 'start');
 
-  const displayedLastMove: [string, string] | undefined = viewingMoveIndex !== null
-    ? [
-        moveHistory[viewingMoveIndex]?.uci.slice(0, 2) ?? '',
-        moveHistory[viewingMoveIndex]?.uci.slice(2, 4) ?? '',
-      ] as [string, string]
-    : lastMove;
+  const displayedLastMove: [string, string] | undefined =
+    viewingMoveIndex !== null
+      ? ([
+          moveHistory[viewingMoveIndex]?.uci.slice(0, 2) ?? '',
+          moveHistory[viewingMoveIndex]?.uci.slice(2, 4) ?? '',
+        ] as [string, string])
+      : lastMove;
 
-  const hoverShapes = hoveredUci && viewingMoveIndex === null
-    ? [{ orig: hoveredUci.slice(0, 2) as Key, dest: hoveredUci.slice(2, 4) as Key, brush: 'blue' }]
-    : [];
+  const hoverShapes =
+    hoveredUci && viewingMoveIndex === null
+      ? [{ orig: hoveredUci.slice(0, 2) as Key, dest: hoveredUci.slice(2, 4) as Key, brush: 'blue' }]
+      : [];
 
   return {
     phase,

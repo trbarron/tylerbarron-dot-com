@@ -1,7 +1,7 @@
-import { useEffect, useRef } from "react";
-import type { MoveHistoryEntry } from "~/utils/multipleChoiceChess/types";
-import RankBadge from "./RankBadge";
-import SanText from "./SanText";
+import { useEffect, useRef } from 'react';
+import type { MoveHistoryEntry } from '~/utils/multipleChoiceChess/types';
+import RankBadge from './RankBadge';
+import SanText from './SanText';
 
 interface MoveHistoryProps {
   history: MoveHistoryEntry[];
@@ -10,12 +10,7 @@ interface MoveHistoryProps {
   isGameActive: boolean;
 }
 
-export default function MoveHistory({
-  history,
-  viewingIndex,
-  onSelectMove,
-  isGameActive,
-}: MoveHistoryProps) {
+export default function MoveHistory({ history, viewingIndex, onSelectMove, isGameActive }: MoveHistoryProps) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
   // Auto-scroll to the latest move when a new move appears, but not while the
@@ -28,7 +23,8 @@ export default function MoveHistory({
 
   if (history.length === 0) return null;
 
-  const pairs: Array<{ white?: MoveHistoryEntry & { index: number }; black?: MoveHistoryEntry & { index: number } }> = [];
+  const pairs: Array<{ white?: MoveHistoryEntry & { index: number }; black?: MoveHistoryEntry & { index: number } }> =
+    [];
   for (let i = 0; i < history.length; i++) {
     const entry = { ...history[i], index: i };
     if (entry.color === 'white') {
@@ -61,12 +57,10 @@ export default function MoveHistory({
   };
 
   return (
-    <div className="border-4 border-black bg-white font-neo">
+    <div className="font-neo border-4 border-black bg-white">
       <div className="flex items-baseline justify-between gap-2 border-b-2 border-black px-3 py-2">
-        <span className="text-xs font-bold uppercase tracking-wide">Move History</span>
-        <span className="text-[10px] uppercase tracking-wide text-gray-500">
-          #1 best · #6 worst
-        </span>
+        <span className="text-xs font-bold tracking-wide uppercase">Move History</span>
+        <span className="text-[10px] tracking-wide text-gray-500 uppercase">#1 best · #6 worst</span>
       </div>
 
       <div ref={scrollRef} className="max-h-64 overflow-y-auto">

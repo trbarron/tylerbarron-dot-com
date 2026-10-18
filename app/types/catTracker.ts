@@ -35,7 +35,7 @@ export interface CatDetailedData {
   thirty_days_work_time: number; // hours
   lifetime_work_time: number; // hours
   is_present: boolean;
-  cat: "Tuni" | "Checo" | null;
+  cat: 'Tuni' | 'Checo' | null;
   // `other` is ~307 lifetime hours of pre-custom-model entries ("Siamese cat",
   // "tabby", ...) that can't be attributed to either cat. Recent windows are 0.
   // Show it as "unknown" or compute percentages over tuni + checo only — never

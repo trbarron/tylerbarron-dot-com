@@ -71,9 +71,7 @@ function putArgs(body: unknown) {
 
 /** What the write for `command` recorded, or undefined if it never ran. */
 function recorded(record: unknown[][], command: string, keyPart: string) {
-  return record.find(
-    ([name, key]) => name === command && typeof key === 'string' && key.includes(keyPart)
-  );
+  return record.find(([name, key]) => name === command && typeof key === 'string' && key.includes(keyPart));
 }
 
 describe('Media Profile share API', () => {
@@ -279,9 +277,7 @@ describe('Media Profile share API', () => {
     });
 
     it('rejects a non-POST, non-PUT method', async () => {
-      const response = await action(
-        createActionArgs('/api/mediaProfile/share', { method: 'DELETE' })
-      );
+      const response = await action(createActionArgs('/api/mediaProfile/share', { method: 'DELETE' }));
       expect(response.status).toBe(405);
     });
 
@@ -328,15 +324,13 @@ describe('Media Profile share API', () => {
 
     function mockStored({ storedHash = hash, payload = existing } = {}) {
       mockRedis.get.mockImplementation((key: string) =>
-        Promise.resolve(key.startsWith('mediaProfile:edit:') ? storedHash : payload)
+        Promise.resolve(key.startsWith('mediaProfile:edit:') ? storedHash : payload),
       );
     }
 
     it('replaces a card when the edit token matches', async () => {
       mockStored();
-      const response = await action(
-        putArgs({ id, editToken: token, scores: { movies: 90 } })
-      );
+      const response = await action(putArgs({ id, editToken: token, scores: { movies: 90 } }));
       expect(response.status).toBe(200);
 
       const write = recorded(multiCalls, 'set', `mediaProfile:result:${id}`);
@@ -356,9 +350,7 @@ describe('Media Profile share API', () => {
 
     it('refuses an edit token that does not match, without writing', async () => {
       mockStored();
-      const response = await action(
-        putArgs({ id, editToken: 'b'.repeat(32), scores: { movies: 90 } })
-      );
+      const response = await action(putArgs({ id, editToken: 'b'.repeat(32), scores: { movies: 90 } }));
       expect(response.status).toBe(403);
       expect(recorded(multiCalls, 'set', `mediaProfile:result:${id}`)).toBeUndefined();
     });
@@ -371,26 +363,20 @@ describe('Media Profile share API', () => {
     });
 
     it('rejects a malformed id before reading anything', async () => {
-      const response = await action(
-        putArgs({ id: 'NOPE', editToken: token, scores: { movies: 90 } })
-      );
+      const response = await action(putArgs({ id: 'NOPE', editToken: token, scores: { movies: 90 } }));
       expect(response.status).toBe(400);
       expect(mockRedis.get).not.toHaveBeenCalled();
     });
 
     it('404s a card that has expired', async () => {
       mockRedis.get.mockResolvedValue(null);
-      const response = await action(
-        putArgs({ id, editToken: token, scores: { movies: 90 } })
-      );
+      const response = await action(putArgs({ id, editToken: token, scores: { movies: 90 } }));
       expect(response.status).toBe(404);
     });
 
     it('still validates the payload of an authorised edit', async () => {
       mockStored();
-      const response = await action(
-        putArgs({ id, editToken: token, scores: { movies: 37 } })
-      );
+      const response = await action(putArgs({ id, editToken: token, scores: { movies: 37 } }));
       expect(response.status).toBe(400);
     });
 
@@ -401,16 +387,22 @@ describe('Media Profile share API', () => {
     });
 
     it('withdraws a card that the edit opted out', async () => {
-      mockStored({ payload: JSON.stringify({ v: 1, scores: { movies: 30 }, notes: {}, isPublic: true, savedAt: '2026-08-18T00:00:00.000Z' }) });
+      mockStored({
+        payload: JSON.stringify({
+          v: 1,
+          scores: { movies: 30 },
+          notes: {},
+          isPublic: true,
+          savedAt: '2026-08-18T00:00:00.000Z',
+        }),
+      });
       await action(putArgs({ id, editToken: token, scores: { movies: 30 }, isPublic: false }));
       expect(mockRedis.zrem).toHaveBeenCalledWith('mediaProfile:public', id);
     });
 
     it('returns 429 once the per-IP edit window is exhausted', async () => {
       mockRedis.incr.mockResolvedValue(31);
-      const response = await action(
-        putArgs({ id, editToken: token, scores: { movies: 90 } })
-      );
+      const response = await action(putArgs({ id, editToken: token, scores: { movies: 90 } }));
       expect(response.status).toBe(429);
       expect(mockRedis.get).not.toHaveBeenCalled();
     });
@@ -428,7 +420,7 @@ describe('Media Profile share API', () => {
 
     it('never hands the edit token hash back to a reader', async () => {
       mockRedis.get.mockResolvedValue(
-        JSON.stringify({ v: 1, scores: { movies: 30 }, notes: {}, savedAt: '2026-08-18T00:00:00.000Z' })
+        JSON.stringify({ v: 1, scores: { movies: 30 }, notes: {}, savedAt: '2026-08-18T00:00:00.000Z' }),
       );
       const response = await loader(createLoaderArgs('/api/mediaProfile/share?id=abcdefghij'));
       const body = JSON.stringify(await response.json());
@@ -499,9 +491,7 @@ describe('Media Profile share API', () => {
       mockRedis.zrevrange.mockResolvedValue(['aaaaaaaaaa', 'bbbbbbbbbb']);
       mockRedis.mget.mockResolvedValue([null, card('Still here')]);
 
-      const { cards } = await (
-        await publicLoader(createLoaderArgs('/api/mediaProfile/public'))
-      ).json();
+      const { cards } = await (await publicLoader(createLoaderArgs('/api/mediaProfile/public'))).json();
       expect(cards).toHaveLength(1);
       expect(mockRedis.zrem).toHaveBeenCalledWith('mediaProfile:public', 'aaaaaaaaaa');
     });
@@ -510,9 +500,7 @@ describe('Media Profile share API', () => {
       mockRedis.zrevrange.mockResolvedValue(['aaaaaaaaaa']);
       mockRedis.mget.mockResolvedValue([card('Withdrawn', false)]);
 
-      const { cards } = await (
-        await publicLoader(createLoaderArgs('/api/mediaProfile/public'))
-      ).json();
+      const { cards } = await (await publicLoader(createLoaderArgs('/api/mediaProfile/public'))).json();
       expect(cards).toEqual([]);
       expect(mockRedis.zrem).toHaveBeenCalledWith('mediaProfile:public', 'aaaaaaaaaa');
     });

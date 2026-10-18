@@ -74,7 +74,7 @@ export default function AddGames({ deckId, deck, editToken, onUpdated }: AddGame
           ? ` ${plural(result.skippedNoRating, 'game')} had no rating for you and were skipped.`
           : '';
         return summary + skipped;
-      }
+      },
     );
 
   return (
@@ -86,7 +86,7 @@ export default function AddGames({ deckId, deck, editToken, onUpdated }: AddGame
           <p className="text-sm text-gray-700">Newest game analyzed: {sinceLabel}</p>
           <button
             onClick={add}
-            className="border-2 border-black px-4 py-2 text-sm font-bold uppercase tracking-wide hover:bg-black hover:text-white"
+            className="border-2 border-black px-4 py-2 text-sm font-bold tracking-wide uppercase hover:bg-black hover:text-white"
           >
             Add new games
           </button>

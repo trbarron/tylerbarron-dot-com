@@ -16,15 +16,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
   if (!limit.allowed) {
     return Response.json(
       { error: 'Too many requests.' },
-      { status: 429, headers: { 'Retry-After': String(limit.retryAfter) } }
+      { status: 429, headers: { 'Retry-After': String(limit.retryAfter) } },
     );
   }
 
   const requested = Number(new URL(request.url).searchParams.get('limit'));
-  const count =
-    Number.isInteger(requested) && requested > 0
-      ? Math.min(requested, PUBLIC_PAGE_MAX)
-      : DEFAULT_LIMIT;
+  const count = Number.isInteger(requested) && requested > 0 ? Math.min(requested, PUBLIC_PAGE_MAX) : DEFAULT_LIMIT;
 
   try {
     const cards = await listPublicResults(count);
@@ -34,7 +31,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       // minute ago showing up a minute late is nobody's problem. Somebody
       // watching for their own edit is a different matter, so the post asks for
       // that refresh under a one-off `t`, which misses this cache by design.
-      { headers: { 'Cache-Control': 'public, max-age=60' } }
+      { headers: { 'Cache-Control': 'public, max-age=60' } },
     );
   } catch (error) {
     console.error('mediaProfile: failed to list public results', error);

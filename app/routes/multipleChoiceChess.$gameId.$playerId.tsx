@@ -1,36 +1,32 @@
-import { useRef, useState, Suspense, lazy } from "react";
-import { useLoaderData, useNavigate, type LinksFunction } from "react-router";
-import { Navbar } from "~/components/Navbar";
-import Footer from "~/components/Footer";
-import EngineStatus from "~/components/MultipleChoiceChess/EngineStatus";
-import MoveChoices from "~/components/MultipleChoiceChess/MoveChoices";
-import MoveHistory from "~/components/MultipleChoiceChess/MoveHistory";
-import GameOverModal from "~/components/MultipleChoiceChess/GameOverModal";
-import { useMultipleChoiceChessGame } from "~/hooks/useMultipleChoiceChessGame";
-import { buildMeta } from "~/utils/seo";
+import { useRef, useState, Suspense, lazy } from 'react';
+import { useLoaderData, useNavigate, type LinksFunction } from 'react-router';
+import { Navbar } from '~/components/Navbar';
+import Footer from '~/components/Footer';
+import EngineStatus from '~/components/MultipleChoiceChess/EngineStatus';
+import MoveChoices from '~/components/MultipleChoiceChess/MoveChoices';
+import MoveHistory from '~/components/MultipleChoiceChess/MoveHistory';
+import GameOverModal from '~/components/MultipleChoiceChess/GameOverModal';
+import { useMultipleChoiceChessGame } from '~/hooks/useMultipleChoiceChessGame';
+import { buildMeta } from '~/utils/seo';
 
 // Live game pages are ephemeral — keep them out of search indexes.
 export function meta() {
-  return buildMeta({ title: "Multiple Choice Chess", noIndex: true });
+  return buildMeta({ title: 'Multiple Choice Chess', noIndex: true });
 }
 
-import chessgroundBase from "../styles/chessground.base.css?url";
-import chessgroundBrown from "../styles/chessground.brown.css?url";
-import chessgroundCburnett from "../styles/chessground.cburnett.css?url";
+import chessgroundBase from '../styles/chessground.base.css?url';
+import chessgroundBrown from '../styles/chessground.brown.css?url';
+import chessgroundCburnett from '../styles/chessground.cburnett.css?url';
 
-const Chessboard = lazy(() => import("~/components/Chessboard"));
+const Chessboard = lazy(() => import('~/components/Chessboard'));
 
 export const links: LinksFunction = () => [
-  { rel: "stylesheet", href: chessgroundBase },
-  { rel: "stylesheet", href: chessgroundBrown },
-  { rel: "stylesheet", href: chessgroundCburnett },
+  { rel: 'stylesheet', href: chessgroundBase },
+  { rel: 'stylesheet', href: chessgroundBrown },
+  { rel: 'stylesheet', href: chessgroundCburnett },
 ];
 
-export const loader = async ({
-  params,
-}: {
-  params: { gameId?: string; playerId?: string };
-}) => {
+export const loader = async ({ params }: { params: { gameId?: string; playerId?: string } }) => {
   return Response.json({ gameId: params.gameId, playerId: params.playerId });
 };
 
@@ -61,8 +57,8 @@ export default function MultipleChoiceChessGame() {
     opponentInactiveMs,
     claimWin,
   } = useMultipleChoiceChessGame({
-    gameId: gameId ?? "",
-    playerId: playerId ?? "",
+    gameId: gameId ?? '',
+    playerId: playerId ?? '',
   });
 
   const [linkCopied, setLinkCopied] = useState(false);
@@ -72,20 +68,18 @@ export default function MultipleChoiceChessGame() {
 
   const INACTIVITY_BANNER_MS = 45_000;
   const CLAIM_THRESHOLD_MS = 90_000;
-  const showInactivityBanner =
-    opponentInactiveMs !== null && opponentInactiveMs >= INACTIVITY_BANNER_MS;
-  const canClaimWin =
-    opponentInactiveMs !== null && opponentInactiveMs >= CLAIM_THRESHOLD_MS;
+  const showInactivityBanner = opponentInactiveMs !== null && opponentInactiveMs >= INACTIVITY_BANNER_MS;
+  const canClaimWin = opponentInactiveMs !== null && opponentInactiveMs >= CLAIM_THRESHOLD_MS;
 
   const shareUrl =
-    typeof window !== "undefined"
-      ? `${window.location.origin}/multiple-choice-chess?join=${encodeURIComponent(gameId ?? "")}`
-      : "";
+    typeof window !== 'undefined'
+      ? `${window.location.origin}/multiple-choice-chess?join=${encodeURIComponent(gameId ?? '')}`
+      : '';
 
   const copyLink = async () => {
     setCopyFailed(false);
     try {
-      if (!navigator.clipboard) throw new Error("Clipboard API unavailable");
+      if (!navigator.clipboard) throw new Error('Clipboard API unavailable');
       await navigator.clipboard.writeText(shareUrl);
       setLinkCopied(true);
       setTimeout(() => setLinkCopied(false), 2000);
@@ -99,7 +93,7 @@ export default function MultipleChoiceChessGame() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col relative z-10">
+    <div className="relative z-10 flex min-h-screen flex-col">
       <Navbar />
       <main className="flex-grow">
         <section className="article">
@@ -111,15 +105,14 @@ export default function MultipleChoiceChessGame() {
               {error && (
                 <div className="font-neo mb-4 flex items-center justify-between gap-3 border-4 border-red-500 bg-red-100 p-4 text-red-800">
                   <span>{error}</span>
-                  {!engineReady &&
-                    error.startsWith("Engine failed to load") && (
-                      <button
-                        onClick={retryEngineInit}
-                        className="shrink-0 border-2 border-red-700 bg-white px-3 py-1 text-sm font-bold text-red-800 uppercase hover:bg-red-700 hover:text-white"
-                      >
-                        Retry
-                      </button>
-                    )}
+                  {!engineReady && error.startsWith('Engine failed to load') && (
+                    <button
+                      onClick={retryEngineInit}
+                      className="shrink-0 border-2 border-red-700 bg-white px-3 py-1 text-sm font-bold text-red-800 uppercase hover:bg-red-700 hover:text-white"
+                    >
+                      Retry
+                    </button>
+                  )}
                 </div>
               )}
 
@@ -144,11 +137,9 @@ export default function MultipleChoiceChessGame() {
                 </div>
               )}
 
-              {phase === "waiting_opponent" && gameState && (
+              {phase === 'waiting_opponent' && gameState && (
                 <div className="font-neo mb-4 border-4 border-black bg-white p-6">
-                  <p className="font-bold uppercase">
-                    Waiting for opponent to join...
-                  </p>
+                  <p className="font-bold uppercase">Waiting for opponent to join...</p>
                   <p className="mt-2 text-sm text-gray-600">Share this link:</p>
                   <div className="mt-2 flex gap-2">
                     <input
@@ -162,18 +153,15 @@ export default function MultipleChoiceChessGame() {
                       onClick={copyLink}
                       className="font-neo border-2 border-black px-3 py-1 text-sm font-bold uppercase hover:bg-black hover:text-white active:bg-black active:text-white"
                     >
-                      {linkCopied ? "Copied!" : "Copy"}
+                      {linkCopied ? 'Copied!' : 'Copy'}
                     </button>
                   </div>
                   {copyFailed && (
                     <p className="mt-2 text-xs text-red-700">
-                      Couldn't access the clipboard. Press ⌘C / Ctrl+C to copy
-                      the selected link.
+                      Couldn't access the clipboard. Press ⌘C / Ctrl+C to copy the selected link.
                     </p>
                   )}
-                  <p className="mt-2 text-xs text-gray-400">
-                    Game code: {gameId}
-                  </p>
+                  <p className="mt-2 text-xs text-gray-400">Game code: {gameId}</p>
                 </div>
               )}
 
@@ -204,7 +192,7 @@ export default function MultipleChoiceChessGame() {
                       </div>
                       <div className="flex gap-2">
                         <a
-                          href={`https://lichess.org/analysis/standard/${encodeURIComponent((moveHistory[viewingMoveIndex]?.fenAfter ?? "").replace(/ /g, "_"))}`}
+                          href={`https://lichess.org/analysis/standard/${encodeURIComponent((moveHistory[viewingMoveIndex]?.fenAfter ?? '').replace(/ /g, '_'))}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="font-neo border-2 border-black px-3 py-1 text-sm font-bold uppercase hover:bg-black hover:text-white active:bg-black active:text-white"
@@ -212,11 +200,7 @@ export default function MultipleChoiceChessGame() {
                           Lichess ↗
                         </a>
                         <button
-                          onClick={() =>
-                            setViewingMoveIndex(
-                              Math.max(0, viewingMoveIndex - 1),
-                            )
-                          }
+                          onClick={() => setViewingMoveIndex(Math.max(0, viewingMoveIndex - 1))}
                           disabled={viewingMoveIndex === 0}
                           className="font-neo border-2 border-black px-3 py-1 text-sm font-bold uppercase hover:bg-black hover:text-white active:bg-black active:text-white disabled:opacity-40"
                         >
@@ -232,54 +216,40 @@ export default function MultipleChoiceChessGame() {
                           }}
                           className="font-neo border-2 border-black px-3 py-1 text-sm font-bold uppercase hover:bg-black hover:text-white active:bg-black active:text-white"
                         >
-                          {viewingMoveIndex < moveHistory.length - 1
-                            ? "→"
-                            : "↓ Live"}
+                          {viewingMoveIndex < moveHistory.length - 1 ? '→' : '↓ Live'}
                         </button>
                       </div>
                     </div>
                   )}
 
-                  {gameState?.status === "active" &&
-                    phase !== "game_over" &&
-                    viewingMoveIndex === null && (
-                      <div className="mt-3 flex items-center justify-between">
-                        <div
-                          className={[
-                            "font-neo border-2 border-black px-3 py-1 text-sm font-bold uppercase",
-                            gameState.turn === color
-                              ? "bg-black text-white"
-                              : "bg-white text-gray-500",
-                          ].join(" ")}
-                        >
-                          {gameState.turn === color
-                            ? "Your turn"
-                            : "Opponent's turn"}
-                        </div>
-                        <button
-                          onClick={() => setConfirmingResign(true)}
-                          className="font-neo border-2 border-black px-3 py-1 text-sm font-bold text-gray-600 uppercase hover:border-red-500 hover:bg-red-100 hover:text-red-700 active:bg-red-100 active:text-red-700"
-                        >
-                          Resign
-                        </button>
+                  {gameState?.status === 'active' && phase !== 'game_over' && viewingMoveIndex === null && (
+                    <div className="mt-3 flex items-center justify-between">
+                      <div
+                        className={[
+                          'font-neo border-2 border-black px-3 py-1 text-sm font-bold uppercase',
+                          gameState.turn === color ? 'bg-black text-white' : 'bg-white text-gray-500',
+                        ].join(' ')}
+                      >
+                        {gameState.turn === color ? 'Your turn' : "Opponent's turn"}
                       </div>
-                    )}
+                      <button
+                        onClick={() => setConfirmingResign(true)}
+                        className="font-neo border-2 border-black px-3 py-1 text-sm font-bold text-gray-600 uppercase hover:border-red-500 hover:bg-red-100 hover:text-red-700 active:bg-red-100 active:text-red-700"
+                      >
+                        Resign
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-4 md:col-span-2">
-                  {phase === "loading_engine" && (
-                    <EngineStatus phase="loading" />
+                  {phase === 'loading_engine' && <EngineStatus phase="loading" />}
+                  {phase === 'my_thinking' && <EngineStatus phase="thinking" />}
+                  {(phase === 'opp_turn' || phase === 'waiting_opponent') && gameState?.status === 'active' && (
+                    <EngineStatus phase="opponent" since={gameState.last_updated} />
                   )}
-                  {phase === "my_thinking" && <EngineStatus phase="thinking" />}
-                  {(phase === "opp_turn" || phase === "waiting_opponent") &&
-                    gameState?.status === "active" && (
-                      <EngineStatus
-                        phase="opponent"
-                        since={gameState.last_updated}
-                      />
-                    )}
 
-                  {(phase === "my_choosing" || phase === "submitting") &&
+                  {(phase === 'my_choosing' || phase === 'submitting') &&
                     candidates.length > 0 &&
                     viewingMoveIndex === null && (
                       <div>
@@ -288,7 +258,7 @@ export default function MultipleChoiceChessGame() {
                           pickedUci={pickedUci}
                           onPick={pick}
                           onHover={setHoveredUci}
-                          disabled={phase === "submitting"}
+                          disabled={phase === 'submitting'}
                         />
                       </div>
                     )}
@@ -297,7 +267,7 @@ export default function MultipleChoiceChessGame() {
                     history={moveHistory}
                     viewingIndex={viewingMoveIndex}
                     onSelectMove={setViewingMoveIndex}
-                    isGameActive={gameState?.status === "active"}
+                    isGameActive={gameState?.status === 'active'}
                   />
                 </div>
               </div>
@@ -311,9 +281,7 @@ export default function MultipleChoiceChessGame() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
           <div className="font-neo w-full max-w-sm border-4 border-black bg-white">
             <div className="border-b-4 border-black p-5 text-center">
-              <h2 className="text-xl font-extrabold uppercase">
-                Resign this game?
-              </h2>
+              <h2 className="text-xl font-extrabold uppercase">Resign this game?</h2>
             </div>
             <div className="grid grid-cols-2 divide-x-4 divide-black">
               <button
@@ -336,31 +304,27 @@ export default function MultipleChoiceChessGame() {
         </div>
       )}
 
-      {phase === "game_over" &&
-        gameState?.status === "complete" &&
-        !modalDismissed && (
-          <GameOverModal
-            result={gameState.result as "white" | "black" | "draw"}
-            reason={gameState.result_reason}
-            myColor={color}
-            whiteRank1={gameState.white_rank_1}
-            whiteRank2={gameState.white_rank_2}
-            whiteRank4={gameState.white_rank_4}
-            whiteRank6={gameState.white_rank_6}
-            blackRank1={gameState.black_rank_1}
-            blackRank2={gameState.black_rank_2}
-            blackRank4={gameState.black_rank_4}
-            blackRank6={gameState.black_rank_6}
-            moveHistory={moveHistory}
-            onPlayAgain={() => navigate("/multiple-choice-chess")}
-            onReview={() => {
-              setModalDismissed(true);
-              setViewingMoveIndex(
-                moveHistory.length > 0 ? moveHistory.length - 1 : null,
-              );
-            }}
-          />
-        )}
+      {phase === 'game_over' && gameState?.status === 'complete' && !modalDismissed && (
+        <GameOverModal
+          result={gameState.result as 'white' | 'black' | 'draw'}
+          reason={gameState.result_reason}
+          myColor={color}
+          whiteRank1={gameState.white_rank_1}
+          whiteRank2={gameState.white_rank_2}
+          whiteRank4={gameState.white_rank_4}
+          whiteRank6={gameState.white_rank_6}
+          blackRank1={gameState.black_rank_1}
+          blackRank2={gameState.black_rank_2}
+          blackRank4={gameState.black_rank_4}
+          blackRank6={gameState.black_rank_6}
+          moveHistory={moveHistory}
+          onPlayAgain={() => navigate('/multiple-choice-chess')}
+          onReview={() => {
+            setModalDismissed(true);
+            setViewingMoveIndex(moveHistory.length > 0 ? moveHistory.length - 1 : null);
+          }}
+        />
+      )}
     </div>
   );
 }

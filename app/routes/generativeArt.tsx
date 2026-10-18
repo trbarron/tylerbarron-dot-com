@@ -1,41 +1,41 @@
-import React, { useState } from "react";
-import LightboxComponent from "../components/LazyLightbox";
-import { buildMeta } from "~/utils/seo";
+import React, { useState } from 'react';
+import LightboxComponent from '../components/LazyLightbox';
+import { buildMeta } from '~/utils/seo';
 
 export function meta() {
   return buildMeta({
-    title: "Generative Art",
-    description: "A gallery of generative art experiments.",
-    path: "/generative-art",
+    title: 'Generative Art',
+    description: 'A gallery of generative art experiments.',
+    path: '/generative-art',
   });
 }
 
-const pic5 = getImageUrl("GenerativeArt/5.jpg");
-const pic4 = getImageUrl("GenerativeArt/4.jpg");
-const pic3 = getImageUrl("GenerativeArt/3.jpg");
-const pic2 = getImageUrl("GenerativeArt/2.jpg");
-const pic1 = getImageUrl("GenerativeArt/1.jpg");
-const plotter = getImageUrl("GenerativeArt/plotter.jpg");
+const pic5 = getImageUrl('GenerativeArt/5.jpg');
+const pic4 = getImageUrl('GenerativeArt/4.jpg');
+const pic3 = getImageUrl('GenerativeArt/3.jpg');
+const pic2 = getImageUrl('GenerativeArt/2.jpg');
+const pic1 = getImageUrl('GenerativeArt/1.jpg');
+const plotter = getImageUrl('GenerativeArt/plotter.jpg');
 // Import components
-import { Navbar } from "../components/Navbar.js";
-import Footer from "../components/Footer.js";
-import Riddler from "../components/Riddler.js";
+import { Navbar } from '../components/Navbar.js';
+import Footer from '../components/Footer.js';
+import Riddler from '../components/Riddler.js';
 
 // Import assets
 
-import { getImageUrl } from "~/utils/cdn";
+import { getImageUrl } from '~/utils/cdn';
 
 const GenerativeArt = () => {
   const [open, setOpen] = useState(false);
   const [photoIndex, setPhotoIndex] = useState(0);
 
   const photos = [
-    { src: plotter, alt: "plotter", caption: "my HP 7550A pen plotter" },
-    { src: pic1, alt: "Photo 1" },
-    { src: pic2, alt: "Photo 2" },
-    { src: pic3, alt: "Photo 3" },
-    { src: pic4, alt: "Photo 4" },
-    { src: pic5, alt: "Photo 5" },
+    { src: plotter, alt: 'plotter', caption: 'my HP 7550A pen plotter' },
+    { src: pic1, alt: 'Photo 1' },
+    { src: pic2, alt: 'Photo 2' },
+    { src: pic3, alt: 'Photo 3' },
+    { src: pic4, alt: 'Photo 4' },
+    { src: pic5, alt: 'Photo 5' },
   ];
 
   const openLightbox = (index: number) => {
@@ -43,13 +43,7 @@ const GenerativeArt = () => {
     setOpen(true);
   };
 
-  const PhotoComponent = ({
-    photo,
-    index,
-  }: {
-    photo: (typeof photos)[0];
-    index: number;
-  }) => (
+  const PhotoComponent = ({ photo, index }: { photo: (typeof photos)[0]; index: number }) => (
     <div onClick={() => openLightbox(index)} className="my-5 cursor-pointer">
       <img src={photo.src} alt={photo.alt} className="h-auto max-w-full" />
       {photo.caption && <p className="mt-2.5 italic">{photo.caption}</p>}
@@ -57,7 +51,7 @@ const GenerativeArt = () => {
   );
 
   return (
-    <div className="flex min-h-screen flex-col bg-black bg-fixed relative z-10">
+    <div className="relative z-10 flex min-h-screen flex-col bg-black bg-fixed">
       <Navbar />
       <main className="flex-grow">
         <section className="article">
@@ -70,38 +64,28 @@ const GenerativeArt = () => {
                 <h3 className="subarticle-title">goodbad.png</h3>
                 <div className="overflow-hidden bg-white break-words">
                   <p>
-                    Inspired by{" "}
-                    <a href="https://medium.com/quarterstudio/an-intro-to-pen-plotters-29b6bd4327ba">
-                      a blog post
-                    </a>{" "}
-                    I decided to purchase a 1980's pen plotter and get into the
-                    world of generative art
+                    Inspired by{' '}
+                    <a href="https://medium.com/quarterstudio/an-intro-to-pen-plotters-29b6bd4327ba">a blog post</a> I
+                    decided to purchase a 1980's pen plotter and get into the world of generative art
                   </p>
 
                   <PhotoComponent photo={photos[0]} index={0} />
 
                   <p>
-                    After taking some online classes I set up an instagram to
-                    showcase my art:{" "}
-                    <a href="https://www.instagram.com/goodbad.png/">
-                      goodbad.png
-                    </a>
-                    . This led to an invitation to an online community of
-                    generative artists to share work and methodology
+                    After taking some online classes I set up an instagram to showcase my art:{' '}
+                    <a href="https://www.instagram.com/goodbad.png/">goodbad.png</a>. This led to an invitation to an
+                    online community of generative artists to share work and methodology
                   </p>
 
                   <p>
-                    After months of sharing work I was accepted to showcase my
-                    art at the local library with an exhibition for the public.
-                    This was unfortunately canceled due to COVID-19 but{" "}
+                    After months of sharing work I was accepted to showcase my art at the local library with an
+                    exhibition for the public. This was unfortunately canceled due to COVID-19 but{' '}
                     <a href="https://www.instagram.com/p/B_h_3LmAZSy/">
                       led to a digital exhibition on their instagram
                     </a>
                   </p>
 
-                  <p>
-                    Here is my artist's statement about the generative work:
-                  </p>
+                  <p>Here is my artist's statement about the generative work:</p>
 
                   <Riddler>
                     {
@@ -121,11 +105,8 @@ const GenerativeArt = () => {
                 <h3 className="subarticle-title">For more:</h3>
                 <div className="overflow-hidden bg-white break-words">
                   <p>
-                    Check out more work{" "}
-                    <a href="https://www.instagram.com/goodbad.png/">
-                      on my instagram
-                    </a>{" "}
-                    where I post this work along with some photography.
+                    Check out more work <a href="https://www.instagram.com/goodbad.png/">on my instagram</a> where I
+                    post this work along with some photography.
                   </p>
                 </div>
               </section>
@@ -134,12 +115,7 @@ const GenerativeArt = () => {
         </section>
       </main>
       <Footer />
-      <LightboxComponent
-        open={open}
-        close={() => setOpen(false)}
-        slides={photos}
-        index={photoIndex}
-      />
+      <LightboxComponent open={open} close={() => setOpen(false)} slides={photos} index={photoIndex} />
     </div>
   );
 };

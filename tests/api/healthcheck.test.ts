@@ -47,9 +47,7 @@ describe('healthcheck loader', () => {
   });
 
   it('honors X-Forwarded-Proto when present', async () => {
-    await loader(
-      createArgs({ host: 'tylerbarron.com', 'X-Forwarded-Proto': 'http' })
-    );
+    await loader(createArgs({ host: 'tylerbarron.com', 'X-Forwarded-Proto': 'http' }));
     expect(fetchedUrl).toBe('http://tylerbarron.com/');
   });
 
@@ -59,9 +57,7 @@ describe('healthcheck loader', () => {
   });
 
   it('prefers X-Forwarded-Host over host', async () => {
-    await loader(
-      createArgs({ host: 'internal.execute-api.aws', 'X-Forwarded-Host': 'tylerbarron.com' })
-    );
+    await loader(createArgs({ host: 'internal.execute-api.aws', 'X-Forwarded-Host': 'tylerbarron.com' }));
     expect(fetchedUrl).toBe('https://tylerbarron.com/');
   });
 

@@ -14,7 +14,7 @@ export const GamePhase = {
   COOLDOWN: 'cooldown',
 } as const;
 
-export type GamePhaseType = typeof GamePhase[keyof typeof GamePhase];
+export type GamePhaseType = (typeof GamePhase)[keyof typeof GamePhase];
 
 export const GamePhaseNames = {
   [GamePhase.SETUP]: 'Setup',
@@ -22,7 +22,7 @@ export const GamePhaseNames = {
   [GamePhase.TEAM1_COMPUTING]: 'White Computing',
   [GamePhase.TEAM2_SELECTION]: 'Black Selection',
   [GamePhase.TEAM2_COMPUTING]: 'Black Computing',
-  [GamePhase.COOLDOWN]: 'Cooldown'
+  [GamePhase.COOLDOWN]: 'Cooldown',
 } as const;
 
 // ============================================================================
@@ -37,7 +37,7 @@ export type SeatKey = 't1p1' | 't1p2' | 't2p1' | 't2p2';
 
 export interface TakeSeatMessage {
   type: string;
-  seat: "t1p1" | "t1p2" | "t2p1" | "t2p2";
+  seat: 't1p1' | 't1p2' | 't2p1' | 't2p2';
 }
 
 export interface ReadyMessage {
@@ -68,7 +68,8 @@ export interface HeartbeatMessage {
 }
 
 // Union type for all client messages
-export type ClientMessage = TakeSeatMessage | ReadyMessage | NotReadyMessage | SubmitMoveMessage | LockInMoveMessage | HeartbeatMessage;
+export type ClientMessage =
+  TakeSeatMessage | ReadyMessage | NotReadyMessage | SubmitMoveMessage | LockInMoveMessage | HeartbeatMessage;
 
 // ============================================================================
 // SERVER → CLIENT MESSAGES
@@ -122,7 +123,7 @@ export interface PlayerReadyMessage {
 export interface MoveSubmittedMessage {
   type: string;
   player_id: string;
-  seat?: "t1p1" | "t1p2" | "t2p1" | "t2p2";
+  seat?: 't1p1' | 't1p2' | 't2p1' | 't2p2';
 }
 
 export interface MoveSelectedMessage {
@@ -139,7 +140,7 @@ export interface PlayerDisconnectedMessage {
 export interface PlayerReconnectedMessage {
   type: string;
   player_id: string;
-  seat: "t1p1" | "t1p2" | "t2p1" | "t2p2";
+  seat: 't1p1' | 't1p2' | 't2p1' | 't2p2';
 }
 
 export interface PlayerPermanentlyDisconnectedMessage {
@@ -155,7 +156,7 @@ export interface PlayerSeatsMessage {
 export interface ReconnectionStateSyncMessage {
   type: string;
   game_state: object;
-  your_seat: "t1p1" | "t1p2" | "t2p1" | "t2p2";
+  your_seat: 't1p1' | 't1p2' | 't2p1' | 't2p2';
 }
 
 export interface ReconnectionSuccessfulMessage {
@@ -178,7 +179,21 @@ export interface GameOverMessage {
 }
 
 // Union type for all server messages
-export type ServerMessage = ConnectionEstablishedMessage | GameStateUpdateMessage | TimerUpdateMessage | PlayerReadyMessage | MoveSubmittedMessage | MoveSelectedMessage | PlayerDisconnectedMessage | PlayerReconnectedMessage | PlayerPermanentlyDisconnectedMessage | PlayerSeatsMessage | ReconnectionStateSyncMessage | ReconnectionSuccessfulMessage | HeartbeatResponseMessage | GameOverMessage;
+export type ServerMessage =
+  | ConnectionEstablishedMessage
+  | GameStateUpdateMessage
+  | TimerUpdateMessage
+  | PlayerReadyMessage
+  | MoveSubmittedMessage
+  | MoveSelectedMessage
+  | PlayerDisconnectedMessage
+  | PlayerReconnectedMessage
+  | PlayerPermanentlyDisconnectedMessage
+  | PlayerSeatsMessage
+  | ReconnectionStateSyncMessage
+  | ReconnectionSuccessfulMessage
+  | HeartbeatResponseMessage
+  | GameOverMessage;
 
 // ============================================================================
 // API RESPONSE TYPES
@@ -225,4 +240,4 @@ export const CONFIG = {
   MAX_RECONNECT_ATTEMPTS: 10,
   INITIAL_RECONNECT_DELAY: 1000,
   MAX_RECONNECT_DELAY: 30000,
-} as const; 
+} as const;

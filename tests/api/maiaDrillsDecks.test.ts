@@ -93,11 +93,13 @@ class FakeRedis {
         get: (_t, name: string) => {
           if (name === 'exec') return async () => Promise.all(queued.map((run) => run()));
           return (...args: unknown[]) => {
-            queued.push(() => (this as unknown as Record<string, (...a: unknown[]) => Promise<unknown>>)[name](...args));
+            queued.push(() =>
+              (this as unknown as Record<string, (...a: unknown[]) => Promise<unknown>>)[name](...args),
+            );
             return chain;
           };
         },
-      }
+      },
     );
     return chain;
   }
@@ -141,7 +143,7 @@ async function post(body: unknown, ip = '1.1.1.1') {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-forwarded-for': ip },
       body: typeof body === 'string' ? body : JSON.stringify(body),
-    })
+    }),
   );
   return { status: res.status, body: await res.json() };
 }
@@ -152,7 +154,7 @@ async function put(body: unknown) {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
-    })
+    }),
   );
   return { status: res.status, body: await res.json() };
 }
@@ -163,7 +165,7 @@ async function patch(body: unknown) {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
-    })
+    }),
   );
   return { status: res.status, body: await res.json() };
 }
@@ -338,7 +340,12 @@ describe('favorites', () => {
 // ── Adding games ───────────────────────────────────────────────────────────
 
 /** A card from another game, missing by `loss` cp. */
-const cardFrom = (gameId: string, loss: number): DrillCard => ({ ...card, id: `${gameId}-4`, evalTarget: loss, evalPlayed: 0 });
+const cardFrom = (gameId: string, loss: number): DrillCard => ({
+  ...card,
+  id: `${gameId}-4`,
+  evalTarget: loss,
+  evalPlayed: 0,
+});
 
 describe('mergeIntoDeck', () => {
   const deck = { ...deckBody, v: 1, createdAt: '2026-10-01T00:00:00Z', newestGameAt: 1000, cards: [card] } as Deck;
@@ -347,8 +354,12 @@ describe('mergeIntoDeck', () => {
   it('adds new cards, skips ones already in the deck, and sums the stats', () => {
     const { deck: merged, added } = mergeIntoDeck(
       deck,
-      { cards: [card, cardFrom('newgame1', 300)], stats: { games: 5, positions: 100, disagreements: 40 }, newestGameAt: 5000 },
-      now
+      {
+        cards: [card, cardFrom('newgame1', 300)],
+        stats: { games: 5, positions: 100, disagreements: 40 },
+        newestGameAt: 5000,
+      },
+      now,
     );
     expect(added).toBe(1);
     expect(merged.cards.map((c) => c.id)).toEqual(['newgame1-4', 'abc123-4']);
@@ -365,18 +376,28 @@ describe('mergeIntoDeck', () => {
   });
 
   it('never moves the newest-game date backwards', () => {
-    const { deck: merged } = mergeIntoDeck(deck, { cards: [], stats: { games: 0, positions: 0, disagreements: 0 }, newestGameAt: 10 }, now);
+    const { deck: merged } = mergeIntoDeck(
+      deck,
+      { cards: [], stats: { games: 0, positions: 0, disagreements: 0 }, newestGameAt: 10 },
+      now,
+    );
     expect(merged.newestGameAt).toBe(1000);
     const stopped = mergeIntoDeck(deck, { cards: [], stats: { games: 0, positions: 0, disagreements: 0 } }, now);
     expect(stopped.deck.newestGameAt).toBe(1000);
   });
 
   it('keeps the biggest misses when over the cap, and counts only new cards that made it', () => {
-    const full = { ...deck, cards: Array.from({ length: LIMITS.cardsPerDeck }, (_, i) => cardFrom(`old${i}`, 200 + i)) };
+    const full = {
+      ...deck,
+      cards: Array.from({ length: LIMITS.cardsPerDeck }, (_, i) => cardFrom(`old${i}`, 200 + i)),
+    };
     const { deck: merged, added } = mergeIntoDeck(
       full,
-      { cards: [{ ...cardFrom('big', 999), evalPlayed: -999 }, cardFrom('small', 150)], stats: { games: 2, positions: 60, disagreements: 20 } },
-      now
+      {
+        cards: [{ ...cardFrom('big', 999), evalPlayed: -999 }, cardFrom('small', 150)],
+        stats: { games: 2, positions: 60, disagreements: 20 },
+      },
+      now,
     );
     expect(merged.cards).toHaveLength(LIMITS.cardsPerDeck);
     expect(merged.cards[0].id).toBe('big-4');
@@ -386,10 +407,17 @@ describe('mergeIntoDeck', () => {
   });
 
   it('ranks by win chance lost, so a big cp gap in a won position goes first', () => {
-    const full = { ...deck, cards: Array.from({ length: LIMITS.cardsPerDeck }, (_, i) => cardFrom(`old${i}`, 200 + i)) };
+    const full = {
+      ...deck,
+      cards: Array.from({ length: LIMITS.cardsPerDeck }, (_, i) => cardFrom(`old${i}`, 200 + i)),
+    };
     // 400 cp, bigger than 200 of the old gaps, but from +10 to +6: about 7 points against at least 18.
     const lopsided = { ...cardFrom('lopsided', 1000), evalPlayed: 600 };
-    const { deck: merged, added } = mergeIntoDeck(full, { cards: [lopsided], stats: { games: 1, positions: 30, disagreements: 10 } }, now);
+    const { deck: merged, added } = mergeIntoDeck(
+      full,
+      { cards: [lopsided], stats: { games: 1, positions: 30, disagreements: 10 } },
+      now,
+    );
     expect(merged.cards.map((c) => c.id)).not.toContain('lopsided-4');
     expect(merged.cards.map((c) => c.id)).toContain('old0-4');
     expect(added).toBe(0);
@@ -397,7 +425,11 @@ describe('mergeIntoDeck', () => {
 });
 
 describe('PATCH /api/maiaDrills/decks', () => {
-  const addition = { cards: [cardFrom('newgame1', 300)], stats: { games: 3, positions: 90, disagreements: 30 }, newestGameAt: 1_800_000_000_000 };
+  const addition = {
+    cards: [cardFrom('newgame1', 300)],
+    stats: { games: 3, positions: 90, disagreements: 30 },
+    newestGameAt: 1_800_000_000_000,
+  };
 
   it('merges new cards into a deck the caller owns', async () => {
     const { id, editToken } = await saved();

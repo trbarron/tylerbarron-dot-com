@@ -65,27 +65,27 @@ export default function DetailedStats({ data, isLoading }: DetailedStatsProps) {
 
   return (
     <div className="mt-8">
-      <div className="grid grid-cols-3 gap-3 max-w-xl mx-auto mb-8">
-        <div className="bg-gray-50 rounded-lg p-3 border-2 border-gray-200">
-          <p className="text-xs text-gray-600 mb-1">Last Week</p>
+      <div className="mx-auto mb-8 grid max-w-xl grid-cols-3 gap-3">
+        <div className="rounded-lg border-2 border-gray-200 bg-gray-50 p-3">
+          <p className="mb-1 text-xs text-gray-600">Last Week</p>
           <p className="text-xl font-bold text-black">{data.last_week_work_time.toFixed(2)}</p>
-          <p className="text-[10px] text-gray-500 mt-0.5">hours</p>
+          <p className="mt-0.5 text-[10px] text-gray-500">hours</p>
         </div>
-        <div className="bg-gray-50 rounded-lg p-3 border-2 border-gray-200">
-          <p className="text-xs text-gray-600 mb-1">Last 30 Days</p>
+        <div className="rounded-lg border-2 border-gray-200 bg-gray-50 p-3">
+          <p className="mb-1 text-xs text-gray-600">Last 30 Days</p>
           <p className="text-xl font-bold text-black">{data.thirty_days_work_time.toFixed(2)}</p>
-          <p className="text-[10px] text-gray-500 mt-0.5">hours</p>
+          <p className="mt-0.5 text-[10px] text-gray-500">hours</p>
         </div>
-        <div className="bg-gray-50 rounded-lg p-3 border-2 border-gray-200">
-          <p className="text-xs text-gray-600 mb-1">Lifetime</p>
+        <div className="rounded-lg border-2 border-gray-200 bg-gray-50 p-3">
+          <p className="mb-1 text-xs text-gray-600">Lifetime</p>
           <p className="text-xl font-bold text-black">{data.lifetime_work_time.toFixed(2)}</p>
-          <p className="text-[10px] text-gray-500 mt-0.5">hours</p>
+          <p className="mt-0.5 text-[10px] text-gray-500">hours</p>
         </div>
       </div>
 
       {data.per_cat_work_time && (
-        <div className="max-w-3xl mx-auto mb-8">
-          <h3 className="text-2xl font-bold mt-8 mb-4">Who Did the Work?</h3>
+        <div className="mx-auto mb-8 max-w-3xl">
+          <h3 className="mt-8 mb-4 text-2xl font-bold">Who Did the Work?</h3>
           <div className="mb-3 flex justify-center gap-6 text-xs text-gray-600">
             <span className="flex items-center gap-1.5">
               <span className="inline-block h-3 w-3 bg-black" /> Checo
@@ -118,9 +118,9 @@ export default function DetailedStats({ data, isLoading }: DetailedStatsProps) {
         </div>
       )}
 
-      <h3 className="text-2xl font-bold mt-8 mb-4">Work Time Distribution (Last 30 Days)</h3>
+      <h3 className="mt-8 mb-4 text-2xl font-bold">Work Time Distribution (Last 30 Days)</h3>
       {data.work_time_histogram && data.work_time_histogram.length > 0 ? (
-        <Suspense fallback={<div className="h-[400px] flex items-center justify-center">Loading chart...</div>}>
+        <Suspense fallback={<div className="flex h-[400px] items-center justify-center">Loading chart...</div>}>
           <WorkTimeChart data={data.work_time_histogram} />
         </Suspense>
       ) : (

@@ -95,7 +95,9 @@ export async function fetchLichessGames(username: string, opts: FetchOptions): P
       whiteElo: toElo(g.players.white.rating),
       blackElo: toElo(g.players.black.rating),
       userColor: white.toLowerCase() === lower ? 'w' : 'b',
-      speed: (['bullet', 'blitz', 'rapid', 'classical', 'correspondence'].includes(g.speed) ? g.speed : 'unknown') as Speed,
+      speed: (['bullet', 'blitz', 'rapid', 'classical', 'correspondence'].includes(g.speed)
+        ? g.speed
+        : 'unknown') as Speed,
       playedAt: g.createdAt,
       startFen: g.initialFen && g.initialFen !== STANDARD_FEN ? g.initialFen : undefined,
       san,

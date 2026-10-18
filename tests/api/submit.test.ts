@@ -117,7 +117,9 @@ describe('Submit Score API', () => {
       for (const username of invalidUsernames) {
         mockRedis.get.mockClear();
 
-        const response = await action(createActionArgs('/api/chesserGuesser/submit', createRequestBody({ ...validSubmission, username })));
+        const response = await action(
+          createActionArgs('/api/chesserGuesser/submit', createRequestBody({ ...validSubmission, username })),
+        );
 
         expect(response.status).toBe(400);
         const result = await response.json();
@@ -145,14 +147,18 @@ describe('Submit Score API', () => {
           .mockResolvedValueOnce('0'); // completed
         mockRedis.mget.mockResolvedValue([null, null, null, null]);
 
-        const response = await action(createActionArgs('/api/chesserGuesser/submit', createRequestBody({ ...validSubmission, username })));
+        const response = await action(
+          createActionArgs('/api/chesserGuesser/submit', createRequestBody({ ...validSubmission, username })),
+        );
 
         expect(response.status).toBe(200);
       }
     });
 
     it('should reject invalid date format', async () => {
-      const response = await action(createActionArgs('/api/chesserGuesser/submit', createRequestBody({ ...validSubmission, date: '2024/01/15' })));
+      const response = await action(
+        createActionArgs('/api/chesserGuesser/submit', createRequestBody({ ...validSubmission, date: '2024/01/15' })),
+      );
 
       expect(response.status).toBe(400);
       const result = await response.json();
@@ -163,7 +169,9 @@ describe('Submit Score API', () => {
       const invalidIndices = [-1, 4, 10, 'invalid'];
 
       for (const puzzleIndex of invalidIndices) {
-        const response = await action(createActionArgs('/api/chesserGuesser/submit', createRequestBody({ ...validSubmission, puzzleIndex })));
+        const response = await action(
+          createActionArgs('/api/chesserGuesser/submit', createRequestBody({ ...validSubmission, puzzleIndex })),
+        );
 
         expect(response.status).toBe(400);
       }
@@ -180,7 +188,9 @@ describe('Submit Score API', () => {
           .mockResolvedValueOnce('0'); // completed
         mockRedis.mget.mockResolvedValue([null, null, null, null]);
 
-        const response = await action(createActionArgs('/api/chesserGuesser/submit', createRequestBody({ ...validSubmission, puzzleIndex: i })));
+        const response = await action(
+          createActionArgs('/api/chesserGuesser/submit', createRequestBody({ ...validSubmission, puzzleIndex: i })),
+        );
 
         expect(response.status).toBe(200);
       }
@@ -206,7 +216,9 @@ describe('Submit Score API', () => {
           .mockResolvedValueOnce('0'); // completed
         mockRedis.mget.mockResolvedValue([null, null, null, null]);
 
-        const response = await action(createActionArgs('/api/chesserGuesser/submit', createRequestBody({ ...validSubmission, guess })));
+        const response = await action(
+          createActionArgs('/api/chesserGuesser/submit', createRequestBody({ ...validSubmission, guess })),
+        );
 
         const result = await response.json();
         expect(result.score).toBeCloseTo(expectedScore, 0);
@@ -220,7 +232,9 @@ describe('Submit Score API', () => {
         .mockResolvedValueOnce('0'); // completed = 0
       mockRedis.mget.mockResolvedValueOnce([null, null, null, null]);
 
-      const response1 = await action(createActionArgs('/api/chesserGuesser/submit', createRequestBody({ ...validSubmission, puzzleIndex: 0 })));
+      const response1 = await action(
+        createActionArgs('/api/chesserGuesser/submit', createRequestBody({ ...validSubmission, puzzleIndex: 0 })),
+      );
 
       const result1 = await response1.json();
       const firstScore = result1.score;
@@ -236,7 +250,9 @@ describe('Submit Score API', () => {
         .mockResolvedValueOnce('1'); // completed = 1
       mockRedis.mget.mockResolvedValueOnce([JSON.stringify({ score: firstScore }), null, null, null]);
 
-      const response2 = await action(createActionArgs('/api/chesserGuesser/submit', createRequestBody({ ...validSubmission, puzzleIndex: 1 })));
+      const response2 = await action(
+        createActionArgs('/api/chesserGuesser/submit', createRequestBody({ ...validSubmission, puzzleIndex: 1 })),
+      );
 
       const result2 = await response2.json();
       expect(result2.totalScore).toBeGreaterThan(firstTotalScore);
@@ -254,13 +270,15 @@ describe('Submit Score API', () => {
         null, // puzzle 3 (current submission)
       ]);
 
-      const response = await action(createActionArgs('/api/chesserGuesser/submit', createRequestBody({ ...validSubmission, puzzleIndex: 3 })));
+      const response = await action(
+        createActionArgs('/api/chesserGuesser/submit', createRequestBody({ ...validSubmission, puzzleIndex: 3 })),
+      );
 
       expect(response.status).toBe(200);
       expect(mockRedis.zadd).toHaveBeenCalledWith(
         'chesserGuesser:leaderboard:2024-01-15',
         expect.any(Number),
-        'testuser123'
+        'testuser123',
       );
     });
 
@@ -276,19 +294,15 @@ describe('Submit Score API', () => {
         null,
       ]);
 
-      const response = await action(createActionArgs('/api/chesserGuesser/submit', createRequestBody({ ...validSubmission, puzzleIndex: 3 })));
+      const response = await action(
+        createActionArgs('/api/chesserGuesser/submit', createRequestBody({ ...validSubmission, puzzleIndex: 3 })),
+      );
       expect(response.status).toBe(200);
 
       const TTL_7_DAYS = 7 * 24 * 60 * 60;
 
       // Check SET NX call has correct TTL
-      expect(mockRedis.set).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.any(String),
-        'EX',
-        TTL_7_DAYS,
-        'NX'
-      );
+      expect(mockRedis.set).toHaveBeenCalledWith(expect.any(String), expect.any(String), 'EX', TTL_7_DAYS, 'NX');
 
       // Check all setex calls have correct TTL
       const setexCalls = mockRedis.setex.mock.calls;
@@ -298,10 +312,7 @@ describe('Submit Score API', () => {
       });
 
       // Check leaderboard expire
-      expect(mockRedis.expire).toHaveBeenCalledWith(
-        'chesserGuesser:leaderboard:2024-01-15',
-        TTL_7_DAYS
-      );
+      expect(mockRedis.expire).toHaveBeenCalledWith('chesserGuesser:leaderboard:2024-01-15', TTL_7_DAYS);
     });
 
     it('should track puzzles completed', async () => {
@@ -319,7 +330,7 @@ describe('Submit Score API', () => {
       expect(mockRedis.setex).toHaveBeenCalledWith(
         `chesserGuesser:completed:2024-01-15:testuser123`,
         expect.any(Number),
-        '1'
+        '1',
       );
     });
 
@@ -344,7 +355,9 @@ describe('Submit Score API', () => {
     });
 
     it('should reject non-POST requests', async () => {
-      const response = await action(createActionArgs('/api/chesserGuesser/submit', createRequestBody(validSubmission, 'GET')));
+      const response = await action(
+        createActionArgs('/api/chesserGuesser/submit', createRequestBody(validSubmission, 'GET')),
+      );
 
       expect(response.status).toBe(405);
       const result = await response.json();
@@ -391,16 +404,18 @@ describe('Submit Score API', () => {
         .mockResolvedValueOnce('0'); // completed = 0
       mockRedis.mget.mockResolvedValueOnce([null, null, null, null]);
 
-      const response = await action(createActionArgs('/api/chesserGuesser/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: 'testuser',
-          date: '2024-01-15',
-          puzzleIndex: 0,
-          guess: 0,
+      const response = await action(
+        createActionArgs('/api/chesserGuesser/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: 'testuser',
+            date: '2024-01-15',
+            puzzleIndex: 0,
+            guess: 0,
+          }),
         }),
-      }));
+      );
 
       const result = await response.json();
       expect(result.score).toBe(0); // Perfect guess (distance = 0)
@@ -409,9 +424,9 @@ describe('Submit Score API', () => {
     it('should handle extreme evaluations', async () => {
       // Puzzle 0 eval is 120 from mockDailyPuzzles
       const extremeCases = [
-        { guess: 120 },  // Perfect match
+        { guess: 120 }, // Perfect match
         { guess: -120 }, // Opposite
-        { guess: 400 },  // Far off
+        { guess: 400 }, // Far off
       ];
 
       for (const { guess } of extremeCases) {
@@ -424,16 +439,18 @@ describe('Submit Score API', () => {
           .mockResolvedValueOnce('0'); // completed = 0
         mockRedis.mget.mockResolvedValue([null, null, null, null]);
 
-        const response = await action(createActionArgs('/api/chesserGuesser/submit', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            username: 'testuser',
-            date: '2024-01-15',
-            puzzleIndex: 0,
-            guess,
+        const response = await action(
+          createActionArgs('/api/chesserGuesser/submit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              username: 'testuser',
+              date: '2024-01-15',
+              puzzleIndex: 0,
+              guess,
+            }),
           }),
-        }));
+        );
 
         const result = await response.json();
         expect(result.score).toBeGreaterThanOrEqual(0);

@@ -17,19 +17,12 @@ interface CardProps {
  * </Card>
  * ```
  */
-export default function Card({
-  children,
-  className = '',
-  onClick,
-}: CardProps) {
+export default function Card({ children, className = '', onClick }: CardProps) {
   const baseClasses = 'bg-white border-4 border-black p-6 mb-4';
   const interactiveClass = onClick ? 'cursor-pointer hover:bg-gray-100 transition-all duration-100' : '';
 
   return (
-    <div
-      className={`${baseClasses} ${interactiveClass} ${className}`}
-      onClick={onClick}
-    >
+    <div className={`${baseClasses} ${interactiveClass} ${className}`} onClick={onClick}>
       {children}
     </div>
   );

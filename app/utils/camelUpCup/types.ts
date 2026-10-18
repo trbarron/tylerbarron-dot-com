@@ -29,13 +29,7 @@ export interface Leaderboard {
   bots: LeaderboardBot[];
 }
 
-export type SubmissionPhase =
-  | "queued"
-  | "validating"
-  | "running"
-  | "complete"
-  | "rejected"
-  | "error";
+export type SubmissionPhase = 'queued' | 'validating' | 'running' | 'complete' | 'rejected' | 'error';
 
 export interface SubmissionStatus {
   id: string;

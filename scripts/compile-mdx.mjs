@@ -29,7 +29,7 @@ async function processMdx(source) {
         // prose-pre styles control the block background. Untagged fences
         // (ASCII diagrams) are left untouched.
         [rehypePrettyCode, { theme: 'github-light', keepBackground: false }],
-        [rehypeImgSize, { dir: "public" }]
+        [rehypeImgSize, { dir: 'public' }],
       ];
       return options;
     },
@@ -42,27 +42,27 @@ async function compileAllMdx() {
   // Output into the app module graph so Vite bundles the compiled posts into
   // the SSR build (via import.meta.glob in app/utils/posts.server.ts). No S3.
   const outputDir = path.join(__dirname, '..', 'app', 'posts', 'compiled');
-  
+
   console.log('📝 Compiling MDX files...');
   console.log(`   Posts directory: ${postsDir}`);
   console.log(`   Output directory: ${outputDir}`);
-  
+
   // Create output directory if it doesn't exist
   await fs.mkdir(outputDir, { recursive: true });
-  
+
   // Read all MDX files
   const files = await fs.readdir(postsDir);
-  const mdxFiles = files.filter(file => file.endsWith('.mdx'));
-  
+  const mdxFiles = files.filter((file) => file.endsWith('.mdx'));
+
   console.log(`   Found ${mdxFiles.length} MDX files`);
-  
+
   // Process each file
   for (const file of mdxFiles) {
     const slug = file.replace('.mdx', '');
     const filePath = path.join(postsDir, file);
-    
+
     console.log(`   ⚙️  Compiling ${slug}...`);
-    
+
     try {
       const source = await fs.readFile(filePath, 'utf-8');
       const { code, frontmatter } = await processMdx(source);
@@ -70,32 +70,33 @@ async function compileAllMdx() {
       // Per-post OG share card (scripts/generate-og-image.py). Only reference
       // it when the PNG actually exists so meta never points at a 404.
       const ogPath = path.join(__dirname, '..', 'public', 'images', 'og', `${slug}.png`);
-      const hasOgImage = await fs.access(ogPath).then(() => true, () => false);
+      const hasOgImage = await fs.access(ogPath).then(
+        () => true,
+        () => false,
+      );
       if (hasOgImage) {
         frontmatter.ogImage = `/images/og/${slug}.png`;
       } else {
-        console.warn(`   ⚠️  ${slug} has no OG card (falls back to the default) — run: python3 scripts/generate-og-image.py`);
+        console.warn(
+          `   ⚠️  ${slug} has no OG card (falls back to the default) — run: python3 scripts/generate-og-image.py`,
+        );
       }
 
       // Write compiled output as JSON
       const outputPath = path.join(outputDir, `${slug}.json`);
-      await fs.writeFile(
-        outputPath,
-        JSON.stringify({ code, frontmatter }, null, 2)
-      );
-      
+      await fs.writeFile(outputPath, JSON.stringify({ code, frontmatter }, null, 2));
+
       console.log(`   ✅ Compiled ${slug}`);
     } catch (error) {
       console.error(`   ❌ Error compiling ${slug}:`, error);
       process.exit(1);
     }
   }
-  
+
   console.log(`\n✨ Successfully compiled ${mdxFiles.length} MDX files!`);
 }
 
-compileAllMdx().catch(error => {
+compileAllMdx().catch((error) => {
   console.error('Fatal error:', error);
   process.exit(1);
 });
-

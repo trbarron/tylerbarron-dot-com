@@ -70,7 +70,10 @@ describe('fetchLichessGames', () => {
   it('drops games at or before `since` even when Lichess sends them anyway', async () => {
     // Seen live: asked for games after a game's createdAt, Lichess still returned that game.
     const since = 1_700_000_000_000;
-    const lines = [lichessGame('newer001', { createdAt: since + 60_000 }), lichessGame('samegame', { createdAt: since })].join('\n');
+    const lines = [
+      lichessGame('newer001', { createdAt: since + 60_000 }),
+      lichessGame('samegame', { createdAt: since }),
+    ].join('\n');
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(streamed([lines])));
     const games = await fetchLichessGames('tyler', { max: 500, excludeBullet: true, since });
     expect(games.map((g) => g.id)).toEqual(['newer001']);
@@ -84,7 +87,11 @@ describe('fetchLichessGames', () => {
   it('skips variants and keeps games from a custom position', async () => {
     const lines = [
       lichessGame('variant1', { variant: 'chess960' }),
-      lichessGame('frompos1', { variant: 'fromPosition', initialFen: '4k3/8/8/8/8/8/4P3/4K3 w - - 0 1', moves: 'e4 Kd7' }),
+      lichessGame('frompos1', {
+        variant: 'fromPosition',
+        initialFen: '4k3/8/8/8/8/8/4P3/4K3 w - - 0 1',
+        moves: 'e4 Kd7',
+      }),
     ].join('\n');
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(streamed([lines])));
     const games = await fetchLichessGames('tyler', { max: 10, excludeBullet: false });
@@ -99,7 +106,9 @@ describe('fetchLichessGames', () => {
 
   it('turns 404 and 429 into readable errors', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('', { status: 404 })));
-    await expect(fetchLichessGames('ghost', { max: 1, excludeBullet: false })).rejects.toThrow('No Lichess player named "ghost".');
+    await expect(fetchLichessGames('ghost', { max: 1, excludeBullet: false })).rejects.toThrow(
+      'No Lichess player named "ghost".',
+    );
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('', { status: 429 })));
     await expect(fetchLichessGames('tyler', { max: 1, excludeBullet: false })).rejects.toThrow(/rate-limiting/);
   });
@@ -153,7 +162,13 @@ describe('fetchChessComGames', () => {
     });
     const games = await fetchChessComGames('tyler', { max: 10, excludeBullet: true });
     expect(games.map((g) => g.id)).toEqual(['4']);
-    expect(games[0]).toMatchObject({ userColor: 'w', whiteElo: 1200, blackElo: 1250, speed: 'blitz', san: ['e4', 'e5', 'Nf3', 'Nc6'] });
+    expect(games[0]).toMatchObject({
+      userColor: 'w',
+      whiteElo: 1200,
+      blackElo: 1250,
+      speed: 'blitz',
+      san: ['e4', 'e5', 'Nf3', 'Nc6'],
+    });
   });
 
   it('with `since`, keeps only newer games and stops at the month that reaches it', async () => {
@@ -171,6 +186,8 @@ describe('fetchChessComGames', () => {
 
   it('turns 404 into a readable error', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('', { status: 404 })));
-    await expect(fetchChessComGames('ghost', { max: 1, excludeBullet: false })).rejects.toThrow('No Chess.com player named "ghost".');
+    await expect(fetchChessComGames('ghost', { max: 1, excludeBullet: false })).rejects.toThrow(
+      'No Chess.com player named "ghost".',
+    );
   });
 });

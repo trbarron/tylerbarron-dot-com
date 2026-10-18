@@ -30,7 +30,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       usernames.push(topUsers[i]);
     }
 
-    const summaryKeys = usernames.map(u => `blunderWatch:summary:${date}:${u}`);
+    const summaryKeys = usernames.map((u) => `blunderWatch:summary:${date}:${u}`);
     const summaryResults = summaryKeys.length > 0 ? await redis.mget(...summaryKeys) : [];
 
     const leaderboard: LeaderboardEntry[] = usernames.map((username, idx) => {
@@ -68,7 +68,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     return Response.json(
       { leaderboard, userRank, totalPlayers, date },
-      { headers: { 'Cache-Control': 'public, max-age=60' } }
+      { headers: { 'Cache-Control': 'public, max-age=60' } },
     );
   } catch (error) {
     console.error('BlunderWatch leaderboard API error:', error);

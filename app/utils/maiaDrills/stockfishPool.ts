@@ -30,7 +30,9 @@ export function parseCandidateScores(lines: string[]): Map<string, number> {
     const value = Number(score[2]);
     const cp =
       score[1] === 'mate'
-        ? value > 0 ? SCORE_CLAMP : -SCORE_CLAMP
+        ? value > 0
+          ? SCORE_CLAMP
+          : -SCORE_CLAMP
         : Math.max(-SCORE_CLAMP, Math.min(SCORE_CLAMP, value));
     scores.set(pv[1], cp);
   }
@@ -169,7 +171,7 @@ export class StockfishPool {
    * iOS refused Maia's memory ("Out of memory") with four of them running.
    */
   static forDevice(): StockfishPool {
-    const cores = typeof navigator === 'undefined' ? 2 : navigator.hardwareConcurrency ?? 2;
+    const cores = typeof navigator === 'undefined' ? 2 : (navigator.hardwareConcurrency ?? 2);
     return new StockfishPool(Math.max(1, Math.min(cores - 1, isHandheld() ? 2 : 4)));
   }
 
