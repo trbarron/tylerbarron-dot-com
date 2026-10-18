@@ -328,9 +328,9 @@ export default function MaiaDrills() {
   };
 
   return (
-    <>
+    <div className="relative z-10 flex min-h-screen flex-col">
       <Navbar />
-      <main className="relative z-10 mx-auto flex w-full max-w-2xl flex-col gap-6 p-4">
+      <main className="mx-auto flex w-full max-w-2xl flex-grow flex-col gap-6 p-4">
         <div className="border-4 border-black bg-white">
           <div
             className={`bg-black px-6 py-5 text-white ${deckId ? "" : "border-b-4 border-black"}`}
@@ -426,6 +426,6 @@ export default function MaiaDrills() {
         )}
       </main>
       <Footer />
-    </>
+    </div>
   );
 }
