@@ -11,11 +11,13 @@ import {
   formatEval,
   gradeByScores,
   gradeKnown,
+  gradingMoves,
   initialQueue,
   isAlsoGood,
   answeredRight,
   recordProgress,
   reveal as revealAnswer,
+  withSearchEvals,
   type Answer,
   type Guess,
 } from '~/utils/maiaDrills/drill';
@@ -77,21 +79,14 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
     [card, deckId]
   );
 
-  const scoreGuess = async (
-    fen: string,
-    target: string,
-    guess: string
-  ): Promise<{ target: number; guess: number } | null> => {
+  const scoreMoves = async (fen: string, moves: string[]): Promise<Map<string, number> | null> => {
     if (!engineRef.current) {
       const { StockfishPool } = await import('~/utils/maiaDrills/stockfishPool');
       engineRef.current = new StockfishPool(1);
     }
     try {
       await engineRef.current.ready();
-      const scores = await engineRef.current.score(fen, [target, guess], deck.settings.depth);
-      const t = scores.get(target);
-      const g = scores.get(guess);
-      return t === undefined || g === undefined ? null : { target: t, guess: g };
+      return await engineRef.current.score(fen, moves, deck.settings.depth);
     } catch {
       return null;
     }
@@ -103,17 +98,27 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
     const guess: Guess = { uci: move.from + move.to + (move.promotion ?? ''), san: move.san };
 
     let graded = gradeKnown(card, guess);
+    let scores: Map<string, number> | null = null;
     if (!graded) {
       // A third move: it might be just as good as the stronger player's choice.
+      // One search scores it with the target, the game move and any earlier
+      // try, so every eval the answer shows agrees with the verdict.
       setChecking(true);
-      graded = gradeByScores(guess, await scoreGuess(card.fen, card.target.uci, guess.uci));
+      scores = await scoreMoves(card.fen, gradingMoves(card, [...misses, guess]));
+      const target = scores?.get(card.target.uci);
+      const mine = scores?.get(guess.uci);
+      graded = gradeByScores(
+        guess,
+        target === undefined || mine === undefined ? null : { target, guess: mine },
+        deck.settings.alsoGoodWin
+      );
       setChecking(false);
     }
 
     const outcome = afterTry(misses, graded.verdict, graded.guess);
     // A retry gives no hint: the board resets and the card stays up.
     if (outcome.kind === 'retry') setMisses(outcome.misses);
-    else record(outcome.answer);
+    else record(scores ? withSearchEvals(outcome.answer, card, scores) : outcome.answer);
   };
 
   // The board rebuilds itself whenever its onMove changes identity, which on
@@ -236,12 +241,12 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
                 <li>
                   <span className="inline-block w-3 bg-green-600">&nbsp;</span>{' '}
                   A {card.targetElo} plays <strong className="font-mono">{card.target.san}</strong>{' '}
-                  <span className="text-gray-600">(Maia {Math.round(card.target.prob * 100)}%, {formatEval(card.evalTarget, card.color)})</span>
+                  <span className="text-gray-600">(Maia {Math.round(card.target.prob * 100)}%, {formatEval(answer.evals?.target ?? card.evalTarget, card.color)})</span>
                 </li>
                 <li>
                   <span className="inline-block w-3 bg-red-600">&nbsp;</span>{' '}
                   In the game you played <strong className="font-mono">{card.played.san}</strong>{' '}
-                  <span className="text-gray-600">({formatEval(card.evalPlayed, card.color)})</span>
+                  <span className="text-gray-600">({formatEval(answer.evals?.played ?? card.evalPlayed, card.color)})</span>
                 </li>
                 {extraGuesses(card, answer).map((g) => (
                   <li key={g.uci}>

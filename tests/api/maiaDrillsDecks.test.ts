@@ -462,6 +462,23 @@ describe('saving the fields that adding relies on', () => {
     expect(deck.stats.lost).toBe(4);
   });
 
+  it('keeps win-chance settings, and still takes a cp-only deck from before them', async () => {
+    const winSettings = { delta: 200, thresholdWin: 10, alsoGoodWin: 4, depth: 12, skipMoves: 0 };
+    const { body } = await post({ ...deckBody, settings: winSettings });
+    expect((await get(`id=${body.id}`)).body.deck.settings).toEqual(winSettings);
+    // deckBody itself is the older shape: thresholdCp and no alsoGoodWin.
+    expect((await post(deckBody)).status).toBe(201);
+  });
+
+  it('wants exactly one error threshold, in range', async () => {
+    const { thresholdCp: _cp, ...noThreshold } = deckBody.settings;
+    const settings = (s: object) => post({ ...deckBody, settings: s });
+    expect((await settings(noThreshold)).status).toBe(400);
+    expect((await settings({ ...deckBody.settings, thresholdWin: 10 })).status).toBe(400);
+    expect((await settings({ ...noThreshold, thresholdWin: 0 })).status).toBe(400);
+    expect((await settings({ ...noThreshold, thresholdWin: 10, alsoGoodWin: 25 })).status).toBe(400);
+  });
+
   it('rejects malformed ones', async () => {
     expect((await post({ ...deckBody, settings: { ...deckBody.settings, skipLost: 'yes' } })).status).toBe(400);
     expect((await post({ ...deckBody, stats: { ...deckBody.stats, lost: -1 } })).status).toBe(400);

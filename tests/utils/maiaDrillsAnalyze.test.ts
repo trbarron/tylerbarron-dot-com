@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect, vi } from 'vitest';
-import { alreadyLost, analyzeGames, userMoves, type AnalysisProgress } from '~/utils/maiaDrills/analyze';
+import { alreadyLost, analyzeGames, isError, userMoves, type AnalysisProgress } from '~/utils/maiaDrills/analyze';
 import type { MaiaEngine, MaiaQuery } from '~/utils/maiaDrills/maiaEngine';
 import type { StockfishPool } from '~/utils/maiaDrills/stockfishPool';
 import { DEFAULT_SETTINGS, LOST_CP, type SourceGame } from '~/utils/maiaDrills/types';
@@ -90,22 +90,39 @@ describe('analyzeGames', () => {
     expect(seen.every((q) => q.eloSelf === 1700 && q.eloOppo === 1450)).toBe(true);
   });
 
-  it('keeps a gap equal to the threshold and drops one just under it', async () => {
+  it('keeps a move that costs the threshold in win chance and drops one just under it', async () => {
+    // From level, 10 points of win chance is ~110 cp.
     const maia = () => fakeMaia({ [BEFORE_NF6]: 'g7g6' });
-    const at = await analyzeGames([game], DEFAULT_SETTINGS, { maia: maia(), stockfish: fakeStockfish({ g7g6: 150, g8f6: 0 }) }, {});
-    const under = await analyzeGames([game], DEFAULT_SETTINGS, { maia: maia(), stockfish: fakeStockfish({ g7g6: 149, g8f6: 0 }) }, {});
+    const at = await analyzeGames([game], DEFAULT_SETTINGS, { maia: maia(), stockfish: fakeStockfish({ g7g6: 111, g8f6: 0 }) }, {});
+    const under = await analyzeGames([game], DEFAULT_SETTINGS, { maia: maia(), stockfish: fakeStockfish({ g7g6: 110, g8f6: 0 }) }, {});
     expect(at.cards).toHaveLength(1);
     expect(under.cards).toHaveLength(0);
+  });
+
+  it('needs a bigger cp gap to count when one side is already winning', () => {
+    // 150 cp matters from level but barely moves the needle at +6.
+    expect(isError(150, 0, DEFAULT_SETTINGS)).toBe(true);
+    expect(isError(750, 600, DEFAULT_SETTINGS)).toBe(false);
+  });
+
+  it('keeps the cp rule for decks built before win chance', () => {
+    const legacy = { delta: 200, thresholdCp: 150, depth: 12, skipMoves: 0 };
+    expect(isError(150, 0, legacy)).toBe(true);
+    expect(isError(149, 0, legacy)).toBe(false);
+    expect(isError(750, 600, legacy)).toBe(true);
   });
 
   it('leaves out an error made when already lost, by default, and counts it', async () => {
     const maia = () => fakeMaia({ [BEFORE_NF6]: 'g7g6' });
     const lost = { g7g6: -LOST_CP, g8f6: -1000 };
-    const on = await analyzeGames([game], DEFAULT_SETTINGS, { maia: maia(), stockfish: fakeStockfish(lost) }, {});
+    // From −7 to −10 is under 5 points of win chance, so only a low threshold
+    // would count it; the already-lost filter is what has to drop it then.
+    const low = { ...DEFAULT_SETTINGS, thresholdWin: 2 };
+    const on = await analyzeGames([game], low, { maia: maia(), stockfish: fakeStockfish(lost) }, {});
     expect(on.cards).toHaveLength(0);
     expect(on.stats.lost).toBe(1);
     // Decks from before the option (no skipLost) kept every error.
-    const off = await analyzeGames([game], { ...DEFAULT_SETTINGS, skipLost: undefined }, { maia: maia(), stockfish: fakeStockfish(lost) }, {});
+    const off = await analyzeGames([game], { ...low, skipLost: undefined }, { maia: maia(), stockfish: fakeStockfish(lost) }, {});
     expect(off.cards).toHaveLength(1);
     expect(off.stats.lost).toBeUndefined();
   });

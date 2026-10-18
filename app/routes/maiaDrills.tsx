@@ -9,7 +9,7 @@ import Drill from "~/components/MaiaDrills/Drill";
 import { buildMeta } from "~/utils/seo";
 import { loadEditToken, saveEditToken } from "~/utils/maiaDrills/localStorage";
 import { trackDrillStart, trackFavorite } from "~/utils/maiaDrills/tracking";
-import type { Deck, DeckSummary, GameSource } from "~/utils/maiaDrills/types";
+import { DEFAULT_SETTINGS, type Deck, type DeckSummary, type GameSource } from "~/utils/maiaDrills/types";
 
 import chessgroundBase from "../styles/chessground.base.css?url";
 import chessgroundBrown from "../styles/chessground.brown.css?url";
@@ -35,8 +35,15 @@ const SOURCE_NAMES: Record<GameSource, string> = {
   chesscom: "Chess.com",
 };
 
+/** The deck's error threshold: win chance, or cp on decks built before win chance. */
+function describeThreshold(settings: Deck["settings"]): string {
+  return settings.thresholdWin === undefined && settings.thresholdCp !== undefined
+    ? `≥${settings.thresholdCp} cp`
+    : `≥${settings.thresholdWin ?? DEFAULT_SETTINGS.thresholdWin}% win chance`;
+}
+
 function describeSettings(d: Pick<Deck, "settings">): string {
-  return `+${d.settings.delta} rating · ≥${d.settings.thresholdCp} cp · depth ${d.settings.depth}`;
+  return `+${d.settings.delta} rating · ${describeThreshold(d.settings)} · depth ${d.settings.depth}`;
 }
 
 function Panel({
@@ -191,8 +198,7 @@ function DeckView({
         <p className="mt-2 text-sm text-gray-700">
           {stats.positions.toLocaleString()} moves from {stats.games} games.
           Maia disagreed on {stats.disagreements.toLocaleString()} and{" "}
-          {deck.cards.length} of those were worth ≥{deck.settings.thresholdCp}{" "}
-          cp.
+          {deck.cards.length} of those cost {describeThreshold(deck.settings)}.
           {stats.lost
             ? ` ${stats.lost.toLocaleString()} from already-lost positions were skipped.`
             : ""}

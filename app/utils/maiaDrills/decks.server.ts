@@ -74,13 +74,30 @@ const isInt = (v: unknown, min: number, max: number): v is number =>
 
 function validateSettings(raw: unknown): AnalysisSettings | null {
   if (typeof raw !== 'object' || raw === null) return null;
-  const { delta, thresholdCp, depth, skipMoves, skipLost } = raw as Record<string, unknown>;
+  const { delta, thresholdWin, thresholdCp, alsoGoodWin, depth, skipMoves, skipLost } = raw as Record<
+    string,
+    unknown
+  >;
   if (!isInt(delta, LIMITS.delta.min, LIMITS.delta.max)) return null;
-  if (!isInt(thresholdCp, LIMITS.thresholdCp.min, LIMITS.thresholdCp.max)) return null;
+  // A deck has one error threshold: win chance, or cp on decks built before it.
+  if ((thresholdWin === undefined) === (thresholdCp === undefined)) return null;
+  if (thresholdWin !== undefined && !isInt(thresholdWin, LIMITS.thresholdWin.min, LIMITS.thresholdWin.max)) {
+    return null;
+  }
+  if (thresholdCp !== undefined && !isInt(thresholdCp, LIMITS.thresholdCp.min, LIMITS.thresholdCp.max)) return null;
+  if (alsoGoodWin !== undefined && !isInt(alsoGoodWin, LIMITS.alsoGoodWin.min, LIMITS.alsoGoodWin.max)) return null;
   if (!isInt(depth, LIMITS.depth.min, LIMITS.depth.max)) return null;
   if (!isInt(skipMoves, LIMITS.skipMoves.min, LIMITS.skipMoves.max)) return null;
   if (skipLost !== undefined && typeof skipLost !== 'boolean') return null;
-  return { delta, thresholdCp, depth, skipMoves, ...(skipLost !== undefined && { skipLost }) };
+  return {
+    delta,
+    ...(thresholdWin !== undefined && { thresholdWin }),
+    ...(thresholdCp !== undefined && { thresholdCp }),
+    ...(alsoGoodWin !== undefined && { alsoGoodWin }),
+    depth,
+    skipMoves,
+    ...(skipLost !== undefined && { skipLost }),
+  };
 }
 
 function validateStats(raw: unknown): DeckStats | null {

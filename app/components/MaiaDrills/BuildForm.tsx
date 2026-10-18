@@ -25,14 +25,16 @@ function clampInt(value: string, min: number, max: number, fallback: number): nu
   return Number.isFinite(n) ? Math.max(min, Math.min(max, n)) : fallback;
 }
 
-type SettingField = 'delta' | 'thresholdCp' | 'depth' | 'skipMoves';
+type SettingField = 'delta' | 'thresholdWin' | 'alsoGoodWin' | 'depth' | 'skipMoves';
 type NumberField = 'maxGames' | SettingField;
 
 function toFields(maxGames: number, settings: AnalysisSettings): Record<NumberField, string> {
   return {
     maxGames: String(maxGames),
     delta: String(settings.delta),
-    thresholdCp: String(settings.thresholdCp),
+    // Saved settings from before win chance have only thresholdCp; they get the default.
+    thresholdWin: String(settings.thresholdWin ?? DEFAULT_SETTINGS.thresholdWin),
+    alsoGoodWin: String(settings.alsoGoodWin ?? DEFAULT_SETTINGS.alsoGoodWin),
     depth: String(settings.depth),
     skipMoves: String(settings.skipMoves),
   };
@@ -43,12 +45,13 @@ function fromFields(
   skipLost: boolean
 ): { maxGames: number; settings: AnalysisSettings } {
   const get = (key: SettingField) =>
-    clampInt(fields[key], LIMITS[key].min, LIMITS[key].max, DEFAULT_SETTINGS[key]);
+    clampInt(fields[key], LIMITS[key].min, LIMITS[key].max, DEFAULT_SETTINGS[key] ?? LIMITS[key].min);
   return {
     maxGames: clampInt(fields.maxGames, LIMITS.games.min, LIMITS.games.max, 200),
     settings: {
       delta: get('delta'),
-      thresholdCp: get('thresholdCp'),
+      thresholdWin: get('thresholdWin'),
+      alsoGoodWin: get('alsoGoodWin'),
       depth: get('depth'),
       skipMoves: get('skipMoves'),
       skipLost,
@@ -195,22 +198,23 @@ export default function BuildForm({ onBuilt }: BuildFormProps) {
           </div>
           <div>
             <label htmlFor="md-threshold" className={labelClass}>
-              Min. difference (centipawns)
+              Min. win chance lost (%)
             </label>
             <input
               id="md-threshold"
               type="number"
-              step={25}
+              step={1}
               className={inputClass}
-              value={fields.thresholdCp}
+              value={fields.thresholdWin}
               disabled={busy}
-              onChange={setField('thresholdCp')}
+              onChange={setField('thresholdWin')}
             />
           </div>
         </div>
         <p className="mt-3 font-neo text-sm text-gray-700">
           A move is an error when a player <strong>{fields.delta || 0} points</strong> stronger would have played
-          something else, and Stockfish rates their move at least <strong>{fields.thresholdCp || 0} cp</strong> better.
+          something else, and Stockfish says yours cost at least <strong>{fields.thresholdWin || 0}%</strong> of your
+          winning chances.
           {source === 'chesscom' && ' Maia was trained on Lichess ratings, which run higher than Chess.com’s; consider a bigger gap.'}
         </p>
 
@@ -230,6 +234,20 @@ export default function BuildForm({ onBuilt }: BuildFormProps) {
                 value={fields.depth}
                 disabled={busy}
                 onChange={setField('depth')}
+              />
+            </div>
+            <div>
+              <label htmlFor="md-also-good" className={labelClass}>
+                “Also good” margin (%)
+              </label>
+              <input
+                id="md-also-good"
+                type="number"
+                step={1}
+                className={inputClass}
+                value={fields.alsoGoodWin}
+                disabled={busy}
+                onChange={setField('alsoGoodWin')}
               />
             </div>
             <div>
@@ -266,6 +284,11 @@ export default function BuildForm({ onBuilt }: BuildFormProps) {
               Skip positions you’d already lost
             </label>
           </div>
+          <p className="mt-3 font-neo text-sm text-gray-700">
+            In a drill, a different move counts as also good when it’s within{' '}
+            <strong>{fields.alsoGoodWin || 0}%</strong> win chance of the stronger move. Both percentages default to
+            what Lichess uses for “Learn from your mistakes”.
+          </p>
         </details>
       </fieldset>
 
