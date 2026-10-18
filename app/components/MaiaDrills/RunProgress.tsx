@@ -19,7 +19,7 @@ interface ProgressBarProps {
   small?: boolean;
 }
 
-function ProgressBar({ value, max, label, note, small }: ProgressBarProps) {
+export function ProgressBar({ value, max, label, note, small }: ProgressBarProps) {
   const pct = max > 0 ? Math.min(100, (value / max) * 100) : 0;
   return (
     <div>
