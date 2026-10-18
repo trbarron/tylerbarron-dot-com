@@ -366,14 +366,16 @@ function Component() {
 }
 ```
 
-### Pre-Commit Checks
+### Checks
 
-All commits must pass:
+CI runs these on every PR and push, and master won't deploy unless they pass. Run them before pushing:
 ```bash
-npm run lint        # ESLint validation
-npm run typecheck   # TypeScript compilation
-npm run format      # Prettier formatting (auto-fix)
+npm run lint          # ESLint
+npm run typecheck     # TypeScript
+npm run format        # Prettier, fixes in place (CI runs npm run format:check)
 ```
+
+Prettier's settings live under `prettier` in `package.json` (single quotes, 120 columns, Tailwind class order). Markdown and MDX are excluded in `.prettierignore`, since reformatting prose can change how it reads. Formatting-only commits go in `.git-blame-ignore-revs`.
 
 ## Testing Standards
 

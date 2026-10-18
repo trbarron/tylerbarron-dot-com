@@ -44,6 +44,27 @@ jobs:
       - name: 🔬 Lint
         run: npm run lint
 
+  format:
+    name: ✨ Prettier
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v7
+
+      - name: ⎔ Setup node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: ./package-lock.json
+
+      - name: 📥 Install deps
+        run: npm ci
+
+      # Fails on unformatted files; fix locally with npm run format.
+      - name: ✨ Check formatting
+        run: npm run format:check
+
   typecheck:
     name: ʦ TypeScript
     runs-on: ubuntu-latest
@@ -85,7 +106,7 @@ jobs:
   deploy:
     name: 🚀 Deploy
     runs-on: ubuntu-latest
-    needs: [lint, typecheck, og-cards]
+    needs: [lint, format, typecheck, og-cards]
     # Only master deploys. PRs run lint + typecheck above and stop here, so a PR
     # can never publish assets or overwrite production.
     if: github.ref == 'refs/heads/master'
