@@ -3,7 +3,8 @@
 // See docs/maia-drills.md, "Drill grading".
 
 import type { CardProgress } from './localStorage';
-import type { DrillCard } from './types';
+import { DEFAULT_SETTINGS, type DrillCard } from './types';
+import { winDrop } from './winChance';
 
 export type Verdict = 'correct' | 'also-good' | 'wrong' | 'revealed';
 
@@ -20,6 +21,13 @@ export interface Answer {
   guesses: Guess[];
   /** Right or not, whether it came on the first try; shown in the verdict and sent to analytics. */
   firstTry: boolean;
+  /**
+   * The stronger move's and the game move's evals from the search that graded
+   * the last try, when one ran. Shown in place of the deck's own evals so the
+   * numbers on screen agree with the verdict: the same move scores tens of cp
+   * apart from one search to the next.
+   */
+  evals?: { target: number; played: number };
 }
 
 /**
@@ -42,8 +50,6 @@ export function analysisUrl(card: Pick<DrillCard, 'fen' | 'color'>): string {
   return `https://lichess.org/analysis/standard/${card.fen.replace(/ /g, '_')}?color=${card.color === 'w' ? 'white' : 'black'}`;
 }
 
-/** A move within this many cp of the stronger player's choice counts too. */
-export const ALSO_GOOD_MARGIN = 30;
 /** Tries per card. A miss before the last one just resets the board, with no hint. */
 export const MAX_TRIES = 2;
 
@@ -60,16 +66,40 @@ export function gradeKnown(card: DrillCard, guess: Guess): { verdict: Verdict; g
 
 /**
  * Grade a move from one Stockfish search of it and the target, so the two are
- * compared like for like. `null` means it couldn't say, which counts as wrong.
+ * compared like for like: it's also good when it gives up at most `marginWin`
+ * points of win chance (the deck's `alsoGoodWin`). Win chance rather than cp,
+ * so a move that keeps a won game won counts even when its cp score trails.
+ * `null` means Stockfish couldn't say, which counts as wrong.
  */
 export function gradeByScores(
   guess: Guess,
-  scores: { target: number; guess: number } | null
+  scores: { target: number; guess: number } | null,
+  marginWin: number = DEFAULT_SETTINGS.alsoGoodWin!
 ): { verdict: Verdict; guess: Guess } {
   if (!scores) return { verdict: 'wrong', guess };
   return {
-    verdict: scores.target - scores.guess <= ALSO_GOOD_MARGIN ? 'also-good' : 'wrong',
+    verdict: winDrop(scores.target, scores.guess) <= marginWin ? 'also-good' : 'wrong',
     guess: { ...guess, eval: scores.guess },
+  };
+}
+
+/** The moves the grading search scores together: the target, the game move and every try, once each. */
+export function gradingMoves(card: DrillCard, tries: Guess[]): string[] {
+  return [...new Set([card.target.uci, card.played.uci, ...tries.map((g) => g.uci)])];
+}
+
+/**
+ * Put one search's scores on a finished answer: the target's and game move's
+ * evals, and each try's, so everything shown comes from the search that
+ * decided the verdict.
+ */
+export function withSearchEvals(answer: Answer, card: DrillCard, scores: Map<string, number>): Answer {
+  const target = scores.get(card.target.uci);
+  const played = scores.get(card.played.uci);
+  return {
+    ...answer,
+    guesses: answer.guesses.map((g) => (scores.has(g.uci) ? { ...g, eval: scores.get(g.uci) } : g)),
+    ...(target !== undefined && played !== undefined && { evals: { target, played } }),
   };
 }
 

@@ -1,6 +1,7 @@
 // The analysis pipeline: for each of the user's moves, ask Maia what a player
 // `delta` points stronger would have played, and when that differs, ask
-// Stockfish whether the difference is worth at least `thresholdCp`.
+// Stockfish whether the difference costs at least `thresholdWin` points of
+// win chance (`thresholdCp` centipawns on older decks).
 // See docs/maia-drills.md, "Error definition".
 //
 // Maia runs one batched inference per game; Stockfish jobs for that game are
@@ -9,7 +10,16 @@
 import { Chess } from 'chess.js';
 import type { MaiaEngine, MaiaQuery } from './maiaEngine';
 import type { StockfishPool } from './stockfishPool';
-import { LOST_CP, MAIA_ELO_RANGE, type AnalysisSettings, type DeckStats, type DrillCard, type SourceGame } from './types';
+import {
+  DEFAULT_SETTINGS,
+  LOST_CP,
+  MAIA_ELO_RANGE,
+  type AnalysisSettings,
+  type DeckStats,
+  type DrillCard,
+  type SourceGame,
+} from './types';
+import { winDrop } from './winChance';
 
 /** Stockfish jobs allowed in flight before Maia waits for the pool to catch up. */
 const MAX_OUTSTANDING_JOBS = 48;
@@ -86,6 +96,18 @@ export function legalUci(fen: string): string[] {
 
 function sanOf(fen: string, uci: string): string {
   return new Chess(fen).move({ from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci[4] }).san;
+}
+
+/**
+ * Whether the game move is worse enough than Maia's to make a card, both cp
+ * from the mover's side. Win chance by default; a deck that only has a
+ * centipawn threshold (built before win chance) keeps using it.
+ */
+export function isError(evalTarget: number, evalPlayed: number, settings: AnalysisSettings): boolean {
+  if (settings.thresholdWin === undefined && settings.thresholdCp !== undefined) {
+    return evalTarget - evalPlayed >= settings.thresholdCp;
+  }
+  return winDrop(evalTarget, evalPlayed) >= (settings.thresholdWin ?? DEFAULT_SETTINGS.thresholdWin!);
 }
 
 /** Down at least LOST_CP both before (the stronger move) and after (the game move), from the mover's side. */
@@ -173,7 +195,7 @@ export async function analyzeGames(
           const evalTarget = scores.get(top.uci);
           const evalPlayed = scores.get(c.played.uci);
           if (evalTarget === undefined || evalPlayed === undefined) return;
-          if (evalTarget - evalPlayed < settings.thresholdCp) return;
+          if (!isError(evalTarget, evalPlayed, settings)) return;
           if (settings.skipLost && alreadyLost(evalTarget, evalPlayed)) {
             stats.lost = (stats.lost ?? 0) + 1;
             return;

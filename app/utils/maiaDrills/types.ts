@@ -24,8 +24,19 @@ export interface SourceGame {
 export interface AnalysisSettings {
   /** Rating points added to the user's rating to get Maia's rating. */
   delta: number;
-  /** Minimum centipawn gap between Maia's move and the user's to count as an error. */
-  thresholdCp: number;
+  /**
+   * Minimum win chance (percentage points, see winChance.ts) the user's move
+   * gives up against Maia's to count as an error. Decks built before this
+   * existed have `thresholdCp` instead and keep using it when games are added.
+   */
+  thresholdWin?: number;
+  /** Older decks' rule: minimum centipawn gap between Maia's move and the user's. */
+  thresholdCp?: number;
+  /**
+   * In a drill, a move within this many points of win chance of Maia's counts
+   * as also good. Absent on older decks, which get the default.
+   */
+  alsoGoodWin?: number;
   /** Stockfish search depth. */
   depth: number;
   /** User moves before this move number are skipped. */
@@ -110,9 +121,11 @@ export interface DeckSummary {
   createdAt: string;
 }
 
+// Win-chance defaults match Lichess's "Learn from your mistakes".
 export const DEFAULT_SETTINGS: AnalysisSettings = {
   delta: 200,
-  thresholdCp: 150,
+  thresholdWin: 10,
+  alsoGoodWin: 4,
   depth: 12,
   skipMoves: 0,
   skipLost: true,
@@ -121,6 +134,8 @@ export const DEFAULT_SETTINGS: AnalysisSettings = {
 /** Bounds shared by the form and the server-side validation. */
 export const LIMITS = {
   delta: { min: 0, max: 1000 },
+  thresholdWin: { min: 1, max: 50 },
+  alsoGoodWin: { min: 0, max: 20 },
   thresholdCp: { min: 25, max: 1000 },
   depth: { min: 6, max: 20 },
   skipMoves: { min: 0, max: 30 },

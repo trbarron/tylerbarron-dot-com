@@ -1,12 +1,11 @@
 /**
- * Maia Drills flashcard rules: grading, the two-try rule (a first miss gives
+ * Maia Drills flashcard rules: grading by win chance, the two-try rule (a first miss gives
  * no hint, a second reveals), scoring, and card order (once per round, misses
  * first next round).
  */
 
 import { describe, it, expect } from 'vitest';
 import {
-  ALSO_GOOD_MARGIN,
   MAX_TRIES,
   advanceQueue,
   afterTry,
@@ -15,11 +14,13 @@ import {
   formatEval,
   gradeByScores,
   gradeKnown,
+  gradingMoves,
   initialQueue,
   isAlsoGood,
   answeredRight,
   recordProgress,
   reveal,
+  withSearchEvals,
   type Answer,
   type Guess,
 } from '~/utils/maiaDrills/drill';
@@ -47,13 +48,20 @@ describe('grading', () => {
     expect(gradeKnown(card, other)).toBeNull();
   });
 
-  it('accepts a move within the margin, or better, as also good', () => {
-    expect(gradeByScores(other, { target: 50, guess: 50 - ALSO_GOOD_MARGIN })).toEqual({
+  it('accepts a move within 4 points of win chance, or better, as also good', () => {
+    // From level, 4 points is ~44 cp.
+    expect(gradeByScores(other, { target: 50, guess: 10 })).toEqual({
       verdict: 'also-good',
-      guess: { ...other, eval: 50 - ALSO_GOOD_MARGIN },
+      guess: { ...other, eval: 10 },
     });
     expect(gradeByScores(other, { target: 50, guess: 90 }).verdict).toBe('also-good');
-    expect(gradeByScores(other, { target: 50, guess: 49 - ALSO_GOOD_MARGIN }).verdict).toBe('wrong');
+    expect(gradeByScores(other, { target: 50, guess: -10 }).verdict).toBe('wrong');
+  });
+
+  it('accepts a move that keeps a won position won even when its cp trails', () => {
+    // A reported card: Re3+ scored ~0.5 ahead of h3 with Black up ~5.
+    expect(gradeByScores(other, { target: 560, guess: 510 }).verdict).toBe('also-good');
+    expect(gradeByScores(other, { target: 560, guess: 510 }, 1).verdict).toBe('wrong');
   });
 
   it('counts an engine failure as wrong rather than guessing', () => {
@@ -150,6 +158,26 @@ describe('answer display', () => {
     expect(formatEval(1000, 'w')).toBe('White is winning');
     expect(formatEval(1000, 'b')).toBe('Black is winning');
     expect(formatEval(-1000, 'b')).toBe('White is winning');
+  });
+
+  it('scores the target, the game move and every try in one search, once each', () => {
+    expect(gradingMoves(card, [other, { ...other }, gameMove])).toEqual(['f1b5', 'a2a3', 'h2h3']);
+  });
+
+  it('shows every eval from the search that graded the answer', () => {
+    const answer: Answer = { verdict: 'also-good', guesses: [{ ...other, eval: 0 }], firstTry: true };
+    const scores = new Map([
+      ['f1b5', 60],
+      ['a2a3', -120],
+      ['h2h3', 40],
+    ]);
+    expect(withSearchEvals(answer, card, scores)).toEqual({
+      ...answer,
+      guesses: [{ ...other, eval: 40 }],
+      evals: { target: 60, played: -120 },
+    });
+    // A search that missed a move leaves the deck's evals to be shown.
+    expect(withSearchEvals(answer, card, new Map([['h2h3', 40]])).evals).toBeUndefined();
   });
 
   it('lists only tries that aren’t already drawn, once each', () => {
