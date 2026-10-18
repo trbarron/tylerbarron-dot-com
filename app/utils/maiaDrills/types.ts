@@ -42,8 +42,10 @@ export interface AnalysisSettings {
   /** User moves before this move number are skipped. */
   skipMoves: number;
   /**
-   * Leave out errors made when already lost (see LOST_CP). Absent on decks
-   * built before the option existed, which kept every error.
+   * Leave out errors made when already lost (see LOST_CP). Only centipawn
+   * decks need it: from −7 a move can't give up 10 points of win chance, so
+   * win-chance decks don't set it. Absent on decks from before it existed,
+   * which kept every error.
    */
   skipLost?: boolean;
 }
@@ -128,7 +130,6 @@ export const DEFAULT_SETTINGS: AnalysisSettings = {
   alsoGoodWin: 4,
   depth: 12,
   skipMoves: 0,
-  skipLost: true,
 };
 
 /** Bounds shared by the form and the server-side validation. */
@@ -140,7 +141,7 @@ export const LIMITS = {
   depth: { min: 6, max: 20 },
   skipMoves: { min: 0, max: 30 },
   games: { min: 1, max: 500 },
-  cardsPerDeck: 400,
+  cardsPerDeck: 1000,
 } as const;
 
 /** Maia's training data thins out beyond this range. */

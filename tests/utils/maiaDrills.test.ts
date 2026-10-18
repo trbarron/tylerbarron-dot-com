@@ -19,7 +19,7 @@ import { speedFromTimeControl } from '~/utils/maiaDrills/gameSources';
 import { clampElo, userMoves } from '~/utils/maiaDrills/analyze';
 import { validateDeck } from '~/utils/maiaDrills/decks.server';
 import { isHandheld } from '~/utils/maiaDrills/device';
-import type { DrillCard, SourceGame } from '~/utils/maiaDrills/types';
+import { LIMITS, type DrillCard, type SourceGame } from '~/utils/maiaDrills/types';
 
 vi.mock('~/utils/redis.server', () => ({ getRedisClient: vi.fn() }));
 // stockfishPool imports the worker factory; nothing here constructs a worker.
@@ -180,7 +180,7 @@ describe('validateDeck', () => {
     ['bad uci', { ...deck, cards: [{ ...card, played: { uci: 'z9z9', san: 'a3' } }] }],
     ['non-https link', { ...deck, cards: [{ ...card, gameUrl: 'javascript:alert(1)' }] }],
     ['duplicate ids', { ...deck, cards: [card, card] }],
-    ['too many cards', { ...deck, cards: Array.from({ length: 401 }, (_, i) => ({ ...card, id: `g-${i}` })) }],
+    ['too many cards', { ...deck, cards: Array.from({ length: LIMITS.cardsPerDeck + 1 }, (_, i) => ({ ...card, id: `g-${i}` })) }],
   ])('rejects %s', (_label, body) => {
     expect(validateDeck(body).ok).toBe(false);
   });

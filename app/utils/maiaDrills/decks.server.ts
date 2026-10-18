@@ -18,6 +18,7 @@ import {
   type GameSource,
   type Speed,
 } from './types';
+import { winDrop } from './winChance';
 
 const DECK_PREFIX = 'maiaDrills:deck:';
 const EDIT_PREFIX = 'maiaDrills:edit:';
@@ -34,8 +35,8 @@ const DECK_TTL_SECONDS = 30 * 24 * 60 * 60;
  */
 export const MAX_FAVORITES = 50;
 
-/** ~400 cards at roughly 600 bytes each, with headroom. */
-export const MAX_BODY_BYTES = 512 * 1024;
+/** A full deck is ~400 KB stored (~380 bytes a card); room for longer names and fields. */
+export const MAX_BODY_BYTES = 1024 * 1024;
 
 const SOURCES: GameSource[] = ['lichess', 'chesscom'];
 const SPEEDS: Speed[] = ['bullet', 'blitz', 'rapid', 'classical', 'correspondence', 'unknown'];
@@ -233,11 +234,11 @@ export function validateAddition(body: unknown): ValidationResult<DeckAddition> 
   return { ok: true, value: { cards: validCards.value, stats: validStats, newestGameAt } };
 }
 
-const lossOf = (card: DrillCard) => card.evalTarget - card.evalPlayed;
+const lossOf = (card: DrillCard) => winDrop(card.evalTarget, card.evalPlayed);
 
 /**
  * Fold new cards into a deck. Cards already in it (same game and ply) are
- * skipped; past the size cap the smallest misses go, old or new. Returns how
+ * skipped; past the size cap the smallest misses (by win chance) go, old or new. Returns how
  * many new cards made it in.
  */
 export function mergeIntoDeck(deck: Deck, addition: DeckAddition, now: Date): { deck: Deck; added: number } {

@@ -122,24 +122,31 @@ describe('analyzeGames', () => {
     expect(isError(750, 600, legacy)).toBe(true);
   });
 
-  it('leaves out an error made when already lost, by default, and counts it', async () => {
+  it('leaves out an error made when already lost on a cp deck with skipLost, and counts it', async () => {
     const maia = () => fakeMaia({ [BEFORE_NF6]: 'g7g6' });
     const lost = { g7g6: -LOST_CP, g8f6: -1000 };
-    // From −7 to −10 is under 5 points of win chance, so only a low threshold
-    // would count it; the already-lost filter is what has to drop it then.
-    const low = { ...DEFAULT_SETTINGS, thresholdWin: 2 };
-    const on = await analyzeGames([game], low, { maia: maia(), stockfish: fakeStockfish(lost) }, {});
+    const cpDeck = { delta: 200, thresholdCp: 150, depth: 12, skipMoves: 0, skipLost: true };
+    const on = await analyzeGames([game], cpDeck, { maia: maia(), stockfish: fakeStockfish(lost) }, {});
     expect(on.cards).toHaveLength(0);
     expect(on.stats.lost).toBe(1);
     // Decks from before the option (no skipLost) kept every error.
     const off = await analyzeGames(
       [game],
-      { ...low, skipLost: undefined },
+      { ...cpDeck, skipLost: undefined },
       { maia: maia(), stockfish: fakeStockfish(lost) },
       {}
     );
     expect(off.cards).toHaveLength(1);
     expect(off.stats.lost).toBeUndefined();
+  });
+
+  it('needs no lost filter at the default win-chance threshold', async () => {
+    // From −7 to −10 is under 5 points of win chance: not an error at all.
+    const lost = { g7g6: -LOST_CP, g8f6: -1000 };
+    const result = await analyzeGames([game], DEFAULT_SETTINGS, { maia: fakeMaia({ [BEFORE_NF6]: 'g7g6' }), stockfish: fakeStockfish(lost) }, {});
+    expect(DEFAULT_SETTINGS.skipLost).toBeUndefined();
+    expect(result.cards).toHaveLength(0);
+    expect(result.stats.lost).toBeUndefined();
   });
 
   it('counts a position as lost only when down LOST_CP both before and after the move', () => {
@@ -200,6 +207,24 @@ describe('analyzeGames', () => {
     } as unknown as StockfishPool;
     const { cards } = await analyzeGames([game, second], DEFAULT_SETTINGS, { maia, stockfish }, {});
     expect(cards.map((c) => c.id)).toEqual(['g2-5', 'scholar-5']);
+  });
+
+  it('ranks misses by win chance lost, not cp gap', async () => {
+    const second: SourceGame = { ...game, id: 'g2', san: ['e4', 'e5', 'Qh5', 'Nc6', 'Bc4', 'Nf6', 'Qxf7#'] };
+    const maia = fakeMaia({ [BEFORE_NF6]: 'g7g6' });
+    // First game: 150 cp from level (~14 points). Second: 300 cp, but from +7 (~12 points).
+    const evals = [[150, 0], [700, 400]];
+    let call = 0;
+    const stockfish = {
+      pending: 0,
+      terminate: vi.fn(),
+      score: vi.fn(async (_f: string, moves: string[]) => {
+        const [target, played] = evals[call++];
+        return new Map([[moves[0], target], [moves[1], played]]);
+      }),
+    } as unknown as StockfishPool;
+    const { cards } = await analyzeGames([game, second], DEFAULT_SETTINGS, { maia, stockfish }, {});
+    expect(cards.map((c) => c.id)).toEqual(['scholar-5', 'g2-5']);
   });
 
   it('counts a game as analyzed only once its Stockfish checks finish', async () => {

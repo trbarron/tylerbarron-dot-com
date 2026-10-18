@@ -7,8 +7,8 @@
 import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest';
 import { createActionArgs, createLoaderArgs } from '../setup';
 import { action, loader } from '~/routes/api/maiaDrills/decks';
-import { MAX_FAVORITES, mergeIntoDeck } from '~/utils/maiaDrills/decks.server';
-import type { Deck, DrillCard } from '~/utils/maiaDrills/types';
+import { MAX_BODY_BYTES, MAX_FAVORITES, mergeIntoDeck } from '~/utils/maiaDrills/decks.server';
+import { LIMITS, type Deck, type DrillCard } from '~/utils/maiaDrills/types';
 
 // ── In-memory Redis: just the commands the deck store and rate limiter use ──
 
@@ -205,7 +205,15 @@ describe('POST /api/maiaDrills/decks', () => {
   });
 
   it('rejects an oversized body before parsing it', async () => {
-    expect((await post('x'.repeat(600 * 1024))).status).toBe(413);
+    expect((await post('x'.repeat(MAX_BODY_BYTES + 1))).status).toBe(413);
+  });
+
+  it('saves a full deck under the body limit', async () => {
+    // Real cards average ~380 bytes; these carry long names so the limit has to hold some slack.
+    const long = { ...card, opponent: 'x'.repeat(30), gameUrl: `https://lichess.org/${'a'.repeat(12)}/black#41` };
+    const cards = Array.from({ length: LIMITS.cardsPerDeck }, (_, i) => ({ ...long, id: `game${i}-41` }));
+    expect(JSON.stringify({ ...deckBody, cards }).length).toBeLessThan(MAX_BODY_BYTES);
+    expect((await post({ ...deckBody, cards })).status).toBe(201);
   });
 
   it('rate-limits saves per address', async () => {
@@ -364,17 +372,27 @@ describe('mergeIntoDeck', () => {
   });
 
   it('keeps the biggest misses when over the cap, and counts only new cards that made it', () => {
-    const full = { ...deck, cards: Array.from({ length: 400 }, (_, i) => cardFrom(`old${i}`, 200 + i)) };
+    const full = { ...deck, cards: Array.from({ length: LIMITS.cardsPerDeck }, (_, i) => cardFrom(`old${i}`, 200 + i)) };
     const { deck: merged, added } = mergeIntoDeck(
       full,
-      { cards: [cardFrom('big', 999), cardFrom('small', 150)], stats: { games: 2, positions: 60, disagreements: 20 } },
+      { cards: [{ ...cardFrom('big', 999), evalPlayed: -999 }, cardFrom('small', 150)], stats: { games: 2, positions: 60, disagreements: 20 } },
       now
     );
-    expect(merged.cards).toHaveLength(400);
+    expect(merged.cards).toHaveLength(LIMITS.cardsPerDeck);
     expect(merged.cards[0].id).toBe('big-4');
     expect(merged.cards.map((c) => c.id)).not.toContain('small-4');
     expect(merged.cards.map((c) => c.id)).not.toContain('old0-4'); // the smallest old miss made room
     expect(added).toBe(1);
+  });
+
+  it('ranks by win chance lost, so a big cp gap in a won position goes first', () => {
+    const full = { ...deck, cards: Array.from({ length: LIMITS.cardsPerDeck }, (_, i) => cardFrom(`old${i}`, 200 + i)) };
+    // 400 cp, bigger than 200 of the old gaps, but from +10 to +6: about 7 points against at least 18.
+    const lopsided = { ...cardFrom('lopsided', 1000), evalPlayed: 600 };
+    const { deck: merged, added } = mergeIntoDeck(full, { cards: [lopsided], stats: { games: 1, positions: 30, disagreements: 10 } }, now);
+    expect(merged.cards.map((c) => c.id)).not.toContain('lopsided-4');
+    expect(merged.cards.map((c) => c.id)).toContain('old0-4');
+    expect(added).toBe(0);
   });
 });
 
