@@ -141,7 +141,7 @@ export const LIMITS = {
   depth: { min: 6, max: 20 },
   skipMoves: { min: 0, max: 30 },
   games: { min: 1, max: 500 },
-  cardsPerDeck: 400,
+  cardsPerDeck: 1000,
 } as const;
 
 /** Maia's training data thins out beyond this range. */

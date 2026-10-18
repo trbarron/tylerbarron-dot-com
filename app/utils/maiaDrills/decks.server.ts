@@ -35,8 +35,8 @@ const DECK_TTL_SECONDS = 30 * 24 * 60 * 60;
  */
 export const MAX_FAVORITES = 50;
 
-/** ~400 cards at roughly 600 bytes each, with headroom. */
-export const MAX_BODY_BYTES = 512 * 1024;
+/** A full deck is ~400 KB stored (~380 bytes a card); room for longer names and fields. */
+export const MAX_BODY_BYTES = 1024 * 1024;
 
 const SOURCES: GameSource[] = ['lichess', 'chesscom'];
 const SPEEDS: Speed[] = ['bullet', 'blitz', 'rapid', 'classical', 'correspondence', 'unknown'];
