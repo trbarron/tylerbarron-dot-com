@@ -18,6 +18,7 @@ import {
   type GameSource,
   type Speed,
 } from './types';
+import { winDrop } from './winChance';
 
 const DECK_PREFIX = 'maiaDrills:deck:';
 const EDIT_PREFIX = 'maiaDrills:edit:';
@@ -233,11 +234,11 @@ export function validateAddition(body: unknown): ValidationResult<DeckAddition> 
   return { ok: true, value: { cards: validCards.value, stats: validStats, newestGameAt } };
 }
 
-const lossOf = (card: DrillCard) => card.evalTarget - card.evalPlayed;
+const lossOf = (card: DrillCard) => winDrop(card.evalTarget, card.evalPlayed);
 
 /**
  * Fold new cards into a deck. Cards already in it (same game and ply) are
- * skipped; past the size cap the smallest misses go, old or new. Returns how
+ * skipped; past the size cap the smallest misses (by win chance) go, old or new. Returns how
  * many new cards made it in.
  */
 export function mergeIntoDeck(deck: Deck, addition: DeckAddition, now: Date): { deck: Deck; added: number } {

@@ -40,10 +40,7 @@ function toFields(maxGames: number, settings: AnalysisSettings): Record<NumberFi
   };
 }
 
-function fromFields(
-  fields: Record<NumberField, string>,
-  skipLost: boolean
-): { maxGames: number; settings: AnalysisSettings } {
+function fromFields(fields: Record<NumberField, string>): { maxGames: number; settings: AnalysisSettings } {
   const get = (key: SettingField) =>
     clampInt(fields[key], LIMITS[key].min, LIMITS[key].max, DEFAULT_SETTINGS[key] ?? LIMITS[key].min);
   return {
@@ -54,7 +51,6 @@ function fromFields(
       alsoGoodWin: get('alsoGoodWin'),
       depth: get('depth'),
       skipMoves: get('skipMoves'),
-      skipLost,
     },
   };
 }
@@ -63,7 +59,6 @@ export default function BuildForm({ onBuilt }: BuildFormProps) {
   const [source, setSource] = useState<GameSource>('lichess');
   const [username, setUsername] = useState('');
   const [excludeBullet, setExcludeBullet] = useState(true);
-  const [skipLost, setSkipLost] = useState(DEFAULT_SETTINGS.skipLost ?? true);
   // Numbers are edited as text and clamped when a run starts, so typing "150"
   // isn't snapped to the minimum after the first keystroke.
   const [fields, setFields] = useState<Record<NumberField, string>>(toFields(200, DEFAULT_SETTINGS));
@@ -75,7 +70,6 @@ export default function BuildForm({ onBuilt }: BuildFormProps) {
     if (saved.source) setSource(saved.source);
     if (saved.username) setUsername(saved.username);
     if (typeof saved.excludeBullet === 'boolean') setExcludeBullet(saved.excludeBullet);
-    if (typeof saved.settings?.skipLost === 'boolean') setSkipLost(saved.settings.skipLost);
     // A phone runs everything on the CPU, so a first run there starts smaller.
     setFields(toFields(saved.maxGames ?? (isHandheld() ? 50 : 200), { ...DEFAULT_SETTINGS, ...saved.settings }));
   }, []);
@@ -91,7 +85,7 @@ export default function BuildForm({ onBuilt }: BuildFormProps) {
       run.setError('Enter a username.');
       return;
     }
-    const { maxGames, settings } = fromFields(fields, skipLost);
+    const { maxGames, settings } = fromFields(fields);
     setFields(toFields(maxGames, settings));
     saveForm({ source, username: name, maxGames, excludeBullet, settings });
 
@@ -272,16 +266,6 @@ export default function BuildForm({ onBuilt }: BuildFormProps) {
                 className="h-4 w-4 accent-black"
               />
               Skip bullet games
-            </label>
-            <label className="flex items-center gap-2 font-neo text-sm text-black sm:col-span-2">
-              <input
-                type="checkbox"
-                checked={skipLost}
-                disabled={busy}
-                onChange={(e) => setSkipLost(e.target.checked)}
-                className="h-4 w-4 shrink-0 accent-black"
-              />
-              Skip positions you’d already lost
             </label>
           </div>
           <p className="mt-3 font-neo text-sm text-gray-700">

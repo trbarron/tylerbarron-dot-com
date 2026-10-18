@@ -249,6 +249,7 @@ export async function analyzeGames(
   if (aborted()) engines.stockfish.terminate();
   await Promise.allSettled(outstanding);
 
-  cards.sort((a, b) => b.evalTarget - b.evalPlayed - (a.evalTarget - a.evalPlayed));
+  // Biggest misses first, by win chance: the deck cap keeps the top of this list.
+  cards.sort((a, b) => winDrop(b.evalTarget, b.evalPlayed) - winDrop(a.evalTarget, a.evalPlayed));
   return { cards, stats, skippedNoRating: progress.skippedNoRating, cancelled: aborted() };
 }

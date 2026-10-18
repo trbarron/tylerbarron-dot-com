@@ -376,6 +376,16 @@ describe('mergeIntoDeck', () => {
     expect(merged.cards.map((c) => c.id)).not.toContain('old0-4'); // the smallest old miss made room
     expect(added).toBe(1);
   });
+
+  it('ranks by win chance lost, so a big cp gap in a won position goes first', () => {
+    const full = { ...deck, cards: Array.from({ length: 400 }, (_, i) => cardFrom(`old${i}`, 200 + i)) };
+    // 400 cp, more than half the old gaps, but from +10 to +6: about 7 points against at least 18.
+    const lopsided = { ...cardFrom('lopsided', 1000), evalPlayed: 600 };
+    const { deck: merged, added } = mergeIntoDeck(full, { cards: [lopsided], stats: { games: 1, positions: 30, disagreements: 10 } }, now);
+    expect(merged.cards.map((c) => c.id)).not.toContain('lopsided-4');
+    expect(merged.cards.map((c) => c.id)).toContain('old0-4');
+    expect(added).toBe(0);
+  });
 });
 
 describe('PATCH /api/maiaDrills/decks', () => {
