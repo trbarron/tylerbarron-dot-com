@@ -56,10 +56,6 @@ function settingsParts(settings: Deck["settings"]): string[] {
   ];
 }
 
-function describeSettings(d: Pick<Deck, "settings">): string {
-  return settingsParts(d.settings).join(" · ");
-}
-
 function Panel({
   title,
   children,
@@ -213,10 +209,14 @@ function DeckView({
     <div className="font-neo space-y-5 text-black">
       <div>
         <p className="text-3xl font-extrabold">{deck.cards.length} cards</p>
-        <p className="text-sm text-gray-700">
-          {deck.username} on {SOURCE_NAMES[deck.source]} ·{" "}
-          {describeSettings(deck)}
-        </p>
+        {[
+          `${deck.username} on ${SOURCE_NAMES[deck.source]}`,
+          ...settingsParts(deck.settings),
+        ].map((detail) => (
+          <p key={detail} className="text-sm text-gray-700">
+            {detail}
+          </p>
+        ))}
         <p className="mt-2 text-sm text-gray-700">
           {stats.positions.toLocaleString()} moves from {stats.games} games.
           Maia disagreed on {stats.disagreements.toLocaleString()} and{" "}
