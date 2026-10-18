@@ -23,6 +23,7 @@ import {
 } from '~/utils/maiaDrills/drill';
 import { loadProgress, saveProgress, type CardProgress } from '~/utils/maiaDrills/localStorage';
 import { trackDrillAnswer } from '~/utils/maiaDrills/tracking';
+import DeckCleared from './DeckCleared';
 import type { Deck } from '~/utils/maiaDrills/types';
 
 const Chessboard = lazy(() => import('~/components/Chessboard'));
@@ -51,6 +52,8 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
   const [misses, setMisses] = useState<Guess[]>([]);
   const [checking, setChecking] = useState(false);
   const [session, setSession] = useState({ attempted: 0, correct: 0 });
+  /** Chose to keep drilling a cleared deck; reset when a miss un-clears it. */
+  const [reviewing, setReviewing] = useState(false);
   const engineRef = useRef<StockfishPool | null>(null);
 
   useEffect(() => {
@@ -138,6 +141,19 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
     setMisses([]);
   };
 
+  const resetProgress = () => {
+    saveProgress(deckId, {});
+    setProgress({});
+    setQueue(initialQueue(deck.cards, {}));
+    setReviewing(false);
+  };
+
+  const solved = deck.cards.filter((c) => progress[c.id]?.last === 'correct').length;
+  const allSolved = deck.cards.length > 0 && solved === deck.cards.length;
+  useEffect(() => {
+    if (!allSolved) setReviewing(false);
+  }, [allSolved]);
+
   const shapes = useMemo(() => {
     if (!card || !answer) return NO_SHAPES;
     const list = [arrow(card.played.uci, 'red'), arrow(card.target.uci, 'green')];
@@ -152,7 +168,6 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
   const orientation = card.color === 'w' ? 'white' : 'black';
   const moveNumber = Math.floor(card.ply / 2) + 1;
   const moveLabel = `${moveNumber}${card.color === 'w' ? '.' : '…'}`;
-  const mastered = deck.cards.filter((c) => progress[c.id]?.last === 'correct').length;
 
   const verdictText = (a: Answer): string => {
     if (a.verdict === 'correct') return 'Nice! That’s the stronger move';
@@ -160,16 +175,35 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
     return a.verdict === 'wrong' ? 'Nope' : 'Here’s the answer';
   };
 
+  const header = (
+    <div className="flex flex-wrap items-center justify-between gap-2 font-neo text-sm">
+      <button onClick={onExit} className="font-bold uppercase tracking-wide text-gray-600 hover:text-black">
+        ← Deck
+      </button>
+      <span className="font-mono text-gray-700">
+        {session.correct}/{session.attempted} this session · {solved}/{deck.cards.length} solved
+      </span>
+    </div>
+  );
+
+  // Once the last answer is dismissed, and on opening a deck that's already cleared.
+  if (allSolved && !reviewing && !answer) {
+    return (
+      <div className="space-y-4">
+        {header}
+        <DeckCleared
+          cardCount={deck.cards.length}
+          onReset={resetProgress}
+          onReview={() => setReviewing(true)}
+          onExit={onExit}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2 font-neo text-sm">
-        <button onClick={onExit} className="font-bold uppercase tracking-wide text-gray-600 hover:text-black">
-          ← Deck
-        </button>
-        <span className="font-mono text-gray-700">
-          {session.correct}/{session.attempted} this session · {mastered}/{deck.cards.length} last answered right
-        </span>
-      </div>
+      {header}
 
       <div className="border-4 border-black bg-white">
         <div className="border-b-4 border-black bg-black px-4 py-3 text-white">

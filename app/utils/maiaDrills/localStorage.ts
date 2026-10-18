@@ -64,11 +64,11 @@ export function saveProgress(deckId: string, progress: Record<string, CardProgre
 }
 
 /**
- * How many cards were last answered right in this browser, or null if none
- * has been drilled here. Pass the deck's card ids when known; without them it
- * counts every card with saved progress.
+ * How many cards are solved (last answered right) in this browser, or null if
+ * none has been drilled here. Pass the deck's card ids when known; without
+ * them it counts every card with saved progress.
  */
-export function answeredRight(deckId: string, cardIds?: string[]): number | null {
+export function solvedCount(deckId: string, cardIds?: string[]): number | null {
   const progress = loadProgress(deckId);
   const ids = cardIds ?? Object.keys(progress);
   if (!ids.some((id) => progress[id])) return null;

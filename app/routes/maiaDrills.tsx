@@ -6,11 +6,12 @@ import Footer from "~/components/Footer";
 import AddGames from "~/components/MaiaDrills/AddGames";
 import BuildForm from "~/components/MaiaDrills/BuildForm";
 import Drill from "~/components/MaiaDrills/Drill";
+import { ProgressBar } from "~/components/MaiaDrills/RunProgress";
 import { buildMeta } from "~/utils/seo";
 import {
-  answeredRight,
   loadEditToken,
   saveEditToken,
+  solvedCount,
 } from "~/utils/maiaDrills/localStorage";
 import { trackDrillStart, trackFavorite } from "~/utils/maiaDrills/tracking";
 import {
@@ -87,7 +88,7 @@ function FavoritesList() {
   const [error, setError] = useState<string | null>(null);
   // This browser's drill progress, by deck id. The list only has card counts,
   // so a deck that later lost cards to the cap is clamped to its size.
-  const [rightByDeck, setRightByDeck] = useState<Record<string, number>>({});
+  const [solvedByDeck, setSolvedByDeck] = useState<Record<string, number>>({});
 
   useEffect(() => {
     let cancelled = false;
@@ -97,12 +98,12 @@ function FavoritesList() {
         if (!res.ok) throw new Error(data.error ?? "Could not load decks.");
         if (cancelled) return;
         setDecks(data.decks);
-        const right: Record<string, number> = {};
+        const solved: Record<string, number> = {};
         for (const d of data.decks as DeckSummary[]) {
-          const n = answeredRight(d.id);
-          if (n !== null) right[d.id] = Math.min(n, d.cardCount);
+          const n = solvedCount(d.id);
+          if (n !== null) solved[d.id] = Math.min(n, d.cardCount);
         }
-        setRightByDeck(right);
+        setSolvedByDeck(solved);
       })
       .catch(
         (err) =>
@@ -136,9 +137,9 @@ function FavoritesList() {
               <span className="block truncate font-bold">
                 ★ {d.username} · {d.cardCount} cards
               </span>
-              {d.id in rightByDeck && (
+              {d.id in solvedByDeck && (
                 <span className="block text-sm font-bold">
-                  {rightByDeck[d.id]}/{d.cardCount} last answered right
+                  {solvedByDeck[d.id]}/{d.cardCount} solved
                 </span>
               )}
               {[
@@ -184,13 +185,13 @@ function DeckView({
   const [copied, setCopied] = useState(false);
 
   // Drill progress lives in this browser; the view remounts after a drill, so this stays current.
-  const [right, setRight] = useState<number | null>(null);
+  const [solved, setSolved] = useState<number | null>(null);
 
   useEffect(() => setToken(loadEditToken(deckId)), [deckId]);
   useEffect(
     () =>
-      setRight(
-        answeredRight(
+      setSolved(
+        solvedCount(
           deckId,
           deck.cards.map((c) => c.id),
         ),
@@ -257,10 +258,18 @@ function DeckView({
             ? ` ${stats.lost.toLocaleString()} from already-lost positions were skipped.`
             : ""}
         </p>
-        {right !== null && (
-          <p className="mt-2 text-sm font-bold">
-            {right}/{deck.cards.length} last answered right
-          </p>
+        {solved !== null && (
+          <div className="mt-3">
+            <ProgressBar
+              label={
+                solved === deck.cards.length
+                  ? "Solved · deck cleared"
+                  : "Solved"
+              }
+              value={solved}
+              max={deck.cards.length}
+            />
+          </div>
         )}
       </div>
 
