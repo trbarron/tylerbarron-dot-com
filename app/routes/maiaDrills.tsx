@@ -48,8 +48,16 @@ function describeThreshold(settings: Deck["settings"]): string {
     : `≥${settings.thresholdWin ?? DEFAULT_SETTINGS.thresholdWin}% win chance`;
 }
 
+function settingsParts(settings: Deck["settings"]): string[] {
+  return [
+    `+${settings.delta} rating`,
+    describeThreshold(settings),
+    `depth ${settings.depth}`,
+  ];
+}
+
 function describeSettings(d: Pick<Deck, "settings">): string {
-  return `+${d.settings.delta} rating · ${describeThreshold(d.settings)} · depth ${d.settings.depth}`;
+  return settingsParts(d.settings).join(" · ");
 }
 
 function Panel({
@@ -118,11 +126,19 @@ function FavoritesList() {
               <span className="block truncate font-bold">
                 ★ {d.username} · {d.cardCount} cards
               </span>
-              <span className="block text-sm text-gray-600 group-hover:text-white/70">
-                {SOURCE_NAMES[d.source]} · {describeSettings(d)} ·{" "}
-                {d.stats.games} games ·{" "}
-                {new Date(d.createdAt).toLocaleDateString()}
-              </span>
+              {[
+                SOURCE_NAMES[d.source],
+                ...settingsParts(d.settings),
+                `${d.stats.games} games`,
+                new Date(d.createdAt).toLocaleDateString(),
+              ].map((detail) => (
+                <span
+                  key={detail}
+                  className="block text-sm text-gray-600 group-hover:text-white/70"
+                >
+                  {detail}
+                </span>
+              ))}
             </span>
             <span className="font-neo shrink-0 text-sm font-extrabold uppercase">
               Open →
