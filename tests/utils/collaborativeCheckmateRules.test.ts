@@ -209,3 +209,46 @@ describe('what players see', () => {
     expect(isOpen(startedGame(), T, 20 * 60_000)).toBe(false);
   });
 });
+
+describe('edge cases', () => {
+  /** Play `moves` (UCI) as single picks, alternating teams. */
+  function play(g: Game, moves: string[]): Game {
+    for (const uci of moves) g = applyMove(beginCompute(g, T), { uci, how: 'single', by: ['x'] }, T);
+    return g;
+  }
+
+  it('takes a promotion only with the piece named', () => {
+    // 1. h4 g5 2. hxg5 Nf6 3. gxf6 h6 4. fxe7 h5: White's pawn on e7 can take the queen on d8.
+    const g = play(startedGame(), ['h2h4', 'g7g5', 'h4g5', 'g8f6', 'g5f6', 'h7h6', 'f6e7', 'h6h5']);
+    expect(act(g, 'ann', { type: 'submit_move', move: 'e7d8' }, T).error).toMatch(/legal/);
+    const after = act(g, 'ann', { type: 'submit_move', move: 'e7d8q' }, T).game;
+    expect(after.seats.t1p1.selection).toBe('e7d8q');
+    expect(applyMove(beginCompute(after, T), { uci: 'e7d8q', how: 'single', by: ['ann'] }, T).log.at(-1)?.message).toBe(
+      'White plays ann’s exd8=Q+',
+    );
+  });
+
+  it('ends in a draw on threefold repetition', () => {
+    const shuffle = ['g1f3', 'g8f6', 'f3g1', 'f6g8'];
+    const g = play(startedGame(), [...shuffle, ...shuffle]);
+    expect(g.phase).toBe(GamePhase.COOLDOWN);
+    expect(g.result).toEqual({ winner: null, reason: 'draw' });
+  });
+
+  it('lets someone who joins a freed seat mid-game play right away', () => {
+    const later = T + SEAT_TIMEOUT_MS + 1;
+    let g = vacateStale(startedGame(), { ann: later, cy: later, di: later }, later); // bo went quiet
+    g = join(g, 'eve', T);
+    expect(g.seats.t1p2).toMatchObject({ player: 'eve', ready: false });
+    g = submit(g, 'eve', 'e2e4');
+    expect(g.seats.t1p2).toMatchObject({ ready: true, selection: 'e2e4' });
+  });
+
+  it('refuses moves while a turn is being decided, and from spectators', () => {
+    const computing = beginCompute(submit(startedGame(), 'ann', 'e2e4'), T);
+    expect(act(computing, 'bo', { type: 'submit_move', move: 'd2d4' }, T).error).toMatch(/turn/);
+    expect(act(computing, 'ann', { type: 'lock_in' }, T).error).toMatch(/turn/);
+    expect(act(startedGame(), 'zed', { type: 'submit_move', move: 'e2e4' }, T).error).toMatch(/seat/);
+    expect(act(startedGame(), 'zed', { type: 'ready' }, T).error).toMatch(/seat/);
+  });
+});

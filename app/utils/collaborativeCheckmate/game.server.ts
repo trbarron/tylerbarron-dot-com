@@ -158,10 +158,14 @@ async function advance(id: string, loaded: Loaded): Promise<Game | null> {
   const redis = getRedisClient();
   if ((await redis.set(lockKey(id), '1', 'PX', LOCK_MS, 'NX')) !== 'OK') return game;
   try {
-    const computing = await update(id, (g) =>
-      g && due(g, Date.now()) === 'compute' ? beginCompute(g, Date.now()) : g,
-    );
-    if (!computing || computing.computingSince === null) return computing;
+    // Decide only if this request is the one that marked the turn as computing:
+    // the lock already ensures that, and this still holds if the lock expired.
+    let began = false;
+    const computing = await update(id, (g) => {
+      began = Boolean(g && due(g, Date.now()) === 'compute');
+      return g && began ? beginCompute(g, Date.now()) : g;
+    });
+    if (!computing || !began) return computing;
     const ply = computing.moves.length;
     const phase = computing.phase;
     const choice = await chooseMove(computing, judge);

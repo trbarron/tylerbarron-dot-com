@@ -62,6 +62,20 @@ redis-cli -u "$REDIS_TLS_URL" hgetall collaborativeCheckmate:stats
 redis-cli -u "$REDIS_TLS_URL" lrange collaborativeCheckmate:finished 0 9
 ```
 
+## Testing
+
+- `tests/utils/collaborativeCheckmateRules.test.ts`: the rules, no Redis.
+- `tests/api/collaborativeCheckmate.test.ts`: input validation and the API routes, game layer stubbed.
+- `tests/utils/stockfishServer.test.ts`: the engine wrapper, including refusing a download whose hash doesn't match.
+- `tests/integration/collaborativeCheckmateGame.test.ts`: `game.server.ts` against a **real** Redis, because the compare-and-set is a Lua script the fake Redis can't run. Players act at the same moment: simultaneous joins, readies and lock-ins, a pile of polls after a deadline (one decision, two engine calls), a stuck decision redone, a finished game recorded once, presence written before seating (checked with `MONITOR`). Stockfish is stubbed and the clock faked. It skips itself unless `TEST_REDIS_URL` is set, and refuses any non-local Redis:
+
+  ```
+  redis-server --port 6390 --daemonize yes
+  TEST_REDIS_URL=redis://localhost:6390 npx vitest run tests/integration/collaborativeCheckmateGame.test.ts
+  ```
+
+  Run it after changing `game.server.ts` or `rules.ts`. CI doesn't run it: CI doesn't run `npm test` at all yet.
+
 ## History
 
 Until October 2026 the game ran on a separate Python (FastAPI) server on Fly.io (`trbarron/collaborative_checkmate_server`), over WebSockets, with game logs in Supabase. Moving it here removed the second deployment, the Fly cold start on first load, and the Supabase project. It also fixed the lobby's private-game checkbox, which never reached the old server, and the board's arrows, which the shared Chessboard had been overwriting. The old server stored keys as `game:<id>:<field>`; leftovers with that prefix are safe to delete.
