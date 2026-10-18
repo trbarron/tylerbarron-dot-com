@@ -1,5 +1,4 @@
 // Redis client configuration for server-side use
-// Connects to the same Redis instance used by Collaborative Checkmate
 
 import Redis from 'ioredis';
 
@@ -25,7 +24,6 @@ export function getRedisClient(): Redis {
   }
 
   // Get Redis connection details from environment variables
-  // These should match the Collaborative Checkmate server configuration
   const redisUrl = process.env.REDIS_URL || process.env.REDIS_TLS_URL;
 
   if (!redisUrl) {

@@ -92,6 +92,12 @@ export default [
   route('api/multipleChoiceChess/claimWin', 'routes/api/multipleChoiceChess/claimWin.ts'),
   route('api/multipleChoiceChess/available', 'routes/api/multipleChoiceChess/available.ts'),
 
+  // Collaborative Checkmate (pages are above with the other projects)
+  route('api/collaborativeCheckmate/join', 'routes/api/collaborativeCheckmate/join.ts'),
+  route('api/collaborativeCheckmate/state', 'routes/api/collaborativeCheckmate/state.ts'),
+  route('api/collaborativeCheckmate/action', 'routes/api/collaborativeCheckmate/action.ts'),
+  route('api/collaborativeCheckmate/available', 'routes/api/collaborativeCheckmate/available.ts'),
+
   // Catch-all 404 (must stay last) — serves the styled not-found page with a
   // 404 status while keeping the root loader (and analytics) active.
   route('*', 'routes/$.tsx'),

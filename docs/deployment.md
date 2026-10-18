@@ -65,6 +65,18 @@ browsers recover client-side via `onShellReady`, so the breakage hides from casu
 testing (2026-06-10 incident). Run the `verify-lambda-deps` skill after a build that
 touched imports.
 
+## Stockfish in the Lambda: downloaded on first use, not shipped
+
+Collaborative Checkmate decides disagreements with Stockfish on the server
+(`app/utils/stockfish.server.ts`), but the engine isn't in the Lambda zip. The first
+search in a container downloads the two files it needs (18 lite single-threaded, ~7 MB)
+from unpkg, the same pinned version the browser games load, checks each against a
+pinned SHA-256, and keeps them in `/tmp` for the container's life. That costs about half
+a second on a cold container's first disagreement and nothing after. A failed or
+mismatched download is refused, and that turn falls back to the first player's move.
+Bumping the version means new hashes (the command is in the file). In dev and tests the
+files come from the `stockfish` devDependency, which never ships (it's 251 MB).
+
 ## Versioning (automated semver in the footer)
 
 Releases are **fully automated by semantic-release** (`release` in `package.json`), driven by

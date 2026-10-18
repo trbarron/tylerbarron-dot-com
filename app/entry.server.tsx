@@ -47,8 +47,6 @@ const CONTENT_SECURITY_POLICY = [
     // Maia Drills: players' games, and the Maia model. Hugging Face answers
     // the model URL with a redirect to its storage CDN on *.hf.co.
     'https://lichess.org https://api.chess.com https://huggingface.co https://*.hf.co',
-    // Collaborative checkmate game server (REST lobby + websocket gameplay)
-    'https://collaborative-checkmate-server.fly.dev wss://collaborative-checkmate-server.fly.dev',
   ].join(' '),
   "media-src 'self'",
   'frame-src https://www.youtube.com https://giscus.app',
