@@ -48,8 +48,12 @@ function describeThreshold(settings: Deck["settings"]): string {
     : `≥${settings.thresholdWin ?? DEFAULT_SETTINGS.thresholdWin}% win chance`;
 }
 
-function describeSettings(d: Pick<Deck, "settings">): string {
-  return `+${d.settings.delta} rating · ${describeThreshold(d.settings)} · depth ${d.settings.depth}`;
+function settingsParts(settings: Deck["settings"]): string[] {
+  return [
+    `+${settings.delta} rating`,
+    describeThreshold(settings),
+    `depth ${settings.depth}`,
+  ];
 }
 
 function Panel({
@@ -118,11 +122,19 @@ function FavoritesList() {
               <span className="block truncate font-bold">
                 ★ {d.username} · {d.cardCount} cards
               </span>
-              <span className="block text-sm text-gray-600 group-hover:text-white/70">
-                {SOURCE_NAMES[d.source]} · {describeSettings(d)} ·{" "}
-                {d.stats.games} games ·{" "}
-                {new Date(d.createdAt).toLocaleDateString()}
-              </span>
+              {[
+                SOURCE_NAMES[d.source],
+                ...settingsParts(d.settings),
+                `${d.stats.games} games`,
+                new Date(d.createdAt).toLocaleDateString(),
+              ].map((detail) => (
+                <span
+                  key={detail}
+                  className="block text-sm text-gray-600 group-hover:text-white/70"
+                >
+                  {detail}
+                </span>
+              ))}
             </span>
             <span className="font-neo shrink-0 text-sm font-extrabold uppercase">
               Open →
@@ -197,10 +209,14 @@ function DeckView({
     <div className="font-neo space-y-5 text-black">
       <div>
         <p className="text-3xl font-extrabold">{deck.cards.length} cards</p>
-        <p className="text-sm text-gray-700">
-          {deck.username} on {SOURCE_NAMES[deck.source]} ·{" "}
-          {describeSettings(deck)}
-        </p>
+        {[
+          `${deck.username} on ${SOURCE_NAMES[deck.source]}`,
+          ...settingsParts(deck.settings),
+        ].map((detail) => (
+          <p key={detail} className="text-sm text-gray-700">
+            {detail}
+          </p>
+        ))}
         <p className="mt-2 text-sm text-gray-700">
           {stats.positions.toLocaleString()} moves from {stats.games} games.
           Maia disagreed on {stats.disagreements.toLocaleString()} and{" "}
