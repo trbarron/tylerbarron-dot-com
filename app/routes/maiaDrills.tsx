@@ -7,7 +7,11 @@ import AddGames from "~/components/MaiaDrills/AddGames";
 import BuildForm from "~/components/MaiaDrills/BuildForm";
 import Drill from "~/components/MaiaDrills/Drill";
 import { buildMeta } from "~/utils/seo";
-import { loadEditToken, saveEditToken } from "~/utils/maiaDrills/localStorage";
+import {
+  answeredRight,
+  loadEditToken,
+  saveEditToken,
+} from "~/utils/maiaDrills/localStorage";
 import { trackDrillStart, trackFavorite } from "~/utils/maiaDrills/tracking";
 import {
   DEFAULT_SETTINGS,
@@ -81,6 +85,9 @@ function Panel({
 function FavoritesList() {
   const [decks, setDecks] = useState<DeckSummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // This browser's drill progress, by deck id. The list only has card counts,
+  // so a deck that later lost cards to the cap is clamped to its size.
+  const [rightByDeck, setRightByDeck] = useState<Record<string, number>>({});
 
   useEffect(() => {
     let cancelled = false;
@@ -88,7 +95,14 @@ function FavoritesList() {
       .then(async (res) => {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error ?? "Could not load decks.");
-        if (!cancelled) setDecks(data.decks);
+        if (cancelled) return;
+        setDecks(data.decks);
+        const right: Record<string, number> = {};
+        for (const d of data.decks as DeckSummary[]) {
+          const n = answeredRight(d.id);
+          if (n !== null) right[d.id] = Math.min(n, d.cardCount);
+        }
+        setRightByDeck(right);
       })
       .catch(
         (err) =>
@@ -122,6 +136,11 @@ function FavoritesList() {
               <span className="block truncate font-bold">
                 ★ {d.username} · {d.cardCount} cards
               </span>
+              {d.id in rightByDeck && (
+                <span className="block text-sm font-bold">
+                  {rightByDeck[d.id]}/{d.cardCount} last answered right
+                </span>
+              )}
               {[
                 SOURCE_NAMES[d.source],
                 ...settingsParts(d.settings),
@@ -164,7 +183,20 @@ function DeckView({
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  // Drill progress lives in this browser; the view remounts after a drill, so this stays current.
+  const [right, setRight] = useState<number | null>(null);
+
   useEffect(() => setToken(loadEditToken(deckId)), [deckId]);
+  useEffect(
+    () =>
+      setRight(
+        answeredRight(
+          deckId,
+          deck.cards.map((c) => c.id),
+        ),
+      ),
+    [deckId, deck.cards],
+  );
 
   const toggleFavorite = async () => {
     if (!token) return;
@@ -225,6 +257,11 @@ function DeckView({
             ? ` ${stats.lost.toLocaleString()} from already-lost positions were skipped.`
             : ""}
         </p>
+        {right !== null && (
+          <p className="mt-2 text-sm font-bold">
+            {right}/{deck.cards.length} last answered right
+          </p>
+        )}
       </div>
 
       {error && <p className="text-sm text-red-700">{error}</p>}
