@@ -10,3 +10,15 @@ build/
 public/assets/
 public/build/
 server/
+
+# Prose: Prettier's Markdown/MDX rewrites (list markers, emphasis, wrapping)
+# can change how a post or doc reads. These are edited by hand.
+*.md
+*.mdx
+
+# Written by scripts/generate-og-image.py (json.dumps); the generator owns the format.
+public/images/og/manifest.json
+public/images/og/projects/manifest.json
+
+# Vendored from chessground.
+app/styles/chessground.*.css
