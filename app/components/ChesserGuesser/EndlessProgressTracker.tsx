@@ -2,6 +2,8 @@
 // Shows streak and games played for endless mode
 // Mirrors the style of DailyProgressTracker
 
+import Panel from '~/components/Panel';
+
 interface EndlessProgressTrackerProps {
   streak: number;
   gamesPlayed: number;
@@ -10,12 +12,7 @@ interface EndlessProgressTrackerProps {
 
 export function EndlessProgressTracker({ streak, gamesPlayed, maxStreak }: EndlessProgressTrackerProps) {
   return (
-    <div className="border-4 border-black bg-white">
-      {/* Header */}
-      <div className="font-neo border-b-4 border-black bg-black px-4 py-2 text-center text-sm font-extrabold tracking-tighter text-white uppercase">
-        Endless Mode
-      </div>
-
+    <Panel title="Endless Mode" dark>
       {/* Streak Display */}
       <div className="border-b-4 border-black p-4 text-center">
         <div className="font-neo text-4xl font-black tracking-tighter text-black">{streak}</div>
@@ -37,6 +34,6 @@ export function EndlessProgressTracker({ streak, gamesPlayed, maxStreak }: Endle
           Rounds Played
         </div>
       </div>
-    </div>
+    </Panel>
   );
 }

@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import type { MoveHistoryEntry } from '~/utils/multipleChoiceChess/types';
 import RankBadge from './RankBadge';
 import SanText from './SanText';
+import Panel from '~/components/Panel';
 
 interface MoveHistoryProps {
   history: MoveHistoryEntry[];
@@ -57,12 +58,10 @@ export default function MoveHistory({ history, viewingIndex, onSelectMove, isGam
   };
 
   return (
-    <div className="font-neo border-4 border-black bg-white">
-      <div className="flex items-baseline justify-between gap-2 border-b-2 border-black px-3 py-2">
-        <span className="text-xs font-bold tracking-wide uppercase">Move History</span>
-        <span className="text-[10px] tracking-wide text-gray-500 uppercase">#1 best · #6 worst</span>
-      </div>
-
+    <Panel
+      title="Move History"
+      aside={<span className="text-[10px] tracking-wide text-gray-500 uppercase">#1 best · #6 worst</span>}
+    >
       <div ref={scrollRef} className="max-h-64 overflow-y-auto">
         {pairs.map((pair, pairIdx) => (
           <div
@@ -81,6 +80,6 @@ export default function MoveHistory({ history, viewingIndex, onSelectMove, isGam
           Viewing move {viewingIndex + 1} of {history.length}
         </div>
       )}
-    </div>
+    </Panel>
   );
 }

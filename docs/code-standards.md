@@ -204,7 +204,7 @@ Extract UI patterns used in **2+ routes** as shared components in `app/component
 1. **PhotoGallery** - Image galleries with lightbox
 2. **Dialog** - Every modal: native `<dialog>` with Escape, backdrop close and a focus trap; `open` / `onClose` / `title` (see `DESIGN.md`)
 3. **Button** - Standardized buttons: `primary` / `secondary` / `danger` in `sm` / `md` / `lg` (see `DESIGN.md`); `buttonClass()` for button-styled links
-4. **Card** - Content cards with borders
+4. **Panel** - Titled boxes: a 4px border with a light or `dark` title bar, optional `subtitle` / `aside` / `padded` (see `DESIGN.md`)
 5. **ArticleLayout** - Blog post layout wrapper
 
 **Usage Pattern**:

@@ -1,6 +1,7 @@
 import { formatEval } from '~/utils/chess/evaluation';
 import type { GameMode } from '~/utils/chesserGuesser/types';
 import Button from '~/components/Button';
+import Panel from '~/components/Panel';
 
 interface PuzzleHistory {
   fen: string;
@@ -76,12 +77,7 @@ export default function ScoreDisplay({
       : Math.abs(lastEval - lastSlider).toFixed(2);
 
   return (
-    <div className="w-full border-4 border-black bg-white">
-      {/* Header */}
-      <div className="font-neo border-b-4 border-black bg-black px-4 py-2 text-center text-sm font-extrabold tracking-tighter text-white uppercase">
-        {getHeaderText()}
-      </div>
-
+    <Panel title={getHeaderText()} dark className="w-full">
       {/* Content */}
       <div className="font-neo space-y-4 bg-white p-4 text-black">
         {/* Navigation buttons in review mode */}
@@ -152,6 +148,6 @@ export default function ScoreDisplay({
           </Button>
         )}
       </div>
-    </div>
+    </Panel>
   );
 }

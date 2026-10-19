@@ -5,6 +5,7 @@ import Footer from '~/components/Footer';
 import Button from '~/components/Button';
 import { usePolling } from '~/hooks/usePolling';
 import { buildMeta } from '~/utils/seo';
+import Panel from '~/components/Panel';
 
 export function meta() {
   return buildMeta({
@@ -147,17 +148,18 @@ export default function MultipleChoiceChessLobby() {
         </div>
 
         {/* Available games */}
-        <div className="w-full max-w-xl border-4 border-black bg-white">
-          <div className="flex items-center justify-between border-b-2 border-black px-6 py-3">
-            <div className="flex items-baseline gap-3">
-              <h2 className="font-neo text-sm font-bold tracking-wider text-black uppercase">Open Games</h2>
-              <span className="font-neo text-xs text-gray-500">{availableGames.length} waiting</span>
+        <Panel
+          title="Open Games"
+          className="w-full max-w-xl"
+          aside={
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-gray-500">{availableGames.length} waiting</span>
+              {isLoading && (
+                <div className="h-3 w-3 animate-spin rounded-full border-b-2 border-black" aria-label="Refreshing" />
+              )}
             </div>
-            {isLoading && (
-              <div className="h-3 w-3 animate-spin rounded-full border-b-2 border-black" aria-label="Refreshing" />
-            )}
-          </div>
-
+          }
+        >
           <div className="p-4">
             {availableGames.length === 0 && (
               <p className="font-neo py-8 text-center text-sm text-gray-500">No open games yet</p>
@@ -182,7 +184,7 @@ export default function MultipleChoiceChessLobby() {
               ))}
             </div>
           </div>
-        </div>
+        </Panel>
       </div>
       <Footer />
     </div>

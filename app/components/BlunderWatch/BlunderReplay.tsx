@@ -6,6 +6,7 @@ import { Suspense, lazy } from 'react';
 import { Chess } from 'chess.js';
 import type { Key } from 'chessground/types';
 import type { BlunderResult } from '~/utils/blunderWatch/types';
+import Panel from '~/components/Panel';
 
 const Chessboard = lazy(() => import('~/components/Chessboard'));
 
@@ -48,10 +49,7 @@ export function BlunderReplay({ moves, initialFen, blunderResults }: BlunderRepl
   if (blunderResults.length === 0) return null;
 
   return (
-    <div className="mt-4 border-4 border-black bg-white">
-      <div className="border-b-2 border-black px-4 py-2">
-        <h3 className="font-neo text-sm font-bold text-black uppercase">Blunder Replay</h3>
-      </div>
+    <Panel title="Blunder Replay" className="mt-4">
       <div className="divide-y-2 divide-black">
         {blunderResults.map((result, i) => {
           const { fen, lastMove } = getBlunderMove(initialFen, moves, result.moveIndex);
@@ -109,6 +107,6 @@ export function BlunderReplay({ moves, initialFen, blunderResults }: BlunderRepl
           );
         })}
       </div>
-    </div>
+    </Panel>
   );
 }

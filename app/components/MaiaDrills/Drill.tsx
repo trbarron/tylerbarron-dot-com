@@ -26,6 +26,7 @@ import { trackDrillAnswer } from '~/utils/maiaDrills/tracking';
 import DeckCleared from './DeckCleared';
 import type { Deck } from '~/utils/maiaDrills/types';
 import Button from '~/components/Button';
+import Panel from '~/components/Panel';
 
 const Chessboard = lazy(() => import('~/components/Chessboard'));
 
@@ -202,16 +203,11 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
     <div className="space-y-4">
       {header}
 
-      <div className="border-4 border-black bg-white">
-        <div className="border-b-4 border-black bg-black px-4 py-3 text-white">
-          <p className="font-neo text-sm font-bold tracking-wide uppercase">
-            {orientation} to play · move {moveLabel}
-          </p>
-          <p className="font-neo text-xs text-white/70">
-            What would a {card.targetElo} play? (You were {card.userElo}, vs {card.opponent} {card.oppElo})
-          </p>
-        </div>
-
+      <Panel
+        dark
+        title={`${orientation} to play · move ${moveLabel}`}
+        subtitle={`What would a ${card.targetElo} play? (You were ${card.userElo}, vs ${card.opponent} ${card.oppElo})`}
+      >
         <div className="p-2 sm:p-4">
           <Suspense fallback={<div className="aspect-square w-full bg-gray-100" />}>
             {answer ? (
@@ -317,7 +313,7 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
             </>
           )}
         </div>
-      </div>
+      </Panel>
     </div>
   );
 }
