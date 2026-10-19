@@ -350,6 +350,17 @@
     }
   }
 
+  /* Press feedback on every device, touch included (which has no hover): the
+     same inversion as hover, background and text together so it stays readable. */
+  .hover\:bg-black:active:not(:disabled) {
+    background-color: #000000 !important;
+    color: #ffffff !important;
+  }
+
+  .hover\:bg-black:active:not(:disabled) * {
+    color: #ffffff !important;
+  }
+
   /* Prose utility class for content-rich sections */
   .prose {
     /* Paragraph styles */
