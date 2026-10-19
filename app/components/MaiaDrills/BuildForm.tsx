@@ -5,6 +5,7 @@ import { isHandheld } from '~/utils/maiaDrills/device';
 import { trackDeckBuilt } from '~/utils/maiaDrills/tracking';
 import RunProgress, { RunMessages } from './RunProgress';
 import { useAnalysisRun } from './useAnalysisRun';
+import Button from '~/components/Button';
 
 interface BuildFormProps {
   /** Called with a finished (unsaved) deck. */
@@ -281,12 +282,9 @@ export default function BuildForm({ onBuilt }: BuildFormProps) {
       {busy ? (
         <RunProgress run={run} />
       ) : (
-        <button
-          onClick={start}
-          className="font-neo w-full border-4 border-black bg-black px-6 py-4 text-lg font-extrabold tracking-wide text-white uppercase hover:bg-white hover:text-black"
-        >
+        <Button variant="primary" size="lg" className="w-full" onClick={start}>
           Find my errors
-        </button>
+        </Button>
       )}
     </div>
   );

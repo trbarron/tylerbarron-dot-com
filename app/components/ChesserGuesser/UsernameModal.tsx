@@ -2,6 +2,7 @@
 // Shown before starting ranked mode
 
 import { useState, useEffect, useRef } from 'react';
+import Button from '~/components/Button';
 
 interface UsernameModalProps {
   isOpen: boolean;
@@ -98,20 +99,10 @@ export function UsernameModal({
 
             {/* Buttons */}
             <div className="grid grid-cols-2 gap-4">
-              <button
-                type="button"
-                onClick={onCancel}
-                className="font-neo border-2 border-black bg-white px-4 py-3 font-bold tracking-wide text-black uppercase transition-colors hover:bg-gray-100"
-              >
-                {cancelLabel}
-              </button>
-              <button
-                type="submit"
-                disabled={!username}
-                className="font-neo hover:bg-accent border-2 border-black bg-black px-4 py-3 font-bold tracking-wide text-white uppercase transition-colors hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
-              >
+              <Button onClick={onCancel}>{cancelLabel}</Button>
+              <Button type="submit" variant="primary" disabled={!username}>
                 Submit
-              </button>
+              </Button>
             </div>
           </form>
         </div>

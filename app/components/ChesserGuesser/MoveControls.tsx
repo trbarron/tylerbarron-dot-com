@@ -1,5 +1,6 @@
 import { formatEval } from '~/utils/chess/evaluation';
 import { getImageUrl } from '~/utils/cdn';
+import Button from '~/components/Button';
 
 const blackKingImage = getImageUrl('ChesserGuesser/blackKing.png');
 const whiteKingImage = getImageUrl('ChesserGuesser/whiteKing.png');
@@ -45,14 +46,15 @@ export default function MoveControls({
       </div>
 
       {/* Submit Button */}
-      <button
-        className="hover:bg-accent font-neo mt-4 flex w-full flex-col items-center border-4 border-black bg-white px-6 py-3 font-extrabold tracking-wide text-black uppercase hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+      <Button
+        variant="primary"
+        className="mt-4 w-full flex-col gap-0"
         onClick={onSubmit}
         disabled={isSubmitting || isDisabled}
       >
         <span className="text-sm">{getSubmitText()}</span>
         <span className="text-sm">{formatEval(sliderValue, { decimals: 2 })}</span>
-      </button>
+      </Button>
     </>
   );
 }

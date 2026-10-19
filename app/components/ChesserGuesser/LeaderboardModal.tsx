@@ -1,4 +1,5 @@
 import { Leaderboard } from './Leaderboard';
+import Button from '~/components/Button';
 
 interface LeaderboardModalProps {
   isOpen: boolean;
@@ -16,7 +17,8 @@ export function LeaderboardModal({ isOpen, onClose, username, date }: Leaderboar
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="hover:text-accent absolute top-2 right-2 z-10 text-xl font-bold text-black"
+          aria-label="Close"
+          className="hover:text-accent absolute top-1 right-1 z-10 flex h-11 w-11 items-center justify-center text-xl font-bold text-black"
         >
           ✕
         </button>
@@ -27,12 +29,9 @@ export function LeaderboardModal({ isOpen, onClose, username, date }: Leaderboar
           <Leaderboard currentUsername={username} date={date} />
 
           <div className="mt-6 flex justify-center">
-            <button
-              onClick={onClose}
-              className="font-neo hover:bg-accent bg-black px-6 py-2 font-bold text-white uppercase transition-colors"
-            >
+            <Button variant="primary" onClick={onClose}>
               Close
-            </button>
+            </Button>
           </div>
         </div>
       </div>

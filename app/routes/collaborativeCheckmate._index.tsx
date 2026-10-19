@@ -5,6 +5,7 @@ import { Navbar } from '~/components/Navbar';
 import { usePolling } from '~/hooks/usePolling';
 import { GAME_ID_RE, PLAYER_ID_RE } from '~/utils/collaborativeCheckmate/types';
 import { buildMeta } from '~/utils/seo';
+import Button from '~/components/Button';
 
 export function meta() {
   return buildMeta({
@@ -130,12 +131,9 @@ export default function CollaborativeCheckmate() {
               </label>
             </div>
 
-            <button
-              type="submit"
-              className="font-neo w-full border-4 border-black bg-white px-6 py-3 font-extrabold tracking-wide text-black uppercase hover:bg-black hover:text-white"
-            >
+            <Button type="submit" variant="primary" size="lg" className="w-full">
               Create/Join Game
-            </button>
+            </Button>
           </form>
         </div>
 
@@ -174,15 +172,15 @@ export default function CollaborativeCheckmate() {
                         Players: {game.occupied_seats}/4 • Created: {formatTimeSince(game.created_time)}
                       </p>
                     </div>
-                    <button
-                      className="hover:bg-accent font-neo border-2 border-black bg-white px-3 py-1 font-extrabold tracking-wide text-black uppercase hover:text-white"
+                    <Button
+                      size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
                         joinGame(game.game_id);
                       }}
                     >
                       Join
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ))}

@@ -2,6 +2,7 @@ import { useRef, useState, Suspense, lazy } from 'react';
 import { useLoaderData, useNavigate, type LinksFunction } from 'react-router';
 import { Navbar } from '~/components/Navbar';
 import Footer from '~/components/Footer';
+import Button, { buttonClass } from '~/components/Button';
 import EngineStatus from '~/components/MultipleChoiceChess/EngineStatus';
 import MoveChoices from '~/components/MultipleChoiceChess/MoveChoices';
 import MoveHistory from '~/components/MultipleChoiceChess/MoveHistory';
@@ -106,12 +107,9 @@ export default function MultipleChoiceChessGame() {
                 <div className="font-neo mb-4 flex items-center justify-between gap-3 border-4 border-red-500 bg-red-100 p-4 text-red-800">
                   <span>{error}</span>
                   {!engineReady && error.startsWith('Engine failed to load') && (
-                    <button
-                      onClick={retryEngineInit}
-                      className="shrink-0 border-2 border-red-700 bg-white px-3 py-1 text-sm font-bold text-red-800 uppercase hover:bg-red-700 hover:text-white"
-                    >
+                    <Button size="sm" className="shrink-0" onClick={retryEngineInit}>
                       Retry
-                    </button>
+                    </Button>
                   )}
                 </div>
               )}
@@ -127,12 +125,9 @@ export default function MultipleChoiceChessGame() {
                     </div>
                   </div>
                   {canClaimWin && (
-                    <button
-                      onClick={claimWin}
-                      className="border-2 border-amber-700 bg-white px-3 py-1 text-sm font-bold text-amber-900 uppercase hover:bg-amber-700 hover:text-white"
-                    >
+                    <Button variant="danger" size="sm" onClick={claimWin}>
                       Claim win
-                    </button>
+                    </Button>
                   )}
                 </div>
               )}
@@ -149,12 +144,9 @@ export default function MultipleChoiceChessGame() {
                       onFocus={(e) => e.currentTarget.select()}
                       className="flex-1 border-2 border-black bg-gray-50 px-3 py-2 font-mono text-sm"
                     />
-                    <button
-                      onClick={copyLink}
-                      className="font-neo border-2 border-black px-3 py-1 text-sm font-bold uppercase hover:bg-black hover:text-white active:bg-black active:text-white"
-                    >
+                    <Button size="sm" onClick={copyLink}>
                       {linkCopied ? 'Copied!' : 'Copy'}
-                    </button>
+                    </Button>
                   </div>
                   {copyFailed && (
                     <p className="mt-2 text-xs text-red-700">
@@ -195,18 +187,19 @@ export default function MultipleChoiceChessGame() {
                           href={`https://lichess.org/analysis/standard/${encodeURIComponent((moveHistory[viewingMoveIndex]?.fenAfter ?? '').replace(/ /g, '_'))}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="font-neo border-2 border-black px-3 py-1 text-sm font-bold uppercase hover:bg-black hover:text-white active:bg-black active:text-white"
+                          className={buttonClass({ size: 'sm' })}
                         >
                           Lichess ↗
                         </a>
-                        <button
+                        <Button
+                          size="sm"
                           onClick={() => setViewingMoveIndex(Math.max(0, viewingMoveIndex - 1))}
                           disabled={viewingMoveIndex === 0}
-                          className="font-neo border-2 border-black px-3 py-1 text-sm font-bold uppercase hover:bg-black hover:text-white active:bg-black active:text-white disabled:opacity-40"
                         >
                           ←
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          size="sm"
                           onClick={() => {
                             if (viewingMoveIndex < moveHistory.length - 1) {
                               setViewingMoveIndex(viewingMoveIndex + 1);
@@ -214,10 +207,9 @@ export default function MultipleChoiceChessGame() {
                               setViewingMoveIndex(null);
                             }
                           }}
-                          className="font-neo border-2 border-black px-3 py-1 text-sm font-bold uppercase hover:bg-black hover:text-white active:bg-black active:text-white"
                         >
                           {viewingMoveIndex < moveHistory.length - 1 ? '→' : '↓ Live'}
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   )}
@@ -232,12 +224,9 @@ export default function MultipleChoiceChessGame() {
                       >
                         {gameState.turn === color ? 'Your turn' : "Opponent's turn"}
                       </div>
-                      <button
-                        onClick={() => setConfirmingResign(true)}
-                        className="font-neo border-2 border-black px-3 py-1 text-sm font-bold text-gray-600 uppercase hover:border-red-500 hover:bg-red-100 hover:text-red-700 active:bg-red-100 active:text-red-700"
-                      >
+                      <Button variant="danger" size="sm" onClick={() => setConfirmingResign(true)}>
                         Resign
-                      </button>
+                      </Button>
                     </div>
                   )}
                 </div>
@@ -283,22 +272,20 @@ export default function MultipleChoiceChessGame() {
             <div className="border-b-4 border-black p-5 text-center">
               <h2 className="text-xl font-extrabold uppercase">Resign this game?</h2>
             </div>
-            <div className="grid grid-cols-2 divide-x-4 divide-black">
-              <button
-                onClick={() => setConfirmingResign(false)}
-                className="px-4 py-3 text-sm font-bold uppercase hover:bg-black hover:text-white active:bg-black active:text-white"
-              >
+            <div className="grid grid-cols-2 gap-3 p-4">
+              <Button className="w-full" onClick={() => setConfirmingResign(false)}>
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="danger"
+                className="w-full"
                 onClick={() => {
                   setConfirmingResign(false);
                   resign();
                 }}
-                className="px-4 py-3 font-extrabold tracking-wide text-red-700 uppercase hover:bg-red-600 hover:text-white active:bg-red-600 active:text-white"
               >
                 Resign
-              </button>
+              </Button>
             </div>
           </div>
         </div>

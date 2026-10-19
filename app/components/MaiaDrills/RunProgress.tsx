@@ -1,5 +1,6 @@
 import { isHandheld } from '~/utils/maiaDrills/device';
 import type { AnalysisRun, Stage } from './useAnalysisRun';
+import Button from '~/components/Button';
 
 const STAGE_LABELS: Record<Stage, string> = {
   idle: '',
@@ -101,13 +102,9 @@ export default function RunProgress({ run }: { run: AnalysisRun }) {
           )}
         </>
       )}
-      <button
-        onClick={run.cancel}
-        disabled={stage === 'saving'}
-        className="font-neo border-2 border-black bg-white px-4 py-2 text-sm font-bold tracking-wide uppercase hover:bg-black hover:text-white disabled:opacity-50"
-      >
+      <Button size="sm" onClick={run.cancel} disabled={stage === 'saving'}>
         {stage === 'analyzing' ? 'Stop and keep cards so far' : 'Cancel'}
-      </button>
+      </Button>
     </div>
   );
 }
