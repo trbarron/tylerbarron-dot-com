@@ -307,7 +307,7 @@ export default function BlunderWatch() {
                 <div className="relative mb-6 border-4 border-black bg-white p-6">
                   <button
                     onClick={dismissHowToPlay}
-                    className="font-neo absolute top-2 right-4 px-1 text-2xl leading-none font-black text-black transition-all duration-100 hover:bg-black hover:text-white"
+                    className="font-neo absolute top-1 right-1 flex h-11 w-11 items-center justify-center text-2xl leading-none font-black text-black transition-all duration-100 hover:bg-black hover:text-white"
                     aria-label="Dismiss"
                   >
                     &times;
