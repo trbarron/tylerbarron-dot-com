@@ -1,5 +1,7 @@
 // Pre-game screen shown before playback begins
 
+import Button from '~/components/Button';
+
 interface PreGameScreenProps {
   whiteElo: number;
   blackElo: number;
@@ -54,12 +56,9 @@ export function PreGameScreen({ whiteElo, blackElo, blunderCount, onStart }: Pre
         </ul>
       </div>
 
-      <button
-        onClick={onStart}
-        className="font-neo w-full border-4 border-black bg-black px-6 py-5 text-xl font-black tracking-tighter text-white uppercase transition-all hover:bg-white hover:text-black"
-      >
+      <Button variant="primary" size="lg" className="w-full" onClick={onStart}>
         START GAME
-      </button>
+      </Button>
     </div>
   );
 }

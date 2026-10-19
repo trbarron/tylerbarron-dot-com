@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { SubmitResponse } from '~/utils/blunderWatch/types';
 import { buildShareText } from '~/utils/blunderWatch/resultEmoji';
+import Button, { buttonClass } from '~/components/Button';
 
 interface ResultsScreenProps {
   gameNumber: number;
@@ -75,12 +76,9 @@ export function ResultsScreen({
       {/* Emoji result — copy target */}
       <div className="border-b-4 border-black bg-gray-100 px-6 py-6 text-center">
         <p className="mb-4 text-3xl tracking-widest select-all">{result.resultEmoji}</p>
-        <button
-          onClick={handleShare}
-          className="font-neo w-full border-4 border-black bg-black px-4 py-4 text-lg font-black text-white uppercase transition-all duration-100 hover:bg-white hover:text-black"
-        >
+        <Button variant="primary" size="lg" className="w-full" onClick={handleShare}>
           {copied ? 'COPIED!' : 'COPY RESULTS'}
-        </button>
+        </Button>
       </div>
 
       {/* Stats grid */}
@@ -118,21 +116,13 @@ export function ResultsScreen({
       {/* Actions */}
       <div className="flex flex-col gap-4 p-6">
         {gameUrl && (
-          <a
-            href={gameUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-neo w-full border-4 border-black bg-white px-4 py-4 text-center text-sm font-black text-black uppercase transition-all duration-100 hover:bg-black hover:text-white"
-          >
+          <a href={gameUrl} target="_blank" rel="noopener noreferrer" className={buttonClass({ className: 'w-full' })}>
             ANALYZE ON LICHESS
           </a>
         )}
-        <button
-          onClick={onViewLeaderboard}
-          className="font-neo w-full border-4 border-black bg-white px-4 py-4 text-sm font-black text-black uppercase transition-all duration-100 hover:bg-black hover:text-white"
-        >
+        <Button className="w-full" onClick={onViewLeaderboard}>
           VIEW LEADERBOARD
-        </button>
+        </Button>
       </div>
     </div>
   );
