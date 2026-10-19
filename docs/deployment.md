@@ -36,7 +36,7 @@ API Gateway rejects Lambda responses larger than 6 MB. Because the handler
 base64-encodes binary assets (~1.33× expansion), the practical raw-file limit is
 ~4.5 MB. Symptom of going over: HTTP 500 with body `{"message":"Internal Server Error"}`
 and an `apigw-requestid` header. The Stockfish WASM (7.3 MB) hit this — now offloaded to
-unpkg CDN; see `app/utils/multipleChoiceChess/stockfishEngine.ts`.
+unpkg CDN; see `app/utils/chess/stockfish.ts`.
 
 ## Lambda dependencies: two lists that must stay in sync
 
@@ -68,7 +68,7 @@ touched imports.
 ## Stockfish in the Lambda: downloaded on first use, not shipped
 
 Collaborative Checkmate decides disagreements with Stockfish on the server
-(`app/utils/stockfish.server.ts`), but the engine isn't in the Lambda zip. The first
+(`app/utils/chess/stockfish.server.ts`), but the engine isn't in the Lambda zip. The first
 search in a container downloads the two files it needs (18 lite single-threaded, ~7 MB)
 from unpkg, the same pinned version the browser games load, checks each against a
 pinned SHA-256, and keeps them in `/tmp` for the container's life. That costs about half

@@ -1,7 +1,7 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Chess } from 'chess.js';
+import { uciArrow } from '~/utils/chess/moves';
 import type { DrawShape } from 'chessground/draw';
-import type { Key } from 'chessground/types';
 import type { StockfishPool } from '~/utils/maiaDrills/stockfishPool';
 import {
   advanceQueue,
@@ -39,10 +39,6 @@ const NO_EVENTS = {};
 const NO_SELECTABLE = {};
 const NO_DRAWABLE = {};
 const NO_SHAPES: DrawShape[] = [];
-
-function arrow(uci: string, brush: string): DrawShape {
-  return { orig: uci.slice(0, 2) as Key, dest: uci.slice(2, 4) as Key, brush };
-}
 
 export default function Drill({ deckId, deck, onExit }: DrillProps) {
   const [queue, setQueue] = useState<number[]>([]);
@@ -156,9 +152,9 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
 
   const shapes = useMemo(() => {
     if (!card || !answer) return NO_SHAPES;
-    const list = [arrow(card.played.uci, 'red'), arrow(card.target.uci, 'green')];
+    const list = [uciArrow(card.played.uci, 'red'), uciArrow(card.target.uci, 'green')];
     for (const g of extraGuesses(card, answer)) {
-      list.push(arrow(g.uci, isAlsoGood(answer, g) ? 'blue' : 'yellow'));
+      list.push(uciArrow(g.uci, isAlsoGood(answer, g) ? 'blue' : 'yellow'));
     }
     return list;
   }, [card, answer]);

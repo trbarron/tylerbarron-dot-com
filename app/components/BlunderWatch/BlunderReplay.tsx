@@ -1,6 +1,7 @@
 // Scrollable replay of each blunder shown on the results screen.
 // Displays a static board thumbnail, eval swing, and the player's outcome.
 
+import { formatEval, formatPawns } from '~/utils/chess/evaluation';
 import { Suspense, lazy } from 'react';
 import { Chess } from 'chess.js';
 import type { Key } from 'chessground/types';
@@ -28,12 +29,6 @@ function getBlunderMove(
     }
   }
   return { fen: chess.fen(), lastMove };
-}
-
-function formatEval(cp: number): string {
-  if (Math.abs(cp) >= 10_000) return cp > 0 ? '+M' : '-M';
-  const pawns = cp / 100;
-  return (pawns >= 0 ? '+' : '') + pawns.toFixed(2);
 }
 
 function outcomeLabel(result: BlunderResult): { label: string; className: string } {
@@ -101,10 +96,7 @@ export function BlunderReplay({ moves, initialFen, blunderResults }: BlunderRepl
                 </p>
                 <p className="mb-2 font-mono text-xs text-gray-700">
                   {formatEval(result.evalBefore)} → {formatEval(result.evalAfter)}&nbsp;
-                  <span className="opacity-60">
-                    ({evalSwing > 0 ? '+' : ''}
-                    {(evalSwing / 100).toFixed(2)})
-                  </span>
+                  <span className="opacity-60">({formatPawns(evalSwing)})</span>
                 </p>
                 <div className={`font-neo inline-block border-2 px-2 py-1 text-xs font-bold ${className}`}>{label}</div>
                 {result.reactionTimeMs !== undefined && (

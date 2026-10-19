@@ -8,6 +8,7 @@
 // queued on the pool and drained while Maia moves on to the next game.
 
 import { Chess } from 'chess.js';
+import { parseUci } from '~/utils/chess/moves';
 import type { MaiaEngine, MaiaQuery } from './maiaEngine';
 import type { StockfishPool } from './stockfishPool';
 import {
@@ -19,7 +20,7 @@ import {
   type DrillCard,
   type SourceGame,
 } from './types';
-import { winDrop } from './winChance';
+import { winDrop } from '~/utils/chess/winChance';
 
 /** Stockfish jobs allowed in flight before Maia waits for the pool to catch up. */
 const MAX_OUTSTANDING_JOBS = 48;
@@ -95,7 +96,7 @@ export function legalUci(fen: string): string[] {
 }
 
 function sanOf(fen: string, uci: string): string {
-  return new Chess(fen).move({ from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci[4] }).san;
+  return new Chess(fen).move(parseUci(uci)).san;
 }
 
 /**

@@ -1,3 +1,4 @@
+import { formatEval } from '~/utils/chess/evaluation';
 import type { GameMode } from '~/utils/chesserGuesser/types';
 
 interface PuzzleHistory {
@@ -59,9 +60,14 @@ export default function ScoreDisplay({
     return 'Last Round';
   };
 
-  const yourGuess = isReviewMode && reviewPuzzle ? (reviewPuzzle.guess / 100).toFixed(2) : lastSlider.toFixed(2);
+  // Two decimals: the game is scored on the gap to the hundredth of a pawn.
+  const yourGuess = formatEval(isReviewMode && reviewPuzzle ? reviewPuzzle.guess : Math.round(lastSlider * 100), {
+    decimals: 2,
+  });
 
-  const actualEval = isReviewMode && reviewPuzzle ? (reviewPuzzle.eval / 100).toFixed(2) : lastEval.toFixed(2);
+  const actualEval = formatEval(isReviewMode && reviewPuzzle ? reviewPuzzle.eval : Math.round(lastEval * 100), {
+    decimals: 2,
+  });
 
   const difference =
     isReviewMode && reviewPuzzle

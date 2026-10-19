@@ -6,7 +6,8 @@
 
 import { openGames } from '~/utils/multiplayer/openGames.server';
 import { getRedisClient } from '~/utils/redis.server';
-import { evaluate, scoreValue } from '~/utils/stockfish.server';
+import { scoreValue } from '~/utils/chess/stockfish';
+import { evaluate } from '~/utils/chess/stockfish.server';
 import {
   act,
   applyMove,

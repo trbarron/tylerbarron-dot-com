@@ -86,7 +86,7 @@ app/components/MultipleChoiceChess/
   GameOverModal.tsx        # Checkmate / draw / resignation summary
 
 app/utils/multipleChoiceChess/
-  stockfishEngine.ts       # Web Worker wrapper with Promise-based API
+  stockfishEngine.ts       # MultiPV analysis with a Promise-based API, on the shared worker (app/utils/chess/stockfish.ts)
   moveParser.ts            # Parse MultiPV output lines into ranked move list
   scoring.ts               # Points per rank, accuracy calculation
 ```
@@ -178,15 +178,15 @@ Each of the 4 candidate moves is:
 
 ## Polling Behavior
 
+The game page polls with the shared `usePolling` hook (`app/hooks/usePolling.ts`): one request at a time, the rate set by the phase.
+
 | Client state | Polling |
 |---|---|
-| Waiting for opponent to move | Poll `/state/:gameId` every 1000ms |
-| Engine analyzing locally | Stop polling |
-| Player choosing from 4 options | Stop polling |
-| Animating post-move feedback | Stop polling |
-| Game over | Stop polling |
+| Waiting for a second player | `/state` every 4 s |
+| Opponent's turn | `/state` every 1.2 s |
+| Engine analyzing, choosing, game over | Off |
 
-On each poll response, compare `last_updated` to the previously seen value. If changed, update the board, scores, and feedback display. This avoids unnecessary re-renders on unchanged responses.
+Polling continues while the tab is hidden, because polls are how the player shows they're still there (below). On each response, `last_updated` is compared with the last value seen; only a change updates the board, scores and history.
 
 ---
 
@@ -253,11 +253,11 @@ Until: checkmate / stalemate / resignation → status set to "complete"
 
 ## Disconnection Handling
 
-Because the transport is polling rather than WebSockets, disconnection is implicit — the server never knows a client is gone. This simplifies handling significantly:
+Because the transport is polling rather than WebSockets, there's no connection to lose:
 
-- If a player closes the tab and returns, they resume by navigating back to the game URL. The current state is fetched immediately from Redis.
-- No reconnection logic, heartbeats, or exponential backoff needed.
-- Games with status `active` that have not received a move for more than 10 minutes can be treated as abandoned by the rejoining player (show a "your opponent may have left" message), but no automatic forfeit is applied.
+- A player who closes the tab and comes back resumes from the game URL; the state comes from Redis.
+- No reconnection logic, heartbeats, or backoff.
+- Each `/state` poll records the player's `white_last_seen` / `black_last_seen`, at most every 3 s. After 45 s without the opponent polling, the page shows an "opponent inactive" banner; after 90 s the player can claim the win (`/claimWin`, which re-checks the 90 s on the server).
 
 ---
 

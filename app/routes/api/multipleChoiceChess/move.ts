@@ -1,6 +1,7 @@
 import type { ActionFunctionArgs } from 'react-router';
 import { Chess } from 'chess.js';
 import { getGame, applyMove } from '~/utils/multipleChoiceChess/gameState.server';
+import { parseUci } from '~/utils/chess/moves';
 import { pointsForRank } from '~/utils/multipleChoiceChess/scoring';
 
 function incrementRankCounts(rank: number, rank1: number, rank2: number, rank4: number, rank6: number) {
@@ -53,12 +54,8 @@ export async function action({ request }: ActionFunctionArgs) {
 
     // Apply move and compute new game state
     const chess = new Chess(game.fen);
-    const from = move.slice(0, 2);
-    const to = move.slice(2, 4);
-    const promotion = move.length === 5 ? move[4] : undefined;
-
     try {
-      chess.move({ from, to, promotion });
+      chess.move(parseUci(move));
     } catch {
       return Response.json({ error: 'Illegal move' }, { status: 400 });
     }

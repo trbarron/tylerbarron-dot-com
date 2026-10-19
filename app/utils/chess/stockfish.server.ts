@@ -1,5 +1,5 @@
-// Stockfish on the server: the same WASM build the browser games load from
-// unpkg (18 lite, single-threaded), run inside the Lambda. It isn't shipped in
+// Stockfish on the server: the same WASM build the browser games load
+// (stockfish.ts), run inside the Lambda. It isn't shipped in
 // the Lambda: the first search in a container downloads the two files from
 // unpkg, checks them against pinned hashes, and keeps them in /tmp. In dev and
 // tests they come from the stockfish devDependency. See docs/deployment.md.
@@ -9,19 +9,20 @@ import fs from 'node:fs';
 import { createRequire } from 'node:module';
 import os from 'node:os';
 import path from 'node:path';
+import {
+  parseScore,
+  STOCKFISH_BUILD as ENGINE_NAME,
+  STOCKFISH_CDN as CDN,
+  STOCKFISH_VERSION as VERSION,
+  type EngineScore,
+} from './stockfish';
 
-// Keep in step with STOCKFISH_VERSION in the browser games' loader. Changing it
-// means new hashes: shasum -a 256 node_modules/stockfish/bin/stockfish-18-lite-single.*
-const VERSION = '18.0.7';
-const ENGINE_NAME = 'stockfish-18-lite-single';
+// For STOCKFISH_VERSION's build. Changing the version means new hashes:
+// shasum -a 256 node_modules/stockfish/bin/stockfish-18-lite-single.*
 const SHA256 = {
   js: '2278005057f381491f1c9bb3e44c9f5920b3a00bef9759e33cc6582769a1f1fe',
   wasm: 'a8fbc05ec6920b56d7485826dcb02c5ffd2826bcbf751cf973046f237a9096f1',
 };
-const CDN = `https://unpkg.com/stockfish@${VERSION}/bin`;
-
-/** From the side to move: centipawns, or moves to mate (negative: being mated). */
-export type EngineScore = { type: 'cp' | 'mate'; value: number };
 
 interface EmscriptenEngine {
   locateFile: (file: string) => string;
@@ -107,8 +108,7 @@ export function evaluate(fen: string, { depth = 18, movetimeMs = 1000 } = {}): P
         reject(new Error('Stockfish timed out'));
       }, movetimeMs + 5000);
       engine.listener = (line: string) => {
-        const m = /\bscore (cp|mate) (-?\d+)/.exec(line);
-        if (m) score = { type: m[1] as 'cp' | 'mate', value: Number(m[2]) };
+        score = parseScore(line) ?? score;
         if (line.startsWith('bestmove')) {
           clearTimeout(timeout);
           engine.listener = undefined;
@@ -123,11 +123,4 @@ export function evaluate(fen: string, { depth = 18, movetimeMs = 1000 } = {}): P
   const result = queue.then(run, run);
   queue = result.catch(() => undefined);
   return result;
-}
-
-/** A score as one comparable number: mates beat any centipawn value, sooner mates more. */
-export function scoreValue(score: EngineScore): number {
-  if (score.type === 'cp') return score.value;
-  if (score.value > 0) return 100_000 - score.value;
-  return -100_000 - score.value;
 }

@@ -21,8 +21,8 @@ if (url && !isLocal) throw new Error(`TEST_REDIS_URL must be a local Redis, got 
 
 const { evaluate, redisRef } = vi.hoisted(() => ({ evaluate: vi.fn(), redisRef: { client: null as Redis | null } }));
 vi.mock('~/utils/redis.server', () => ({ getRedisClient: () => redisRef.client }));
-vi.mock('~/utils/stockfish.server', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('~/utils/stockfish.server')>()),
+vi.mock('~/utils/chess/stockfish.server', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('~/utils/chess/stockfish.server')>()),
   evaluate: (...args: unknown[]) => evaluate(...args),
 }));
 

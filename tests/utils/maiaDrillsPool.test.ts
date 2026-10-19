@@ -65,7 +65,8 @@ class FakeStockfish {
   terminate() {}
 }
 
-vi.mock('~/utils/multipleChoiceChess/stockfishEngine', () => ({
+vi.mock('~/utils/chess/stockfish', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('~/utils/chess/stockfish')>()),
   createStockfishWorker: () => ({ worker: new FakeStockfish(), cleanup: () => {} }),
 }));
 

@@ -1,4 +1,5 @@
 import { Chess } from 'chess.js';
+import { parseUci } from '~/utils/chess/moves';
 
 export interface CandidateMove {
   uci: string; // "e2e4"
@@ -29,12 +30,8 @@ export function parseMultiPV(lines: string[], fen: string): CandidateMove[] {
     if (!uci) continue;
 
     try {
-      const from = uci.slice(0, 2);
-      const to = uci.slice(2, 4);
-      const promotion = uci.length === 5 ? uci[4] : undefined;
-
       const tempChess = new Chess(fen);
-      const moveResult = tempChess.move({ from, to, promotion });
+      const moveResult = tempChess.move(parseUci(uci));
       if (!moveResult) continue;
 
       result.push({ uci, san: moveResult.san, rank });

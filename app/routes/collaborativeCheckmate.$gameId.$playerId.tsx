@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Chess } from 'chess.js';
+import { uciArrow } from '~/utils/chess/moves';
 import type { DrawShape } from 'chessground/draw';
-import type { Key } from 'chessground/types';
 import { Link, useLoaderData, useLocation, type LinksFunction } from 'react-router';
 import { Navbar } from '~/components/Navbar';
 import Footer from '~/components/Footer';
@@ -33,10 +33,6 @@ export const loader = async ({ params }: { params: { gameId?: string; playerId?:
 
 const START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
-function arrow(uci: string, brush: string): DrawShape {
-  return { orig: uci.slice(0, 2) as Key, dest: uci.slice(2, 4) as Key, brush };
-}
-
 export default function CollaborativeCheckmate() {
   const { gameId, playerId } = useLoaderData<typeof loader>();
   const isPrivate = (useLocation().state as { isPrivate?: boolean } | null)?.isPrivate === true;
@@ -63,8 +59,8 @@ export default function CollaborativeCheckmate() {
 
   const shapes = useMemo(() => {
     const list: DrawShape[] = [];
-    if (game?.lastMove) list.push(arrow(game.lastMove, 'yellow'));
-    if (game?.yourSelection) list.push(arrow(game.yourSelection, 'blue'));
+    if (game?.lastMove) list.push(uciArrow(game.lastMove, 'yellow'));
+    if (game?.yourSelection) list.push(uciArrow(game.yourSelection, 'blue'));
     return list;
   }, [game?.lastMove, game?.yourSelection]);
 

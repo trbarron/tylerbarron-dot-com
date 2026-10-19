@@ -4,7 +4,7 @@
 // Each job is `go depth D searchmoves m1 m2 …` with MultiPV set to the number
 // of candidates, so one search scores every candidate from the mover's side.
 
-import { createStockfishWorker } from '~/utils/multipleChoiceChess/stockfishEngine';
+import { createStockfishWorker, parseScore } from '~/utils/chess/stockfish';
 import { isHandheld } from './device';
 
 /** Mates and crushing evals collapse to this, so a won position can't produce a "1500 cp error". */
@@ -23,17 +23,16 @@ export function parseCandidateScores(lines: string[]): Map<string, number> {
   const scores = new Map<string, number>();
   for (const line of lines) {
     if (!line.startsWith('info') || line.includes(' lowerbound') || line.includes(' upperbound')) continue;
-    const score = line.match(/ score (cp|mate) (-?\d+)/);
+    const score = parseScore(line);
     const pv = line.match(/ pv (\S+)/);
     if (!score || !pv) continue;
 
-    const value = Number(score[2]);
     const cp =
-      score[1] === 'mate'
-        ? value > 0
+      score.type === 'mate'
+        ? score.value > 0
           ? SCORE_CLAMP
           : -SCORE_CLAMP
-        : Math.max(-SCORE_CLAMP, Math.min(SCORE_CLAMP, value));
+        : Math.max(-SCORE_CLAMP, Math.min(SCORE_CLAMP, score.value));
     scores.set(pv[1], cp);
   }
   return scores;
