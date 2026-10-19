@@ -309,32 +309,22 @@ export default function MaiaDrills() {
 
         {deckId ? (
           loadError ? (
-            <Panel padded className="w-full" title="Deck">
+            <Panel padded className="w-full">
               <Notice>{loadError}</Notice>
               <Link to="/marginal-maia-mentor" className="font-neo mt-3 inline-block text-sm underline">
                 Build a new deck
               </Link>
             </Panel>
           ) : !deck ? (
-            <Panel padded className="w-full" title="Deck">
+            <Panel padded className="w-full">
               <p className="font-neo text-sm text-gray-600">Loading…</p>
             </Panel>
           ) : drilling ? (
             <Drill deckId={deckId} deck={deck} onExit={() => setDrilling(false)} />
           ) : (
-            <Panel
-              padded
-              className="w-full"
-              title="Deck"
-              aside={
-                <Link
-                  to="/marginal-maia-mentor"
-                  className="font-neo text-xs font-bold tracking-wide uppercase underline"
-                >
-                  New deck
-                </Link>
-              }
-            >
+            // No title bar: the deck's card count heads it, and the page title
+            // above already links back to building a new deck.
+            <Panel padded className="w-full">
               <DeckView
                 deckId={deckId}
                 deck={deck}
