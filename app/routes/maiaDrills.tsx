@@ -184,8 +184,10 @@ function DeckView({
   return (
     <div className="font-neo space-y-5 text-black">
       <div>
-        <p className="text-3xl font-extrabold">{deck.cards.length} cards</p>
-        {[`${deck.username} on ${SOURCE_NAMES[deck.source]}`, ...settingsParts(deck.settings)].map((detail) => (
+        <h2 className="text-3xl font-extrabold break-words">
+          {deck.username}’s {deck.cards.length}-card deck
+        </h2>
+        {[`${SOURCE_NAMES[deck.source]} games`, ...settingsParts(deck.settings)].map((detail) => (
           <p key={detail} className="text-sm text-gray-700">
             {detail}
           </p>
@@ -322,7 +324,7 @@ export default function MaiaDrills() {
           ) : drilling ? (
             <Drill deckId={deckId} deck={deck} onExit={() => setDrilling(false)} />
           ) : (
-            // No title bar: the deck's card count heads it, and the page title
+            // No title bar: the deck's own heading leads it, and the page title
             // above already links back to building a new deck.
             <Panel padded className="w-full">
               <DeckView
