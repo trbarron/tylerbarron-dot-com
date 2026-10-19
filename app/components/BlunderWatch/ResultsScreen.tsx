@@ -1,9 +1,9 @@
 // End-of-game results screen shown after all moves have played out and score is submitted.
 
-import { useState } from 'react';
 import type { SubmitResponse } from '~/utils/blunderWatch/types';
 import { buildShareText } from '~/utils/blunderWatch/resultEmoji';
 import Button, { buttonClass } from '~/components/Button';
+import { useCopy } from '~/hooks/useCopy';
 
 interface ResultsScreenProps {
   gameNumber: number;
@@ -22,7 +22,7 @@ export function ResultsScreen({
   submitError,
   onViewLeaderboard,
 }: ResultsScreenProps) {
-  const [copied, setCopied] = useState(false);
+  const { state: copyState, copy } = useCopy();
 
   const handleShare = async () => {
     if (!result) return;
@@ -33,13 +33,7 @@ export function ResultsScreen({
       result.falsePositives,
       result.blundersCaught,
     );
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      alert(text);
-    }
+    if (!(await copy(text))) alert(text);
   };
 
   if (isSubmitting) {
@@ -77,7 +71,7 @@ export function ResultsScreen({
       <div className="border-b-4 border-black bg-gray-100 px-6 py-6 text-center">
         <p className="mb-4 text-3xl tracking-widest select-all">{result.resultEmoji}</p>
         <Button variant="primary" size="lg" className="w-full" onClick={handleShare}>
-          {copied ? 'COPIED!' : 'COPY RESULTS'}
+          {copyState === 'copied' ? 'COPIED!' : 'COPY RESULTS'}
         </Button>
       </div>
 
