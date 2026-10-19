@@ -57,6 +57,9 @@ export function Leaderboard({ currentUsername, date }: LeaderboardProps) {
       <div className="font-neo border-b-4 border-black bg-black px-4 py-3 text-center text-lg font-extrabold tracking-tighter text-white uppercase md:text-left">
         TODAY'S LEADERBOARD
       </div>
+      <div className="font-neo border-b-2 border-black px-4 py-2 text-xs text-gray-700">
+        ✓ blunders caught · ✗ false alarms
+      </div>
 
       <div className="max-h-[500px] overflow-y-auto">
         {isLoading ? (

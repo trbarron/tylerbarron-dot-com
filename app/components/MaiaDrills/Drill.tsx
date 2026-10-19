@@ -249,7 +249,7 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
               <p className="text-sm text-gray-700">{misses.length ? 'Nope. One more try' : 'Make a move'}</p>
               <button
                 onClick={reveal}
-                className="border-2 border-black px-3 py-1 text-xs font-bold tracking-wide uppercase hover:bg-black hover:text-white"
+                className="min-h-11 border-2 border-black px-3 py-1 text-xs font-bold tracking-wide uppercase hover:bg-black hover:text-white"
               >
                 Show answer
               </button>

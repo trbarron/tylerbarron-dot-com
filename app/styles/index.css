@@ -1,5 +1,20 @@
 @import 'tailwindcss';
 
+/* hover: means "hovered, where hovering exists" (Tailwind's default) and also
+   "while pressed", on every device. Touch screens can't hover, so without the
+   press half a tapped button gave no feedback. Hover styles set background and
+   text together, so pressed buttons keep their contrast. */
+@custom-variant hover {
+  @media (hover: hover) {
+    &:hover {
+      @slot;
+    }
+  }
+  &:active {
+    @slot;
+  }
+}
+
 /*
  * Self-hosted from /fonts/*, so no third-party origin for visitors to be
  * exposed to and no extra DNS+TLS handshake. (Browsers partitioned their HTTP

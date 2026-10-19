@@ -85,12 +85,21 @@ const WorkTimeChart = ({ data }: WorkTimeChartProps) => {
               const totalPx = segments.reduce((sum, s) => sum + px(s.value), 0);
 
               return (
-                <div key={hour} className="group flex min-w-[20px] flex-1 flex-col items-center justify-end">
+                <div
+                  key={hour}
+                  // A tap (or Tab) focuses the bar and shows its value; hover alone never fires on touch.
+                  {...(hasData && {
+                    role: 'button',
+                    tabIndex: 0,
+                    'aria-label': `${formatHour(hour)}: ${count.toFixed(0)} minutes`,
+                  })}
+                  className="group flex min-w-[20px] flex-1 flex-col items-center justify-end focus:outline-none"
+                >
                   {/* Bar */}
                   {hasData && (
                     <div className="relative flex w-full flex-col items-center">
                       {/* Value label on hover - positioned above bar */}
-                      <div className="absolute bottom-full mb-1 text-[9px] font-medium whitespace-nowrap text-gray-700 opacity-0 transition-opacity group-hover:opacity-100">
+                      <div className="absolute bottom-full mb-1 text-[9px] font-medium whitespace-nowrap text-gray-700 opacity-0 transition-opacity group-hover:opacity-100 group-focus:opacity-100">
                         {count.toFixed(0)}m
                         {hasSplit &&
                           ` (C ${(entry.checo ?? 0).toFixed(0)} · T ${(entry.tuni ?? 0).toFixed(0)}${
