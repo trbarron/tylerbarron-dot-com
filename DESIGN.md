@@ -104,6 +104,15 @@ Every modal is `<Dialog>` (`app/components/Dialog.tsx`), which wraps the native 
 - **Where it lives:** these looks are the global `input` / `select` / `textarea` rules in `app/styles/index.css`. Don't put border, ring, radius or background classes on an input: a utility beats the global rule, which is how fields drifted to accent rings and rounded grey borders.
 - **Labelled fields are `<TextField>` and `<Checkbox>`** (`app/components/Field.tsx`). A label is uppercase bold `text-xs` above the input, with an optional `hint` line under it; a checkbox's label sits to its right, and the whole row is clickable.
 
+### Notices
+
+Messages about state, such as a failed load, a rejected submission or an inactive opponent, are `<Notice>` (`app/components/Notice.tsx`).
+
+- **`error`** (default): white, 4px black border, `role="alert"`. Severity is shown by border weight, like a `danger` button, never by red.
+- **`info`**: Ash Gray (`#F5F5F5`), 2px black border, `role="status"`.
+- Black `text-sm` body, with an optional bold uppercase `title` line and an `action` on the right (Retry, Claim win).
+- Status that belongs to a game's own display stays there, colored as the game needs: Maia's arrow legend, Collaborative Checkmate's ready dots and log rows, Blunder Watch's red miss flash.
+
 ### Cards & Containers
 - Border: 4px solid black, no border-radius
 - Interactive cards: subtle background shift or lift on hover (`transition: 0.1s ease`)

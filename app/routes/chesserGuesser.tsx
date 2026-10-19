@@ -48,6 +48,7 @@ import chessgroundBase from '../styles/chessground.base.css?url';
 import chessgroundBrown from '../styles/chessground.brown.css?url';
 import chessgroundCburnett from '../styles/chessground.cburnett.css?url';
 import { useCopy } from '~/hooks/useCopy';
+import Notice from '~/components/Notice';
 
 export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: chessgroundBase },
@@ -569,10 +570,9 @@ export default function ChesserGuesserUnlimited() {
 
               {/* Daily Error State */}
               {gameMode === 'daily' && dailyError && (
-                <div className="mb-4 border-4 border-red-500 bg-red-100 p-4">
-                  <p className="font-neo mb-2 font-bold text-red-800">Error Loading Puzzles</p>
-                  <p className="font-neo text-sm text-red-800">{dailyError}</p>
-                </div>
+                <Notice title="Error Loading Puzzles" className="mb-4">
+                  {dailyError}
+                </Notice>
               )}
 
               {/* Daily Completion Message */}

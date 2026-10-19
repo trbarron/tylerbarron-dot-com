@@ -7,6 +7,7 @@ import ImageDisplay from '~/components/CatImage';
 import type { CatSummaryData, CatDetailedData } from '~/types/catTracker';
 import { buildMeta } from '~/utils/seo';
 import Button from '~/components/Button';
+import Notice from '~/components/Notice';
 
 export function meta() {
   return buildMeta({
@@ -154,7 +155,7 @@ export default function ChecoLiveTracker() {
             <div className="prose">
               <div className="text-center">
                 {!basicData ? (
-                  <h2 className="text-4xl font-bold text-red-500">Error loading data</h2>
+                  <Notice title="Error loading data" className="mx-auto my-8 max-w-2xl text-left" />
                 ) : (
                   <>
                     <div className="mx-auto my-8 max-w-2xl px-4">

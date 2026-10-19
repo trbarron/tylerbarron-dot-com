@@ -11,6 +11,7 @@ import { activeTournamentId, fetchLeaderboard, fetchStatus } from '~/utils/camel
 import type { Leaderboard, LeaderboardBot, SubmissionStatus } from '~/utils/camelUpCup/types';
 import Button from '~/components/Button';
 import { TextField } from '~/components/Field';
+import Notice from '~/components/Notice';
 
 export function meta() {
   return buildMeta({
@@ -318,28 +319,27 @@ function StatusPanel({ status }: { status: SubmissionStatus }) {
 
   if (status.phase === 'rejected') {
     return (
-      <div className="mx-4 mt-4 rounded border border-red-300 bg-red-50 p-4 text-sm lg:mx-auto lg:w-11/12">
-        <p className="font-bold">{status.botName ?? 'Your bot'} was rejected.</p>
-        <p className="mt-1">{status.reason}</p>
-      </div>
+      <Notice title={`${status.botName ?? 'Your bot'} was rejected.`} className="mx-4 mt-4 lg:mx-auto lg:w-11/12">
+        {status.reason}
+      </Notice>
     );
   }
   if (status.phase === 'error') {
     return (
-      <div className="mx-4 mt-4 rounded border border-red-300 bg-red-50 p-4 text-sm lg:mx-auto lg:w-11/12">
-        <p className="font-bold">Something broke while running the tournament.</p>
-        <p className="mt-1">{status.reason}</p>
-      </div>
+      <Notice title="Something broke while running the tournament." className="mx-4 mt-4 lg:mx-auto lg:w-11/12">
+        {status.reason}
+      </Notice>
     );
   }
   if (status.phase === 'complete') {
     return (
-      <div className="mx-4 mt-4 rounded border border-green-300 bg-green-50 p-4 text-sm lg:mx-auto lg:w-11/12">
-        <p className="font-bold">
-          {status.botName} is in! {status.rank ? `Finished rank #${status.rank}.` : ''}
-        </p>
-        <p className="mt-1">The leaderboard above reflects the new standings.</p>
-      </div>
+      <Notice
+        tone="info"
+        title={`${status.botName} is in! ${status.rank ? `Finished rank #${status.rank}.` : ''}`}
+        className="mx-4 mt-4 lg:mx-auto lg:w-11/12"
+      >
+        The leaderboard above reflects the new standings.
+      </Notice>
     );
   }
   return (
@@ -408,7 +408,7 @@ function UploadForm({ onSubmitted }: { onSubmitted: (id: string) => void }) {
         <TextField label="Your name" className="flex-1" name="author" required maxLength={40} placeholder="Fred" />
       </div>
       <TextField label="Bot file (.py, max 64 KB)" name="file" type="file" accept=".py" required />
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <Notice>{error}</Notice>}
       <div className="flex justify-center">
         <Button type="submit" variant="primary" disabled={busy}>
           {busy ? 'Submitting…' : 'Enter the tournament'}

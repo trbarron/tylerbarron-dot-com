@@ -1,6 +1,7 @@
 import { isHandheld } from '~/utils/maiaDrills/device';
 import type { AnalysisRun, Stage } from './useAnalysisRun';
 import Button from '~/components/Button';
+import Notice from '~/components/Notice';
 
 const STAGE_LABELS: Record<Stage, string> = {
   idle: '',
@@ -42,14 +43,12 @@ export function RunMessages({ run }: { run: AnalysisRun }) {
   return (
     <>
       {run.error && (
-        <div className="font-neo border-2 border-red-500 bg-red-100 p-3 text-sm text-red-800" role="alert">
-          <p>{run.error}</p>
-          {run.errorDetail && <p className="mt-1 font-mono text-xs break-words text-red-700">{run.errorDetail}</p>}
-        </div>
+        <Notice>
+          {run.error}
+          {run.errorDetail && <div className="mt-1 font-mono text-xs text-gray-700">{run.errorDetail}</div>}
+        </Notice>
       )}
-      {run.notice && (
-        <div className="font-neo border-2 border-black bg-gray-50 p-3 text-sm text-gray-800">{run.notice}</div>
-      )}
+      {run.notice && <Notice tone="info">{run.notice}</Notice>}
     </>
   );
 }

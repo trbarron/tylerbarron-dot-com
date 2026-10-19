@@ -7,6 +7,7 @@ import { GAME_ID_RE, PLAYER_ID_RE } from '~/utils/collaborativeCheckmate/types';
 import { buildMeta } from '~/utils/seo';
 import Button from '~/components/Button';
 import { Checkbox, TextField } from '~/components/Field';
+import Notice from '~/components/Notice';
 
 export function meta() {
   return buildMeta({
@@ -127,7 +128,7 @@ export default function CollaborativeCheckmate() {
             )}
           </div>
 
-          {error && <div className="font-neo mb-4 border-2 border-red-500 bg-red-100 p-4 text-red-800">{error}</div>}
+          {error && <Notice className="mb-4">{error}</Notice>}
 
           {availableGames.length === 0 && !isLoading && (
             <div className="font-neo py-8 text-center text-gray-500">

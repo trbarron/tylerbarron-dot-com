@@ -5,6 +5,7 @@ import { useState } from 'react';
 import Button from '~/components/Button';
 import Dialog from '~/components/Dialog';
 import { TextField } from '~/components/Field';
+import Notice from '~/components/Notice';
 
 interface UsernameModalProps {
   isOpen: boolean;
@@ -73,11 +74,7 @@ export function UsernameModal({
             autoComplete="off"
           />
 
-          {error && (
-            <div className="font-neo mb-4 border-2 border-red-500 bg-red-100 px-3 py-2 text-sm text-red-800">
-              {error}
-            </div>
-          )}
+          {error && <Notice className="mb-4">{error}</Notice>}
 
           <div className="font-neo mb-4 text-xs text-gray-600">
             • Less than 20 characters

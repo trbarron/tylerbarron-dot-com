@@ -206,7 +206,8 @@ Extract UI patterns used in **2+ routes** as shared components in `app/component
 3. **Button** - Standardized buttons: `primary` / `secondary` / `danger` in `sm` / `md` / `lg` (see `DESIGN.md`); `buttonClass()` for button-styled links
 4. **TextField / Checkbox** - Labelled form fields (`app/components/Field.tsx`); the input's look comes from the global input rules, so don't style inputs directly
 5. **Panel** - Titled boxes: a 4px border with a light or `dark` title bar, optional `subtitle` / `aside` / `padded` (see `DESIGN.md`)
-6. **ArticleLayout** - Blog post layout wrapper
+6. **Notice** - Error and info messages: `tone`, optional `title` and `action`; monochrome, with errors marked by a 4px border (see `DESIGN.md`)
+7. **ArticleLayout** - Blog post layout wrapper
 
 **Usage Pattern**:
 ```typescript
