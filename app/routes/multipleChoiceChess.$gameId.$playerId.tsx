@@ -18,6 +18,7 @@ export function meta() {
 import chessgroundBase from '../styles/chessground.base.css?url';
 import chessgroundBrown from '../styles/chessground.brown.css?url';
 import chessgroundCburnett from '../styles/chessground.cburnett.css?url';
+import Dialog from '~/components/Dialog';
 
 const Chessboard = lazy(() => import('~/components/Chessboard'));
 
@@ -266,30 +267,23 @@ export default function MultipleChoiceChessGame() {
       </main>
       <Footer />
 
-      {confirmingResign && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-          <div className="font-neo w-full max-w-sm border-4 border-black bg-white">
-            <div className="border-b-4 border-black p-5 text-center">
-              <h2 className="text-xl font-extrabold uppercase">Resign this game?</h2>
-            </div>
-            <div className="grid grid-cols-2 gap-3 p-4">
-              <Button className="w-full" onClick={() => setConfirmingResign(false)}>
-                Cancel
-              </Button>
-              <Button
-                variant="danger"
-                className="w-full"
-                onClick={() => {
-                  setConfirmingResign(false);
-                  resign();
-                }}
-              >
-                Resign
-              </Button>
-            </div>
-          </div>
+      <Dialog open={confirmingResign} onClose={() => setConfirmingResign(false)} title="Resign this game?" size="sm">
+        <div className="grid grid-cols-2 gap-3 p-4">
+          <Button className="w-full" onClick={() => setConfirmingResign(false)}>
+            Cancel
+          </Button>
+          <Button
+            variant="danger"
+            className="w-full"
+            onClick={() => {
+              setConfirmingResign(false);
+              resign();
+            }}
+          >
+            Resign
+          </Button>
         </div>
-      )}
+      </Dialog>
 
       {phase === 'game_over' && gameState?.status === 'complete' && !modalDismissed && (
         <GameOverModal
@@ -306,6 +300,7 @@ export default function MultipleChoiceChessGame() {
           blackRank6={gameState.black_rank_6}
           moveHistory={moveHistory}
           onPlayAgain={() => navigate('/multiple-choice-chess')}
+          onClose={() => setModalDismissed(true)}
           onReview={() => {
             setModalDismissed(true);
             setViewingMoveIndex(moveHistory.length > 0 ? moveHistory.length - 1 : null);
