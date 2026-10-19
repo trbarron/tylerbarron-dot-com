@@ -10,6 +10,7 @@ import { buildMeta } from '~/utils/seo';
 import { activeTournamentId, fetchLeaderboard, fetchStatus } from '~/utils/camelUpCup/tournament.server';
 import type { Leaderboard, LeaderboardBot, SubmissionStatus } from '~/utils/camelUpCup/types';
 import Button from '~/components/Button';
+import { TextField } from '~/components/Field';
 
 export function meta() {
   return buildMeta({
@@ -395,38 +396,18 @@ function UploadForm({ onSubmitted }: { onSubmitted: (id: string) => void }) {
   return (
     <form ref={formRef} onSubmit={handleSubmit} className="mx-auto mt-4 space-y-3 px-4 lg:w-11/12">
       <div className="flex flex-col gap-3 sm:flex-row">
-        <label className="flex-1 text-sm">
-          Bot name
-          <input
-            name="botName"
-            required
-            pattern="[A-Za-z][A-Za-z0-9_-]{2,23}"
-            title="3–24 characters: letters, digits, underscores, or dashes; starts with a letter"
-            placeholder="MyCamelBot"
-            className="mt-1 w-full rounded border border-gray-300 px-2 py-1.5 font-mono"
-          />
-        </label>
-        <label className="flex-1 text-sm">
-          Your name
-          <input
-            name="author"
-            required
-            maxLength={40}
-            placeholder="Fred"
-            className="mt-1 w-full rounded border border-gray-300 px-2 py-1.5"
-          />
-        </label>
-      </div>
-      <label className="block text-sm">
-        Bot file (.py, max 64 KB)
-        <input
-          name="file"
-          type="file"
-          accept=".py"
+        <TextField
+          label="Bot name"
+          className="flex-1"
+          name="botName"
           required
-          className="mt-1 block w-full text-sm file:mr-3 file:rounded file:border-0 file:bg-black file:px-3 file:py-1.5 file:text-white"
+          pattern="[A-Za-z][A-Za-z0-9_-]{2,23}"
+          title="3–24 characters: letters, digits, underscores, or dashes; starts with a letter"
+          placeholder="MyCamelBot"
         />
-      </label>
+        <TextField label="Your name" className="flex-1" name="author" required maxLength={40} placeholder="Fred" />
+      </div>
+      <TextField label="Bot file (.py, max 64 KB)" name="file" type="file" accept=".py" required />
       {error && <p className="text-sm text-red-600">{error}</p>}
       <div className="flex justify-center">
         <Button type="submit" variant="primary" disabled={busy}>

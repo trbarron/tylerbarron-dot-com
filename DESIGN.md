@@ -100,6 +100,9 @@ Every modal is `<Dialog>` (`app/components/Dialog.tsx`), which wraps the native 
 - Range sliders: black track, 24px square thumb (no border-radius), white inner border
 - Checkboxes: 20px square, black fill on checked with white checkmark `✓`
 - Radios: 20px circle, black fill on checked with white dot center
+- File inputs: the "Choose File" control is a small black uppercase button
+- **Where it lives:** these looks are the global `input` / `select` / `textarea` rules in `app/styles/index.css`. Don't put border, ring, radius or background classes on an input: a utility beats the global rule, which is how fields drifted to accent rings and rounded grey borders.
+- **Labelled fields are `<TextField>` and `<Checkbox>`** (`app/components/Field.tsx`). A label is uppercase bold `text-xs` above the input, with an optional `hint` line under it; a checkbox's label sits to its right, and the whole row is clickable.
 
 ### Cards & Containers
 - Border: 4px solid black, no border-radius

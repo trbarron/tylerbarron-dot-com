@@ -212,6 +212,13 @@
     border-color: #000000;
   }
 
+  /* The file input's "Choose File" control: a small primary button. */
+  input[type='file']::file-selector-button {
+    @apply mr-3 border-0 bg-black px-3 py-1 text-xs font-bold tracking-wider text-white uppercase;
+    font-family: var(--font-neo);
+    cursor: pointer;
+  }
+
   input:focus,
   textarea:focus,
   select:focus {

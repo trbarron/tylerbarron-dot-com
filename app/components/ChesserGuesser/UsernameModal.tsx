@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import Button from '~/components/Button';
 import Dialog from '~/components/Dialog';
+import { TextField } from '~/components/Field';
 
 interface UsernameModalProps {
   isOpen: boolean;
@@ -62,13 +63,13 @@ export function UsernameModal({
         </p>
 
         <form onSubmit={handleSubmit}>
-          <input
-            type="text"
+          <TextField
+            label="Username"
+            className="mb-2"
             value={username}
             onChange={handleChange}
             placeholder="Enter username..."
             maxLength={20}
-            className="font-neo focus:ring-accent mb-2 w-full border-2 border-black bg-white px-4 py-3 text-black focus:ring-2 focus:outline-none"
             autoComplete="off"
           />
 
