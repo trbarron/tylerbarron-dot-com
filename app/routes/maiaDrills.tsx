@@ -15,6 +15,7 @@ import { DEFAULT_SETTINGS, type Deck, type DeckSummary, type GameSource } from '
 import chessgroundBase from '../styles/chessground.base.css?url';
 import chessgroundBrown from '../styles/chessground.brown.css?url';
 import chessgroundCburnett from '../styles/chessground.cburnett.css?url';
+import Button from '~/components/Button';
 
 export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: chessgroundBase },
@@ -228,30 +229,17 @@ function DeckView({
       {error && <p className="text-sm text-red-700">{error}</p>}
 
       <div className="flex flex-wrap gap-2">
-        <button
-          onClick={onDrill}
-          className="flex-1 border-4 border-black bg-black px-6 py-3 text-lg font-extrabold tracking-wide text-white uppercase hover:bg-white hover:text-black"
-        >
+        <Button variant="primary" size="lg" className="flex-1" onClick={onDrill}>
           Start drilling
-        </button>
+        </Button>
         {token ? (
-          <button
-            onClick={toggleFavorite}
-            disabled={saving}
-            aria-pressed={!!deck.favorite}
-            className="border-4 border-black px-4 py-3 font-extrabold tracking-wide uppercase hover:bg-black hover:text-white disabled:opacity-50"
-          >
+          <Button onClick={toggleFavorite} disabled={saving} aria-pressed={!!deck.favorite}>
             {deck.favorite ? '★ Favorited' : '☆ Favorite'}
-          </button>
+          </Button>
         ) : (
           deck.favorite && <span className="self-center px-2 font-bold">★ Favorite</span>
         )}
-        <button
-          onClick={copyLink}
-          className="border-4 border-black px-4 py-3 font-extrabold tracking-wide uppercase hover:bg-black hover:text-white"
-        >
-          {copied ? 'Copied' : 'Copy link'}
-        </button>
+        <Button onClick={copyLink}>{copied ? 'Copied' : 'Copy link'}</Button>
       </div>
       {token && !deck.favorite && (
         <p className="text-xs text-gray-600">

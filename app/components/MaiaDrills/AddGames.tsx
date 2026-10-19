@@ -2,6 +2,7 @@ import { trackGamesAdded } from '~/utils/maiaDrills/tracking';
 import { LIMITS, type Deck } from '~/utils/maiaDrills/types';
 import RunProgress, { RunMessages } from './RunProgress';
 import { useAnalysisRun } from './useAnalysisRun';
+import Button from '~/components/Button';
 
 interface AddGamesProps {
   deckId: string;
@@ -84,12 +85,9 @@ export default function AddGames({ deckId, deck, editToken, onUpdated }: AddGame
       ) : (
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="text-sm text-gray-700">Newest game analyzed: {sinceLabel}</p>
-          <button
-            onClick={add}
-            className="border-2 border-black px-4 py-2 text-sm font-bold tracking-wide uppercase hover:bg-black hover:text-white"
-          >
+          <Button size="sm" onClick={add}>
             Add new games
-          </button>
+          </Button>
         </div>
       )}
       <RunMessages run={run} />
