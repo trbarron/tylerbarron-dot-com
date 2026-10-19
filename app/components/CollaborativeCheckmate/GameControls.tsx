@@ -1,5 +1,6 @@
 import Timer from '~/components/Timer';
 import { GamePhase, type GamePhaseType } from '~/utils/collaborativeCheckmate/types';
+import Button from '~/components/Button';
 
 interface GameControlsProps {
   gamePhase: GamePhaseType;
@@ -74,17 +75,9 @@ export default function GameControls({
 
       {/* Lock In Move Button */}
       <div className="mb-12 grid grid-cols-1 gap-2">
-        <button
-          onClick={onLockInMove}
-          className={`font-neo border-2 border-black p-2 font-bold uppercase transition-colors duration-200 ${
-            !connected || !selectedMove || lockedIn
-              ? 'cursor-not-allowed bg-gray-300 text-gray-500'
-              : 'hover:bg-accent bg-white text-black hover:text-white'
-          }`}
-          disabled={!connected || !selectedMove || lockedIn}
-        >
+        <Button variant="primary" onClick={onLockInMove} disabled={!connected || !selectedMove || lockedIn}>
           Lock In Move
-        </button>
+        </Button>
       </div>
     </>
   );
