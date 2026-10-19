@@ -9,6 +9,7 @@ import TrophyModel from '~/components/TrophyModel';
 import { buildMeta } from '~/utils/seo';
 import { activeTournamentId, fetchLeaderboard, fetchStatus } from '~/utils/camelUpCup/tournament.server';
 import type { Leaderboard, LeaderboardBot, SubmissionStatus } from '~/utils/camelUpCup/types';
+import Button from '~/components/Button';
 
 export function meta() {
   return buildMeta({
@@ -427,13 +428,11 @@ function UploadForm({ onSubmitted }: { onSubmitted: (id: string) => void }) {
         />
       </label>
       {error && <p className="text-sm text-red-600">{error}</p>}
-      <button
-        type="submit"
-        disabled={busy}
-        className="mx-auto block rounded bg-black px-4 py-2 text-sm text-white disabled:opacity-50"
-      >
-        {busy ? 'Submitting…' : 'Enter the tournament'}
-      </button>
+      <div className="flex justify-center">
+        <Button type="submit" variant="primary" disabled={busy}>
+          {busy ? 'Submitting…' : 'Enter the tournament'}
+        </Button>
+      </div>
     </form>
   );
 }
