@@ -336,13 +336,18 @@
     filter: none !important;
   }
 
-  /* Ensure text visibility in all hover states */
-  .hover\:bg-black:hover {
-    color: #ffffff !important;
-  }
+  /* Ensure text visibility in all hover states. Only where hover exists:
+     Tailwind v4 applies hover:bg-black under (hover: hover), but phones still
+     match :hover after a tap, so unguarded this turned tapped text white on
+     the button's unchanged white background. */
+  @media (hover: hover) {
+    .hover\:bg-black:hover {
+      color: #ffffff !important;
+    }
 
-  .hover\:bg-black:hover * {
-    color: #ffffff !important;
+    .hover\:bg-black:hover * {
+      color: #ffffff !important;
+    }
   }
 
   /* Prose utility class for content-rich sections */
