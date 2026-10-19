@@ -47,6 +47,11 @@ function describeThreshold(settings: Deck['settings']): string {
     : `≥${settings.thresholdWin ?? DEFAULT_SETTINGS.thresholdWin}% win chance`;
 }
 
+/** "thibault’s 13-card deck": a deck's name, on its page and in the favorites list. */
+function deckName(username: string, cardCount: number): string {
+  return `${username}’s ${cardCount}-card deck`;
+}
+
 function settingsParts(settings: Deck['settings']): string[] {
   return [`+${settings.delta} rating`, describeThreshold(settings), `depth ${settings.depth}`];
 }
@@ -94,9 +99,7 @@ function FavoritesList() {
             className="group flex items-center justify-between gap-3 border-2 border-black p-3 hover:bg-black hover:text-white"
           >
             <span className="font-neo min-w-0">
-              <span className="block truncate font-bold">
-                ★ {d.username} · {d.cardCount} cards
-              </span>
+              <span className="block truncate font-bold">★ {deckName(d.username, d.cardCount)}</span>
               {d.id in solvedByDeck && (
                 <span className="block text-sm font-bold">
                   {solvedByDeck[d.id]}/{d.cardCount} solved
@@ -184,8 +187,8 @@ function DeckView({
   return (
     <div className="font-neo space-y-5 text-black">
       <div>
-        <p className="text-3xl font-extrabold">{deck.cards.length} cards</p>
-        {[`${deck.username} on ${SOURCE_NAMES[deck.source]}`, ...settingsParts(deck.settings)].map((detail) => (
+        <h2 className="text-3xl font-extrabold break-words">{deckName(deck.username, deck.cards.length)}</h2>
+        {[`${SOURCE_NAMES[deck.source]} games`, ...settingsParts(deck.settings)].map((detail) => (
           <p key={detail} className="text-sm text-gray-700">
             {detail}
           </p>
@@ -309,32 +312,22 @@ export default function MaiaDrills() {
 
         {deckId ? (
           loadError ? (
-            <Panel padded className="w-full" title="Deck">
+            <Panel padded className="w-full">
               <Notice>{loadError}</Notice>
               <Link to="/marginal-maia-mentor" className="font-neo mt-3 inline-block text-sm underline">
                 Build a new deck
               </Link>
             </Panel>
           ) : !deck ? (
-            <Panel padded className="w-full" title="Deck">
+            <Panel padded className="w-full">
               <p className="font-neo text-sm text-gray-600">Loading…</p>
             </Panel>
           ) : drilling ? (
             <Drill deckId={deckId} deck={deck} onExit={() => setDrilling(false)} />
           ) : (
-            <Panel
-              padded
-              className="w-full"
-              title="Deck"
-              aside={
-                <Link
-                  to="/marginal-maia-mentor"
-                  className="font-neo text-xs font-bold tracking-wide uppercase underline"
-                >
-                  New deck
-                </Link>
-              }
-            >
+            // No title bar: the deck's own heading leads it, and the page title
+            // above already links back to building a new deck.
+            <Panel padded className="w-full">
               <DeckView
                 deckId={deckId}
                 deck={deck}
