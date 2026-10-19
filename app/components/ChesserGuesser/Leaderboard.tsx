@@ -4,6 +4,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { LeaderboardEntry } from '~/utils/chesserGuesser/types';
 import Skeleton from '~/components/Skeleton';
+import Panel from '~/components/Panel';
 
 interface LeaderboardProps {
   currentUsername?: string;
@@ -53,10 +54,7 @@ export function Leaderboard({ currentUsername, date }: LeaderboardProps) {
   };
 
   return (
-    <div className="border-4 border-black bg-white">
-      <div className="font-neo border-b-4 border-black bg-black px-4 py-3 text-lg font-extrabold tracking-tighter text-white uppercase">
-        LEADERBOARD
-      </div>
+    <Panel title="Leaderboard" dark>
       <div className="font-neo border-b-2 border-black px-4 py-2 text-xs text-gray-700">
         Score: total gap from Stockfish’s evals, in centipawns. Lowest wins.
       </div>
@@ -119,6 +117,6 @@ export function Leaderboard({ currentUsername, date }: LeaderboardProps) {
           </>
         )}
       </div>
-    </div>
+    </Panel>
   );
 }

@@ -16,6 +16,7 @@ import chessgroundBase from '../styles/chessground.base.css?url';
 import chessgroundBrown from '../styles/chessground.brown.css?url';
 import chessgroundCburnett from '../styles/chessground.cburnett.css?url';
 import Button from '~/components/Button';
+import Panel from '~/components/Panel';
 
 export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: chessgroundBase },
@@ -46,18 +47,6 @@ function describeThreshold(settings: Deck['settings']): string {
 
 function settingsParts(settings: Deck['settings']): string[] {
   return [`+${settings.delta} rating`, describeThreshold(settings), `depth ${settings.depth}`];
-}
-
-function Panel({ title, children, aside }: { title: string; children: React.ReactNode; aside?: React.ReactNode }) {
-  return (
-    <section className="w-full border-4 border-black bg-white">
-      <div className="flex items-center justify-between border-b-2 border-black px-6 py-3">
-        <h2 className="font-neo text-sm font-bold tracking-wider text-black uppercase">{title}</h2>
-        {aside}
-      </div>
-      <div className="p-6">{children}</div>
-    </section>
-  );
 }
 
 function FavoritesList() {
@@ -327,20 +316,22 @@ export default function MaiaDrills() {
 
         {deckId ? (
           loadError ? (
-            <Panel title="Deck">
+            <Panel padded className="w-full" title="Deck">
               <p className="font-neo text-red-700">{loadError}</p>
               <Link to="/marginal-maia-mentor" className="font-neo mt-3 inline-block text-sm underline">
                 Build a new deck
               </Link>
             </Panel>
           ) : !deck ? (
-            <Panel title="Deck">
+            <Panel padded className="w-full" title="Deck">
               <p className="font-neo text-sm text-gray-600">Loading…</p>
             </Panel>
           ) : drilling ? (
             <Drill deckId={deckId} deck={deck} onExit={() => setDrilling(false)} />
           ) : (
             <Panel
+              padded
+              className="w-full"
               title="Deck"
               aside={
                 <Link
@@ -365,10 +356,10 @@ export default function MaiaDrills() {
           )
         ) : (
           <>
-            <Panel title="Build a deck">
+            <Panel padded className="w-full" title="Build a deck">
               <BuildForm onBuilt={handleBuilt} />
             </Panel>
-            <Panel title="Favorite decks">
+            <Panel padded className="w-full" title="Favorite decks">
               <FavoritesList />
             </Panel>
           </>

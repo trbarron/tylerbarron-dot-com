@@ -105,6 +105,11 @@ Every modal is `<Dialog>` (`app/components/Dialog.tsx`), which wraps the native 
 - Border: 4px solid black, no border-radius
 - Interactive cards: subtle background shift or lift on hover (`transition: 0.1s ease`)
 - Inner content padding: typically `p-4` or `p-6`
+- **A titled box is `<Panel>`** (`app/components/Panel.tsx`). The title bar comes in two kinds:
+  - **Light** (default): the title over a 2px rule. For page sections: Maia's Build a deck, MCC's Open Games, Move History, Blunder Replay.
+  - **Dark** (`dark`): white on a black bar over a 4px rule. For game sidebars and leaderboards: Chesser Guesser's Progress, a leaderboard, Maia's drill card.
+  - Either way the title is uppercase extrabold `text-sm`, left-aligned, with an optional `subtitle` line under it and an `aside` (a legend, a count) on the right.
+  - Content is unpadded so tables and lists can run edge to edge; `padded` adds `p-6`.
 
 ### Tables
 - Outer border: 4px solid black

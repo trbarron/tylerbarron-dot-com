@@ -1,6 +1,8 @@
 // Daily Progress Tracker Component
 // Shows progress through the 4 daily puzzles
 
+import Panel from '~/components/Panel';
+
 interface DailyProgressTrackerProps {
   currentPuzzle: number; // 0-3
   completedPuzzles: number; // 0-4
@@ -17,12 +19,7 @@ export function DailyProgressTracker({
   const puzzles = [0, 1, 2, 3];
 
   return (
-    <div className="border-4 border-black bg-white">
-      {/* Header */}
-      <div className="font-neo border-b-4 border-black bg-black px-4 py-2 text-center text-sm font-extrabold tracking-tighter text-white uppercase">
-        Progress
-      </div>
-
+    <Panel title="Progress" dark>
       {/* Score Display */}
       <div className="border-b-4 border-black p-4 text-center">
         <div className="font-neo text-4xl font-black tracking-tighter text-black">{totalScore}</div>
@@ -61,6 +58,6 @@ export function DailyProgressTracker({
         </div>
         <div className="font-neo mt-2 text-center text-xs text-gray-600">{completedPuzzles}/4 Completed</div>
       </div>
-    </div>
+    </Panel>
   );
 }

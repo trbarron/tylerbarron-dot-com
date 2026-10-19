@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { LeaderboardEntry } from '~/utils/blunderWatch/types';
 import Skeleton from '~/components/Skeleton';
+import Panel from '~/components/Panel';
 
 interface LeaderboardProps {
   currentUsername?: string;
@@ -53,10 +54,7 @@ export function Leaderboard({ currentUsername, date }: LeaderboardProps) {
   }, [fetchLeaderboard]);
 
   return (
-    <div className="border-4 border-black bg-white">
-      <div className="font-neo border-b-4 border-black bg-black px-4 py-3 text-center text-lg font-extrabold tracking-tighter text-white uppercase md:text-left">
-        TODAY'S LEADERBOARD
-      </div>
+    <Panel title="Today’s Leaderboard" dark>
       <div className="font-neo border-b-2 border-black px-4 py-2 text-xs text-gray-700">
         ✓ blunders caught · ✗ false alarms
       </div>
@@ -145,6 +143,6 @@ export function Leaderboard({ currentUsername, date }: LeaderboardProps) {
           </>
         )}
       </div>
-    </div>
+    </Panel>
   );
 }
