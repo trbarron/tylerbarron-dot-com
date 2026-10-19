@@ -263,16 +263,17 @@ export default function ChesserGuesserUnlimited() {
     }
   }, [gameMode, dailyPuzzles, currentPuzzleIndex]);
 
-  // Exit review mode when switching game modes
-  useEffect(() => {
-    if (isReviewMode) {
-      setIsReviewMode(false);
-      setReviewPuzzleIndex(0);
-    }
-  }, [gameMode, isReviewMode]);
-
   const handleSliderChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSliderValue(Number(event.target.value));
+  };
+
+  // Switching modes leaves review mode. This lives here, not in an effect on
+  // gameMode: that effect also had to watch isReviewMode, so it switched
+  // review off the moment it was turned on.
+  const switchMode = (mode: GameMode) => {
+    setGameMode(mode);
+    setIsReviewMode(false);
+    setReviewPuzzleIndex(0);
   };
 
   const handleModeChange = (newMode: GameMode) => {
@@ -286,7 +287,7 @@ export default function ChesserGuesserUnlimited() {
       setUsername(savedUsername);
     }
 
-    setGameMode(newMode);
+    switchMode(newMode);
     setSliderValue(0);
     setLastSlider(0);
     setLastEval(0);
@@ -296,7 +297,7 @@ export default function ChesserGuesserUnlimited() {
     setUsername(newUsername);
     saveUsername(newUsername);
     setShowUsernameModal(false);
-    setGameMode('daily');
+    switchMode('daily');
   };
 
   const toggleReviewMode = () => {
