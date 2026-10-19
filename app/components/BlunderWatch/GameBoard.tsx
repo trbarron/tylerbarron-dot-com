@@ -1,12 +1,11 @@
-// Chessground board for Blunder Watch playback.
-// Manages its own Chessground instance directly so it can drive animated move playback
-// via cgRef.current.set({ fen, lastMove }) instead of the key-remount pattern.
+// Blunder Watch's playback board: the shared Chessboard, view-only, fed the
+// position after `currentMoveIndex`. The board updates in place, so each step
+// animates.
 
-import { useRef, useEffect, useState } from 'react';
-import { Chessground } from 'chessground';
+import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import { Chess } from 'chess.js';
-import type { Api } from 'chessground/api';
-import type { Key } from 'chessground/types';
+
+const Chessboard = lazy(() => import('~/components/Chessboard'));
 
 interface GameBoardProps {
   initialFen: string;
@@ -17,6 +16,17 @@ interface GameBoardProps {
   missedBlunderAt?: number;
 }
 
+/** The position after `index` (−1: the start) and the move that led to it. */
+function positionAt(initialFen: string, moves: string[], index: number): { fen: string; lastMove?: [string, string] } {
+  const chess = new Chess(initialFen);
+  let lastMove: [string, string] | undefined;
+  for (let i = 0; i <= index && i < moves.length; i++) {
+    const move = chess.move(moves[i]);
+    lastMove = [move.from, move.to];
+  }
+  return { fen: chess.fen(), lastMove };
+}
+
 export function GameBoard({
   initialFen,
   moves,
@@ -25,16 +35,11 @@ export function GameBoard({
   isFastForward,
   missedBlunderAt,
 }: GameBoardProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const cgRef = useRef<Api | undefined>(undefined);
-  const chessRef = useRef(new Chess(initialFen));
-  const prevIndexRef = useRef(-1);
-  const [isClient, setIsClient] = useState(false);
   const [isFlashingRed, setIsFlashingRed] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
+  const { fen, lastMove } = useMemo(
+    () => positionAt(initialFen, moves, currentMoveIndex),
+    [initialFen, moves, currentMoveIndex],
+  );
 
   // Flash red on missed blunder
   useEffect(() => {
@@ -45,78 +50,24 @@ export function GameBoard({
     }
   }, [missedBlunderAt]);
 
-  // Initialise Chessground once
-  useEffect(() => {
-    if (!isClient || !containerRef.current || cgRef.current) return;
-
-    cgRef.current = Chessground(containerRef.current, {
-      fen: chessRef.current.fen(),
-      orientation,
-      viewOnly: true,
-      movable: { free: false, dests: new Map() },
-      animation: { enabled: true, duration: 200 },
-      highlight: { lastMove: true, check: false },
-      draggable: { enabled: false },
-      drawable: { enabled: false },
-    });
-
-    prevIndexRef.current = -1;
-
-    return () => {
-      cgRef.current?.destroy();
-      cgRef.current = undefined;
-    };
-  }, [isClient, orientation]);
-
-  // Advance the board whenever currentMoveIndex changes
-  useEffect(() => {
-    if (!cgRef.current) return;
-
-    const prev = prevIndexRef.current;
-
-    if (currentMoveIndex === -1) {
-      // Reset to starting position
-      chessRef.current.load(initialFen);
-      cgRef.current.set({ fen: chessRef.current.fen(), lastMove: undefined });
-      prevIndexRef.current = -1;
-      return;
-    }
-
-    if (currentMoveIndex > prev) {
-      // Play moves forward (usually just one step)
-      for (let i = prev + 1; i <= currentMoveIndex; i++) {
-        const san = moves[i];
-        if (!san) break;
-        const moveResult = chessRef.current.move(san);
-        if (moveResult) {
-          cgRef.current.set({
-            fen: chessRef.current.fen(),
-            lastMove: [moveResult.from as Key, moveResult.to as Key],
-            turnColor: chessRef.current.turn() === 'w' ? 'white' : 'black',
-          });
-        }
-      }
-    } else if (currentMoveIndex < prev) {
-      // Rewind (shouldn't happen in normal play, but handle for safety)
-      chessRef.current.load(initialFen);
-      for (let i = 0; i <= currentMoveIndex; i++) {
-        chessRef.current.move(moves[i]);
-      }
-      cgRef.current.set({ fen: chessRef.current.fen() });
-    }
-
-    prevIndexRef.current = currentMoveIndex;
-  }, [currentMoveIndex, moves, initialFen]);
-
   return (
     <div className="w-full">
-      {/* Board */}
       <div
         className={`mx-auto w-full max-w-2xl border-4 transition-colors duration-300 ${
           isFlashingRed ? 'border-red-500' : isFastForward ? 'border-yellow-400' : 'border-black'
         }`}
       >
-        <div ref={containerRef} className={`aspect-square w-full ${!isClient ? 'min-h-[300px] bg-gray-100' : ''}`} />
+        <Suspense fallback={<div className="aspect-square min-h-[300px] w-full bg-gray-100" />}>
+          <Chessboard
+            initialFen={fen}
+            lastMove={lastMove}
+            orientation={orientation}
+            viewOnly
+            movable={false}
+            draggable={false}
+            allowDrawing={false}
+          />
+        </Suspense>
       </div>
     </div>
   );

@@ -59,6 +59,18 @@ const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 const RANKS = ['1', '2', '3', '4', '5', '6', '7', '8'];
 const SQUARES = FILES.flatMap((file) => RANKS.map((rank) => `${file}${rank}`));
 
+// Stable defaults: a fresh [] or {} on every render would look like a change to the effects below.
+const NO_SHAPES: DrawShape[] = [];
+const NO_EVENTS: NonNullable<ChessboardProps['events']> = {};
+const NO_DRAWABLE: NonNullable<ChessboardProps['drawable']> = {};
+const NO_SELECTABLE: NonNullable<ChessboardProps['selectable']> = {};
+
+/**
+ * The chessground board every chess tool uses. It's built once per mount (and
+ * again only when viewOnly changes); other prop changes are applied with
+ * chessground's set(), so moves animate and a drag in progress survives a parent
+ * re-render. Handlers are read through a ref for the same reason.
+ */
 export default function Chessboard({
   initialFen = 'start',
   movable = true,
@@ -71,11 +83,11 @@ export default function Chessboard({
   animationDuration = 200,
   highlightMoves = true,
   lastMove,
-  autoShapes = [],
+  autoShapes,
   draggable = true,
-  selectable = {},
-  events = {},
-  drawable = {},
+  selectable = NO_SELECTABLE,
+  events = NO_EVENTS,
+  drawable = NO_DRAWABLE,
   resetKey,
   ref: externalRef,
 }: ChessboardProps) {
@@ -86,6 +98,7 @@ export default function Chessboard({
 
   // Use the external ref if provided, otherwise use internal
   const ref = (externalRef as React.RefObject<HTMLDivElement>) || internalRef;
+  const shapes = autoShapes ?? drawable.autoShapes ?? NO_SHAPES;
 
   // Ensure component only initializes on client
   useEffect(() => {
@@ -112,6 +125,14 @@ export default function Chessboard({
     };
   }, [chess, movable, playableColor, viewOnly]);
 
+  const draggableConfig = useCallback(
+    () =>
+      typeof draggable === 'boolean'
+        ? { enabled: draggable && !viewOnly && !!movable, showGhost: true }
+        : { ...draggable, enabled: draggable.enabled && !viewOnly && !!movable },
+    [draggable, viewOnly, movable],
+  );
+
   const handleMove = useCallback(
     (orig: string, dest: string) => {
       try {
@@ -137,6 +158,14 @@ export default function Chessboard({
     [calcMovable, chess, highlightMoves, onMove],
   );
 
+  // Latest handlers, so chessground's events never need re-binding. A caller's
+  // events.move replaces the built-in move handling, as it always has.
+  const handlers = useRef({ handleMove, events });
+  useEffect(() => {
+    handlers.current = { handleMove, events };
+  });
+
+  // Build the board once. Everything that can change later is applied by the effects below.
   useEffect(() => {
     if (!isClient || !ref.current || cgRef.current) return;
 
@@ -150,32 +179,17 @@ export default function Chessboard({
       lastMove: lastMove as Key[],
       movable: calcMovable(),
       events: {
-        move: handleMove as (orig: Key, dest: Key, capturedPiece?: Piece) => void,
-        ...events,
+        move: (orig: Key, dest: Key, capturedPiece?: Piece) =>
+          handlers.current.events.move
+            ? handlers.current.events.move(orig, dest, capturedPiece)
+            : handlers.current.handleMove(orig, dest),
+        select: (key: Key) => handlers.current.events.select?.(key),
+        change: () => handlers.current.events.change?.(),
       },
-      animation: {
-        enabled: animated,
-        duration: animationDuration,
-      },
-      highlight: {
-        lastMove: highlightMoves,
-        check: highlightMoves,
-      },
-      draggable:
-        typeof draggable === 'boolean'
-          ? {
-              enabled: draggable && !viewOnly && !!movable,
-              showGhost: true,
-            }
-          : {
-              ...draggable,
-              enabled: draggable.enabled && !viewOnly && !!movable,
-            },
-      drawable: {
-        enabled: allowDrawing,
-        autoShapes: autoShapes,
-        ...drawable,
-      },
+      animation: { enabled: animated, duration: animationDuration },
+      highlight: { lastMove: highlightMoves, check: highlightMoves },
+      draggable: draggableConfig(),
+      drawable: { enabled: allowDrawing, ...drawable, autoShapes: shapes },
       selectable: selectable,
     };
 
@@ -192,30 +206,13 @@ export default function Chessboard({
         cgRef.current = undefined;
       }
     };
-  }, [
-    isClient,
-    chess,
-    viewOnly,
-    movable,
-    allowDrawing,
-    playableColor,
-    orientation,
-    animated,
-    animationDuration,
-    highlightMoves,
-    lastMove,
-    autoShapes,
-    draggable,
-    events,
-    drawable,
-    selectable,
-    calcMovable,
-    handleMove,
-    externalRef,
-    ref,
-  ]);
+    // Built once per mount; later changes go through set() below. The exception is viewOnly:
+    // chessground only binds its mouse and touch handlers when a board is built interactive,
+    // so turning viewOnly off needs a fresh board.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isClient, ref, externalRef, viewOnly]);
 
-  // Update board if initialFen, lastMove or resetKey changes
+  // Position: a new FEN, last move, or reset. Setting the FEN in place lets chessground animate it.
   useEffect(() => {
     if (cgRef.current) {
       chess.load(normalizeFen(initialFen));
@@ -226,12 +223,34 @@ export default function Chessboard({
         lastMove: lastMove as Key[],
       });
     }
-  }, [initialFen, resetKey, chess, viewOnly, movable, playableColor, lastMove, calcMovable]);
+  }, [initialFen, resetKey, chess, lastMove, calcMovable]);
 
-  // Update arrow shapes independently so hover doesn't reload the FEN
+  // Who can move, and how.
   useEffect(() => {
-    cgRef.current?.set({ drawable: { autoShapes } });
-  }, [autoShapes]);
+    cgRef.current?.set({ viewOnly, movable: calcMovable(), draggable: draggableConfig() });
+  }, [viewOnly, calcMovable, draggableConfig]);
+
+  useEffect(() => {
+    cgRef.current?.set({ orientation });
+  }, [orientation]);
+
+  useEffect(() => {
+    cgRef.current?.set({
+      animation: { enabled: animated, duration: animationDuration },
+      highlight: { lastMove: highlightMoves, check: highlightMoves },
+    });
+  }, [animated, animationDuration, highlightMoves]);
+
+  useEffect(() => {
+    cgRef.current?.set({ drawable: { enabled: allowDrawing, ...drawable, autoShapes: shapes }, selectable });
+    // shapes are applied on their own below.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allowDrawing, drawable, selectable]);
+
+  // Arrows on their own, so a hover doesn't touch the position.
+  useEffect(() => {
+    cgRef.current?.set({ drawable: { autoShapes: shapes } });
+  }, [shapes]);
 
   return (
     <div className="mx-auto w-full max-w-2xl">
