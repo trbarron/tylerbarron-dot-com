@@ -6,6 +6,7 @@ import Footer from '~/components/Footer';
 import ImageDisplay from '~/components/CatImage';
 import type { CatSummaryData, CatDetailedData } from '~/types/catTracker';
 import { buildMeta } from '~/utils/seo';
+import Button from '~/components/Button';
 
 export function meta() {
   return buildMeta({
@@ -252,12 +253,7 @@ export default function ChecoLiveTracker() {
                     </div>
                     <ImageDisplay />
 
-                    <button
-                      onClick={toggleDetails}
-                      className="border-4 border-black bg-white px-6 py-3 font-extrabold tracking-wide text-black uppercase hover:bg-black hover:text-white"
-                    >
-                      {showDetails ? 'Hide Details' : 'Show Details'}
-                    </button>
+                    <Button onClick={toggleDetails}>{showDetails ? 'Hide Details' : 'Show Details'}</Button>
 
                     {showDetails && (
                       <Suspense fallback={<div className="mt-8">Loading detailed stats...</div>}>
