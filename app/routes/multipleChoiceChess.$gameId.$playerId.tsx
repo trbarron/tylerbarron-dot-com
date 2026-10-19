@@ -19,6 +19,7 @@ import chessgroundBase from '../styles/chessground.base.css?url';
 import chessgroundBrown from '../styles/chessground.brown.css?url';
 import chessgroundCburnett from '../styles/chessground.cburnett.css?url';
 import Dialog from '~/components/Dialog';
+import { useCopy } from '~/hooks/useCopy';
 
 const Chessboard = lazy(() => import('~/components/Chessboard'));
 
@@ -63,8 +64,7 @@ export default function MultipleChoiceChessGame() {
     playerId: playerId ?? '',
   });
 
-  const [linkCopied, setLinkCopied] = useState(false);
-  const [copyFailed, setCopyFailed] = useState(false);
+  const { state: copyState, copy } = useCopy();
   const [confirmingResign, setConfirmingResign] = useState(false);
   const shareInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -79,19 +79,9 @@ export default function MultipleChoiceChessGame() {
       : '';
 
   const copyLink = async () => {
-    setCopyFailed(false);
-    try {
-      if (!navigator.clipboard) throw new Error('Clipboard API unavailable');
-      await navigator.clipboard.writeText(shareUrl);
-      setLinkCopied(true);
-      setTimeout(() => setLinkCopied(false), 2000);
-    } catch {
-      // Clipboard blocked (insecure context, permissions, etc.) — select the
-      // input so the user can copy with ⌘/Ctrl+C, and show a hint.
-      shareInputRef.current?.select();
-      setCopyFailed(true);
-      setTimeout(() => setCopyFailed(false), 4000);
-    }
+    // Clipboard blocked (insecure context, permissions, etc.): select the
+    // input so the user can copy with ⌘/Ctrl+C; a hint shows below it.
+    if (!(await copy(shareUrl))) shareInputRef.current?.select();
   };
 
   return (
@@ -146,10 +136,10 @@ export default function MultipleChoiceChessGame() {
                       className="flex-1 border-2 border-black bg-gray-50 px-3 py-2 font-mono text-sm"
                     />
                     <Button size="sm" onClick={copyLink}>
-                      {linkCopied ? 'Copied!' : 'Copy'}
+                      {copyState === 'copied' ? 'Copied!' : 'Copy'}
                     </Button>
                   </div>
-                  {copyFailed && (
+                  {copyState === 'failed' && (
                     <p className="mt-2 text-xs text-red-700">
                       Couldn't access the clipboard. Press ⌘C / Ctrl+C to copy the selected link.
                     </p>

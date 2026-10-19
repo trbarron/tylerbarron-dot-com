@@ -17,6 +17,7 @@ import chessgroundBrown from '../styles/chessground.brown.css?url';
 import chessgroundCburnett from '../styles/chessground.cburnett.css?url';
 import Button from '~/components/Button';
 import Panel from '~/components/Panel';
+import { useCopy } from '~/hooks/useCopy';
 
 export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: chessgroundBase },
@@ -135,7 +136,7 @@ function DeckView({
   const [token, setToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const { state: copyState, copy } = useCopy();
 
   // Drill progress lives in this browser; the view remounts after a drill, so this stays current.
   const [solved, setSolved] = useState<number | null>(null);
@@ -174,16 +175,6 @@ function DeckView({
       setError(err instanceof Error ? err.message : 'Could not update the deck.');
     } finally {
       setSaving(false);
-    }
-  };
-
-  const copyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(window.location.href);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    } catch {
-      // Clipboard blocked; the URL bar has it anyway.
     }
   };
 
@@ -228,7 +219,8 @@ function DeckView({
         ) : (
           deck.favorite && <span className="self-center px-2 font-bold">★ Favorite</span>
         )}
-        <Button onClick={copyLink}>{copied ? 'Copied' : 'Copy link'}</Button>
+        {/* If the clipboard is blocked, the URL bar has the link anyway. */}
+        <Button onClick={() => copy(window.location.href)}>{copyState === 'copied' ? 'Copied' : 'Copy link'}</Button>
       </div>
       {token && !deck.favorite && (
         <p className="text-xs text-gray-600">

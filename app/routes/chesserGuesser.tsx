@@ -47,6 +47,7 @@ import {
 import chessgroundBase from '../styles/chessground.base.css?url';
 import chessgroundBrown from '../styles/chessground.brown.css?url';
 import chessgroundCburnett from '../styles/chessground.cburnett.css?url';
+import { useCopy } from '~/hooks/useCopy';
 
 export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: chessgroundBase },
@@ -130,7 +131,7 @@ export default function ChesserGuesserUnlimited() {
       mode: GameMode;
     }>
   >([]);
-  const [copyFeedback, setCopyFeedback] = useState(false);
+  const { state: copyState, copy } = useCopy();
 
   // Initialize on mount
   useEffect(() => {
@@ -324,15 +325,8 @@ export default function ChesserGuesserUnlimited() {
   };
 
   const copyFEN = async (fen: string) => {
-    try {
-      await navigator.clipboard.writeText(fen);
-      setCopyFeedback(true);
-      setTimeout(() => setCopyFeedback(false), 2000); // Hide after 2 seconds
-    } catch (err) {
-      console.error('Failed to copy FEN:', err);
-      // Fallback: show FEN in alert only on error
-      alert(`Could not copy. FEN: ${fen}`);
-    }
+    // Fallback: show the FEN so it can be copied by hand.
+    if (!(await copy(fen))) alert(`Could not copy. FEN: ${fen}`);
   };
 
   const submitEndlessGuess = useCallback(async () => {
@@ -623,7 +617,7 @@ export default function ChesserGuesserUnlimited() {
                     reviewPuzzle={reviewPuzzle}
                     reviewPuzzleIndex={reviewPuzzleIndex}
                     filteredHistory={filteredHistory}
-                    copyFeedback={copyFeedback}
+                    copyFeedback={copyState === 'copied'}
                     onNavigateReview={navigateReviewPuzzle}
                     onCopyFEN={copyFEN}
                     onToggleReview={toggleReviewMode}
