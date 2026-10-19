@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import { Navbar } from '~/components/Navbar';
 import Footer from '~/components/Footer';
+import Button from '~/components/Button';
 import { usePolling } from '~/hooks/usePolling';
 import { buildMeta } from '~/utils/seo';
 
@@ -139,13 +140,9 @@ export default function MultipleChoiceChessLobby() {
               <div className="font-neo mb-4 border-2 border-red-500 bg-red-100 p-3 text-sm text-red-800">{error}</div>
             )}
 
-            <button
-              onClick={createGame}
-              disabled={isJoining}
-              className="font-neo w-full border-4 border-black bg-black px-6 py-4 text-lg font-extrabold tracking-wide text-white uppercase hover:bg-white hover:text-black disabled:opacity-50"
-            >
+            <Button variant="primary" size="lg" className="w-full" onClick={createGame} disabled={isJoining}>
               {isJoining ? 'Starting…' : 'Create New Game'}
-            </button>
+            </Button>
           </div>
         </div>
 

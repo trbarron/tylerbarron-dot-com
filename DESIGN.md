@@ -56,13 +56,26 @@ Design density is moderate-to-high. Information is packed but never crowded. Eve
 ## Component Stylings
 
 ### Buttons
-- Border: 4px solid black
-- Padding: `px-6 py-3`
-- Font: Inter 700, uppercase, `letter-spacing: 0.05em`, 16px
-- Resting: black text on white background
-- Hover: white text on black background (`transition: all 0.1s ease`)
-- Disabled: `#E5E5E5` background, `#404040` text, 3px border (visually recessed)
-- No border-radius — sharp corners always
+
+Use `<Button>` (`app/components/Button.tsx`); for a link that should look like a button, `buttonClass()` from the same file. Don't hand-roll button classes.
+
+All buttons: sharp corners, Inter 700, uppercase, `letter-spacing: 0.05em`, colors invert in `0.1s`. Hover inverts on devices that can hover; the same inversion shows **while pressed** on every device, touch included (the site's `hover:` variant covers both). Background and text always change together, so a pressed or hovered button keeps its contrast.
+
+| Variant | Resting | Hover / pressed | Use for |
+|---|---|---|---|
+| `primary` | White text on black | Black text on white | The one main action on a screen (Find my errors, Create new game, Next card) |
+| `secondary` (default) | Black text on white | White text on black | Everything else |
+| `danger` | Same as secondary, **one step heavier border** | Same as secondary | Irreversible actions: resign, claim a win, delete. Weight, not color, marks it |
+
+| Size | Border (danger) | Padding | Text | Use for |
+|---|---|---|---|---|
+| `sm` | 2px (4px) | `px-3`, at least 44px tall | 14px | Inline actions beside other content (Copy, Show answer, history arrows) |
+| `md` (default) | 4px (8px) | `px-6 py-3` | 16px | Standalone buttons, dialog actions |
+| `lg` | 4px (8px) | `px-6 py-4` | 18px | A screen's single call to action, usually full width |
+
+- **Disabled:** `#E5E5E5` background, `#404040` text, `#D4D4D4` border; no hover or press change.
+- **Tap targets:** nothing under 44px tall.
+- **Not buttons, so not `<Button>`:** game pieces and list rows that happen to be clickable, like Multiple Choice Chess's move tiles and history chips, or a lobby's open-game rows. They follow the same rules (black/white, sharp, invert on hover/press) in their own shape.
 
 ### Inputs, Selects, Textareas
 - Border: 2px solid black
@@ -160,11 +173,12 @@ No drop shadows. No blurs on content (only `backdrop-blur-sm` on the navbar to m
 ## Do's and Don'ts
 
 **Do:**
-- Use 4px borders for all primary UI containers and buttons
+- Use 4px borders for all primary UI containers and `md`/`lg` buttons (2px for `sm`)
 - Use uppercase for all headings, buttons, and table headers
 - Keep the palette strictly monochrome in the UI layer
 - Use Inter at 700–800 weight for anything that needs to command attention
-- Invert colors (white-on-black) for all hover/active states
+- Invert colors (white-on-black) for all hover/active states, background and text together
+- Mark destructive actions with a heavier border (`danger`), never with color
 - Use the `shimmer` animation for loading states, never `pulse`
 - Use JetBrains Mono exclusively for code and data
 

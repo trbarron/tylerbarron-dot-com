@@ -1,6 +1,7 @@
 import type { MoveHistoryEntry } from '~/utils/multipleChoiceChess/types';
 import { accuracy, pointsForRank } from '~/utils/multipleChoiceChess/scoring';
 import RankBadge from './RankBadge';
+import Button from '~/components/Button';
 
 interface GameOverModalProps {
   result: 'white' | 'black' | 'draw';
@@ -118,23 +119,17 @@ export default function GameOverModal({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 divide-x-4 divide-black border-t-4 border-black">
+        <div className="grid grid-cols-2 gap-3 border-t-4 border-black p-4">
           {moveHistory.length > 0 ? (
-            <button
-              onClick={onReview}
-              className="px-4 py-3 text-sm font-bold uppercase hover:bg-black hover:text-white active:bg-black active:text-white"
-            >
+            <Button className="w-full" onClick={onReview}>
               Review Game →
-            </button>
+            </Button>
           ) : (
             <div />
           )}
-          <button
-            onClick={onPlayAgain}
-            className="px-4 py-3 font-extrabold tracking-wide uppercase hover:bg-black hover:text-white active:bg-black active:text-white"
-          >
+          <Button variant="primary" className="w-full" onClick={onPlayAgain}>
             Play Again
-          </button>
+          </Button>
         </div>
       </div>
     </div>
