@@ -23,7 +23,10 @@ import { LIMITS, type DrillCard, type SourceGame } from '~/utils/maiaDrills/type
 
 vi.mock('~/utils/redis.server', () => ({ getRedisClient: vi.fn() }));
 // stockfishPool imports the worker factory; nothing here constructs a worker.
-vi.mock('~/utils/multipleChoiceChess/stockfishEngine', () => ({ createStockfishWorker: vi.fn() }));
+vi.mock('~/utils/chess/stockfish', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('~/utils/chess/stockfish')>()),
+  createStockfishWorker: vi.fn(),
+}));
 
 describe('maiaEncoding', () => {
   it('round-trips every vocabulary index', () => {

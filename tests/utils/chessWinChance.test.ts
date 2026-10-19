@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { winDrop, winPercent } from '~/utils/maiaDrills/winChance';
+import { winDrop, winPercent } from '~/utils/chess/winChance';
 
 describe('win chance', () => {
   it('is even at 0 and symmetric between the sides', () => {

@@ -11,7 +11,10 @@ import type { StockfishPool } from '~/utils/maiaDrills/stockfishPool';
 import { DEFAULT_SETTINGS, LOST_CP, type SourceGame } from '~/utils/maiaDrills/types';
 
 // stockfishPool imports the worker factory; the fakes below replace the pool.
-vi.mock('~/utils/multipleChoiceChess/stockfishEngine', () => ({ createStockfishWorker: vi.fn() }));
+vi.mock('~/utils/chess/stockfish', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('~/utils/chess/stockfish')>()),
+  createStockfishWorker: vi.fn(),
+}));
 
 // The user is Black: 1.e4 e5 2.Qh5 Nc6 3.Bc4 Nf6?? 4.Qxf7#
 const game: SourceGame = {

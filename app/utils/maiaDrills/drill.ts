@@ -2,9 +2,10 @@
 // grading a move, the two-try rule, scoring, and the order cards come up in.
 // See docs/maia-drills.md, "Drill grading".
 
+import { formatEval as formatWhiteEval } from '~/utils/chess/evaluation';
 import type { CardProgress } from './localStorage';
 import { DEFAULT_SETTINGS, type DrillCard } from './types';
-import { winDrop } from './winChance';
+import { winDrop } from '~/utils/chess/winChance';
 
 export type Verdict = 'correct' | 'also-good' | 'wrong' | 'revealed';
 
@@ -31,15 +32,13 @@ export interface Answer {
 }
 
 /**
- * An eval for display, in the usual convention: + is good for White, − for
- * Black. Cards store evals from the mover's side, which is what grading
- * compares, so a Black card's are flipped. Past ±10 (mates clamp to ±1000)
- * it names the winning side instead of a number.
+ * A card's eval in the site-wide format (utils/chess/evaluation.ts), labeled
+ * "eval" when it's a number. Cards store evals from the mover's side, which is
+ * what grading compares, so a Black card's are flipped to White's side.
  */
 export function formatEval(moverCp: number, mover: 'w' | 'b'): string {
-  const cp = mover === 'w' ? moverCp : -moverCp;
-  if (Math.abs(cp) >= 1000) return cp > 0 ? 'White is winning' : 'Black is winning';
-  return `eval ${cp > 0 ? '+' : ''}${(cp / 100).toFixed(1)}`;
+  const text = formatWhiteEval(mover === 'w' ? moverCp : -moverCp);
+  return /^[+-]?\d/.test(text) ? `eval ${text}` : text;
 }
 
 /**

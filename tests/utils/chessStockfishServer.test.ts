@@ -3,7 +3,8 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { evaluate, scoreValue } from '~/utils/stockfish.server';
+import { scoreValue } from '~/utils/chess/stockfish';
+import { evaluate } from '~/utils/chess/stockfish.server';
 
 describe('stockfish.server', () => {
   it('sees a mate in one for the side to move', async () => {
@@ -25,13 +26,6 @@ describe('stockfish.server', () => {
     const scores = await Promise.all(fens.map((fen) => evaluate(fen, { depth: 8 })));
     for (const s of scores) expect(Math.abs(scoreValue(s))).toBeLessThan(150);
   });
-
-  it('ranks mates above any centipawn score, sooner mates higher', () => {
-    expect(scoreValue({ type: 'mate', value: 1 })).toBeGreaterThan(scoreValue({ type: 'mate', value: 3 }));
-    expect(scoreValue({ type: 'mate', value: 3 })).toBeGreaterThan(scoreValue({ type: 'cp', value: 5000 }));
-    expect(scoreValue({ type: 'mate', value: -1 })).toBeLessThan(scoreValue({ type: 'mate', value: -3 }));
-    expect(scoreValue({ type: 'mate', value: 0 })).toBeLessThan(scoreValue({ type: 'cp', value: -5000 }));
-  });
 });
 
 describe('stockfish.server download', () => {
@@ -48,7 +42,7 @@ describe('stockfish.server download', () => {
     vi.stubGlobal('fetch', fetchMock);
     vi.resetModules();
     try {
-      const fresh = await import('~/utils/stockfish.server');
+      const fresh = await import('~/utils/chess/stockfish.server');
       await expect(fresh.evaluate('8/8/8/8/8/8/k7/4K3 w - - 0 1')).rejects.toThrow(/rejected/);
       expect(fetchMock).toHaveBeenCalledWith(expect.stringMatching(/^https:\/\/unpkg\.com\/stockfish@18\.0\.7\/bin\//));
       expect(fs.readdirSync(path.join(tmp, 'stockfish-18.0.7'))).toEqual([]);

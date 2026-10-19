@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Chess } from 'chess.js';
-import type { Key } from 'chessground/types';
+import { parseUci, uciArrow } from '~/utils/chess/moves';
 import { getEngine, getThinkTime, isEngineTimeoutError } from '~/utils/multipleChoiceChess/stockfishEngine';
 import type { CandidateMove } from '~/utils/multipleChoiceChess/moveParser';
 import type { GameState } from '~/utils/multipleChoiceChess/gameState.server';
@@ -173,9 +173,7 @@ export function useMultipleChoiceChessGame({ gameId, playerId }: UseMultipleChoi
       setHoveredUci(null);
       setPhase('submitting');
 
-      const from = move.uci.slice(0, 2);
-      const to = move.uci.slice(2, 4);
-      const promotion = move.uci.length === 5 ? move.uci[4] : undefined;
+      const { from, to, promotion } = parseUci(move.uci);
 
       let optimisticFen = gs.fen;
       try {
@@ -246,14 +244,12 @@ export function useMultipleChoiceChessGame({ gameId, playerId }: UseMultipleChoi
       stopPolling();
 
       if (gs.last_move) {
-        const from = gs.last_move.slice(0, 2);
-        const to = gs.last_move.slice(2, 4);
+        const { from, to, promotion } = parseUci(gs.last_move);
         setLastMove([from, to]);
 
         const movedColor: 'white' | 'black' = gs.turn === 'white' ? 'black' : 'white';
         try {
           const chess = new Chess(prevFen);
-          const promotion = gs.last_move.length === 5 ? gs.last_move[4] : undefined;
           const result = chess.move({ from, to, promotion });
           setMoveHistory((prev) => [
             ...prev,
@@ -482,18 +478,10 @@ export function useMultipleChoiceChessGame({ gameId, playerId }: UseMultipleChoi
       ? (moveHistory[viewingMoveIndex]?.fenAfter ?? gameState?.fen ?? 'start')
       : (gameState?.fen ?? 'start');
 
-  const displayedLastMove: [string, string] | undefined =
-    viewingMoveIndex !== null
-      ? ([
-          moveHistory[viewingMoveIndex]?.uci.slice(0, 2) ?? '',
-          moveHistory[viewingMoveIndex]?.uci.slice(2, 4) ?? '',
-        ] as [string, string])
-      : lastMove;
+  const viewed = viewingMoveIndex !== null ? parseUci(moveHistory[viewingMoveIndex]?.uci ?? '') : null;
+  const displayedLastMove: [string, string] | undefined = viewed ? [viewed.from, viewed.to] : lastMove;
 
-  const hoverShapes =
-    hoveredUci && viewingMoveIndex === null
-      ? [{ orig: hoveredUci.slice(0, 2) as Key, dest: hoveredUci.slice(2, 4) as Key, brush: 'blue' }]
-      : [];
+  const hoverShapes = hoveredUci && viewingMoveIndex === null ? [uciArrow(hoveredUci, 'blue')] : [];
 
   return {
     phase,

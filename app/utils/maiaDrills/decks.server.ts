@@ -18,7 +18,7 @@ import {
   type GameSource,
   type Speed,
 } from './types';
-import { winDrop } from './winChance';
+import { winDrop } from '~/utils/chess/winChance';
 
 const DECK_PREFIX = 'maiaDrills:deck:';
 const EDIT_PREFIX = 'maiaDrills:edit:';

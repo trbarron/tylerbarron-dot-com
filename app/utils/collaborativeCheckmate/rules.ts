@@ -3,6 +3,7 @@
 // saves it. Each returns the same object when nothing changed.
 
 import { Chess } from 'chess.js';
+import { parseUci } from '~/utils/chess/moves';
 import {
   GamePhase,
   SEAT_TIMEOUT_MS,
@@ -71,7 +72,7 @@ export function newGame(id: string, isPrivate: boolean, now: number): Game {
 
 export function position(moves: string[]): Chess {
   const chess = new Chess();
-  for (const uci of moves) chess.move({ from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci[4] });
+  for (const uci of moves) chess.move(parseUci(uci));
   return chess;
 }
 
@@ -239,7 +240,7 @@ export async function chooseMove(
   if (picks.length === 2) {
     const fenAfter = (uci: string) => {
       const c = new Chess(chess.fen());
-      c.move({ from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci[4] });
+      c.move(parseUci(uci));
       return c.fen();
     };
     const [a, b] = picks;
@@ -260,7 +261,7 @@ export async function chooseMove(
 
 function san(moves: string[], uci: string): string {
   const chess = position(moves);
-  return chess.move({ from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci[4] }).san;
+  return chess.move(parseUci(uci)).san;
 }
 
 /** Play the chosen move, then either end the game or hand the turn to the other team. */

@@ -86,7 +86,7 @@ app/components/MultipleChoiceChess/
   GameOverModal.tsx        # Checkmate / draw / resignation summary
 
 app/utils/multipleChoiceChess/
-  stockfishEngine.ts       # Web Worker wrapper with Promise-based API
+  stockfishEngine.ts       # MultiPV analysis with a Promise-based API, on the shared worker (app/utils/chess/stockfish.ts)
   moveParser.ts            # Parse MultiPV output lines into ranked move list
   scoring.ts               # Points per rank, accuracy calculation
 ```

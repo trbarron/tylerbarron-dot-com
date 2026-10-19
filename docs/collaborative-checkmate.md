@@ -27,7 +27,7 @@ browser (×4) ── POST /api/collaborativeCheckmate/join     open/create, take
 
 **The polls are the clock.** A turn's deadline is stored, not timed. Every request loads the game and calls `due()`: if all four are ready it starts the game; if a turn's deadline has passed or the team has locked in, that request decides the move. A Redis lock (`collaborativeCheckmate:lock:<id>`, 15 s) makes sure only one request does it; the rest see the `teamN_computing` phase until it's done. If a Lambda dies mid-decision, the game stays in `computing`, and after 20 seconds the next poll redoes it. With four players polling twice a second, a turn ends within about half a second of its deadline. Clients show the countdown from the server's `deadline` and `serverNow`, so device clocks don't matter.
 
-**Stockfish runs on the server** (`app/utils/stockfish.server.ts`): depth 18 or 1 second per position, whichever comes first, so a disagreement takes up to about 2 seconds. The engine isn't shipped in the Lambda; it's downloaded on first use and hash-checked (see `docs/deployment.md`).
+**Stockfish runs on the server** (`app/utils/chess/stockfish.server.ts`): depth 18 or 1 second per position, whichever comes first, so a disagreement takes up to about 2 seconds. The engine isn't shipped in the Lambda; it's downloaded on first use and hash-checked (see `docs/deployment.md`).
 
 **Code:**
 

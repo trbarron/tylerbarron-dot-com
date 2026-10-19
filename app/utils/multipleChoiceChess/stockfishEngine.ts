@@ -1,14 +1,7 @@
-// Stockfish engine wrapper — runs the lite single-threaded WASM build as a Web Worker.
-// Engine assets are loaded from unpkg's CDN. The 7.3 MB WASM exceeds API Gateway's
-// 6 MB Lambda response cap, so it can't be served from our own origin without
-// bypassing the Lambda; jsDelivr rejects the package for being >150 MB across
-// its WASM variants, so unpkg is the path that works.
+// Multiple Choice Chess's engine: MultiPV analysis on the shared browser worker (utils/chess/stockfish.ts).
 
+import { createStockfishWorker } from '~/utils/chess/stockfish';
 import { parseMultiPV, type CandidateMove, shuffle } from './moveParser';
-
-const STOCKFISH_VERSION = '18.0.7';
-const WORKER_URL = `https://unpkg.com/stockfish@${STOCKFISH_VERSION}/bin/stockfish-18-lite-single.js`;
-const WASM_URL = `https://unpkg.com/stockfish@${STOCKFISH_VERSION}/bin/stockfish-18-lite-single.wasm`;
 
 type EngineState = 'uninitialized' | 'ready' | 'analyzing' | 'error';
 
@@ -33,22 +26,6 @@ interface PendingAnalysis {
 
 const INIT_TIMEOUT_MS = 45000;
 const ANALYZE_TIMEOUT_BUFFER_MS = 8000;
-
-export function createStockfishWorker(): { worker: Worker; cleanup: () => void } {
-  // Workers can't be created directly from a cross-origin URL, so bootstrap a
-  // same-origin blob worker that importScripts the CDN-hosted Stockfish JS.
-  // Stockfish reads location.hash for the wasm path: hash format is `#<wasm-url>`.
-  // Do NOT append `,worker` — it short-circuits Stockfish's `||` entry chain
-  // before the ternary that actually wires up onmessage and instantiates wasm,
-  // leaving the worker silent.
-  const bootstrapSource = `importScripts(${JSON.stringify(WORKER_URL)});`;
-  const blob = new Blob([bootstrapSource], { type: 'application/javascript' });
-  const blobUrl = URL.createObjectURL(blob);
-  const workerUrl = `${blobUrl}#${encodeURIComponent(WASM_URL)}`;
-
-  const worker = new Worker(workerUrl);
-  return { worker, cleanup: () => URL.revokeObjectURL(blobUrl) };
-}
 
 class StockfishEngine {
   private worker: Worker | null = null;

@@ -1,3 +1,4 @@
+import { formatEval } from '~/utils/chess/evaluation';
 import { getImageUrl } from '~/utils/cdn';
 
 const blackKingImage = getImageUrl('ChesserGuesser/blackKing.png');
@@ -50,7 +51,7 @@ export default function MoveControls({
         disabled={isSubmitting || isDisabled}
       >
         <span className="text-sm">{getSubmitText()}</span>
-        <span className="text-sm">{(sliderValue / 100).toFixed(2)}</span>
+        <span className="text-sm">{formatEval(sliderValue, { decimals: 2 })}</span>
       </button>
     </>
   );
