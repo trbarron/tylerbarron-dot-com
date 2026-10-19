@@ -334,8 +334,7 @@ Route file (`blunderWatch.tsx`) stays under 500 lines. Game logic is split into 
 | Component | Responsibility |
 |---|---|
 | `GameBoard.tsx` | Chessground wrapper — move playback, orientation |
-| `BlunderButton.tsx` | The primary input — fixed on mobile, keyboard listener on desktop |
-| `PreGameScreen.tsx` | Game metadata display + Start button |
+| `BlunderButton.tsx` | The primary input (also the pre-game Start button) — fixed on mobile, keyboard listener on desktop |
 | `ResultsScreen.tsx` | Score breakdown, replay, share card |
 | `BlunderReplay.tsx` | Per-blunder position review with eval display |
 | `Leaderboard.tsx` | Daily leaderboard table (can be adapted from Chesser Guesser's) |
