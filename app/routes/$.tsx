@@ -6,6 +6,7 @@ import Footer from '~/components/Footer';
 import { buildMeta } from '~/utils/seo';
 import { trackNotFound } from '~/utils/analytics';
 import { legacyRedirectPath } from './legacyRedirect';
+import { buttonClass } from '~/components/Button';
 
 // Render the 404 page with a 404 status. Matching the URL (instead of letting
 // it fall through to the root ErrorBoundary) keeps the root loader running, so
@@ -54,10 +55,7 @@ export default function NotFound() {
 
           {/* Action */}
           <div className="px-8 py-6">
-            <Link
-              to="/"
-              className="font-neo inline-block border-4 border-black bg-black px-6 py-3 font-black tracking-wide text-white uppercase transition-all duration-100 hover:bg-white hover:text-black"
-            >
+            <Link to="/" className={buttonClass({ variant: 'primary' })}>
               Back to Home
             </Link>
           </div>

@@ -6,6 +6,7 @@ import {
   type RetroParamSpec,
   type RetroParams,
 } from './retroreflectance-params';
+import Button from '~/components/Button';
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
@@ -93,14 +94,9 @@ export default function RetroreflectanceControls({ enabled, params, onEnabledCha
       >
         <header className="flex shrink-0 items-center justify-between gap-2 border-b-4 border-black px-3 py-2">
           <h2 className="text-xs font-extrabold tracking-wider uppercase">Retroreflectance</h2>
-          <button
-            type="button"
-            onClick={() => onEnabledChange(false)}
-            aria-label="Remove retroreflectance"
-            className="border-2 px-2 py-0.5 text-xs leading-none"
-          >
+          <Button size="sm" onClick={() => onEnabledChange(false)} aria-label="Remove retroreflectance">
             Remove
-          </button>
+          </Button>
         </header>
 
         <div className="min-h-0 flex-1 overflow-y-auto px-3">
@@ -115,13 +111,9 @@ export default function RetroreflectanceControls({ enabled, params, onEnabledCha
         </div>
 
         <footer className="shrink-0 border-t-4 border-black px-3 py-2">
-          <button
-            type="button"
-            onClick={() => onParamsChange(DEFAULT_RETRO_PARAMS)}
-            className="border-2 px-2 py-1 text-[0.7rem] leading-none"
-          >
+          <Button size="sm" onClick={() => onParamsChange(DEFAULT_RETRO_PARAMS)}>
             Reset to defaults
-          </button>
+          </Button>
         </footer>
       </section>
     </div>

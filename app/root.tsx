@@ -19,6 +19,7 @@ import { trackNotFound } from './utils/analytics';
 import faviconUrl from './favicon.png';
 import DichroicBackground from './components/DichroicBackground';
 import { RetroreflectanceProvider } from './components/retroreflectance-context';
+import { buttonClass } from '~/components/Button';
 
 export async function loader() {
   const rawId = process.env.GA_TRACKING_ID?.trim() || null;
@@ -168,10 +169,7 @@ export function ErrorBoundary() {
               <p className="font-neo text-base leading-relaxed font-medium text-black">{message}</p>
             </div>
             <div className="px-8 py-6">
-              <Link
-                to="/"
-                className="font-neo inline-block border-4 border-black bg-black px-6 py-3 font-black tracking-wide text-white uppercase transition-all duration-100 hover:bg-white hover:text-black"
-              >
+              <Link to="/" className={buttonClass({ variant: 'primary' })}>
                 Back to Home
               </Link>
             </div>
