@@ -6,6 +6,7 @@ import { usePolling } from '~/hooks/usePolling';
 import { GAME_ID_RE, PLAYER_ID_RE } from '~/utils/collaborativeCheckmate/types';
 import { buildMeta } from '~/utils/seo';
 import Button from '~/components/Button';
+import { Checkbox, TextField } from '~/components/Field';
 
 export function meta() {
   return buildMeta({
@@ -89,47 +90,24 @@ export default function CollaborativeCheckmate() {
           <h1 className="font-neo mb-6 text-center text-2xl font-bold text-black uppercase">Collaborative Checkmate</h1>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="playerId" className="font-neo block text-sm font-medium text-black">
-                Username
-              </label>
-              <input
-                type="text"
-                id="playerId"
-                value={playerId}
-                onChange={(e) => setPlayerId(e.target.value)}
-                className="focus:ring-accent font-neo mt-1 block w-full border-2 border-black bg-white px-3 py-2 text-black focus:ring-2"
-                placeholder="Enter your username"
-                autoFocus
-              />
-            </div>
+            <TextField
+              label="Username"
+              id="playerId"
+              value={playerId}
+              onChange={(e) => setPlayerId(e.target.value)}
+              placeholder="Enter your username"
+              autoFocus
+            />
 
-            <div>
-              <label htmlFor="gameCode" className="font-neo block text-sm font-medium text-black">
-                Game Code
-              </label>
-              <input
-                type="text"
-                id="gameCode"
-                value={gameCode}
-                onChange={(e) => setGameCode(e.target.value)}
-                className="focus:ring-accent font-neo mt-1 block w-full border-2 border-black bg-white px-3 py-2 text-black focus:ring-2"
-                placeholder="Enter an existing code to join, or create a new one"
-              />
-            </div>
+            <TextField
+              label="Game Code"
+              id="gameCode"
+              value={gameCode}
+              onChange={(e) => setGameCode(e.target.value)}
+              placeholder="Enter an existing code to join, or create a new one"
+            />
 
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="isPrivate"
-                checked={isPrivate}
-                onChange={(e) => setIsPrivate(e.target.checked)}
-                className="focus:ring-accent h-4 w-4 border-2 border-black"
-              />
-              <label htmlFor="isPrivate" className="font-neo ml-2 block text-sm text-black">
-                Private game
-              </label>
-            </div>
+            <Checkbox label="Private game" checked={isPrivate} onChange={(e) => setIsPrivate(e.target.checked)} />
 
             <Button type="submit" variant="primary" size="lg" className="w-full">
               Create/Join Game

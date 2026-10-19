@@ -6,6 +6,7 @@ import { trackDeckBuilt } from '~/utils/maiaDrills/tracking';
 import RunProgress, { RunMessages } from './RunProgress';
 import { useAnalysisRun } from './useAnalysisRun';
 import Button from '~/components/Button';
+import { Checkbox, TextField } from '~/components/Field';
 
 interface BuildFormProps {
   /** Called with a finished (unsaved) deck. */
@@ -16,10 +17,6 @@ const SOURCE_LABELS: Record<GameSource, string> = {
   lichess: 'Lichess',
   chesscom: 'Chess.com',
 };
-
-const inputClass =
-  'w-full border-2 border-black bg-white px-3 py-2 font-neo text-black focus:outline-none focus:ring-2 focus:ring-black';
-const labelClass = 'mb-1 block font-neo text-xs font-bold uppercase tracking-wide text-black';
 
 function clampInt(value: string, min: number, max: number, fallback: number): number {
   const n = Math.round(Number(value));
@@ -143,68 +140,48 @@ export default function BuildForm({ onBuilt }: BuildFormProps) {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <div>
-          <label htmlFor="md-username" className={labelClass}>
-            Username
-          </label>
-          <input
-            id="md-username"
-            className={inputClass}
-            value={username}
-            disabled={busy}
-            onChange={(e) => setUsername(e.target.value)}
-            autoComplete="off"
-            spellCheck={false}
-          />
-        </div>
-        <div>
-          <label htmlFor="md-games" className={labelClass}>
-            Games
-          </label>
-          <input
-            id="md-games"
-            type="number"
-            className={inputClass}
-            value={fields.maxGames}
-            min={LIMITS.games.min}
-            max={LIMITS.games.max}
-            disabled={busy}
-            onChange={setField('maxGames')}
-          />
-        </div>
+        <TextField
+          label="Username"
+          id="md-username"
+          value={username}
+          disabled={busy}
+          onChange={(e) => setUsername(e.target.value)}
+          autoComplete="off"
+          spellCheck={false}
+        />
+        <TextField
+          label="Games"
+          id="md-games"
+          type="number"
+          value={fields.maxGames}
+          min={LIMITS.games.min}
+          max={LIMITS.games.max}
+          disabled={busy}
+          onChange={setField('maxGames')}
+        />
       </div>
 
       <fieldset className="border-2 border-black p-4">
         <legend className="font-neo px-1 text-xs font-bold tracking-wide uppercase">What counts as an error</legend>
         <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <label htmlFor="md-delta" className={labelClass}>
-              Rating gap (+ points)
-            </label>
-            <input
-              id="md-delta"
-              type="number"
-              step={50}
-              className={inputClass}
-              value={fields.delta}
-              disabled={busy}
-              onChange={setField('delta')}
-            />
-          </div>
-          <div>
-            <label htmlFor="md-threshold" className={labelClass}>
-              Min. win chance lost (%)
-            </label>
-            <input
-              id="md-threshold"
-              type="number"
-              step={1}
-              className={inputClass}
-              value={fields.thresholdWin}
-              disabled={busy}
-              onChange={setField('thresholdWin')}
-            />
-          </div>
+          <TextField
+            label="Rating gap (+ points)"
+            id="md-delta"
+            type="number"
+            step={50}
+            value={fields.delta}
+            disabled={busy}
+            onChange={setField('delta')}
+          />
+          <TextField
+            label="Min. win chance lost (%)"
+            id="md-threshold"
+            type="number"
+            step={1}
+            value={fields.thresholdWin}
+            disabled={busy}
+            onChange={setField('thresholdWin')}
+          />
         </div>
         <p className="font-neo mt-3 text-sm text-gray-700">
           A move is an error when a player <strong>{fields.delta || 0} points</strong> stronger would have played
@@ -219,56 +196,38 @@ export default function BuildForm({ onBuilt }: BuildFormProps) {
             More settings
           </summary>
           <div className="mt-3 grid gap-4 sm:grid-cols-2">
-            <div>
-              <label htmlFor="md-depth" className={labelClass}>
-                Stockfish depth
-              </label>
-              <input
-                id="md-depth"
-                type="number"
-                className={inputClass}
-                value={fields.depth}
-                disabled={busy}
-                onChange={setField('depth')}
-              />
-            </div>
-            <div>
-              <label htmlFor="md-also-good" className={labelClass}>
-                “Also good” margin (%)
-              </label>
-              <input
-                id="md-also-good"
-                type="number"
-                step={1}
-                className={inputClass}
-                value={fields.alsoGoodWin}
-                disabled={busy}
-                onChange={setField('alsoGoodWin')}
-              />
-            </div>
-            <div>
-              <label htmlFor="md-skip" className={labelClass}>
-                Skip moves before move #
-              </label>
-              <input
-                id="md-skip"
-                type="number"
-                className={inputClass}
-                value={fields.skipMoves}
-                disabled={busy}
-                onChange={setField('skipMoves')}
-              />
-            </div>
-            <label className="font-neo flex items-center gap-2 text-sm text-black sm:col-span-2">
-              <input
-                type="checkbox"
-                checked={excludeBullet}
-                disabled={busy}
-                onChange={(e) => setExcludeBullet(e.target.checked)}
-                className="h-4 w-4 accent-black"
-              />
-              Skip bullet games
-            </label>
+            <TextField
+              label="Stockfish depth"
+              id="md-depth"
+              type="number"
+              value={fields.depth}
+              disabled={busy}
+              onChange={setField('depth')}
+            />
+            <TextField
+              label="“Also good” margin (%)"
+              id="md-also-good"
+              type="number"
+              step={1}
+              value={fields.alsoGoodWin}
+              disabled={busy}
+              onChange={setField('alsoGoodWin')}
+            />
+            <TextField
+              label="Skip moves before move #"
+              id="md-skip"
+              type="number"
+              value={fields.skipMoves}
+              disabled={busy}
+              onChange={setField('skipMoves')}
+            />
+            <Checkbox
+              label="Skip bullet games"
+              className="sm:col-span-2"
+              checked={excludeBullet}
+              disabled={busy}
+              onChange={(e) => setExcludeBullet(e.target.checked)}
+            />
           </div>
           <p className="font-neo mt-3 text-sm text-gray-700">
             In a drill, a different move counts as also good when it’s within{' '}
