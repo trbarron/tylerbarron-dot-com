@@ -1,4 +1,5 @@
 import type { SeatKey } from '~/utils/collaborativeCheckmate/types';
+import Button from '~/components/Button';
 
 type PlayersState = {
   [K in SeatKey]: {
@@ -24,6 +25,9 @@ export default function PlayerSeats({
   onReadyUp,
   getCurrentPlayerSeat,
 }: PlayerSeatsProps) {
+  const seat = getCurrentPlayerSeat();
+  const canReadyUp = connected && seat !== null && !players[seat].ready;
+
   return (
     <>
       {/* Player Seats */}
@@ -161,29 +165,9 @@ export default function PlayerSeats({
 
       {/* Ready Up Button */}
       <div className="mb-4 grid grid-cols-1 gap-2">
-        <button
-          onClick={onReadyUp}
-          className={`font-neo border-2 border-black p-2 font-bold uppercase transition-colors duration-200 ${
-            !connected ||
-            (players.t1p1.id != playerId &&
-              players.t1p2.id != playerId &&
-              players.t2p1.id != playerId &&
-              players.t2p2.id != playerId) ||
-            (getCurrentPlayerSeat() !== null && players[getCurrentPlayerSeat()!].ready)
-              ? 'cursor-not-allowed bg-gray-300 text-gray-500'
-              : 'border-green-600 bg-green-500 text-white hover:bg-green-600'
-          }`}
-          disabled={
-            !connected ||
-            (players.t1p1.id != playerId &&
-              players.t1p2.id != playerId &&
-              players.t2p1.id != playerId &&
-              players.t2p2.id != playerId) ||
-            (getCurrentPlayerSeat() !== null && players[getCurrentPlayerSeat()!].ready)
-          }
-        >
+        <Button variant="primary" onClick={onReadyUp} disabled={!canReadyUp}>
           Ready Up
-        </button>
+        </Button>
       </div>
     </>
   );
