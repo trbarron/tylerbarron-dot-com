@@ -27,14 +27,14 @@ export default function Video({ src, caption }: VideoProps) {
 
   return (
     <section className="mx-auto h-fit w-3/4 justify-center lg:w-1/2">
-      <div className="bg-gray h-full w-full rounded p-2 shadow-md">
+      <div className="bg-gray h-full w-full p-2">
         <iframe
           src={src}
           title={src}
           frameBorder="0"
           allow="autoplay; encrypted-media"
           allowFullScreen
-          className="h-60 w-full rounded"
+          className="h-60 w-full"
         />
         <div className={captionClassName}>{captionText}</div>
       </div>

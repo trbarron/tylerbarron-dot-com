@@ -23,7 +23,7 @@ const BoulderingTracker = () => {
           allowFullScreen
         ></iframe>
       </div>
-      {caption && <p className="mt-2.5 italic">{caption}</p>}
+      {caption && <p className="mt-2.5 text-sm text-gray-600">{caption}</p>}
     </div>
   );
 

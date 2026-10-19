@@ -19,7 +19,7 @@ const formatChildren = (children: ReactNode) => {
 
 const Riddler = ({ children }: RiddlerProps) => {
   return (
-    <section className="bg-gray mx-auto flex w-full flex-wrap justify-center rounded shadow-md lg:w-3/4">
+    <section className="bg-gray mx-auto flex w-full flex-wrap justify-center lg:w-3/4">
       {formatChildren(children)}
     </section>
   );

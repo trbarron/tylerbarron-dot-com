@@ -1,6 +1,9 @@
 // Blunder Watch's playback board: the shared Chessboard, view-only, fed the
 // position after `currentMoveIndex`. The board updates in place, so each step
 // animates.
+//
+// design-allow-file: color — the board's border flashes red on a missed blunder and
+// turns yellow while fast-forwarding: game feedback, not UI chrome.
 
 import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import { Chess } from 'chess.js';

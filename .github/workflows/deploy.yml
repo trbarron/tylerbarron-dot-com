@@ -85,6 +85,81 @@ jobs:
       - name: 🔎 Type check
         run: npm run typecheck
 
+  test:
+    name: 🧪 Vitest
+    runs-on: ubuntu-latest
+    # A throwaway Redis so the real-Redis tests (Collaborative Checkmate's game
+    # engine) run too; without TEST_REDIS_URL they skip. The tests refuse any
+    # non-local URL, so this can never point at production.
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: --health-cmd "redis-cli ping" --health-interval 2s --health-timeout 2s --health-retries 15
+    steps:
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v7
+
+      - name: ⎔ Setup node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: ./package-lock.json
+
+      - name: 📥 Install deps
+        run: npm ci
+
+      - name: 🧪 Run tests
+        env:
+          TEST_REDIS_URL: redis://localhost:6379
+        run: npm test
+
+  design:
+    name: ◼ Design rules
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v7
+
+      - name: ⎔ Setup node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      # Fails on classes DESIGN.md rules out: rounded corners, shadows, italics,
+      # hues in the UI, font-sans. Exceptions carry a design-allow comment.
+      # Dependency-free, so no npm ci.
+      - name: ◼ Check classes against DESIGN.md
+        run: node scripts/check-design.mjs
+
+  lambda-deps:
+    name: λ Lambda deps
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v7
+
+      - name: ⎔ Setup node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: ./package-lock.json
+
+      - name: 📥 Install deps
+        run: npm ci
+
+      # Assemble server/ as the deploy does (minus asset publishing), then check
+      # every package the SSR bundle imports is installed there. A miss 500s
+      # for bots and curl only, so no browser test would catch it.
+      - name: 🏗 Build the Lambda
+        run: npm run compile:mdx && npm run build && npm run build:arc:server && npm run build:arc:deps
+
+      - name: λ Check the Lambda installs what it imports
+        run: npm run check:lambda-deps
+
   og-cards:
     name: 🖼 OG cards
     runs-on: ubuntu-latest
@@ -106,8 +181,8 @@ jobs:
   deploy:
     name: 🚀 Deploy
     runs-on: ubuntu-latest
-    needs: [lint, format, typecheck, og-cards]
-    # Only master deploys. PRs run lint + typecheck above and stop here, so a PR
+    needs: [lint, format, typecheck, test, design, lambda-deps, og-cards]
+    # Only master deploys. PRs run the checks above and stop here, so a PR
     # can never publish assets or overwrite production.
     if: github.ref == 'refs/heads/master'
     # semantic-release pushes the version bump commit, tag, and GitHub release.

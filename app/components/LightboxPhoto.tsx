@@ -19,7 +19,7 @@ export default function LightboxPhoto({ photo, index, onClick }: LightboxPhotoPr
       tabIndex={0}
       className="group my-8 cursor-pointer transition-all duration-200 hover:scale-105"
     >
-      <div className="border-4 border-black bg-white p-2 transition-all duration-200 hover:shadow-lg">
+      <div className="border-4 border-black bg-white p-2 transition-all duration-200 hover:bg-neutral-100">
         <img
           src={photo.src}
           alt={photo.alt}

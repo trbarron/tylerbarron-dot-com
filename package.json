@@ -26,6 +26,8 @@
     "dev:arc": "npm run build:arc && arc sandbox -e testing",
     "lint": "eslint --cache --cache-location ./node_modules/.cache/eslint .",
     "check:og": "node scripts/check-og-images.mjs",
+    "check:design": "node scripts/check-design.mjs",
+    "check:lambda-deps": "node scripts/check-lambda-deps.mjs",
     "prepare": "husky",
     "typecheck": "tsc"
   },

@@ -221,7 +221,7 @@ function LeaderboardTable({ board }: { board: Leaderboard }) {
                     <div className="flex items-center gap-1.5 text-sm text-gray-500">
                       {bot.author && <span>by {bot.author}</span>}
                       {!bot.builtin && (
-                        <span className="rounded bg-amber-100 px-1.5 py-0.5 text-xs whitespace-nowrap text-amber-800">
+                        <span className="bg-neutral-200 px-1.5 py-0.5 text-xs whitespace-nowrap text-black">
                           uploaded
                         </span>
                       )}
@@ -343,7 +343,7 @@ function StatusPanel({ status }: { status: SubmissionStatus }) {
     );
   }
   return (
-    <div className="mx-4 mt-4 rounded border border-black bg-black p-4 text-sm text-white lg:mx-auto lg:w-11/12">
+    <div className="mx-4 mt-4 border border-black bg-black p-4 text-sm text-white lg:mx-auto lg:w-11/12">
       <div className="font-bold text-white">
         {status.phase === 'running' ? (
           <>
@@ -354,9 +354,9 @@ function StatusPanel({ status }: { status: SubmissionStatus }) {
           `${status.botName ?? 'Submission'}: ${status.phase}…`
         )}
       </div>
-      <div className="mt-2 h-2 w-full rounded bg-gray-700">
+      <div className="mt-2 h-2 w-full bg-gray-700">
         {/* eslint-disable-next-line react/forbid-dom-props -- width is runtime tournament progress */}
-        <div className="h-2 rounded bg-white transition-all" style={{ width: `${pct}%` }} />
+        <div className="h-2 bg-white transition-all" style={{ width: `${pct}%` }} />
       </div>
       <div className="mt-1 text-xs text-gray-300">
         A full run takes about four hours — you can close this page and check back.
