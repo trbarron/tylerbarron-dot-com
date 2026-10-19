@@ -1,4 +1,5 @@
 import { useRetroreflectance } from './retroreflectance-context';
+import Button from '~/components/Button';
 
 /**
  * Footer control that turns the retroreflective background on and off.
@@ -12,13 +13,11 @@ export default function RetroreflectanceTrigger() {
   const { enabled, setEnabled } = retro;
 
   return (
-    <button
-      type="button"
-      onClick={() => setEnabled(!enabled)}
-      aria-expanded={enabled}
-      className="mt-4 hidden border-2 px-3 py-1 text-xs md:inline-block"
-    >
-      {enabled ? 'Click to remove color' : 'Click to add color'}
-    </button>
+    // The wrapper hides it on phones: <Button> sets its own display.
+    <span className="mt-4 hidden md:inline-block">
+      <Button size="sm" onClick={() => setEnabled(!enabled)} aria-expanded={enabled}>
+        {enabled ? 'Click to remove color' : 'Click to add color'}
+      </Button>
+    </span>
   );
 }

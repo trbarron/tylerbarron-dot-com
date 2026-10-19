@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import Button from '~/components/Button';
 
 interface Photo {
   src: string;
@@ -74,12 +75,9 @@ export default function CustomLightbox({ open, close, photos, currentIndex, setC
           <div className="font-extrabold tracking-wide text-black uppercase">
             {currentIndex + 1} of {photos.length}
           </div>
-          <button
-            onClick={close}
-            className="border-2 border-black bg-white px-3 py-1 font-extrabold tracking-wide text-black uppercase hover:bg-black hover:text-white"
-          >
+          <Button size="sm" onClick={close} aria-label="Close">
             ×
-          </button>
+          </Button>
         </div>
 
         {/* Image Container */}
@@ -93,18 +91,16 @@ export default function CustomLightbox({ open, close, photos, currentIndex, setC
           {/* Navigation Buttons */}
           {photos.length > 1 && (
             <>
-              <button
+              <Button
+                className="absolute top-1/2 left-8 -translate-y-1/2"
                 onClick={goToPrevious}
-                className="absolute top-1/2 left-8 -translate-y-1/2 transform border-4 border-black bg-white px-4 py-3 font-extrabold tracking-wide text-black uppercase hover:bg-black hover:text-white"
+                aria-label="Previous photo"
               >
                 ←
-              </button>
-              <button
-                onClick={goToNext}
-                className="absolute top-1/2 right-8 -translate-y-1/2 transform border-4 border-black bg-white px-4 py-3 font-extrabold tracking-wide text-black uppercase hover:bg-black hover:text-white"
-              >
+              </Button>
+              <Button className="absolute top-1/2 right-8 -translate-y-1/2" onClick={goToNext} aria-label="Next photo">
                 →
-              </button>
+              </Button>
             </>
           )}
         </div>
