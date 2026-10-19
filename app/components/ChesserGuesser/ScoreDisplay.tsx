@@ -1,5 +1,6 @@
 import { formatEval } from '~/utils/chess/evaluation';
 import type { GameMode } from '~/utils/chesserGuesser/types';
+import Button from '~/components/Button';
 
 interface PuzzleHistory {
   fen: string;
@@ -86,20 +87,24 @@ export default function ScoreDisplay({
         {/* Navigation buttons in review mode */}
         {isReviewMode && reviewPuzzle && (
           <div className="flex gap-2">
-            <button
+            <Button
+              size="sm"
+              className="flex-1"
               onClick={() => onNavigateReview('next', filteredHistory)}
               disabled={reviewPuzzleIndex === filteredHistory.length - 1}
-              className="flex-1 border-2 border-black bg-white px-2 py-1 text-xs font-black text-black uppercase transition-all hover:bg-black hover:text-white disabled:opacity-30 disabled:hover:bg-white disabled:hover:text-black"
+              aria-label="Older puzzle"
             >
-              ← Old
-            </button>
-            <button
+              ←
+            </Button>
+            <Button
+              size="sm"
+              className="flex-1"
               onClick={() => onNavigateReview('prev', filteredHistory)}
               disabled={reviewPuzzleIndex === 0}
-              className="flex-1 border-2 border-black bg-white px-2 py-1 text-xs font-black text-black uppercase transition-all hover:bg-black hover:text-white disabled:opacity-30 disabled:hover:bg-white disabled:hover:text-black"
+              aria-label="Newer puzzle"
             >
-              New →
-            </button>
+              →
+            </Button>
           </div>
         )}
 
@@ -131,31 +136,20 @@ export default function ScoreDisplay({
         {/* Copy FEN and Exit Review buttons in review mode */}
         {isReviewMode && reviewPuzzle && (
           <div className="space-y-2 pt-2">
-            <button
-              onClick={() => onCopyFEN(reviewPuzzle.fen)}
-              className={`w-full border-2 border-black px-4 py-2 text-xs font-black uppercase transition-all ${
-                copyFeedback ? 'bg-black text-white' : 'bg-white text-black hover:bg-black hover:text-white'
-              }`}
-            >
+            <Button size="sm" className="w-full" onClick={() => onCopyFEN(reviewPuzzle.fen)}>
               {copyFeedback ? 'FEN COPIED' : 'COPY FEN'}
-            </button>
-            <button
-              onClick={onToggleReview}
-              className="w-full border-2 border-black bg-black px-4 py-3 text-xs font-black text-white uppercase transition-all hover:bg-white hover:text-black"
-            >
+            </Button>
+            <Button variant="primary" size="sm" className="w-full" onClick={onToggleReview}>
               EXIT REVIEW
-            </button>
+            </Button>
           </div>
         )}
 
         {/* View All button in normal mode */}
         {totalCount > 0 && !isReviewMode && (
-          <button
-            onClick={onToggleReview}
-            className="mt-2 w-full border-2 border-black bg-black px-4 py-3 text-xs font-black text-white uppercase transition-all hover:bg-white hover:text-black"
-          >
+          <Button size="sm" className="mt-2 w-full" onClick={onToggleReview}>
             VIEW ALL
-          </button>
+          </Button>
         )}
       </div>
     </div>

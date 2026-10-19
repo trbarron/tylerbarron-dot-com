@@ -1,6 +1,8 @@
 // Endless Mode Prompt Component
 // Encourages users to try ranked mode after playing endless
 
+import Button from '~/components/Button';
+
 interface EndlessModePromptProps {
   onTryRanked: () => void;
   onDismiss: () => void;
@@ -18,18 +20,12 @@ export function EndlessModePrompt({ onTryRanked, onDismiss, gamesPlayed }: Endle
           </p>
         </div>
         <div className="flex flex-shrink-0 gap-2">
-          <button
-            onClick={onDismiss}
-            className="font-neo border-2 border-black bg-white px-4 py-2 text-sm font-bold text-black uppercase transition-colors hover:bg-gray-100"
-          >
+          <Button size="sm" onClick={onDismiss}>
             Maybe Later
-          </button>
-          <button
-            onClick={onTryRanked}
-            className="font-neo border-2 border-black bg-black px-4 py-2 text-sm font-bold text-white uppercase transition-colors hover:bg-gray-900"
-          >
+          </Button>
+          <Button variant="primary" size="sm" onClick={onTryRanked}>
             Yep
-          </button>
+          </Button>
         </div>
       </div>
     </div>
