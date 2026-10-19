@@ -20,6 +20,7 @@ import chessgroundBrown from '../styles/chessground.brown.css?url';
 import chessgroundCburnett from '../styles/chessground.cburnett.css?url';
 import Dialog from '~/components/Dialog';
 import { useCopy } from '~/hooks/useCopy';
+import Notice from '~/components/Notice';
 
 const Chessboard = lazy(() => import('~/components/Chessboard'));
 
@@ -95,32 +96,38 @@ export default function MultipleChoiceChessGame() {
             </header>
             <div className="prose">
               {error && (
-                <div className="font-neo mb-4 flex items-center justify-between gap-3 border-4 border-red-500 bg-red-100 p-4 text-red-800">
-                  <span>{error}</span>
-                  {!engineReady && error.startsWith('Engine failed to load') && (
-                    <Button size="sm" className="shrink-0" onClick={retryEngineInit}>
-                      Retry
-                    </Button>
-                  )}
-                </div>
+                <Notice
+                  className="mb-4"
+                  action={
+                    !engineReady &&
+                    error.startsWith('Engine failed to load') && (
+                      <Button size="sm" onClick={retryEngineInit}>
+                        Retry
+                      </Button>
+                    )
+                  }
+                >
+                  {error}
+                </Notice>
               )}
 
               {showInactivityBanner && opponentInactiveMs !== null && (
-                <div className="font-neo mb-4 flex flex-wrap items-center justify-between gap-3 border-4 border-amber-500 bg-amber-50 p-4 text-amber-900">
-                  <div>
-                    <div className="font-bold uppercase">Opponent inactive</div>
-                    <div className="text-sm">
-                      No response for {Math.floor(opponentInactiveMs / 1000)}s.
-                      {!canClaimWin &&
-                        ` You can claim a win after ${Math.ceil((CLAIM_THRESHOLD_MS - opponentInactiveMs) / 1000)}s.`}
-                    </div>
-                  </div>
-                  {canClaimWin && (
-                    <Button variant="danger" size="sm" onClick={claimWin}>
-                      Claim win
-                    </Button>
-                  )}
-                </div>
+                <Notice
+                  tone="info"
+                  title="Opponent inactive"
+                  className="mb-4"
+                  action={
+                    canClaimWin && (
+                      <Button variant="danger" size="sm" onClick={claimWin}>
+                        Claim win
+                      </Button>
+                    )
+                  }
+                >
+                  No response for {Math.floor(opponentInactiveMs / 1000)}s.
+                  {!canClaimWin &&
+                    ` You can claim a win after ${Math.ceil((CLAIM_THRESHOLD_MS - opponentInactiveMs) / 1000)}s.`}
+                </Notice>
               )}
 
               {phase === 'waiting_opponent' && gameState && (
@@ -140,9 +147,9 @@ export default function MultipleChoiceChessGame() {
                     </Button>
                   </div>
                   {copyState === 'failed' && (
-                    <p className="mt-2 text-xs text-red-700">
+                    <Notice tone="info" className="mt-2">
                       Couldn't access the clipboard. Press ⌘C / Ctrl+C to copy the selected link.
-                    </p>
+                    </Notice>
                   )}
                   <p className="mt-2 text-xs text-gray-400">Game code: {gameId}</p>
                 </div>

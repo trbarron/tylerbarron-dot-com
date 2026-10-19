@@ -18,6 +18,7 @@ import chessgroundCburnett from '../styles/chessground.cburnett.css?url';
 import Button from '~/components/Button';
 import Panel from '~/components/Panel';
 import { useCopy } from '~/hooks/useCopy';
+import Notice from '~/components/Notice';
 
 export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: chessgroundBase },
@@ -78,7 +79,7 @@ function FavoritesList() {
     };
   }, []);
 
-  if (error) return <p className="font-neo text-sm text-red-700">{error}</p>;
+  if (error) return <Notice>{error}</Notice>;
   if (!decks) return <p className="font-neo text-sm text-gray-600">Loading…</p>;
   if (decks.length === 0) {
     return <p className="font-neo text-sm text-gray-600">No favorite decks yet.</p>;
@@ -206,7 +207,7 @@ function DeckView({
         )}
       </div>
 
-      {error && <p className="text-sm text-red-700">{error}</p>}
+      {error && <Notice>{error}</Notice>}
 
       <div className="flex flex-wrap gap-2">
         <Button variant="primary" size="lg" className="flex-1" onClick={onDrill}>
@@ -309,7 +310,7 @@ export default function MaiaDrills() {
         {deckId ? (
           loadError ? (
             <Panel padded className="w-full" title="Deck">
-              <p className="font-neo text-red-700">{loadError}</p>
+              <Notice>{loadError}</Notice>
               <Link to="/marginal-maia-mentor" className="font-neo mt-3 inline-block text-sm underline">
                 Build a new deck
               </Link>

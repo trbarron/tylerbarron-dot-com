@@ -6,6 +6,7 @@ import Button from '~/components/Button';
 import { usePolling } from '~/hooks/usePolling';
 import { buildMeta } from '~/utils/seo';
 import Panel from '~/components/Panel';
+import Notice from '~/components/Notice';
 
 export function meta() {
   return buildMeta({
@@ -137,9 +138,7 @@ export default function MultipleChoiceChessLobby() {
               </div>
             </details>
 
-            {error && (
-              <div className="font-neo mb-4 border-2 border-red-500 bg-red-100 p-3 text-sm text-red-800">{error}</div>
-            )}
+            {error && <Notice className="mb-4">{error}</Notice>}
 
             <Button variant="primary" size="lg" className="w-full" onClick={createGame} disabled={isJoining}>
               {isJoining ? 'Starting…' : 'Create New Game'}
