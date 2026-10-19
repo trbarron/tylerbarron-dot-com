@@ -75,7 +75,10 @@ All buttons: sharp corners, Inter 700, uppercase, `letter-spacing: 0.05em`, colo
 
 - **Disabled:** `#E5E5E5` background, `#404040` text, `#D4D4D4` border; no hover or press change.
 - **Tap targets:** nothing under 44px tall.
-- **Not buttons, so not `<Button>`:** game pieces and list rows that happen to be clickable, like Multiple Choice Chess's move tiles and history chips, or a lobby's open-game rows. They follow the same rules (black/white, sharp, invert on hover/press) in their own shape.
+- **Not buttons, so not `<Button>`:** controls that happen to be clickable but have their own shape. They follow the same rules (black/white, sharp, invert on hover/press, 44px tap target).
+  - Game pieces and list rows: Multiple Choice Chess's move tiles and history chips, a lobby's open-game rows, lightbox thumbnails.
+  - Segmented controls, where the selected option is filled black: Chesser Guesser's Endless/Ranked, Marginal Maia Mentor's Lichess/Chess.com.
+  - A game's own input, with states a form button doesn't have: Blunder Watch's flag button (feedback flashes, timer bar).
 
 ### Inputs, Selects, Textareas
 - Border: 2px solid black
