@@ -25,6 +25,7 @@ import { loadProgress, saveProgress, type CardProgress } from '~/utils/maiaDrill
 import { trackDrillAnswer } from '~/utils/maiaDrills/tracking';
 import DeckCleared from './DeckCleared';
 import type { Deck } from '~/utils/maiaDrills/types';
+import Button from '~/components/Button';
 
 const Chessboard = lazy(() => import('~/components/Chessboard'));
 
@@ -247,12 +248,9 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
           {!answer && !checking && (
             <div className="flex flex-wrap items-center justify-between gap-2">
               <p className="text-sm text-gray-700">{misses.length ? 'Nope. One more try' : 'Make a move'}</p>
-              <button
-                onClick={reveal}
-                className="min-h-11 border-2 border-black px-3 py-1 text-xs font-bold tracking-wide uppercase hover:bg-black hover:text-white"
-              >
+              <Button size="sm" onClick={reveal}>
                 Show answer
-              </button>
+              </Button>
             </div>
           )}
           {checking && <p className="text-sm">Checking your move with Stockfish…</p>}
@@ -312,12 +310,9 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
                     </a>
                   )}
                 </div>
-                <button
-                  onClick={next}
-                  className="border-4 border-black bg-black px-5 py-2 font-extrabold tracking-wide text-white uppercase hover:bg-white hover:text-black"
-                >
+                <Button variant="primary" onClick={next}>
                   Next card →
-                </button>
+                </Button>
               </div>
             </>
           )}

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Button from '~/components/Button';
 
 interface DeckClearedProps {
   cardCount: number;
@@ -7,11 +8,6 @@ interface DeckClearedProps {
   onReview: () => void;
   onExit: () => void;
 }
-
-const primary =
-  'border-4 border-black bg-black px-5 py-2 font-extrabold uppercase tracking-wide text-white hover:bg-white hover:text-black';
-const secondary =
-  'border-4 border-black px-5 py-2 font-extrabold uppercase tracking-wide hover:bg-black hover:text-white';
 
 /** Every card's latest answer was right. Resetting asks first, since it can't be undone. */
 export default function DeckCleared({ cardCount, onReset, onReview, onExit }: DeckClearedProps) {
@@ -25,25 +21,19 @@ export default function DeckCleared({ cardCount, onReset, onReview, onExit }: De
         <div className="space-y-2">
           <p className="text-sm font-bold">Clear your progress on all {cardCount} cards?</p>
           <div className="flex flex-wrap gap-2">
-            <button onClick={onReset} className={primary}>
+            <Button variant="danger" onClick={onReset}>
               Reset
-            </button>
-            <button onClick={() => setConfirming(false)} className={secondary}>
-              Cancel
-            </button>
+            </Button>
+            <Button onClick={() => setConfirming(false)}>Cancel</Button>
           </div>
         </div>
       ) : (
         <div className="flex flex-wrap gap-2">
-          <button onClick={() => setConfirming(true)} className={primary}>
+          <Button variant="primary" onClick={() => setConfirming(true)}>
             Reset and start again
-          </button>
-          <button onClick={onReview} className={secondary}>
-            Review solved cards
-          </button>
-          <button onClick={onExit} className={secondary}>
-            Back to deck
-          </button>
+          </Button>
+          <Button onClick={onReview}>Review solved cards</Button>
+          <Button onClick={onExit}>Back to deck</Button>
         </div>
       )}
     </div>
