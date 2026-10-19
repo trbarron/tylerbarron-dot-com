@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Chess } from 'chess.js';
+import { usePolling } from '~/hooks/usePolling';
 import { parseUci, uciArrow } from '~/utils/chess/moves';
 import { getEngine, getThinkTime, isEngineTimeoutError } from '~/utils/multipleChoiceChess/stockfishEngine';
 import type { CandidateMove } from '~/utils/multipleChoiceChess/moveParser';
@@ -55,7 +56,6 @@ export function useMultipleChoiceChessGame({ gameId, playerId }: UseMultipleChoi
   const [modalDismissed, setModalDismissed] = useState(false);
   const [now, setNow] = useState<number>(() => Date.now());
 
-  const pollRef = useRef<NodeJS.Timeout | null>(null);
   const myColorRef = useRef<'white' | 'black' | null>(null);
 
   const getMyColor = useCallback(
@@ -160,13 +160,6 @@ export function useMultipleChoiceChessGame({ gameId, playerId }: UseMultipleChoi
     setError('Engine unavailable. Showing random legal moves (unscored) so you can keep playing.');
   }, []);
 
-  const stopPolling = useCallback(() => {
-    if (pollRef.current) {
-      clearInterval(pollRef.current);
-      pollRef.current = null;
-    }
-  }, []);
-
   const submitMove = useCallback(
     async (gs: GameState, move: CandidateMove) => {
       setPickedUci(move.uci);
@@ -241,8 +234,6 @@ export function useMultipleChoiceChessGame({ gameId, playerId }: UseMultipleChoi
 
   const handleOpponentMove = useCallback(
     (gs: GameState, prevFen: string) => {
-      stopPolling();
-
       if (gs.last_move) {
         const { from, to, promotion } = parseUci(gs.last_move);
         setLastMove([from, to]);
@@ -285,44 +276,43 @@ export function useMultipleChoiceChessGame({ gameId, playerId }: UseMultipleChoi
         }
       }, MOVE_PAUSE);
     },
-    [runAnalysis, stopPolling],
+    [runAnalysis],
   );
 
-  const startPolling = useCallback(
-    (interval: number = ACTIVE_POLL_INTERVAL) => {
-      stopPolling();
-      pollRef.current = setInterval(async () => {
-        const gs = await fetchState();
-        if (!gs) return;
+  // Poll while waiting for an opponent or their move; the phase decides the rate,
+  // and polling stops on its own once it's our turn or the game ends. Kept up
+  // while the tab is hidden: our polls are our last_seen, and an opponent can
+  // claim a win once they stop.
+  const pollInterval =
+    phase === 'opp_turn' ? ACTIVE_POLL_INTERVAL : phase === 'waiting_opponent' ? WAITING_POLL_INTERVAL : null;
+  usePolling(
+    async () => {
+      const gs = await fetchState();
+      if (!gs) return;
 
-        // Transition from waiting → active when opponent joins
-        if (gs.status === 'active' && (!gameState || gameState.status === 'waiting')) {
-          setGameState(gs);
-          setLastUpdated(gs.last_updated);
-          myColorRef.current = getMyColor(gs);
-          if (isMyTurn(gs)) {
-            stopPolling();
-            runAnalysis(gs.fen);
-          }
+      // Waiting → active when the opponent joins.
+      if (gs.status === 'active' && (!gameState || gameState.status === 'waiting')) {
+        setGameState(gs);
+        setLastUpdated(gs.last_updated);
+        myColorRef.current = getMyColor(gs);
+        if (isMyTurn(gs)) runAnalysis(gs.fen);
+        else setPhase('opp_turn');
+        return;
+      }
+
+      if (gs.last_updated > lastUpdated && gs.status !== 'waiting') {
+        const prevFen = gameState?.fen ?? gs.fen;
+        setGameState(gs);
+        setLastUpdated(gs.last_updated);
+        if (gs.status === 'complete') {
+          setPhase('game_over');
           return;
         }
-
-        if (gs.last_updated > lastUpdated && gs.status !== 'waiting') {
-          const prevFen = gameState?.fen ?? gs.fen;
-          setGameState(gs);
-          setLastUpdated(gs.last_updated);
-          if (gs.status === 'complete') {
-            stopPolling();
-            setPhase('game_over');
-            return;
-          }
-          if (isMyTurn(gs)) {
-            handleOpponentMove(gs, prevFen);
-          }
-        }
-      }, interval);
+        if (isMyTurn(gs)) handleOpponentMove(gs, prevFen);
+      }
     },
-    [fetchState, gameState, getMyColor, handleOpponentMove, isMyTurn, lastUpdated, runAnalysis, stopPolling],
+    pollInterval,
+    { whileHidden: true },
   );
 
   // Boot once engine is ready
@@ -348,7 +338,6 @@ export function useMultipleChoiceChessGame({ gameId, playerId }: UseMultipleChoi
       }
       if (gs.status === 'waiting') {
         setPhase('waiting_opponent');
-        startPolling(WAITING_POLL_INTERVAL);
         return;
       }
 
@@ -356,28 +345,14 @@ export function useMultipleChoiceChessGame({ gameId, playerId }: UseMultipleChoi
         runAnalysis(gs.fen);
       } else {
         setPhase('opp_turn');
-        startPolling(ACTIVE_POLL_INTERVAL);
       }
     })();
 
     return () => {
       cancelled = true;
-      stopPolling();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [engineReady]);
-
-  // Poll while waiting / opponent's turn
-  useEffect(() => {
-    if (phase === 'opp_turn') {
-      startPolling(ACTIVE_POLL_INTERVAL);
-    } else if (phase === 'waiting_opponent') {
-      startPolling(WAITING_POLL_INTERVAL);
-    } else {
-      stopPolling();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase]);
 
   // Keyboard navigation through history
   useEffect(() => {

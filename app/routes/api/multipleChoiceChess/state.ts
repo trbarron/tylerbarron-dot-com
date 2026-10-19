@@ -1,6 +1,8 @@
 import type { LoaderFunctionArgs } from 'react-router';
 import { getGame, touchPlayer } from '~/utils/multipleChoiceChess/gameState.server';
 
+const SEEN_WRITE_MS = 3_000;
+
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
   const gameId = url.searchParams.get('gameId');
@@ -17,13 +19,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
 
     // Touch the requesting player's last_seen so the opponent can detect
-    // abandonment when polling stops.
+    // abandonment when polling stops. At most every SEEN_WRITE_MS per player:
+    // the banner and claim-win thresholds are 45 s and 90 s, so finer is wasted writes.
     if (playerId && game.status !== 'complete') {
-      if (game.white_id === playerId) {
-        await touchPlayer(gameId, 'white');
-      } else if (game.black_id === playerId) {
-        await touchPlayer(gameId, 'black');
-      }
+      const color = game.white_id === playerId ? 'white' : game.black_id === playerId ? 'black' : null;
+      const lastSeen = color === 'white' ? game.white_last_seen : game.black_last_seen;
+      if (color && Date.now() - lastSeen >= SEEN_WRITE_MS) await touchPlayer(gameId, color);
     }
 
     return Response.json(game, {
