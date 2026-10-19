@@ -15,6 +15,7 @@ import { LIMITS, type Deck, type DrillCard } from '~/utils/maiaDrills/types';
 class FakeRedis {
   strings = new Map<string, string>();
   zsets = new Map<string, Map<string, number>>();
+  hashes = new Map<string, Map<string, string>>();
   ttls = new Map<string, number>();
   failing = false;
 
@@ -53,6 +54,27 @@ class FakeRedis {
     this.ttls.delete(key);
     return 1;
   }
+  async exists(key: string) {
+    this.check();
+    return this.strings.has(key) ? 1 : 0;
+  }
+  private hash(key: string) {
+    if (!this.hashes.has(key)) this.hashes.set(key, new Map());
+    return this.hashes.get(key)!;
+  }
+  async hset(key: string, field: string, value: string) {
+    this.check();
+    this.hash(key).set(field, value);
+    return 1;
+  }
+  async hmget(key: string, ...fields: string[]) {
+    this.check();
+    return fields.map((f) => this.hash(key).get(f) ?? null);
+  }
+  async hdel(key: string, ...fields: string[]) {
+    fields.forEach((f) => this.hash(key).delete(f));
+    return fields.length;
+  }
   private zset(key: string) {
     if (!this.zsets.has(key)) this.zsets.set(key, new Map());
     return this.zsets.get(key)!;
@@ -84,14 +106,19 @@ class FakeRedis {
       .map(([m]) => m)
       .slice(start, stop + 1);
   }
-  /** Queues calls and runs them in order on exec(), like a MULTI block. */
+  /** Queues calls and runs them in order on exec(), like a MULTI block; results come back as ioredis's [error, value] pairs. */
   multi() {
     const queued: (() => Promise<unknown>)[] = [];
     const chain = new Proxy(
       {},
       {
         get: (_t, name: string) => {
-          if (name === 'exec') return async () => Promise.all(queued.map((run) => run()));
+          if (name === 'exec')
+            return async () => {
+              const results: [null, unknown][] = [];
+              for (const run of queued) results.push([null, await run()]);
+              return results;
+            };
           return (...args: unknown[]) => {
             queued.push(() =>
               (this as unknown as Record<string, (...a: unknown[]) => Promise<unknown>>)[name](...args),
@@ -312,6 +339,7 @@ describe('favorites', () => {
     expect(redis.ttls.get(`maiaDrills:deck:${evicted}`)).toBe(30 * 24 * 60 * 60);
     expect(redis.ttls.get(`maiaDrills:edit:${evicted}`)).toBe(30 * 24 * 60 * 60);
     expect((await get(`id=${evicted}`)).body.deck.favorite).toBeUndefined();
+    expect(redis.hashes.get('maiaDrills:favoriteSummaries')!.has(evicted)).toBe(false);
   });
 
   it('re-favoriting a listed deck moves it to the top without growing the list', async () => {
@@ -330,6 +358,35 @@ describe('favorites', () => {
     redis.strings.delete(`maiaDrills:deck:${id}`);
     expect((await get('')).body.decks).toEqual([]);
     expect(await redis.zcard('maiaDrills:favorites')).toBe(0);
+    expect(redis.hashes.get('maiaDrills:favoriteSummaries')!.has(id)).toBe(false);
+  });
+
+  it('lists favorites from stored summaries, without reading whole decks', async () => {
+    const { id, editToken } = await saved();
+    await put({ id, editToken, favorite: true });
+    expect(JSON.parse(redis.hashes.get('maiaDrills:favoriteSummaries')!.get(id)!)).toMatchObject({ id, cardCount: 1 });
+    const reads = [vi.spyOn(redis, 'get'), vi.spyOn(redis, 'mget')];
+    const { body } = await get('');
+    expect(body.decks).toEqual([expect.objectContaining({ id, username: 'tyler', cardCount: 1 })]);
+    for (const read of reads) {
+      const deckReads = read.mock.calls.flat(2).filter((k) => String(k).startsWith('maiaDrills:deck:'));
+      expect(deckReads).toEqual([]);
+    }
+  });
+
+  it('summarizes a favorite saved before summaries existed, once', async () => {
+    const { id, editToken } = await saved();
+    await put({ id, editToken, favorite: true });
+    redis.hashes.get('maiaDrills:favoriteSummaries')!.delete(id);
+    expect((await get('')).body.decks).toEqual([expect.objectContaining({ id, cardCount: 1 })]);
+    expect(redis.hashes.get('maiaDrills:favoriteSummaries')!.has(id)).toBe(true);
+  });
+
+  it('drops the summary when a deck is unfavorited or pushed off the list', async () => {
+    const { id, editToken } = await saved();
+    await put({ id, editToken, favorite: true });
+    await put({ id, editToken, favorite: false });
+    expect(redis.hashes.get('maiaDrills:favoriteSummaries')!.has(id)).toBe(false);
   });
 
   it('404s favoriting an expired deck', async () => {
@@ -468,6 +525,8 @@ describe('PATCH /api/maiaDrills/decks', () => {
     const wrongToken = await patch({ id, editToken: 'x'.repeat(32), ...addition, cards: [cardFrom('newgame2', 250)] });
     expect(wrongToken.status).toBe(200);
     expect((await get(`id=${id}`)).body.deck.cards).toHaveLength(3);
+    // The favorites list's summary follows the deck.
+    expect((await get('')).body.decks).toEqual([expect.objectContaining({ id, cardCount: 3 })]);
 
     // Still only the owner can unfavorite it.
     expect((await put({ id, editToken: 'x'.repeat(32), favorite: false })).status).toBe(403);

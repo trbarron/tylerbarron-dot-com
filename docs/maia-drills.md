@@ -73,6 +73,7 @@ Redis, namespace `maiaDrills:`:
 maiaDrills:deck:{id}                  JSON deck (TTL 30 days unless favorited)
 maiaDrills:edit:{id}                  sha256 of the deck's edit token (same TTL)
 maiaDrills:favorites                  ZSET of favorited deck ids, scored by when they were favorited
+maiaDrills:favoriteSummaries          HASH of favorited deck id → its summary (name, settings, stats, card count), so the list never reads whole decks
 ratelimit:maiaDrills:{bucket}:{ip}:{window}
 ```
 

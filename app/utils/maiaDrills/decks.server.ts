@@ -24,6 +24,12 @@ const DECK_PREFIX = 'maiaDrills:deck:';
 const EDIT_PREFIX = 'maiaDrills:edit:';
 /** ZSET of favorited deck ids, scored by when they were favorited. */
 const FAVORITES_KEY = 'maiaDrills:favorites';
+/**
+ * HASH of favorited deck id → DeckSummary JSON, so the list doesn't read whole
+ * decks (up to ~400 KB each). Written on favorite and on adding games, removed
+ * on unlist.
+ */
+const SUMMARIES_KEY = 'maiaDrills:favoriteSummaries';
 
 /** Unfavorited decks: long enough to come back to, short enough not to pile up. */
 const DECK_TTL_SECONDS = 30 * 24 * 60 * 60;
@@ -310,10 +316,26 @@ async function authorize(
   return { raw };
 }
 
+function summarize(id: string, deck: Deck): DeckSummary {
+  return {
+    id,
+    username: deck.username,
+    source: deck.source,
+    settings: deck.settings,
+    stats: deck.stats,
+    cardCount: deck.cards.length,
+    createdAt: deck.createdAt,
+  };
+}
+
 /** Take a deck off the list and give it back its expiry. */
 async function unlist(id: string, raw: string | null): Promise<void> {
   const redis = getRedisClient();
-  const tx = redis.multi().zrem(FAVORITES_KEY, id).expire(`${EDIT_PREFIX}${id}`, DECK_TTL_SECONDS);
+  const tx = redis
+    .multi()
+    .zrem(FAVORITES_KEY, id)
+    .hdel(SUMMARIES_KEY, id)
+    .expire(`${EDIT_PREFIX}${id}`, DECK_TTL_SECONDS);
   if (raw) {
     const deck = JSON.parse(raw) as Deck;
     delete deck.favorite;
@@ -340,6 +362,7 @@ export async function setFavorite(id: string, editToken: string, favorite: boole
     .set(`${DECK_PREFIX}${id}`, JSON.stringify(deck))
     .persist(`${EDIT_PREFIX}${id}`)
     .zadd(FAVORITES_KEY, Date.now(), id)
+    .hset(SUMMARIES_KEY, id, JSON.stringify(summarize(id, deck)))
     .exec();
 
   // Over the cap: the oldest favorites fall off and start expiring again.
@@ -352,36 +375,49 @@ export async function setFavorite(id: string, editToken: string, favorite: boole
   return 'ok';
 }
 
-/** The global favorites list, most recently favorited first. */
+/**
+ * The global favorites list, most recently favorited first. Reads the stored
+ * summaries, plus an EXISTS per deck in the same round trip so an entry whose
+ * deck is gone drops off. A favorite saved before summaries existed is
+ * summarized from its deck once and stored.
+ */
 export async function listFavorites(): Promise<DeckSummary[]> {
   const redis = getRedisClient();
   const ids = await redis.zrevrange(FAVORITES_KEY, 0, MAX_FAVORITES - 1);
   if (ids.length === 0) return [];
 
-  const raws = await redis.mget(ids.map((id) => `${DECK_PREFIX}${id}`));
-  const summaries: DeckSummary[] = [];
-  const missing: string[] = [];
+  const tx = redis.multi().hmget(SUMMARIES_KEY, ...ids);
+  for (const id of ids) tx.exists(`${DECK_PREFIX}${id}`);
+  const results = (await tx.exec()) ?? [];
+  const stored = (results[0]?.[1] as (string | null)[] | undefined) ?? [];
+  const exists = results.slice(1).map((r) => r?.[1] === 1);
 
-  raws.forEach((raw, i) => {
-    if (!raw) {
-      missing.push(ids[i]);
-      return;
-    }
-    const deck = JSON.parse(raw) as Deck;
-    summaries.push({
-      id: ids[i],
-      username: deck.username,
-      source: deck.source,
-      settings: deck.settings,
-      stats: deck.stats,
-      cardCount: deck.cards.length,
-      createdAt: deck.createdAt,
+  const gone = ids.filter((_, i) => !exists[i]);
+  const unsummarized = ids.filter((id, i) => exists[i] && !stored[i]);
+  const backfilled = new Map<string, DeckSummary>();
+  if (unsummarized.length) {
+    const raws = await redis.mget(unsummarized.map((id) => `${DECK_PREFIX}${id}`));
+    const backfill = redis.multi();
+    raws.forEach((raw, i) => {
+      if (!raw) return;
+      const summary = summarize(unsummarized[i], JSON.parse(raw) as Deck);
+      backfilled.set(summary.id, summary);
+      backfill.hset(SUMMARIES_KEY, summary.id, JSON.stringify(summary));
     });
-  });
+    await backfill.exec();
+  }
+  if (gone.length)
+    await redis
+      .multi()
+      .zrem(FAVORITES_KEY, ...gone)
+      .hdel(SUMMARIES_KEY, ...gone)
+      .exec();
 
-  // Self-heal an index entry whose deck is gone.
-  if (missing.length) await redis.zrem(FAVORITES_KEY, ...missing);
-  return summaries;
+  return ids.flatMap((id, i) => {
+    if (!exists[i]) return [];
+    const summary = stored[i] ? (JSON.parse(stored[i]!) as DeckSummary) : backfilled.get(id);
+    return summary ? [summary] : [];
+  });
 }
 
 export type AddOutcome =
@@ -412,7 +448,11 @@ export async function addToDeck(id: string, editToken: string | null, addition: 
 
   const { deck, added } = mergeIntoDeck(current, addition, new Date());
   if (deck.favorite) {
-    await redis.set(`${DECK_PREFIX}${id}`, JSON.stringify(deck));
+    await redis
+      .multi()
+      .set(`${DECK_PREFIX}${id}`, JSON.stringify(deck))
+      .hset(SUMMARIES_KEY, id, JSON.stringify(summarize(id, deck)))
+      .exec();
   } else {
     await redis
       .multi()
