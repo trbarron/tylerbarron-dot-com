@@ -80,6 +80,17 @@ All buttons: sharp corners, Inter 700, uppercase, `letter-spacing: 0.05em`, colo
   - Segmented controls, where the selected option is filled black: Chesser Guesser's Endless/Ranked, Marginal Maia Mentor's Lichess/Chess.com.
   - A game's own input, with states a form button doesn't have: Blunder Watch's flag button (feedback flashes, timer bar).
 
+### Dialogs
+
+Every modal is `<Dialog>` (`app/components/Dialog.tsx`), which wraps the native `<dialog>`.
+
+- **Shape:** a white box with a 4px black border, `max-w-sm` (a yes/no question) or `max-w-md`, over a `black/70` backdrop. No shadow, no blur, no radius.
+- **Header:** the title in uppercase extrabold over a 4px rule, with an optional grey subtitle line. The title is the dialog's accessible name.
+- **Actions:** at the bottom, in a two-column grid when there are two. Cancel or the safe choice goes first, so it gets focus when the dialog opens.
+- **Closing:** Escape and a click on the backdrop call `onClose`. No ✕ in the corner: a dialog closes from its own buttons, Escape, or the backdrop.
+- **Focus:** opening moves focus to the first focusable element and keeps Tab inside the dialog; the page behind can't be clicked.
+- The photo lightbox is the exception. It's a full-screen image viewer with its own keyboard controls, not a dialog.
+
 ### Inputs, Selects, Textareas
 - Border: 2px solid black
 - Padding: `px-3 py-2`

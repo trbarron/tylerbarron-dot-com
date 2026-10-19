@@ -1,8 +1,9 @@
 // Username Input Modal Component
 // Shown before starting ranked mode
 
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import Button from '~/components/Button';
+import Dialog from '~/components/Dialog';
 
 interface UsernameModalProps {
   isOpen: boolean;
@@ -21,14 +22,6 @@ export function UsernameModal({
 }: UsernameModalProps) {
   const [username, setUsername] = useState(initialUsername);
   const [error, setError] = useState('');
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (isOpen && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [isOpen]);
-
   const validateUsername = (name: string): boolean => {
     if (name.length > 20) {
       setError('Username must be 20 characters or less');
@@ -61,52 +54,44 @@ export function UsernameModal({
   if (!isOpen) return null;
 
   return (
-    <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black p-4">
-      <div className="w-full max-w-md border-4 border-black bg-white">
-        {/* Header */}
-        <div className="border-b-4 border-black bg-white p-4">
-          <h2 className="font-neo text-center text-xl font-bold text-black uppercase">Enter Your Username</h2>
-        </div>
+    // The input is the first focusable element, so opening the dialog focuses it.
+    <Dialog open onClose={onCancel} title="Enter Your Username">
+      <div className="p-6">
+        <p className="font-neo mb-4 text-center text-sm text-black">
+          Your username will appear on the daily leaderboard
+        </p>
 
-        {/* Body */}
-        <div className="p-6">
-          <p className="font-neo mb-4 text-center text-sm text-black">
-            Your username will appear on the daily leaderboard
-          </p>
+        <form onSubmit={handleSubmit}>
+          <input
+            type="text"
+            value={username}
+            onChange={handleChange}
+            placeholder="Enter username..."
+            maxLength={20}
+            className="font-neo focus:ring-accent mb-2 w-full border-2 border-black bg-white px-4 py-3 text-black focus:ring-2 focus:outline-none"
+            autoComplete="off"
+          />
 
-          <form onSubmit={handleSubmit}>
-            <input
-              ref={inputRef}
-              type="text"
-              value={username}
-              onChange={handleChange}
-              placeholder="Enter username..."
-              maxLength={20}
-              className="font-neo focus:ring-accent mb-2 w-full border-2 border-black bg-white px-4 py-3 text-black focus:ring-2 focus:outline-none"
-              autoComplete="off"
-            />
-
-            {error && (
-              <div className="font-neo mb-4 border-2 border-red-500 bg-red-100 px-3 py-2 text-sm text-red-800">
-                {error}
-              </div>
-            )}
-
-            <div className="font-neo mb-4 text-xs text-gray-600">
-              • Less than 20 characters
-              <br />• Letters, numbers, and underscores only
+          {error && (
+            <div className="font-neo mb-4 border-2 border-red-500 bg-red-100 px-3 py-2 text-sm text-red-800">
+              {error}
             </div>
+          )}
 
-            {/* Buttons */}
-            <div className="grid grid-cols-2 gap-4">
-              <Button onClick={onCancel}>{cancelLabel}</Button>
-              <Button type="submit" variant="primary" disabled={!username}>
-                Submit
-              </Button>
-            </div>
-          </form>
-        </div>
+          <div className="font-neo mb-4 text-xs text-gray-600">
+            • Less than 20 characters
+            <br />• Letters, numbers, and underscores only
+          </div>
+
+          {/* Buttons */}
+          <div className="grid grid-cols-2 gap-4">
+            <Button onClick={onCancel}>{cancelLabel}</Button>
+            <Button type="submit" variant="primary" disabled={!username}>
+              Submit
+            </Button>
+          </div>
+        </form>
       </div>
-    </div>
+    </Dialog>
   );
 }

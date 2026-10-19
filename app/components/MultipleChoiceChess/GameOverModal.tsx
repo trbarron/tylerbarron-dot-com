@@ -2,6 +2,7 @@ import type { MoveHistoryEntry } from '~/utils/multipleChoiceChess/types';
 import { accuracy, pointsForRank } from '~/utils/multipleChoiceChess/scoring';
 import RankBadge from './RankBadge';
 import Button from '~/components/Button';
+import Dialog from '~/components/Dialog';
 
 interface GameOverModalProps {
   result: 'white' | 'black' | 'draw';
@@ -18,6 +19,8 @@ interface GameOverModalProps {
   moveHistory: MoveHistoryEntry[];
   onPlayAgain: () => void;
   onReview: () => void;
+  /** Escape or a backdrop click: hide the dialog and stay on the board. */
+  onClose: () => void;
 }
 
 const REASON_LABELS: Record<string, string> = {
@@ -53,6 +56,7 @@ export default function GameOverModal({
   moveHistory,
   onPlayAgain,
   onReview,
+  onClose,
 }: GameOverModalProps) {
   const didWin = result === myColor;
   const isDraw = result === 'draw';
@@ -81,57 +85,50 @@ export default function GameOverModal({
   const headline = isDraw ? 'Draw' : didWin ? 'You win!' : 'You lose';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-      <div className="font-neo w-full max-w-md border-4 border-black bg-white">
-        <div className="border-b-4 border-black p-6 text-center">
-          <h2 className="text-3xl font-extrabold uppercase">{headline}</h2>
-          <p className="mt-1 text-sm text-gray-600">{REASON_LABELS[reason] ?? reason}</p>
-        </div>
+    <Dialog open onClose={onClose} title={headline} subtitle={REASON_LABELS[reason] ?? reason}>
+      <div className="px-5 pt-3 pb-1 text-center text-[10px] tracking-wide text-gray-500 uppercase">
+        #1 best engine pick · #6 worst
+      </div>
 
-        <div className="px-5 pt-3 pb-1 text-center text-[10px] tracking-wide text-gray-500 uppercase">
-          #1 best engine pick · #6 worst
-        </div>
-
-        <div className="grid grid-cols-2 divide-x-4 divide-black">
-          <div className="p-5">
-            <div className="text-xs font-bold text-gray-500 uppercase">You ({myColor})</div>
-            <div className="mt-1 text-2xl leading-none font-extrabold text-black">{myAccuracy}%</div>
-            <div className="text-[10px] tracking-wide text-gray-400 uppercase">accuracy</div>
-            <div className="mt-3 space-y-1">
-              <StatRow rank={1} count={myRanks.rank1} />
-              <StatRow rank={2} count={myRanks.rank2} />
-              <StatRow rank={4} count={myRanks.rank4} />
-              <StatRow rank={6} count={myRanks.rank6} />
-            </div>
-          </div>
-          <div className="p-5">
-            <div className="text-xs font-bold text-gray-500 uppercase">
-              Opponent ({myColor === 'white' ? 'black' : 'white'})
-            </div>
-            <div className="mt-1 text-2xl leading-none font-extrabold text-black">{oppAccuracy}%</div>
-            <div className="text-[10px] tracking-wide text-gray-400 uppercase">accuracy</div>
-            <div className="mt-3 space-y-1">
-              <StatRow rank={1} count={oppRanks.rank1} />
-              <StatRow rank={2} count={oppRanks.rank2} />
-              <StatRow rank={4} count={oppRanks.rank4} />
-              <StatRow rank={6} count={oppRanks.rank6} />
-            </div>
+      <div className="grid grid-cols-2 divide-x-4 divide-black">
+        <div className="p-5">
+          <div className="text-xs font-bold text-gray-500 uppercase">You ({myColor})</div>
+          <div className="mt-1 text-2xl leading-none font-extrabold text-black">{myAccuracy}%</div>
+          <div className="text-[10px] tracking-wide text-gray-400 uppercase">accuracy</div>
+          <div className="mt-3 space-y-1">
+            <StatRow rank={1} count={myRanks.rank1} />
+            <StatRow rank={2} count={myRanks.rank2} />
+            <StatRow rank={4} count={myRanks.rank4} />
+            <StatRow rank={6} count={myRanks.rank6} />
           </div>
         </div>
-
-        <div className="grid grid-cols-2 gap-3 border-t-4 border-black p-4">
-          {moveHistory.length > 0 ? (
-            <Button className="w-full" onClick={onReview}>
-              Review Game →
-            </Button>
-          ) : (
-            <div />
-          )}
-          <Button variant="primary" className="w-full" onClick={onPlayAgain}>
-            Play Again
-          </Button>
+        <div className="p-5">
+          <div className="text-xs font-bold text-gray-500 uppercase">
+            Opponent ({myColor === 'white' ? 'black' : 'white'})
+          </div>
+          <div className="mt-1 text-2xl leading-none font-extrabold text-black">{oppAccuracy}%</div>
+          <div className="text-[10px] tracking-wide text-gray-400 uppercase">accuracy</div>
+          <div className="mt-3 space-y-1">
+            <StatRow rank={1} count={oppRanks.rank1} />
+            <StatRow rank={2} count={oppRanks.rank2} />
+            <StatRow rank={4} count={oppRanks.rank4} />
+            <StatRow rank={6} count={oppRanks.rank6} />
+          </div>
         </div>
       </div>
-    </div>
+
+      <div className="grid grid-cols-2 gap-3 border-t-4 border-black p-4">
+        {moveHistory.length > 0 ? (
+          <Button className="w-full" onClick={onReview}>
+            Review Game →
+          </Button>
+        ) : (
+          <div />
+        )}
+        <Button variant="primary" className="w-full" onClick={onPlayAgain}>
+          Play Again
+        </Button>
+      </div>
+    </Dialog>
   );
 }
