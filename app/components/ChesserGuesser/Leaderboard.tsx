@@ -57,6 +57,9 @@ export function Leaderboard({ currentUsername, date }: LeaderboardProps) {
       <div className="font-neo border-b-4 border-black bg-black px-4 py-3 text-lg font-extrabold tracking-tighter text-white uppercase">
         LEADERBOARD
       </div>
+      <div className="font-neo border-b-2 border-black px-4 py-2 text-xs text-gray-700">
+        Score: total gap from Stockfish’s evals, in centipawns. Lowest wins.
+      </div>
 
       <div className="max-h-[500px] overflow-y-auto">
         {isLoading ? (
