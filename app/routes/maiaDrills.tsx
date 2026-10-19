@@ -47,6 +47,11 @@ function describeThreshold(settings: Deck['settings']): string {
     : `≥${settings.thresholdWin ?? DEFAULT_SETTINGS.thresholdWin}% win chance`;
 }
 
+/** "thibault’s 13-card deck": a deck's name, on its page and in the favorites list. */
+function deckName(username: string, cardCount: number): string {
+  return `${username}’s ${cardCount}-card deck`;
+}
+
 function settingsParts(settings: Deck['settings']): string[] {
   return [`+${settings.delta} rating`, describeThreshold(settings), `depth ${settings.depth}`];
 }
@@ -94,9 +99,7 @@ function FavoritesList() {
             className="group flex items-center justify-between gap-3 border-2 border-black p-3 hover:bg-black hover:text-white"
           >
             <span className="font-neo min-w-0">
-              <span className="block truncate font-bold">
-                ★ {d.username} · {d.cardCount} cards
-              </span>
+              <span className="block truncate font-bold">★ {deckName(d.username, d.cardCount)}</span>
               {d.id in solvedByDeck && (
                 <span className="block text-sm font-bold">
                   {solvedByDeck[d.id]}/{d.cardCount} solved
@@ -184,9 +187,7 @@ function DeckView({
   return (
     <div className="font-neo space-y-5 text-black">
       <div>
-        <h2 className="text-3xl font-extrabold break-words">
-          {deck.username}’s {deck.cards.length}-card deck
-        </h2>
+        <h2 className="text-3xl font-extrabold break-words">{deckName(deck.username, deck.cards.length)}</h2>
         {[`${SOURCE_NAMES[deck.source]} games`, ...settingsParts(deck.settings)].map((detail) => (
           <p key={detail} className="text-sm text-gray-700">
             {detail}
