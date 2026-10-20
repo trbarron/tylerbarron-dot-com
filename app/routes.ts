@@ -21,6 +21,8 @@ export default [
   route('generative-art', 'routes/generativeArt.tsx'),
   route('marginal-maia-mentor', 'routes/maiaDrills.tsx'),
   route('pizza-rating', 'routes/pizzaRating.tsx'),
+  // Unlisted: no homepage link and not in the sitemap.
+  route('runescape-rascals', 'routes/runescapeRascals.tsx'),
   route('the-riddler', 'routes/theRiddler.tsx'),
 
   // Legacy camelCase and PascalCase URLs 301-redirect to the kebab-case
@@ -72,6 +74,10 @@ export default [
   // API routes for Media Format Appreciation Profile shared results
   route('api/mediaProfile/share', 'routes/api/mediaProfile/share.ts'),
   route('api/mediaProfile/public', 'routes/api/mediaProfile/public.ts'),
+
+  // API routes for Runescape Rascals (read-only; the party's orchestrator publishes to Redis)
+  route('api/runescapeRascals/snapshot', 'routes/api/runescapeRascals/snapshot.ts'),
+  route('api/runescapeRascals/shot/:name', 'routes/api/runescapeRascals/shot.ts'),
 
   // API routes for Blunder Watch
   route('api/blunderWatch/game', 'routes/api/blunderWatch/game.ts'),
