@@ -31,6 +31,7 @@ The pair of knobs (Δ, T) is the whole product. A small Δ with a big T finds ou
 | Maia inference | Browser, Web Worker, `onnxruntime-web` (WebGPU, else WASM) | ORT 1.30 is loaded from jsDelivr; the model from Hugging Face. |
 | Stockfish | Browser, pool of Web Workers | Same lite single-threaded build Multiple Choice Chess uses. |
 | Decks | Redis via `/api/maiaDrills/decks` | Only the finished cards are uploaded. No games and no analysis are sent to the server. |
+| Drill progress | Redis via `/api/maiaDrills/progress` | Which cards are completed; shared by every device drilling the deck. |
 
 These third-party hosts are granted in the CSP in `app/entry.server.tsx`: `lichess.org`, `api.chess.com`, `huggingface.co` plus `*.hf.co` (the model URL redirects to HF's storage CDN) in `connect-src`, and jsDelivr in `script-src`. Without them the page fails with a bare "Failed to fetch".
 
@@ -63,7 +64,7 @@ For each position `P` in which the user is to move and played `u`:
 
 Optional filters: skip the first N moves of each game (default 0, since the opening is often where the habits are) and skip bullet games. Centipawn decks also store `settings.skipLost` (step 6), so adding newer games to one applies the same rule; decks built before it existed have no `skipLost` and keep every error.
 
-**Drill grading:** you get two tries per card. A first miss just resets the board, with no hint. A second miss, or *Show answer*, reveals the answer. A right answer on either try counts as answered right, and a card whose latest answer was right is *solved*; a later miss un-solves it, so solved means you'd find the move today. Each card comes up once per round, right or wrong; the next round starts with the unsolved cards. When every card is solved the drill shows *Deck cleared*, with *Reset and start again* (clears this browser's progress, after a confirmation), *Review solved cards*, or back to the deck. The solved count and a progress bar also show on the deck page and the favorites list; like all drill progress, it lives in this browser's localStorage. A miss isn't repeated a few cards later: the positions rarely recur in real games, so an immediate repeat tests memory of the answer rather than the judgment the tool is for. The verdict is plain black text; its words say whether it was right. Playing `m` is correct. Playing anything else triggers a quick Stockfish check at the same depth that scores your move with `m`, the game move and any earlier try in one search. If yours gives up at most `settings.alsoGoodWin` points of win chance against `m` (default 4), it's accepted as "also good"; a stronger player's choice isn't the only right answer. The answer then shows that search's evals, not the deck's: the same move scores tens of cp apart from one search to the next at depth 12, so mixing the two once showed a rejected move scoring better than the target.
+**Drill grading:** you get two tries per card. A first miss just resets the board, with no hint. A second miss, or *Show answer*, reveals the answer. A right answer on either try *completes* the card, and completion is sticky: a later miss, in this session or any other, leaves it completed, so two sessions can't undo each other's work. Each card comes up once per round, right or wrong; the next round starts with the cards not yet completed. When every card is completed the drill shows *Deck cleared*, with *Reset and start again* (clears the deck's progress for every device, after a confirmation), *Review solved cards*, or back to the deck. The solved count and a progress bar also show on the deck page and the favorites list. Progress is stored with the deck on the server (see Storage), so a phone and a laptop share it. A miss isn't repeated a few cards later: the positions rarely recur in real games, so an immediate repeat tests memory of the answer rather than the judgment the tool is for. The verdict is plain black text; its words say whether it was right. Playing `m` is correct. Playing anything else triggers a quick Stockfish check at the same depth that scores your move with `m`, the game move and any earlier try in one search. If yours gives up at most `settings.alsoGoodWin` points of win chance against `m` (default 4), it's accepted as "also good"; a stronger player's choice isn't the only right answer. The answer then shows that search's evals, not the deck's: the same move scores tens of cp apart from one search to the next at depth 12, so mixing the two once showed a rejected move scoring better than the target.
 
 ## Storage
 
@@ -74,6 +75,7 @@ maiaDrills:deck:{id}                  JSON deck (TTL 30 days unless favorited)
 maiaDrills:edit:{id}                  sha256 of the deck's edit token (same TTL)
 maiaDrills:favorites                  ZSET of favorited deck ids, scored by when they were favorited
 maiaDrills:favoriteSummaries          HASH of favorited deck id → its summary (name, settings, stats, card count), so the list never reads whole decks
+maiaDrills:progress:{id}              HASH of completed card id → when it was first completed (ms); the deck's TTL
 ratelimit:maiaDrills:{bucket}:{ip}:{window}
 ```
 
@@ -81,18 +83,22 @@ ratelimit:maiaDrills:{bucket}:{ip}:{window}
 - **Favoriting** persists the deck (removes the TTL) and adds it to one **global** favorites list, shown to every visitor at the bottom of the build page with the player's name on each deck. It's global on purpose: traffic is low, there are no accounts, and a per-player list could be filled by anyone who builds decks from that player's public games. Favorites open on any device with no reprocessing.
 - The list keeps the 50 most recently favorited decks. Favoriting a 51st drops the oldest off the list, and that deck gets its 30-day expiry back, so nothing is blocked and nothing is kept forever off the list.
 - **Adding games.** A deck records when its newest analyzed game was played (`newestGameAt`). On the deck page, the browser that built it can *Add new games*, and so can anyone on a favorite: favorites are communal. The server can't verify that cards came from the player's games, so someone could push junk into a favorite; that's accepted for a small site, and adds are rate-limited per address (20 an hour). Adding: it fetches only games after that (Lichess `since`, which is inclusive, so +1 ms; for Chess.com it walks monthly archives newest-first and stops at the first month that reaches it). The new games are analyzed with the deck's own settings and bullet choice, and the cards are sent to `PATCH`. The server does the merge, so a stale page can't drop cards: it skips cards it already has (same game and ply), keeps the 1,000 biggest misses by win chance lost (as a fresh build does), sums the stats, and moves `newestGameAt` forward. A stopped run sends its cards but not a new date, so the next add looks at those games again. An add restarts an unfavorited deck's 30 days.
-- Per-card drill progress (seen / correct / last result) lives in `localStorage`, keyed by card id. Ids are stable across adds, so progress survives them. It's a convenience, not a record.
-- Limits: 1,000 cards per deck (about 400 KB; big on purpose, since working through a long deck is the point), 50 decks on the favorites list, 20 deck saves per IP per hour.
+- **Drill progress** is one hash per deck of completed card ids, written with `HSETNX`: the first completion stands and nothing overwrites it, so sessions on different tabs or devices only ever add to each other's progress. Only a reset (`DELETE`) clears it. Anyone who can open a deck can write its progress, the way anyone can add games to a favorite, so a favorite's progress is shared by everyone drilling it. The key takes the deck's expiry: none while it's a favorite, otherwise what the deck has left; favoriting, unfavoriting and adding games keep the two in step. Card ids are stable across adds, so progress survives them. A deck keeps at most 2,000 completed ids (twice the card cap, since ids of cards later dropped by the cap stay); past that it refuses more until a reset.
+- **In the browser**, `localStorage` holds only completions the server hasn't confirmed (`maiaDrills:pending:{id}`): a right answer shows at once and is queued, and the queue rides along with the next send, so answers given offline aren't lost. Progress from before it moved to the server (`maiaDrills:progress:{id}`, last-answer-wins) is uploaded the first time its deck is opened or listed, then deleted.
+- Limits: 1,000 cards per deck (about 400 KB; big on purpose, since working through a long deck is the point), 50 decks on the favorites list, 20 deck saves per IP per hour, 240 progress writes per IP per 10 minutes, 20 resets per IP per hour.
 
 ## API
 
 | Method | Path | Body / query | Returns |
 |---|---|---|---|
 | `POST` | `/api/maiaDrills/decks` | deck (settings + cards) | `{ id, editToken }` |
-| `GET` | `/api/maiaDrills/decks?id=` | | `{ deck }` |
-| `GET` | `/api/maiaDrills/decks` | | `{ decks: DeckSummary[] }` (the global favorites list) |
+| `GET` | `/api/maiaDrills/decks?id=` | | `{ deck, completed }` |
+| `GET` | `/api/maiaDrills/decks` | | `{ decks: DeckSummary[] }` (the global favorites list, each with its `completed` count) |
 | `PUT` | `/api/maiaDrills/decks` | `{ id, editToken, favorite }` | `{ id, favorite }` |
 | `PATCH` | `/api/maiaDrills/decks` | `{ id, editToken, cards, stats, newestGameAt? }` | `{ added, cardCount, newestGameAt }` (merge new games' cards in) |
+| `GET` | `/api/maiaDrills/progress?deck=` | | `{ completed }` (completed card ids) |
+| `POST` | `/api/maiaDrills/progress` | `{ deck, completed: [ids] }` | `{ completed }` (every completed id, other devices' included) |
+| `DELETE` | `/api/maiaDrills/progress?deck=` | | `{ completed: [] }` (reset) |
 
 ## Cost of processing
 

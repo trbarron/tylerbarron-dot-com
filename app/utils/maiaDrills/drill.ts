@@ -3,7 +3,6 @@
 // See docs/maia-drills.md, "Drill grading".
 
 import { formatEval as formatWhiteEval } from '~/utils/chess/evaluation';
-import type { CardProgress } from './localStorage';
 import { DEFAULT_SETTINGS, type DrillCard } from './types';
 import { winDrop } from '~/utils/chess/winChance';
 
@@ -120,19 +119,6 @@ export function answeredRight(answer: Answer): boolean {
   return answer.verdict === 'correct' || answer.verdict === 'also-good';
 }
 
-export function recordProgress(
-  progress: Record<string, CardProgress>,
-  cardId: string,
-  answer: Answer,
-): Record<string, CardProgress> {
-  const ok = answeredRight(answer);
-  const old = progress[cardId] ?? { seen: 0, correct: 0, last: 'wrong' as const };
-  return {
-    ...progress,
-    [cardId]: { seen: old.seen + 1, correct: old.correct + (ok ? 1 : 0), last: ok ? 'correct' : 'wrong' },
-  };
-}
-
 export function shuffle<T>(items: T[], random: () => number = Math.random): T[] {
   const out = [...items];
   for (let i = out.length - 1; i > 0; i--) {
@@ -142,15 +128,15 @@ export function shuffle<T>(items: T[], random: () => number = Math.random): T[] 
   return out;
 }
 
-/** Card indices to drill: not-yet-right cards first, then the rest, each group shuffled. */
+/** Card indices to drill: cards not yet completed first, then the completed ones, each group shuffled. */
 export function initialQueue(
   cards: DrillCard[],
-  progress: Record<string, CardProgress>,
+  completed: ReadonlySet<string>,
   random: () => number = Math.random,
 ): number[] {
   const indices = cards.map((_, i) => i);
-  const due = indices.filter((i) => progress[cards[i].id]?.last !== 'correct');
-  const rest = indices.filter((i) => progress[cards[i].id]?.last === 'correct');
+  const due = indices.filter((i) => !completed.has(cards[i].id));
+  const rest = indices.filter((i) => completed.has(cards[i].id));
   return [...shuffle(due, random), ...shuffle(rest, random)];
 }
 

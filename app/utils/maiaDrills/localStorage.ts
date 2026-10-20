@@ -1,12 +1,16 @@
 // Per-browser conveniences for Maia Drills: the edit tokens for decks this
-// browser built, the last form values, and per-card drill progress. All of it
-// is optional — every read tolerates missing or blocked storage.
+// browser built, the last form values, and completions the server hasn't
+// confirmed yet. Drill progress itself lives on the server (progress.ts), so
+// every device shares it. All of this is optional — every read tolerates
+// missing or blocked storage.
 
 import type { AnalysisSettings, GameSource } from './types';
 
 const TOKENS_KEY = 'maiaDrills:editTokens';
 const FORM_KEY = 'maiaDrills:form';
-const PROGRESS_PREFIX = 'maiaDrills:progress:';
+const PENDING_PREFIX = 'maiaDrills:pending:';
+/** Where progress lived before it moved to the server: card id → { last: 'correct' | 'wrong', … }. */
+const LEGACY_PROGRESS_PREFIX = 'maiaDrills:progress:';
 
 function read<T>(key: string, fallback: T): T {
   try {
@@ -22,6 +26,14 @@ function write(key: string, value: unknown) {
     localStorage.setItem(key, JSON.stringify(value));
   } catch {
     // Private mode or quota: the feature works without it.
+  }
+}
+
+function remove(key: string) {
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // As above.
   }
 }
 
@@ -49,28 +61,21 @@ export function saveForm(form: SavedForm) {
   write(FORM_KEY, form);
 }
 
-export interface CardProgress {
-  seen: number;
-  correct: number;
-  last: 'correct' | 'wrong';
-}
-
-export function loadProgress(deckId: string): Record<string, CardProgress> {
-  return read<Record<string, CardProgress>>(PROGRESS_PREFIX + deckId, {});
-}
-
-export function saveProgress(deckId: string, progress: Record<string, CardProgress>) {
-  write(PROGRESS_PREFIX + deckId, progress);
-}
-
 /**
- * How many cards are solved (last answered right) in this browser, or null if
- * none has been drilled here. Pass the deck's card ids when known; without
- * them it counts every card with saved progress.
+ * Cards completed in this browser that the server hasn't confirmed: answers
+ * given offline, plus, once, the cards this browser had solved back when
+ * progress was kept here. Sending them is idempotent, so a repeat is harmless.
  */
-export function solvedCount(deckId: string, cardIds?: string[]): number | null {
-  const progress = loadProgress(deckId);
-  const ids = cardIds ?? Object.keys(progress);
-  if (!ids.some((id) => progress[id])) return null;
-  return ids.filter((id) => progress[id]?.last === 'correct').length;
+export function loadPending(deckId: string): string[] {
+  const pending = read<string[]>(PENDING_PREFIX + deckId, []);
+  const legacy = read<Record<string, { last?: string }>>(LEGACY_PROGRESS_PREFIX + deckId, {});
+  const solved = Object.keys(legacy).filter((id) => legacy[id]?.last === 'correct');
+  return [...new Set([...pending, ...solved])];
+}
+
+/** Replace the queue; an empty one clears it, and with it any legacy progress (now on the server). */
+export function savePending(deckId: string, ids: string[]) {
+  remove(LEGACY_PROGRESS_PREFIX + deckId);
+  if (ids.length) write(PENDING_PREFIX + deckId, ids);
+  else remove(PENDING_PREFIX + deckId);
 }

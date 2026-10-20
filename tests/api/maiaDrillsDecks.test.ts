@@ -7,6 +7,7 @@
 import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest';
 import { createActionArgs, createLoaderArgs } from '../setup';
 import { action, loader } from '~/routes/api/maiaDrills/decks';
+import { action as progressAction, loader as progressLoader } from '~/routes/api/maiaDrills/progress';
 import { MAX_BODY_BYTES, MAX_FAVORITES, mergeIntoDeck } from '~/utils/maiaDrills/decks.server';
 import { LIMITS, type Deck, type DrillCard } from '~/utils/maiaDrills/types';
 
@@ -58,6 +59,21 @@ class FakeRedis {
     this.check();
     return this.strings.has(key) ? 1 : 0;
   }
+  /** Seconds left, -1 for no expiry, -2 for a missing key, like Redis. */
+  async ttl(key: string) {
+    this.check();
+    if (!this.strings.has(key) && !this.hashes.get(key)?.size) return -2;
+    return this.ttls.get(key) ?? -1;
+  }
+  async del(...keys: string[]) {
+    this.check();
+    let n = 0;
+    for (const k of keys) {
+      if (this.strings.delete(k) || this.hashes.delete(k)) n++;
+      this.ttls.delete(k);
+    }
+    return n;
+  }
   private hash(key: string) {
     if (!this.hashes.has(key)) this.hashes.set(key, new Map());
     return this.hashes.get(key)!;
@@ -66,6 +82,20 @@ class FakeRedis {
     this.check();
     this.hash(key).set(field, value);
     return 1;
+  }
+  async hsetnx(key: string, field: string, value: string) {
+    this.check();
+    if (this.hash(key).has(field)) return 0;
+    this.hash(key).set(field, value);
+    return 1;
+  }
+  async hkeys(key: string) {
+    this.check();
+    return [...this.hash(key).keys()];
+  }
+  async hlen(key: string) {
+    this.check();
+    return this.hash(key).size;
   }
   async hmget(key: string, ...fields: string[]) {
     this.check();
@@ -593,5 +623,119 @@ describe('saving the fields that adding relies on', () => {
     expect((await post({ ...deckBody, stats: { ...deckBody.stats, lost: -1 } })).status).toBe(400);
     expect((await post({ ...deckBody, excludeBullet: 'yes' })).status).toBe(400);
     expect((await post({ ...deckBody, newestGameAt: 'yesterday' })).status).toBe(400);
+  });
+});
+
+// ── Drill progress ────────────────────────────────────────────────────────
+
+describe('/api/maiaDrills/progress', () => {
+  const PROGRESS_URL = '/api/maiaDrills/progress';
+  const DAY = 24 * 60 * 60;
+
+  async function mark(deck: string, completed: unknown, ip = '1.1.1.1') {
+    const res = await progressAction(
+      createActionArgs(PROGRESS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-forwarded-for': ip },
+        body: JSON.stringify({ deck, completed }),
+      }),
+    );
+    return { status: res.status, body: await res.json() };
+  }
+  async function read(deck: string) {
+    const res = await progressLoader(createLoaderArgs(`${PROGRESS_URL}?deck=${deck}`));
+    return { status: res.status, body: await res.json() };
+  }
+  async function reset(deck: string) {
+    const res = await progressAction(createActionArgs(`${PROGRESS_URL}?deck=${deck}`, { method: 'DELETE' }));
+    return { status: res.status, body: await res.json() };
+  }
+
+  it('starts empty, and comes back with the deck', async () => {
+    const { id } = await saved();
+    expect((await read(id)).body).toEqual({ completed: [] });
+    expect((await get(`id=${id}`)).body.completed).toEqual([]);
+  });
+
+  it('marks cards completed for every device, and the deck read includes them', async () => {
+    const { id } = await saved();
+    expect((await mark(id, ['abc123-4'])).body).toEqual({ completed: ['abc123-4'] });
+    // Another device, no token, its own address: adds to the same set.
+    expect((await mark(id, ['abc123-6'], '9.9.9.9')).body.completed.sort()).toEqual(['abc123-4', 'abc123-6']);
+    expect((await get(`id=${id}`)).body.completed.sort()).toEqual(['abc123-4', 'abc123-6']);
+  });
+
+  it('never overwrites a completion: the first one stands', async () => {
+    const { id } = await saved();
+    const key = `maiaDrills:progress:${id}`;
+    vi.spyOn(Date, 'now').mockReturnValue(1000);
+    await mark(id, ['abc123-4']);
+    vi.spyOn(Date, 'now').mockReturnValue(2000);
+    await mark(id, ['abc123-4']);
+    expect(redis.hashes.get(key)?.get('abc123-4')).toBe('1000');
+    vi.restoreAllMocks();
+  });
+
+  it('clears only on reset', async () => {
+    const { id } = await saved();
+    await mark(id, ['abc123-4', 'abc123-6']);
+    expect((await reset(id)).body).toEqual({ completed: [] });
+    expect((await read(id)).body).toEqual({ completed: [] });
+  });
+
+  it('expires with an unfavorited deck and is kept with a favorite', async () => {
+    const { id, editToken } = await saved();
+    await mark(id, ['abc123-4']);
+    expect(redis.ttls.get(`maiaDrills:progress:${id}`)).toBe(30 * DAY);
+
+    await put({ id, editToken, favorite: true });
+    expect(redis.ttls.has(`maiaDrills:progress:${id}`)).toBe(false);
+    await mark(id, ['abc123-6']);
+    expect(redis.ttls.has(`maiaDrills:progress:${id}`)).toBe(false);
+
+    await put({ id, editToken, favorite: false });
+    expect(redis.ttls.get(`maiaDrills:progress:${id}`)).toBe(30 * DAY);
+  });
+
+  it('counts completed cards in the favorites list', async () => {
+    const { id, editToken } = await saved();
+    await put({ id, editToken, favorite: true });
+    await mark(id, ['abc123-4']);
+    expect((await get('')).body.decks[0]).toMatchObject({ id, cardCount: 1, completed: 1 });
+  });
+
+  it('clamps the count to the deck’s size', async () => {
+    const { id, editToken } = await saved();
+    await put({ id, editToken, favorite: true });
+    // An id of a card the deck no longer has (dropped by the card cap).
+    await mark(id, ['abc123-4', 'gone00-8']);
+    expect((await get('')).body.decks[0].completed).toBe(1);
+  });
+
+  it('404s a deck that is gone and 400s malformed input', async () => {
+    expect((await mark('x'.repeat(12), ['abc123-4'])).status).toBe(404);
+    expect((await read('x'.repeat(12))).status).toBe(404);
+    expect((await reset('x'.repeat(12))).status).toBe(404);
+    const { id } = await saved();
+    expect((await mark(id, [])).status).toBe(400);
+    expect((await mark(id, ['not a card id'])).status).toBe(400);
+    expect((await mark(id, 'abc123-4')).status).toBe(400);
+    expect((await mark('bad', ['abc123-4'])).status).toBe(400);
+    expect((await read('bad')).status).toBe(400);
+  });
+
+  it('refuses more once a deck has twice its card cap completed', async () => {
+    const { id } = await saved();
+    const key = `maiaDrills:progress:${id}`;
+    for (let i = 0; i < LIMITS.cardsPerDeck * 2; i++)
+      redis.hashes.set(key, (redis.hashes.get(key) ?? new Map()).set(`junk-${i}`, '1'));
+    expect((await mark(id, ['abc123-4'])).status).toBe(409);
+  });
+
+  it('answers 503 when Redis is down', async () => {
+    const { id } = await saved();
+    redis.failing = true;
+    expect((await mark(id, ['abc123-4'])).status).toBe(503);
+    expect((await read(id)).status).toBe(503);
   });
 });

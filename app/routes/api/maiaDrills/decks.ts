@@ -1,8 +1,9 @@
 // API Route: Maia Drills decks
 //
 // POST /api/maiaDrills/decks                        -> { id, editToken }  save a deck
-// GET  /api/maiaDrills/decks?id=xx                  -> { deck }           read one back
-// GET  /api/maiaDrills/decks                        -> { decks }          the global favorites list
+// GET  /api/maiaDrills/decks?id=xx                  -> { deck, completed } read one back, with its progress
+// GET  /api/maiaDrills/decks                        -> { decks }          the global favorites list, each with
+//                                                                        its completed count
 // PUT  /api/maiaDrills/decks  { id, editToken, favorite } -> { id, favorite }
 // PATCH /api/maiaDrills/decks { id, editToken, cards, stats, newestGameAt }
 //                                                   -> { added, cardCount, newestGameAt }
@@ -15,9 +16,11 @@ import type { ActionFunctionArgs, LoaderFunctionArgs } from 'react-router';
 import {
   MAX_BODY_BYTES,
   addToDeck,
+  completedCounts,
   isValidEditToken,
   isValidId,
   listFavorites,
+  loadCompleted,
   loadDeck,
   saveDeck,
   setFavorite,
@@ -146,13 +149,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   try {
     if (id) {
-      const deck = await loadDeck(id);
+      const [deck, completed] = await Promise.all([loadDeck(id), loadCompleted(id)]);
       if (!deck) return Response.json({ error: 'That deck has expired or never existed.' }, { status: 404 });
       // Favoriting rewrites the deck, so a cached copy would show a stale star.
-      return Response.json({ deck }, { headers: { 'Cache-Control': 'no-store' } });
+      return Response.json({ deck, completed: completed ?? [] }, { headers: { 'Cache-Control': 'no-store' } });
     }
     // Uncached: someone who just favorited a deck expects to see it listed.
-    const decks = await listFavorites();
+    const favorites = await listFavorites();
+    const counts = await completedCounts(favorites.map((d) => d.id));
+    // Clamped: ids of cards a deck has since dropped (past the card cap) still count in the hash.
+    const decks = favorites.map((d, i) => ({ ...d, completed: Math.min(counts[i], d.cardCount) }));
     return Response.json({ decks }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (error) {
     console.error('maiaDrills: failed to read decks', error);

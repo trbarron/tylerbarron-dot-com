@@ -5,6 +5,9 @@
 // Decks are readable by id. Unfavorited decks expire; favoriting persists the
 // deck and adds it to one global favorites list that every visitor sees, so it
 // can be reopened from any device without reprocessing.
+//
+// Drill progress belongs to the deck, not the browser: a set of completed card
+// ids that every device drilling the deck adds to (see markCompleted).
 
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import { getRedisClient } from '~/utils/redis.server';
@@ -22,6 +25,8 @@ import { winDrop } from '~/utils/chess/winChance';
 
 const DECK_PREFIX = 'maiaDrills:deck:';
 const EDIT_PREFIX = 'maiaDrills:edit:';
+/** HASH of card id → when it was first completed (ms). Lives and dies with its deck. */
+const PROGRESS_PREFIX = 'maiaDrills:progress:';
 /** ZSET of favorited deck ids, scored by when they were favorited. */
 const FAVORITES_KEY = 'maiaDrills:favorites';
 /**
@@ -44,6 +49,13 @@ export const MAX_FAVORITES = 50;
 /** A full deck is ~400 KB stored (~380 bytes a card); room for longer names and fields. */
 export const MAX_BODY_BYTES = 1024 * 1024;
 
+/**
+ * Most completed ids one deck keeps. A deck holds at most cardsPerDeck cards,
+ * but ids of cards later dropped by the cap stay, so allow twice that; past it
+ * the deck has been written junk, and further completions are refused.
+ */
+export const MAX_COMPLETED = LIMITS.cardsPerDeck * 2;
+
 const SOURCES: GameSource[] = ['lichess', 'chesscom'];
 const SPEEDS: Speed[] = ['bullet', 'blitz', 'rapid', 'classical', 'correspondence', 'unknown'];
 
@@ -51,6 +63,8 @@ const ID_RE = /^[A-Za-z0-9_-]{12}$/;
 const TOKEN_RE = /^[A-Za-z0-9_-]{32}$/;
 const USERNAME_RE = /^[A-Za-z0-9_.-]{1,40}$/;
 const UCI_RE = /^[a-h][1-8][a-h][1-8][qrbn]?$/;
+/** A card's id: its game's id and the ply. */
+export const CARD_ID_RE = /^[A-Za-z0-9_-]{1,40}-\d{1,4}$/;
 const SAN_RE = /^[A-Za-z0-9+#=\-x]{2,10}$/;
 // Shape only: six fields, piece placement of 8 ranks.
 const FEN_RE = /^([pnbrqkPNBRQK1-8]{1,8}\/){7}[pnbrqkPNBRQK1-8]{1,8} [wb] (-|[KQkq]{1,4}) (-|[a-h][36]) \d+ \d+$/;
@@ -127,7 +141,7 @@ function validateCard(raw: unknown): DrillCard | null {
   const target = validMove(c.target);
   const prob = (c.target as Record<string, unknown> | undefined)?.prob;
 
-  if (typeof c.id !== 'string' || !/^[A-Za-z0-9_-]{1,40}-\d{1,4}$/.test(c.id)) return null;
+  if (typeof c.id !== 'string' || !CARD_ID_RE.test(c.id)) return null;
   if (typeof c.fen !== 'string' || !FEN_RE.test(c.fen)) return null;
   if (!isInt(c.ply, 0, 2000)) return null;
   if (c.color !== 'w' && c.color !== 'b') return null;
@@ -335,7 +349,8 @@ async function unlist(id: string, raw: string | null): Promise<void> {
     .multi()
     .zrem(FAVORITES_KEY, id)
     .hdel(SUMMARIES_KEY, id)
-    .expire(`${EDIT_PREFIX}${id}`, DECK_TTL_SECONDS);
+    .expire(`${EDIT_PREFIX}${id}`, DECK_TTL_SECONDS)
+    .expire(`${PROGRESS_PREFIX}${id}`, DECK_TTL_SECONDS);
   if (raw) {
     const deck = JSON.parse(raw) as Deck;
     delete deck.favorite;
@@ -361,6 +376,7 @@ export async function setFavorite(id: string, editToken: string, favorite: boole
     .multi()
     .set(`${DECK_PREFIX}${id}`, JSON.stringify(deck))
     .persist(`${EDIT_PREFIX}${id}`)
+    .persist(`${PROGRESS_PREFIX}${id}`)
     .zadd(FAVORITES_KEY, Date.now(), id)
     .hset(SUMMARIES_KEY, id, JSON.stringify(summarize(id, deck)))
     .exec();
@@ -458,7 +474,66 @@ export async function addToDeck(id: string, editToken: string | null, addition: 
       .multi()
       .set(`${DECK_PREFIX}${id}`, JSON.stringify(deck), 'EX', DECK_TTL_SECONDS)
       .expire(`${EDIT_PREFIX}${id}`, DECK_TTL_SECONDS)
+      .expire(`${PROGRESS_PREFIX}${id}`, DECK_TTL_SECONDS)
       .exec();
   }
   return { outcome: 'ok', added, cardCount: deck.cards.length, newestGameAt: deck.newestGameAt };
+}
+
+// ── Drill progress ──────────────────────────────────────────────────────────
+//
+// Anyone who can open a deck can record progress on it, the way anyone can add
+// games to a favorite: there are no accounts, and the point is that a phone and
+// a laptop share it. So a favorite's progress is shared by everyone drilling it.
+
+/** Every completed card id, or null when the deck is gone. */
+export async function loadCompleted(id: string): Promise<string[] | null> {
+  const results = await getRedisClient().multi().exists(`${DECK_PREFIX}${id}`).hkeys(`${PROGRESS_PREFIX}${id}`).exec();
+  if (!results || results[0][1] !== 1) return null;
+  return results[1][1] as string[];
+}
+
+export type ProgressOutcome = { outcome: 'ok'; completed: string[] } | { outcome: 'not-found' } | { outcome: 'full' };
+
+/**
+ * Mark cards completed and return every completed id. HSETNX per card: the
+ * first completion stands and nothing overwrites it, so two sessions (two tabs,
+ * a phone and a laptop) can only add to each other's progress, never undo it. A
+ * later wrong answer doesn't clear a card either; only resetCompleted does.
+ *
+ * The progress key takes the deck's expiry: none while it's a favorite,
+ * otherwise whatever the deck has left.
+ */
+export async function markCompleted(id: string, cardIds: string[]): Promise<ProgressOutcome> {
+  const redis = getRedisClient();
+  const key = `${PROGRESS_PREFIX}${id}`;
+  const [ttl, count] = await Promise.all([redis.ttl(`${DECK_PREFIX}${id}`), redis.hlen(key)]);
+  if (ttl === -2) return { outcome: 'not-found' };
+  if (count >= MAX_COMPLETED) return { outcome: 'full' };
+
+  const at = String(Date.now());
+  const tx = redis.multi();
+  for (const cardId of cardIds) tx.hsetnx(key, cardId, at);
+  if (ttl === -1) tx.persist(key);
+  else tx.expire(key, ttl);
+  tx.hkeys(key);
+  const results = (await tx.exec()) ?? [];
+  const failed = results.find(([error]) => error);
+  if (failed) throw failed[0];
+  return { outcome: 'ok', completed: results[results.length - 1][1] as string[] };
+}
+
+/** Clear a deck's progress: the Deck cleared screen's "Reset and start again". */
+export async function resetCompleted(id: string): Promise<'ok' | 'not-found'> {
+  const results = await getRedisClient().multi().exists(`${DECK_PREFIX}${id}`).del(`${PROGRESS_PREFIX}${id}`).exec();
+  return results && results[0][1] === 1 ? 'ok' : 'not-found';
+}
+
+/** How many cards each deck has completed, in one round trip, for the favorites list. */
+export async function completedCounts(ids: string[]): Promise<number[]> {
+  if (ids.length === 0) return [];
+  const tx = getRedisClient().multi();
+  for (const id of ids) tx.hlen(`${PROGRESS_PREFIX}${id}`);
+  const results = (await tx.exec()) ?? [];
+  return ids.map((_, i) => Number(results[i]?.[1] ?? 0));
 }
