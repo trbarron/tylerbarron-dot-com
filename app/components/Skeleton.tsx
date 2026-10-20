@@ -15,8 +15,9 @@ export default function Skeleton({ className = '', variant = 'rect' }: SkeletonP
     circle: 'h-full w-full rounded-full',
   };
 
-  // High-contrast shimmering animation using a repeating linear gradient
+  // High-contrast shimmering animation using a repeating linear gradient.
   const shimmerBase =
+    // design-allow: color — the gradient is the shimmer sweep DESIGN.md specifies, white on gray.
     'bg-gray-100 relative overflow-hidden before:absolute before:inset-0 before:-translate-x-full before:animate-[shimmer_1.5s_infinite] before:bg-gradient-to-r before:from-transparent before:via-white/50 before:to-transparent';
 
   const baseClasses = `border-2 border-black/10 ${shimmerBase}`;

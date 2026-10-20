@@ -34,7 +34,7 @@ export default function GameBoard({ mode, fen, orientation, currentTurn, isRevie
       {/* Chessboard */}
       <Suspense
         fallback={
-          <div className="font-neo flex aspect-square w-full items-center justify-center rounded bg-gray-100 text-black">
+          <div className="font-neo flex aspect-square w-full items-center justify-center bg-gray-100 text-black">
             Loading chessboard...
           </div>
         }

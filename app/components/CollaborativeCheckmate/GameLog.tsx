@@ -1,3 +1,6 @@
+// design-allow-file: color — log rows are tinted by event type (move, engine, error…),
+// so a glance down the log reads as a game timeline.
+
 export type GameLogEntry = {
   at?: number;
   type: 'system' | 'move' | 'engine' | 'phase' | 'error' | 'game_over' | 'reconnecting';
@@ -17,12 +20,12 @@ export default function GameLog({ gameLog, connected, reconnecting }: GameLogPro
       <div className="border-accent font-neo flex items-center justify-between border-b-2 bg-white p-2 font-bold text-black uppercase">
         <span>Game Log</span>
         {reconnecting && (
-          <span className="flex items-center text-xs font-normal text-orange-600">
-            <div className="mr-1 h-3 w-3 animate-spin rounded-full border-b-2 border-orange-500"></div>
+          <span className="flex items-center text-xs font-normal text-gray-600">
+            <div className="mr-1 h-3 w-3 animate-spin rounded-full border-b-2 border-black"></div>
             Reconnecting...
           </span>
         )}
-        {!connected && !reconnecting && <span className="text-xs font-normal text-red-600">Disconnected</span>}
+        {!connected && !reconnecting && <span className="text-xs font-bold text-black">Disconnected</span>}
       </div>
       <div
         className="h-96 overflow-y-auto bg-white p-2"

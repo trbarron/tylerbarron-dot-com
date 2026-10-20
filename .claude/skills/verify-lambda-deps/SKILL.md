@@ -7,7 +7,9 @@ description: Verify every npm package the SSR build imports is installed in the 
 
 The Vite SSR build **externalizes all npm deps** — it emits bare `from "pkg"` specifiers
 and expects them present at runtime. The Lambda only installs `server/package.json`, a
-hand-maintained list separate from the root `package.json`. Nothing checks these agree.
+hand-maintained list separate from the root `package.json`. CI's `lambda-deps` job checks
+they agree (`scripts/check-lambda-deps.mjs`); this skill is the same check by hand, plus
+the bot request that proves a fix.
 
 When they disagree the route throws on the server. React Router's `onAllReady` path —
 used for bots and curl — gets nothing and returns 500. Browsers take the `onShellReady`
@@ -15,6 +17,17 @@ path and recover client-side, so **the breakage is invisible unless you test wit
 browser**. This shipped once already (2026-06-10).
 
 ## Procedure
+
+The quick version is the script CI runs. Assemble `server/` as the deploy does, then check it:
+
+```bash
+npm run compile:mdx && npm run build && npm run build:arc:server && npm run build:arc:deps
+npm run check:lambda-deps
+```
+
+It resolves every bare import against `server/node_modules` (transitive deps included) and
+names the chunk importing anything missing. The manual steps below are for when you want to
+see the raw list.
 
 Run against a current build (`npm run build` first if `build/server/` is stale):
 

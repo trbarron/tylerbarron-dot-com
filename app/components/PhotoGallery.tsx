@@ -77,7 +77,7 @@ export default function PhotoGallery({
     if (layout === 'inline') {
       return 'max-w-full h-auto';
     }
-    return 'w-full h-auto object-cover rounded-lg hover:opacity-90 transition-opacity';
+    return 'w-full h-auto object-cover hover:opacity-90 transition-opacity';
   };
 
   const slides = photos.map((photo) => ({ src: photo.src }));
@@ -89,7 +89,7 @@ export default function PhotoGallery({
       onClick={() => handleImageClick(index)}
     >
       <img src={photo.src} alt={photo.alt} className={getImageClass()} />
-      {photo.caption && <p className="mt-2.5 italic">{photo.caption}</p>}
+      {photo.caption && <p className="mt-2.5 text-sm text-gray-600">{photo.caption}</p>}
     </div>
   );
 

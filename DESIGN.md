@@ -38,7 +38,7 @@ Design density is moderate-to-high. Information is packed but never crowded. Eve
 - Headings use `letter-spacing: -0.02em` (tighter tracking)
 - All headings are uppercase — no exceptions
 
-**Mono Font — JetBrains Mono** (`font-mono`): `"JetBrains Mono", "SF Mono", "Monaco", "Consolas", monospace`
+**Mono Font — IBM Plex Mono** (`font-mono`): `"IBM Plex Mono", "SF Mono", "Monaco", "Consolas", "Liberation Mono", "Courier New", monospace`
 - Weight: 400 — code is data, not emphasis
 - Used for: inline code, code blocks, any data that benefits from fixed-width
 - Never use for UI labels or prose
@@ -159,12 +159,12 @@ Messages about state, such as a failed load, a rejected submission or an inactiv
 
 ### Inline Code
 - Background: `#F0F0F0`, `px-1.5 py-0.5`, slight rounding (`rounded-sm`)
-- Font: JetBrains Mono, 0.85em, weight 400
+- Font: IBM Plex Mono, 0.85em, weight 400
 
 ### Code Blocks (`pre`)
 - Background: `#F5F5F5`
 - Left border: 4px solid black
-- Font: JetBrains Mono, 0.9em, line-height 1.6
+- Font: IBM Plex Mono, 0.9em, line-height 1.6
 - Horizontally scrollable
 
 ---
@@ -197,11 +197,15 @@ This system has **no box shadows**. Elevation is communicated entirely through:
 - **Background contrast**: `#FFFFFF` (surface) vs `#F5F5F5` (recessed) vs `#000000` (elevated/inverted)
 - **The WebGL layer**: the only source of visual depth — an iridescent dichroic glass animation rendered in a `<canvas>` behind all UI content at `z-index: 0`. The navbar and content sit above it with `z-index: 10+`.
 
-No drop shadows. No blurs on content (only `backdrop-blur-sm` on the navbar to maintain legibility over the canvas).
+No drop shadows. No blurs on content (only `backdrop-blur-sm` on the navbar and the homepage's project cards, to keep them legible over the canvas).
+
+One exception: the homepage's project cards lift on hover with a **hard** shadow, `6px 6px 0 #111`, offset and unblurred. It reads as the card rising off the page rather than as softness.
 
 ---
 
 ## Do's and Don'ts
+
+`npm run check:design` (a CI job) enforces the class-level rules below: it fails on rounded corners, shadows, italics, hues and `font-sans` in `app/`. A deliberate exception, such as a game display that needs color, carries a `design-allow: <rule> — <why>` comment (that line) or `design-allow-file: <rule> — <why>` (the whole file).
 
 **Do:**
 - Use 4px borders for all primary UI containers and `md`/`lg` buttons (2px for `sm`)
@@ -211,7 +215,7 @@ No drop shadows. No blurs on content (only `backdrop-blur-sm` on the navbar to m
 - Invert colors (white-on-black) for all hover/active states, background and text together
 - Mark destructive actions with a heavier border (`danger`), never with color
 - Use the `shimmer` animation for loading states, never `pulse`
-- Use JetBrains Mono exclusively for code and data
+- Use IBM Plex Mono exclusively for code and data
 
 **Don't:**
 - Add border-radius to any UI element — the design language is sharp

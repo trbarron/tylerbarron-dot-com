@@ -1,3 +1,6 @@
+// design-allow-file: color — a seat's ready dot turns green: game state that has to
+// read at a glance, and black wouldn't show on your own (inverted) seat.
+
 import type { SeatKey } from '~/utils/collaborativeCheckmate/types';
 import Button from '~/components/Button';
 

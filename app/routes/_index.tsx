@@ -130,6 +130,7 @@ function pad2(n: number) {
 
 function ProjectCard({ to, title, description }: ProjectLink) {
   return (
+    // design-allow: shadow — a hard, offset, unblurred shadow: the "lift" DESIGN.md allows on interactive cards.
     <div className="border-4 border-black bg-white/90 backdrop-blur-sm transition-transform duration-150 ease-out motion-reduce:transition-none [@media(hover:hover)]:hover:-translate-x-[3px] [@media(hover:hover)]:hover:-translate-y-[3px] [@media(hover:hover)]:hover:shadow-[6px_6px_0_0_#111]">
       <Link to={to} className="block h-full p-6 no-underline hover:no-underline">
         <div className="font-neo text-xl font-bold tracking-wide text-black">{title.toUpperCase()}</div>

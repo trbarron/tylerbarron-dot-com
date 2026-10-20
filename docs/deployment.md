@@ -62,8 +62,10 @@ bundled tree-shaken into `build/server`).
 
 Getting this wrong 500s those routes **for bots/curl only** (`onAllReady` path);
 browsers recover client-side via `onShellReady`, so the breakage hides from casual
-testing (2026-06-10 incident). Run the `verify-lambda-deps` skill after a build that
-touched imports.
+testing (2026-06-10 incident). CI's `lambda-deps` job assembles `server/` the way the
+deploy does and runs `scripts/check-lambda-deps.mjs`, which fails when a bare import in
+the bundle isn't installed in `server/node_modules`. The `verify-lambda-deps` skill
+covers the manual check: requesting a route as a bot.
 
 ## Stockfish in the Lambda: downloaded on first use, not shipped
 

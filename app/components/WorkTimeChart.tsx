@@ -108,7 +108,7 @@ const WorkTimeChart = ({ data }: WorkTimeChartProps) => {
                       </div>
                       {/* Stacked bar; border keeps the white Tuni segment visible */}
                       <div
-                        className="flex w-full flex-col-reverse overflow-hidden rounded-t border border-[#2E3532]"
+                        className="flex w-full flex-col-reverse overflow-hidden border border-[#2E3532]"
                         style={{ height: `${Math.max(totalPx, 2)}px` }}
                       >
                         {segments.map((s) => (

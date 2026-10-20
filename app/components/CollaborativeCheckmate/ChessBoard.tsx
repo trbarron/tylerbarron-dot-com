@@ -33,7 +33,7 @@ export default function ChessBoard({
   return (
     <div className="mb-4">
       <div
-        className={`mb-4 rounded p-2 transition-all duration-300 ${
+        className={`mb-4 p-2 transition-all duration-300 ${
           gamePhase === GamePhase.TEAM1_SELECTION && playerTeam === 1
             ? 'bg-white'
             : gamePhase === GamePhase.TEAM2_SELECTION && playerTeam === 2
@@ -47,7 +47,7 @@ export default function ChessBoard({
             (gamePhase === GamePhase.TEAM2_SELECTION && playerTeam === 2)}
           <Suspense
             fallback={
-              <div className="font-neo flex aspect-square w-full items-center justify-center rounded bg-gray-100 text-black">
+              <div className="font-neo flex aspect-square w-full items-center justify-center bg-gray-100 text-black">
                 Loading chessboard...
               </div>
             }

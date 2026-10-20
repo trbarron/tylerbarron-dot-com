@@ -42,7 +42,7 @@ const Set = () => {
   const PhotoComponent = ({ photo, index }: { photo: (typeof photos)[0]; index: number }) => (
     <div onClick={() => openLightbox(index)} className="mx-auto my-5 max-w-[80%] cursor-pointer text-center">
       <img src={photo.src} alt={photo.alt} className="mx-auto block h-auto max-w-full" />
-      {photo.caption && <p className="mt-2.5 text-center italic">{photo.caption}</p>}
+      {photo.caption && <p className="mt-2.5 text-center text-sm text-gray-600">{photo.caption}</p>}
     </div>
   );
 
@@ -96,7 +96,7 @@ const Set = () => {
                       title="Demoing the product"
                     ></iframe>
                   </div>
-                  <p className="mt-2.5 text-center italic">Demoing the product</p>
+                  <p className="mt-2.5 text-center text-sm text-gray-600">Demoing the product</p>
 
                   <p>
                     I was very happy with what I was able to create in one weekend and ended up taking first in the

@@ -66,17 +66,17 @@ export default function DetailedStats({ data, isLoading }: DetailedStatsProps) {
   return (
     <div className="mt-8">
       <div className="mx-auto mb-8 grid max-w-xl grid-cols-3 gap-3">
-        <div className="rounded-lg border-2 border-gray-200 bg-gray-50 p-3">
+        <div className="border-2 border-gray-200 bg-gray-50 p-3">
           <p className="mb-1 text-xs text-gray-600">Last Week</p>
           <p className="text-xl font-bold text-black">{data.last_week_work_time.toFixed(2)}</p>
           <p className="mt-0.5 text-[10px] text-gray-500">hours</p>
         </div>
-        <div className="rounded-lg border-2 border-gray-200 bg-gray-50 p-3">
+        <div className="border-2 border-gray-200 bg-gray-50 p-3">
           <p className="mb-1 text-xs text-gray-600">Last 30 Days</p>
           <p className="text-xl font-bold text-black">{data.thirty_days_work_time.toFixed(2)}</p>
           <p className="mt-0.5 text-[10px] text-gray-500">hours</p>
         </div>
-        <div className="rounded-lg border-2 border-gray-200 bg-gray-50 p-3">
+        <div className="border-2 border-gray-200 bg-gray-50 p-3">
           <p className="mb-1 text-xs text-gray-600">Lifetime</p>
           <p className="text-xl font-bold text-black">{data.lifetime_work_time.toFixed(2)}</p>
           <p className="mt-0.5 text-[10px] text-gray-500">hours</p>
