@@ -1,3 +1,5 @@
+// design-allow-file: color — the answer legend's swatches match the board's arrow
+// colors (green: Maia's move, red: yours, blue/yellow: alternatives).
 import {
   Suspense,
   lazy,
