@@ -27,20 +27,24 @@ const NETWORK_URL = '/images/pizza/pizza-network.json';
 // "average" and "best" were nearly the same colour. Don't reintroduce a hue
 // sweep here.
 //
-// The Pizza Score is purple↔orange (ColorBrewer's PuOr, deepened), not the
-// blue↔red it first used: on a US map, blue and red read as an election
-// result. Midpoint to top end measures ΔE 48.5 under protanopia and 42.5 under
-// deuteranopia on the test above, and every step but the neutral midpoint
-// clears 3:1 against the #f5f5f5 map surface. Orange is the good-pizza end.
+// The Pizza Score runs red (weak local pizza) to green (strong), so the map
+// reads as bad-to-good at a glance, and it isn't blue↔red, which on a US map
+// reads as an election result. Red↔green is the hard pair for colourblind
+// readers, so the hues are ColorBrewer's PiYG rather than a plain red: a
+// true red (#b2182b) against green measured ΔE 4.0 between the two ends under
+// deuteranopia; this raspberry red measures 9.6 at the ends and 11.9 between
+// the inner steps, under both protanopia and deuteranopia. Every step but the
+// neutral midpoint clears 3:1 against the #f5f5f5 map surface. Keep the red on
+// the magenta side if you retune it.
 type Stop = { at: number; hex: string };
 
-/** Diverging. Purple = Domino's rates well (weaker local pizza); orange = the reverse. */
+/** Diverging. Red = weaker local pizza (Domino's rates well); green = stronger (Domino's rates poorly). */
 const SCORE_RAMP: Stop[] = [
-  { at: 0, hex: '#4b2a7f' },
-  { at: 1.25, hex: '#7b6aa8' },
+  { at: 0, hex: '#8e0152' },
+  { at: 1.25, hex: '#c51b7d' },
   { at: 2.5, hex: '#e9e7e2' }, // neutral: at the median, deliberately recessive
-  { at: 3.75, hex: '#d4730d' },
-  { at: 5, hex: '#9c4a05' },
+  { at: 3.75, hex: '#4d9221' },
+  { at: 5, hex: '#1b7837' },
 ];
 
 /**
@@ -420,7 +424,7 @@ export default function PizzaLocationMap() {
             aria-label={
               showReviews
                 ? `Map of ${reviewData.length.toLocaleString()} US Domino's locations, shaded by Google rating from 3.0 stars or below (light blue) to 4.5 or above (dark blue).`
-                : `Map of the United States shaded by Pizza Score across ${scoreData.length.toLocaleString()} grid cells. Purple marks areas where Domino's rates well, orange where it rates poorly — read as a percentile against the national median, not a star rating.`
+                : `Map of the United States shaded by Pizza Score across ${scoreData.length.toLocaleString()} grid cells. Green marks stronger local pizza, where Domino's rates poorly; red marks weaker local pizza, where Domino's rates well — read as a percentile against the national median, not a star rating.`
             }
           >
             <rect width={width} height={height} fill="#f5f5f5" />
@@ -451,9 +455,9 @@ export default function PizzaLocationMap() {
               </div>
               <RampBar stops={SCORE_RAMP} id="scoreRamp" />
               <div className="font-neo mt-1 flex justify-between text-[10px] font-bold tracking-widest text-black uppercase opacity-60 md:text-xs">
-                <span>Domino&apos;s rates well</span>
+                <span>Weaker local pizza</span>
                 <span>Typical</span>
-                <span>Domino&apos;s rates poorly</span>
+                <span>Stronger local pizza</span>
               </div>
               <div className="font-neo mt-3 text-xs font-medium text-black md:text-sm">
                 A percentile, not a star rating: it ranks each area against the national median. The full sweep covers
