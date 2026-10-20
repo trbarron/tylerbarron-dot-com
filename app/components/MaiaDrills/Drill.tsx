@@ -1,16 +1,7 @@
 // design-allow-file: color — the answer legend's swatches match the board's arrow
 // colors (green: Maia's move, red: yours, blue/yellow: alternatives).
-import {
-  Suspense,
-  lazy,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type Dispatch,
-  type SetStateAction,
-} from 'react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { Dispatch, SetStateAction } from 'react';
 import { Chess } from 'chess.js';
 import { uciArrow } from '~/utils/chess/moves';
 import type { DrawShape } from 'chessground/draw';
