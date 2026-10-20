@@ -67,9 +67,6 @@ export default function RunescapeRascals() {
           <h1 className="m-0 text-3xl leading-none font-extrabold tracking-tight uppercase md:text-4xl">
             Runescape Rascals
           </h1>
-          <p className="mt-1 mb-0 text-sm font-bold tracking-wide text-neutral-700 uppercase">
-            Four agents · one world · nobody in charge
-          </p>
           {snapshot && (
             <p className="mt-2 mb-0 flex flex-wrap gap-x-4 gap-y-1 font-mono text-xs uppercase">
               <span className="inline-flex items-center gap-1.5">
@@ -78,11 +75,6 @@ export default function RunescapeRascals() {
                   className={`inline-block h-2 w-2 rounded-full border-2 border-black ${live ? 'bg-black' : ''}`}
                 />
                 {live ? 'Live' : `Last seen ${ago(snapshot.generatedAt, now)}`}
-              </span>
-              <span>Party total {snapshot.partyTotal}</span>
-              {snapshot.plan && <span>Council #{snapshot.plan.council}</span>}
-              <span>
-                ${snapshot.spend.usd.toFixed(3)} spent · {pct(snapshot.party.cacheHitRate)} cached
               </span>
             </p>
           )}
@@ -145,35 +137,11 @@ export default function RunescapeRascals() {
               </Panel>
               <Panel
                 title="Party plan"
-                subtitle={
-                  snapshot.plan
-                    ? `Council ${snapshot.plan.council} · ${ago(snapshot.plan.made, now)} · ${snapshot.plan.agreed ? 'agreed' : 'no full agreement'}`
-                    : undefined
-                }
                 className="h-full min-w-0"
               >
                 <Plan plan={snapshot.plan} />
               </Panel>
             </div>
-
-            <Panel title="How this works" padded>
-              <div className="space-y-2 text-sm">
-                <p className="m-0">
-                  Each character has a D&amp;D sheet: ability scores that give soft leanings, and a few drives. Nobody
-                  has a fixed role. Every half hour they hold a council to split the work, and every tenth council they
-                  vote on a mission for the party.
-                </p>
-                <p className="m-0">
-                  A small, cheap model ({snapshot.spend.model}) sets standing orders like &ldquo;mine copper until 50
-                  ore&rdquo;, and deterministic code does the walking, gathering, banking and fighting. The model is
-                  only asked again when something changes. It runs on a private{' '}
-                  <a href="https://github.com/MaxBittker/rs-sdk" className="underline">
-                    rs-sdk
-                  </a>{' '}
-                  server (a LostCity 2004scape emulator), not affiliated with Jagex.
-                </p>
-              </div>
-            </Panel>
           </>
         )}
       </main>
