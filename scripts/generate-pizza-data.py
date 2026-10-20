@@ -6,13 +6,18 @@ the two files PizzaScoringMap.tsx fetches:
 
 - public/images/pizza/dominos-locations.json — one row per US Domino's
 - public/images/pizza/pizza-network.json     — the smoothed Pizza Score grid
+- public/images/pizza/pizza-places.json      — every US city, town and CDP, scored
+- public/images/pizza/pizza-zips.json        — every US ZIP code, scored
+
+The last two power "Check your town". Their locations come from the Census
+Gazetteer (public domain), downloaded once into --census-dir.
 
 The database lives outside the repo (it is 3.3 MB of raw scrape output and is
 not a web asset). Pass its path explicitly:
 
     python3 scripts/generate-pizza-data.py --db ~/Desktop/assets/backup-tylerbarron-com/dominos_locations.db
 
-Then commit the two JSON files. They are served from /images/pizza/* through
+Then commit the four JSON files. They are served from /images/pizza/* through
 CloudFront, so they are gzip/brotli compressed at the edge and same-origin with
 the site (the bucket sends no CORS headers, and the map uses fetch()).
 
@@ -169,8 +174,8 @@ def load_stores(db_path: Path) -> tuple[list[dict], dict[str, int]]:
     return stores, dict(rejected)
 
 
-def build_grid(stores: list[dict]) -> list[dict]:
-    """Smooth store ratings onto the grid and convert them to Pizza Scores."""
+def smooth_stores(stores: list[dict]) -> dict[tuple[int, int], list[tuple]]:
+    """Shrink each store's rating toward the national mean, binned by 1-degree buckets."""
     total_reviews = sum(s["total_ratings"] for s in stores)
     if not total_reviews:
         sys.exit(
@@ -183,60 +188,69 @@ def build_grid(stores: list[dict]) -> list[dict]:
     # Shrink each store's rating toward the national mean by its review count.
     # Kept alongside the store rather than on it, so the published rows stay
     # exactly what was scraped.
-    smoothed = [
-        (
-            s["latitude"],
-            s["longitude"],
-            s["total_ratings"],
-            (s["total_ratings"] * s["rating"] + PRIOR_REVIEWS * global_mean)
-            / (s["total_ratings"] + PRIOR_REVIEWS),
-        )
-        for s in stores
-    ]
-
-    # Bin stores into 1-degree buckets so each cell only scans its neighbours.
+    #
+    # Binned into 1-degree buckets so each point only scans its neighbours.
     # RADIUS_KM is at most ~1.1 degrees of longitude at this latitude range, so
     # a +/-2 bucket window always covers the cutoff.
     buckets: dict[tuple[int, int], list[tuple]] = defaultdict(list)
-    for rec in smoothed:
+    for s in stores:
+        rating = (s["total_ratings"] * s["rating"] + PRIOR_REVIEWS * global_mean) / (
+            s["total_ratings"] + PRIOR_REVIEWS
+        )
+        rec = (s["latitude"], s["longitude"], s["total_ratings"], rating)
         buckets[(int(math.floor(rec[0])), int(math.floor(rec[1])))].append(rec)
+    return buckets
 
+
+def local_mean(lat: float, lng: float, buckets) -> tuple[float | None, int, int]:
+    """The smoothed Domino's rating at a point, and the stores and reviews it rests on.
+
+    The one place the smoothing happens: grid cells and looked-up towns both
+    come through here, so a town's score is exactly what the map would draw
+    there. The mean is None below MIN_STORES.
+    """
+    blat, blng = int(math.floor(lat)), int(math.floor(lng))
+    weighted_sum = weight_sum = 0.0
+    count = reviews = 0
+    for dlat in range(-2, 3):
+        for dlng in range(-2, 3):
+            for s_lat, s_lng, s_reviews, s_rating in buckets.get((blat + dlat, blng + dlng), ()):
+                dist = haversine_km(lat, lng, s_lat, s_lng)
+                if dist > RADIUS_KM:
+                    continue
+                count += 1
+                reviews += s_reviews
+                # Distance decay x review volume.
+                w = math.exp(-((dist / TAU_KM) ** 2)) * s_reviews
+                weighted_sum += w * s_rating
+                weight_sum += w
+    # Points with almost nothing nearby were once filled in from the single
+    # nearest store and drawn at full confidence. They get no score instead.
+    if count < MIN_STORES or weight_sum <= 0:
+        return None, count, reviews
+    return weighted_sum / weight_sum, count, reviews
+
+
+def pizza_score(mean: float, scale: tuple[float, float]) -> float:
+    """Standardize against the grid's cell means, then invert: a low local
+    Domino's rating becomes a high Pizza Score. Also a percentile / 20."""
+    centre, sd = scale
+    return 5.0 * (1.0 - normal_cdf((mean - centre) / sd))
+
+
+def build_grid(buckets) -> tuple[list[dict], tuple[float, float]]:
+    """Smooth store ratings onto the grid and convert them to Pizza Scores.
+
+    Also returns the (mean, sd) of the cell means: the national scale every
+    score is read against, towns included.
+    """
     cells = []
     for lat in frange(LAT_MIN, LAT_MAX, STEP):
         for lng in frange(LNG_MIN, LNG_MAX, STEP):
-            blat, blng = int(math.floor(lat)), int(math.floor(lng))
-            weighted_sum = weight_sum = 0.0
-            count = reviews = 0
-
-            for dlat in range(-2, 3):
-                for dlng in range(-2, 3):
-                    for s_lat, s_lng, s_reviews, s_rating in buckets.get(
-                        (blat + dlat, blng + dlng), ()
-                    ):
-                        dist = haversine_km(lat, lng, s_lat, s_lng)
-                        if dist > RADIUS_KM:
-                            continue
-                        count += 1
-                        reviews += s_reviews
-                        # Distance decay x review volume.
-                        w = math.exp(-((dist / TAU_KM) ** 2)) * s_reviews
-                        weighted_sum += w * s_rating
-                        weight_sum += w
-
-            # Cells with almost nothing nearby were previously filled in from the
-            # single nearest store and drawn at full confidence. Drop them.
-            if count < MIN_STORES or weight_sum <= 0:
+            mean, count, reviews = local_mean(lat, lng, buckets)
+            if mean is None:
                 continue
-
-            cells.append(
-                {
-                    "latitude": lat,
-                    "longitude": lng,
-                    "_mean": weighted_sum / weight_sum,
-                    "stores": count,
-                    "reviews": reviews,
-                }
-            )
+            cells.append({"latitude": lat, "longitude": lng, "_mean": mean, "stores": count, "reviews": reviews})
 
     if not cells:
         sys.exit(
@@ -244,27 +258,188 @@ def build_grid(stores: list[dict]) -> list[dict]:
             f"{RADIUS_KM:.0f} km). Loosen MIN_STORES/RADIUS_KM or check the store filter."
         )
 
-    # Standardize against the distribution of cell means, then invert: a low
-    # local Domino's rating becomes a high Pizza Score.
-    mean = sum(c["_mean"] for c in cells) / len(cells)
-    variance = sum((c["_mean"] - mean) ** 2 for c in cells) / len(cells)
-    sd = math.sqrt(variance)
+    centre = sum(c["_mean"] for c in cells) / len(cells)
+    sd = math.sqrt(sum((c["_mean"] - centre) ** 2 for c in cells) / len(cells))
+    scale = (centre, sd)
 
-    grid = []
-    for c in cells:
-        score = 5.0 * (1.0 - normal_cdf((c["_mean"] - mean) / sd))
-        grid.append(
-            {
-                "latitude": round(c["latitude"], 2),
-                "longitude": round(c["longitude"], 2),
-                "pizza_score": round(score, 3),
-                "stores": c["stores"],
-                "reviews": c["reviews"],
-            }
-        )
+    grid = [
+        {
+            "latitude": round(c["latitude"], 2),
+            "longitude": round(c["longitude"], 2),
+            "pizza_score": round(pizza_score(c["_mean"], scale), 3),
+            "stores": c["stores"],
+            "reviews": c["reviews"],
+        }
+        for c in cells
+    ]
 
-    print(f"  cell rating mean {mean:.4f}, sd {sd:.4f}")
-    return grid
+    print(f"  cell rating mean {centre:.4f}, sd {sd:.4f}")
+    return grid, scale
+
+
+# ── Town lookup ─────────────────────────────────────────────────────────────
+#
+# "Check your town": every US city/town/CDP and ZIP code, scored at its
+# location by local_mean(), so the page can look a town up without a geocoding
+# service. Locations come from the Census Gazetteer (public domain), downloaded
+# once into --census-dir.
+
+GAZETTEER_YEAR = 2024
+GAZETTEER_URL = "https://www2.census.gov/geo/docs/maps-data/data/gazetteer/{year}_Gazetteer/{name}.zip"
+# How much land each ZIP (ZCTA) shares with each place. Gazetteer "internal
+# points" can land far from where people are: San Francisco's is out at the
+# Farallon Islands, 50 km offshore. So a place is located by its ZIPs instead,
+# and a ZIP is labelled with the place it overlaps most.
+OVERLAP_NAME = "tab20_zcta520_place20_natl.txt"
+OVERLAP_URL = f"https://www2.census.gov/geo/docs/maps-data/data/rel2020/zcta520/{OVERLAP_NAME}"
+
+# The legal-status words the Census appends to place names: "Abbeville city",
+# "Abanda CDP", "Nashville-Davidson metropolitan government (balance)".
+PLACE_SUFFIX = re.compile(
+    r"\s+(?:\(balance\)|city and borough|consolidated government|unified government"
+    r"|metropolitan government|metro government|urban county|corporation|municipality"
+    r"|township|borough|village|town|city|CDP|County|county)$"
+)
+
+# ZIPs outside the states the map covers: Puerto Rico, the Virgin Islands, Guam
+# and the other Pacific territories.
+TERRITORY_ZIP = re.compile(r"^(?:00[6-9]|96[6-9])")
+
+# A ZIP is labelled with the nearest named place within this distance.
+ZIP_LABEL_KM = 25.0
+
+
+def gazetteer(census_dir: Path, kind: str) -> list[dict]:
+    """Rows of the Census Gazetteer file `kind` ("zcta" or "place"), downloading it once."""
+    import io
+    import urllib.request
+    import zipfile
+
+    name = f"{GAZETTEER_YEAR}_Gaz_{kind}_national"
+    txt = census_dir / f"{name}.txt"
+    if not txt.exists():
+        census_dir.mkdir(parents=True, exist_ok=True)
+        url = GAZETTEER_URL.format(year=GAZETTEER_YEAR, name=name)
+        print(f"  downloading {url}")
+        with urllib.request.urlopen(url, timeout=60) as res:
+            data = res.read()
+        with zipfile.ZipFile(io.BytesIO(data)) as zf:
+            txt.write_bytes(zf.read(f"{name}.txt"))
+    lines = txt.read_text(encoding="utf-8").splitlines()
+    header = [h.strip() for h in lines[0].split("\t")]
+    return [dict(zip(header, (v.strip() for v in line.split("\t")))) for line in lines[1:] if line.strip()]
+
+
+def zip_place_overlaps(census_dir: Path) -> list[tuple[str, str, float]]:
+    """(zcta, place GEOID, shared land in m²) for every ZIP/place overlap, downloading once."""
+    import urllib.request
+
+    path = census_dir / OVERLAP_NAME
+    if not path.exists():
+        census_dir.mkdir(parents=True, exist_ok=True)
+        print(f"  downloading {OVERLAP_URL}")
+        with urllib.request.urlopen(OVERLAP_URL, timeout=120) as res:
+            path.write_bytes(res.read())
+    lines = path.read_text(encoding="utf-8-sig").splitlines()
+    header = lines[0].split("|")
+    zi, pi, li = header.index("GEOID_ZCTA5_20"), header.index("GEOID_PLACE_20"), header.index("AREALAND_PART")
+    out = []
+    for line in lines[1:]:
+        cols = line.split("|")
+        if cols[zi] and cols[pi] and cols[li] and float(cols[li]) > 0:
+            out.append((cols[zi], cols[pi], float(cols[li])))
+    return out
+
+
+def clean_place_name(name: str, state: str) -> str:
+    while True:
+        stripped = PLACE_SUFFIX.sub("", name)
+        if stripped == name:
+            break
+        name = stripped
+    # Massachusetts "town-cities" are named "Agawam Town city": the city's name is Agawam.
+    if state == "MA" and name.endswith(" Town"):
+        name = name[: -len(" Town")]
+    return name
+
+
+def scored(lat: float, lng: float, buckets, scale) -> tuple[float | None, int]:
+    mean, count, _ = local_mean(lat, lng, buckets)
+    return (None if mean is None else round(pizza_score(mean, scale), 2)), count
+
+
+def build_towns(buckets, scale, census_dir: Path) -> tuple[list, dict]:
+    """Places as [name, state, lat, lng, score|null, stores], biggest first;
+    ZIPs as {zip: [label, lat, lng, score|null, stores]}."""
+    zctas = {
+        row["GEOID"]: (float(row["INTPTLAT"]), float(row["INTPTLONG"]))
+        for row in gazetteer(census_dir, "zcta")
+        if not TERRITORY_ZIP.match(row["GEOID"])
+    }
+    overlaps = zip_place_overlaps(census_dir)
+
+    # A place's location: its ZIPs' points, weighted by the land each shares
+    # with it. Falls back to the Gazetteer's internal point.
+    sums: dict[str, list[float]] = defaultdict(lambda: [0.0, 0.0, 0.0])
+    for zcta, geoid, land in overlaps:
+        if zcta in zctas:
+            acc = sums[geoid]
+            acc[0] += zctas[zcta][0] * land
+            acc[1] += zctas[zcta][1] * land
+            acc[2] += land
+
+    places: dict[tuple[str, str], tuple[float, float, float]] = {}
+    labels: dict[str, str] = {}
+    for row in gazetteer(census_dir, "place"):
+        if row["USPS"] not in US_STATES:
+            continue
+        name = clean_place_name(row["NAME"], row["USPS"])
+        key = (name, row["USPS"])
+        labels[row["GEOID"]] = f"{name}, {row['USPS']}"
+        land = float(row["ALAND"])
+        acc = sums.get(row["GEOID"])
+        lat, lng = (acc[0] / acc[2], acc[1] / acc[2]) if acc and acc[2] else (float(row["INTPTLAT"]), float(row["INTPTLONG"]))
+        # A city and a CDP can share a name in one state: keep the bigger.
+        if key not in places or land > places[key][2]:
+            places[key] = (lat, lng, land)
+
+    # A ZIP's label: the place it shares the most land with.
+    zip_label: dict[str, tuple[str, float]] = {}
+    for zcta, geoid, land in overlaps:
+        if geoid in labels and land > zip_label.get(zcta, ("", 0.0))[1]:
+            zip_label[zcta] = (labels[geoid], land)
+
+    # Biggest first, so a prefix search lists Springfield, IL before Springfield, VT.
+    ordered = sorted(places.items(), key=lambda kv: -kv[1][2])
+    place_rows = []
+    label_buckets: dict[tuple[int, int], list[tuple]] = defaultdict(list)
+    for (name, state), (lat, lng, land) in ordered:
+        score, count = scored(lat, lng, buckets, scale)
+        place_rows.append([name, state, round(lat, 3), round(lng, 3), score, count])
+        # Its rough radius, from its land area as if it were a circle.
+        radius_km = math.sqrt(land / math.pi) / 1000
+        label_buckets[(int(math.floor(lat)), int(math.floor(lng)))].append((lat, lng, radius_km, f"{name}, {state}"))
+
+    def nearest_label(lat: float, lng: float) -> str | None:
+        """The nearest place, measured to its rough edge rather than its centre."""
+        best, best_km = None, ZIP_LABEL_KM
+        for dlat in (-1, 0, 1):
+            for dlng in (-1, 0, 1):
+                key = (int(math.floor(lat)) + dlat, int(math.floor(lng)) + dlng)
+                for p_lat, p_lng, radius_km, label in label_buckets.get(key, ()):
+                    d = haversine_km(lat, lng, p_lat, p_lng) - radius_km
+                    if d < best_km:
+                        best, best_km = label, d
+        return best
+
+    zips = {}
+    for zcta, (lat, lng) in zctas.items():
+        score, count = scored(lat, lng, buckets, scale)
+        # Rural ZIPs overlap no place: name them for the nearest one instead.
+        label = zip_label[zcta][0] if zcta in zip_label else nearest_label(lat, lng)
+        zips[zcta] = [label, round(lat, 3), round(lng, 3), score, count]
+
+    return place_rows, zips
 
 
 def write_json(path: Path, payload) -> None:
@@ -281,6 +456,12 @@ def main() -> None:
         type=Path,
         help="path to dominos_locations.db (the raw Places scrape, kept outside the repo)",
     )
+    parser.add_argument(
+        "--census-dir",
+        type=Path,
+        default=Path.home() / ".cache" / "tylerbarron-pizza",
+        help="where the Census Gazetteer files are cached (downloaded on first run)",
+    )
     args = parser.parse_args()
 
     if not args.db.exists():
@@ -293,11 +474,19 @@ def main() -> None:
     print(f"  kept    {len(stores):>5}  US Domino's storefronts")
 
     print("building grid")
-    grid = build_grid(stores)
+    buckets = smooth_stores(stores)
+    grid, scale = build_grid(buckets)
     print(f"  {len(grid)} cells")
+
+    print("scoring towns")
+    places, zips = build_towns(buckets, scale, args.census_dir)
+    print(f"  {len(places)} places ({sum(p[4] is not None for p in places)} scored)")
+    print(f"  {len(zips)} ZIP codes ({sum(z[3] is not None for z in zips.values())} scored)")
 
     write_json(OUT_DIR / "dominos-locations.json", stores)
     write_json(OUT_DIR / "pizza-network.json", grid)
+    write_json(OUT_DIR / "pizza-places.json", places)
+    write_json(OUT_DIR / "pizza-zips.json", zips)
 
 
 if __name__ == "__main__":
