@@ -9,7 +9,8 @@ import { buildMeta } from '~/utils/seo';
 export function meta() {
   return buildMeta({
     title: 'Pizza Ratings',
-    description: 'Personal pizza ratings and an interactive map of pizza coverage.',
+    description:
+      'Check your town’s Pizza Score: where Domino’s rates poorly, the local pizza is strong. A map of 5,700 US Domino’s ratings.',
     path: '/pizza-rating',
   });
 }
