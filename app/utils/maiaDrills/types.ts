@@ -121,6 +121,8 @@ export interface DeckSummary {
   stats: DeckStats;
   cardCount: number;
   createdAt: string;
+  /** Cards completed so far (from the deck's progress); added by the listing, not stored. */
+  completed?: number;
 }
 
 // Win-chance defaults match Lichess's "Learn from your mistakes".

@@ -80,6 +80,7 @@ export default [
 
   // API routes for Maia Drills
   route('api/maiaDrills/decks', 'routes/api/maiaDrills/decks.ts'),
+  route('api/maiaDrills/progress', 'routes/api/maiaDrills/progress.ts'),
 
   // Multiple Choice Chess
   route('multiple-choice-chess', 'routes/multipleChoiceChess._index.tsx'),

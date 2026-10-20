@@ -8,7 +8,8 @@ import BuildForm from '~/components/MaiaDrills/BuildForm';
 import Drill from '~/components/MaiaDrills/Drill';
 import { ProgressBar } from '~/components/MaiaDrills/RunProgress';
 import { buildMeta } from '~/utils/seo';
-import { loadEditToken, saveEditToken, solvedCount } from '~/utils/maiaDrills/localStorage';
+import { loadEditToken, loadPending, saveEditToken } from '~/utils/maiaDrills/localStorage';
+import { sendCompleted, withPending } from '~/utils/maiaDrills/progress';
 import { trackDrillStart, trackFavorite } from '~/utils/maiaDrills/tracking';
 import { DEFAULT_SETTINGS, type Deck, type DeckSummary, type GameSource } from '~/utils/maiaDrills/types';
 
@@ -59,9 +60,6 @@ function settingsParts(settings: Deck['settings']): string[] {
 function FavoritesList() {
   const [decks, setDecks] = useState<DeckSummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  // This browser's drill progress, by deck id. The list only has card counts,
-  // so a deck that later lost cards to the cap is clamped to its size.
-  const [solvedByDeck, setSolvedByDeck] = useState<Record<string, number>>({});
 
   useEffect(() => {
     let cancelled = false;
@@ -70,13 +68,18 @@ function FavoritesList() {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error ?? 'Could not load decks.');
         if (cancelled) return;
-        setDecks(data.decks);
-        const solved: Record<string, number> = {};
-        for (const d of data.decks as DeckSummary[]) {
-          const n = solvedCount(d.id);
-          if (n !== null) solved[d.id] = Math.min(n, d.cardCount);
+        const listed = data.decks as DeckSummary[];
+        setDecks(listed);
+        // Completions still queued in this browser (offline, or from before
+        // progress moved to the server) go up now, so the counts include them.
+        for (const d of listed) {
+          if (loadPending(d.id).length === 0) continue;
+          const ids = await sendCompleted(d.id);
+          if (ids && !cancelled) {
+            const completed = Math.min(ids.length, d.cardCount);
+            setDecks((all) => all?.map((x) => (x.id === d.id ? { ...x, completed } : x)) ?? all);
+          }
         }
-        setSolvedByDeck(solved);
       })
       .catch((err) => !cancelled && setError(err instanceof Error ? err.message : 'Could not load decks.'));
     return () => {
@@ -100,9 +103,9 @@ function FavoritesList() {
           >
             <span className="font-neo min-w-0">
               <span className="block truncate font-bold">★ {deckName(d.username, d.cardCount)}</span>
-              {d.id in solvedByDeck && (
+              {!!d.completed && (
                 <span className="block text-sm font-bold">
-                  {solvedByDeck[d.id]}/{d.cardCount} solved
+                  {d.completed}/{d.cardCount} solved
                 </span>
               )}
               {[
@@ -127,12 +130,15 @@ function FavoritesList() {
 function DeckView({
   deckId,
   deck,
+  solved,
   onDrill,
   onFavoriteChange,
   onUpdated,
 }: {
   deckId: string;
   deck: Deck;
+  /** Cards completed, by every device drilling this deck. */
+  solved: number;
   onDrill: () => void;
   onFavoriteChange: (favorite: boolean) => void;
   onUpdated: () => void;
@@ -142,20 +148,7 @@ function DeckView({
   const [saving, setSaving] = useState(false);
   const { state: copyState, copy } = useCopy();
 
-  // Drill progress lives in this browser; the view remounts after a drill, so this stays current.
-  const [solved, setSolved] = useState<number | null>(null);
-
   useEffect(() => setToken(loadEditToken(deckId)), [deckId]);
-  useEffect(
-    () =>
-      setSolved(
-        solvedCount(
-          deckId,
-          deck.cards.map((c) => c.id),
-        ),
-      ),
-    [deckId, deck.cards],
-  );
 
   const toggleFavorite = async () => {
     if (!token) return;
@@ -199,15 +192,13 @@ function DeckView({
           {describeThreshold(deck.settings)}.
           {stats.lost ? ` ${stats.lost.toLocaleString()} from already-lost positions were skipped.` : ''}
         </p>
-        {solved !== null && (
-          <div className="mt-3">
-            <ProgressBar
-              label={solved === deck.cards.length ? 'Solved · deck cleared' : 'Solved'}
-              value={solved}
-              max={deck.cards.length}
-            />
-          </div>
-        )}
+        <div className="mt-3">
+          <ProgressBar
+            label={solved === deck.cards.length ? 'Solved · deck cleared' : 'Solved'}
+            value={solved}
+            max={deck.cards.length}
+          />
+        </div>
       </div>
 
       {error && <Notice>{error}</Notice>}
@@ -242,6 +233,8 @@ export default function MaiaDrills() {
   const [searchParams, setSearchParams] = useSearchParams();
   const deckId = searchParams.get('deck');
   const [deck, setDeck] = useState<Deck | null>(null);
+  /** The deck's completed card ids: the server's, plus any this browser hasn't sent yet. */
+  const [completed, setCompleted] = useState<Set<string>>(() => new Set());
   const [loadError, setLoadError] = useState<string | null>(null);
   const [drilling, setDrilling] = useState(false);
   /** Bumped to refetch the deck after new games were added to it. */
@@ -262,7 +255,12 @@ export default function MaiaDrills() {
       .then(async (res) => {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error ?? 'Could not load the deck.');
-        if (!cancelled) setDeck(data.deck);
+        if (cancelled) return;
+        setDeck(data.deck);
+        setCompleted(withPending(deckId, data.completed ?? []));
+        // Anything queued here (offline answers, pre-server progress) goes up now.
+        const sent = await sendCompleted(deckId);
+        if (sent && !cancelled) setCompleted(withPending(deckId, sent));
       })
       .catch((err) => !cancelled && setLoadError(err instanceof Error ? err.message : 'Could not load the deck.'));
     return () => {
@@ -323,7 +321,13 @@ export default function MaiaDrills() {
               <p className="font-neo text-sm text-gray-600">Loading…</p>
             </Panel>
           ) : drilling ? (
-            <Drill deckId={deckId} deck={deck} onExit={() => setDrilling(false)} />
+            <Drill
+              deckId={deckId}
+              deck={deck}
+              completed={completed}
+              setCompleted={setCompleted}
+              onExit={() => setDrilling(false)}
+            />
           ) : (
             // No title bar: the deck's own heading leads it, and the page title
             // above already links back to building a new deck.
@@ -331,6 +335,7 @@ export default function MaiaDrills() {
               <DeckView
                 deckId={deckId}
                 deck={deck}
+                solved={deck.cards.filter((c) => completed.has(c.id)).length}
                 onDrill={() => {
                   trackDrillStart({ deckCards: deck.cards.length });
                   setDrilling(true);

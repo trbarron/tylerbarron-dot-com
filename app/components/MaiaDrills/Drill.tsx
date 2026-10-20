@@ -1,4 +1,8 @@
+// design-allow-file: color — the answer legend's swatches match the board's arrow
+// colors (green: Maia's move, red: yours, blue/yellow: alternatives).
+
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { Dispatch, SetStateAction } from 'react';
 import { Chess } from 'chess.js';
 import { uciArrow } from '~/utils/chess/moves';
 import type { DrawShape } from 'chessground/draw';
@@ -15,13 +19,13 @@ import {
   initialQueue,
   isAlsoGood,
   answeredRight,
-  recordProgress,
   reveal as revealAnswer,
   withSearchEvals,
   type Answer,
   type Guess,
 } from '~/utils/maiaDrills/drill';
-import { loadProgress, saveProgress, type CardProgress } from '~/utils/maiaDrills/localStorage';
+import { fetchCompleted, resetCompleted, sendCompleted, withPending } from '~/utils/maiaDrills/progress';
+import Notice from '~/components/Notice';
 import { trackDrillAnswer } from '~/utils/maiaDrills/tracking';
 import DeckCleared from './DeckCleared';
 import type { Deck } from '~/utils/maiaDrills/types';
@@ -33,6 +37,9 @@ const Chessboard = lazy(() => import('~/components/Chessboard'));
 interface DrillProps {
   deckId: string;
   deck: Deck;
+  /** Completed card ids, shared with the deck view; every device drilling the deck adds to them. */
+  completed: ReadonlySet<string>;
+  setCompleted: Dispatch<SetStateAction<Set<string>>>;
   onExit: () => void;
 }
 
@@ -42,23 +49,33 @@ const NO_SELECTABLE = {};
 const NO_DRAWABLE = {};
 const NO_SHAPES: DrawShape[] = [];
 
-export default function Drill({ deckId, deck, onExit }: DrillProps) {
+export default function Drill({ deckId, deck, completed, setCompleted, onExit }: DrillProps) {
   const [queue, setQueue] = useState<number[]>([]);
-  const [progress, setProgress] = useState<Record<string, CardProgress>>({});
+  const [resetFailed, setResetFailed] = useState(false);
   const [answer, setAnswer] = useState<Answer | null>(null);
   /** Wrong moves already tried on the current card. */
   const [misses, setMisses] = useState<Guess[]>([]);
   const [checking, setChecking] = useState(false);
   const [session, setSession] = useState({ attempted: 0, correct: 0 });
-  /** Chose to keep drilling a cleared deck; reset when a miss un-clears it. */
+  /** Chose to keep drilling a cleared deck; cleared again by a reset. */
   const [reviewing, setReviewing] = useState(false);
   const engineRef = useRef<StockfishPool | null>(null);
 
+  // The queue is built once, from the progress at the start; later completions
+  // (here or elsewhere) shape the next round.
+  const completedRef = useRef(completed);
+  completedRef.current = completed;
   useEffect(() => {
-    const saved = loadProgress(deckId);
-    setProgress(saved);
-    setQueue(initialQueue(deck.cards, saved));
-  }, [deckId, deck.cards]);
+    setQueue(initialQueue(deck.cards, completedRef.current));
+    // Pick up what other devices completed since the deck was opened.
+    let cancelled = false;
+    void fetchCompleted(deckId).then((ids) => {
+      if (ids && !cancelled) setCompleted(withPending(deckId, ids));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [deckId, deck.cards, setCompleted]);
 
   useEffect(() => () => engineRef.current?.terminate(), []);
 
@@ -71,13 +88,16 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
       setAnswer(result);
       trackDrillAnswer(result);
       setSession((s) => ({ attempted: s.attempted + 1, correct: s.correct + (ok ? 1 : 0) }));
-      setProgress((prev) => {
-        const next = recordProgress(prev, card.id, result);
-        saveProgress(deckId, next);
-        return next;
+      // Completion is sticky: a miss on a completed card leaves it completed, so
+      // only a right answer writes. Shown at once, confirmed by the server (and
+      // anything other devices completed comes back with it).
+      if (!ok) return;
+      setCompleted((prev) => (prev.has(card.id) ? prev : new Set(prev).add(card.id)));
+      void sendCompleted(deckId, [card.id]).then((ids) => {
+        if (ids) setCompleted(withPending(deckId, ids));
       });
     },
-    [card, deckId],
+    [card, deckId, setCompleted],
   );
 
   const scoreMoves = async (fen: string, moves: string[]): Promise<Map<string, number> | null> => {
@@ -134,19 +154,25 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
 
   const next = () => {
     if (!answer) return;
-    setQueue((q) => advanceQueue(q, () => initialQueue(deck.cards, progress)));
+    setQueue((q) => advanceQueue(q, () => initialQueue(deck.cards, completed)));
     setAnswer(null);
     setMisses([]);
   };
 
-  const resetProgress = () => {
-    saveProgress(deckId, {});
-    setProgress({});
-    setQueue(initialQueue(deck.cards, {}));
+  // Clears the deck's progress for every device, so it only clears here once the server has.
+  const resetProgress = async () => {
+    setResetFailed(false);
+    if (!(await resetCompleted(deckId))) {
+      setResetFailed(true);
+      return;
+    }
+    const none = new Set<string>();
+    setCompleted(none);
+    setQueue(initialQueue(deck.cards, none));
     setReviewing(false);
   };
 
-  const solved = deck.cards.filter((c) => progress[c.id]?.last === 'correct').length;
+  const solved = deck.cards.filter((c) => completed.has(c.id)).length;
   const allSolved = deck.cards.length > 0 && solved === deck.cards.length;
   useEffect(() => {
     if (!allSolved) setReviewing(false);
@@ -189,6 +215,7 @@ export default function Drill({ deckId, deck, onExit }: DrillProps) {
     return (
       <div className="space-y-4">
         {header}
+        {resetFailed && <Notice>Couldn’t reach the server to reset. Try again.</Notice>}
         <DeckCleared
           cardCount={deck.cards.length}
           onReset={resetProgress}

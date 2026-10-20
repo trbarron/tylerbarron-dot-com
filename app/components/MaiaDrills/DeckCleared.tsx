@@ -9,17 +9,17 @@ interface DeckClearedProps {
   onExit: () => void;
 }
 
-/** Every card's latest answer was right. Resetting asks first, since it can't be undone. */
+/** Every card has been answered right at least once. Resetting asks first: it can't be undone, and it clears every device. */
 export default function DeckCleared({ cardCount, onReset, onReview, onExit }: DeckClearedProps) {
   const [confirming, setConfirming] = useState(false);
 
   return (
     <div className="font-neo space-y-4 border-4 border-black bg-white p-6 text-black" aria-live="polite">
       <p className="text-3xl font-extrabold">Deck cleared</p>
-      <p className="text-sm text-gray-700">All {cardCount} solved: your latest answer on every card was right.</p>
+      <p className="text-sm text-gray-700">All {cardCount} solved: every card has been answered right.</p>
       {confirming ? (
         <div className="space-y-2">
-          <p className="text-sm font-bold">Clear your progress on all {cardCount} cards?</p>
+          <p className="text-sm font-bold">Clear progress on all {cardCount} cards, on every device?</p>
           <div className="flex flex-wrap gap-2">
             <Button variant="danger" onClick={onReset}>
               Reset

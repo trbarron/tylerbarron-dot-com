@@ -18,7 +18,6 @@ import {
   initialQueue,
   isAlsoGood,
   answeredRight,
-  recordProgress,
   reveal,
   withSearchEvals,
   type Answer,
@@ -114,24 +113,14 @@ describe('scoring', () => {
     expect(answeredRight(answer('wrong', false))).toBe(false);
     expect(answeredRight(answer('revealed', false))).toBe(false);
   });
-
-  it('records seen, correct and last result per card, second tries included', () => {
-    let progress = recordProgress({}, 'c1', answer('correct', true));
-    expect(progress.c1).toEqual({ seen: 1, correct: 1, last: 'correct' });
-    progress = recordProgress(progress, 'c1', answer('also-good', false));
-    expect(progress.c1).toEqual({ seen: 2, correct: 2, last: 'correct' });
-    progress = recordProgress(progress, 'c1', answer('revealed', false));
-    expect(progress.c1).toEqual({ seen: 3, correct: 2, last: 'wrong' });
-  });
 });
 
 describe('card order', () => {
   const cards = ['a', 'b', 'c', 'd'].map((id) => ({ id }) as DrillCard);
   const noShuffle = () => 0.999999; // Fisher–Yates with j = i keeps the order.
 
-  it('puts cards not yet answered right first', () => {
-    const progress = { a: { seen: 1, correct: 1, last: 'correct' as const } };
-    expect(initialQueue(cards, progress, noShuffle)).toEqual([1, 2, 3, 0]);
+  it('puts cards not yet completed first', () => {
+    expect(initialQueue(cards, new Set(['a']), noShuffle)).toEqual([1, 2, 3, 0]);
   });
 
   it('moves on after every answer, right or wrong, without repeating a miss', () => {
