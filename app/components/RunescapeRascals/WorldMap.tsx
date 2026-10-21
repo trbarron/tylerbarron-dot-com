@@ -6,6 +6,12 @@ const OFF_MAP = new Set(['Falador', 'Tutorial Island', 'Varrock']);
 const W = 480;
 const PAD = 24;
 
+/**
+ * The free-to-play mainland, rendered in grey from the game's own world map (rs-sdk's
+ * /mapview, by runscape-local's agents/map/render-basemap.ts), and the world tiles it covers.
+ */
+const BASEMAP = { href: '/images/runescape-rascals/f2p-map.webp', x0: 2880, x1: 3360, z0: 3120, z1: 3520 };
+
 /** How a road is drawn, worst outcome first: identity stays with the characters' dashes. */
 const ROAD = {
   died: { stroke: '#000', label: 'someone died' },
@@ -75,12 +81,25 @@ export default function WorldMap({ bots, landmarks, routes = [] }: WorldMapProps
   const H = Math.round((W * (maxZ - minZ)) / (maxX - minX));
   const X = (x: number) => ((x - minX) / (maxX - minX)) * W;
   const Y = (z: number) => ((maxZ - z) / (maxZ - minZ)) * H;
-  const botXY = bots.flatMap((b) => (b.pos ? [[X(b.pos.x), Y(b.pos.z)]] : []));
-  const grid = (lo: number, hi: number) => {
-    const out: number[] = [];
-    for (let v = Math.ceil(lo / 50) * 50; v < hi; v += 50) out.push(v);
-    return out;
-  };
+  // Labels as boxes [x0, y0, x1, y1], so a place label that would sit on a character's name or
+  // another label is left off (the base map names the big places anyway). Characters first.
+  const taken: number[][] = bots.flatMap((b) => {
+    if (!b.pos) return [];
+    const x = X(b.pos.x);
+    const y = Y(b.pos.z) - 7;
+    const w = b.name.length * 9 + 10;
+    return [x > W * 0.75 ? [x - w, y - 12, x, y + 3] : [x, y - 12, x + w, y + 3]];
+  });
+  const placeLabel = new Map<string, boolean>();
+  for (const l of places) {
+    const x = X(l.x);
+    const y = Y(l.z);
+    const w = (l.short ?? l.name).length * 6 + 8;
+    const box = x > W * 0.75 ? [x - w, y - 6, x, y + 6] : [x, y - 6, x + w, y + 6];
+    const clear = !taken.some((t) => box[0] < t[2] && t[0] < box[2] && box[1] < t[3] && t[1] < box[3]);
+    if (clear) taken.push(box);
+    placeLabel.set(l.name, clear);
+  }
 
   return (
     <svg
@@ -89,12 +108,16 @@ export default function WorldMap({ bots, landmarks, routes = [] }: WorldMapProps
       role="img"
       aria-label="Map of where each character is"
     >
-      {grid(minX, maxX).map((gx) => (
-        <line key={`x${gx}`} x1={X(gx)} x2={X(gx)} y1={0} y2={H} stroke="#e5e5e5" />
-      ))}
-      {grid(minZ, maxZ).map((gz) => (
-        <line key={`z${gz}`} x1={0} x2={W} y1={Y(gz)} y2={Y(gz)} stroke="#e5e5e5" />
-      ))}
+      <rect width={W} height={H} fill="#fafafa" />
+      <image
+        href={BASEMAP.href}
+        x={X(BASEMAP.x0)}
+        y={Y(BASEMAP.z1)}
+        width={X(BASEMAP.x1) - X(BASEMAP.x0)}
+        height={Y(BASEMAP.z0) - Y(BASEMAP.z1)}
+        preserveAspectRatio="none"
+        aria-hidden="true"
+      />
       {walked.map((r) => {
         const a = at.get(r.a)!;
         const b = at.get(r.b)!;
@@ -130,12 +153,10 @@ export default function WorldMap({ bots, landmarks, routes = [] }: WorldMapProps
         const x = X(l.x);
         const y = Y(l.z);
         const right = x > W * 0.75;
-        // A character standing on a place already names it; skip the label to avoid a pile-up.
-        const crowded = botXY.some(([bx, by]) => Math.abs(bx - x) < 60 && Math.abs(by - y) < 12);
         return (
           <g key={l.name}>
             <rect x={x - 2.5} y={y - 2.5} width={5} height={5} fill="#fff" stroke="#404040" strokeWidth={1.5} />
-            {!crowded && (
+            {placeLabel.get(l.name) && (
               <text
                 x={x + (right ? -6 : 6)}
                 y={y + 3}
