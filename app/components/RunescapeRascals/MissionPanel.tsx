@@ -1,7 +1,6 @@
 import Panel from '~/components/Panel';
 import type { Mission } from '~/utils/runescapeRascals/types';
 import { ago } from './format';
-import Clamp from './Clamp';
 
 /** The party's mission: a vision chosen in council, and the milestones towards it. */
 export default function MissionPanel({ mission, now }: { mission: Mission | null; now: number }) {
@@ -21,22 +20,16 @@ export default function MissionPanel({ mission, now }: { mission: Mission | null
         <p className="m-0 mb-4 text-base leading-relaxed">{mission.mission}</p>
         <ol className="m-0 grid list-none gap-2 p-0 md:grid-cols-3">
           {mission.milestones.map((m) => (
-            <li
-              key={m.id}
-              className={`relative border-2 border-black py-2 pr-3 pl-9 ${m.done ? 'bg-neutral-100' : ''}`}
-            >
-              <span
-                aria-label={m.done ? 'done' : 'open'}
-                className={`absolute top-2.5 left-3 grid h-4 w-4 place-items-center border-2 border-black text-[10px] leading-none font-extrabold ${m.done ? 'bg-black text-white' : ''}`}
-              >
-                {m.done ? '✓' : ''}
+            <li key={m.id} className={`border-2 border-black px-3 py-2 ${m.done ? 'bg-neutral-100' : ''}`}>
+              <span className="mb-1 flex items-center gap-1.5">
+                <span className="font-mono text-xs font-bold">M{m.id}</span>
+                {m.done && (
+                  <span className="border-2 border-black bg-black px-1 text-[10px] leading-4 font-bold tracking-wider text-white uppercase">
+                    Done
+                  </span>
+                )}
               </span>
-              <span className={`block text-sm leading-snug font-bold ${m.done ? 'line-through' : ''}`}>
-                M{m.id} {m.what}
-              </span>
-              <Clamp lines={2} className="mt-1 font-mono text-xs leading-relaxed text-neutral-700">
-                needs {m.needs}
-              </Clamp>
+              <span className={`block text-sm leading-snug font-bold ${m.done ? 'line-through' : ''}`}>{m.what}</span>
             </li>
           ))}
         </ol>
