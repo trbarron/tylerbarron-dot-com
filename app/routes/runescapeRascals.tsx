@@ -14,11 +14,12 @@ import { readSnapshot } from '~/utils/runescapeRascals/snapshot.server';
 import type { Snapshot } from '~/utils/runescapeRascals/types';
 import Roster from '~/components/RunescapeRascals/Roster';
 import MissionPanel from '~/components/RunescapeRascals/MissionPanel';
-import { NumbersTable, SkillsTable } from '~/components/RunescapeRascals/Tables';
+import { NumbersTable, SkillsTable, StoresTable } from '~/components/RunescapeRascals/Tables';
 import LevelChart from '~/components/RunescapeRascals/LevelChart';
 import DecisionLog from '~/components/RunescapeRascals/DecisionLog';
-import WorldMap from '~/components/RunescapeRascals/WorldMap';
-import { Board, Plan } from '~/components/RunescapeRascals/Talk';
+import WorldMap, { RoadKey } from '~/components/RunescapeRascals/WorldMap';
+import Scorecard from '~/components/RunescapeRascals/Scorecard';
+import { Board, Plan, Routines } from '~/components/RunescapeRascals/Talk';
 import { ago, useNow } from '~/components/RunescapeRascals/format';
 
 export function meta() {
@@ -122,12 +123,13 @@ export default function RunescapeRascals() {
               </Panel>
               <Panel
                 title="Where they are"
-                subtitle="Last 10 minutes of movement"
+                subtitle="Last 10 minutes of movement, over every road the party has walked"
                 className="flex h-full min-w-0 flex-col"
               >
                 <div className="flex flex-1 items-center p-2">
-                  <WorldMap bots={snapshot.bots} landmarks={snapshot.landmarks} />
+                  <WorldMap bots={snapshot.bots} landmarks={snapshot.landmarks} routes={snapshot.routes} />
                 </div>
+                {snapshot.routes && snapshot.routes.length > 0 && <RoadKey />}
               </Panel>
             </div>
 
@@ -139,6 +141,29 @@ export default function RunescapeRascals() {
                 <Plan plan={snapshot.plan} />
               </Panel>
             </div>
+
+            <div className="grid items-stretch gap-4 md:grid-cols-2">
+              <Panel
+                title="Routines"
+                subtitle="Steps their code runs without asking the model"
+                className="h-full min-w-0"
+              >
+                <Routines bots={snapshot.bots} />
+              </Panel>
+              <Panel
+                title="Banks"
+                subtitle="Each bank is personal: only its owner can withdraw"
+                className="h-full min-w-0"
+              >
+                <StoresTable bots={snapshot.bots} now={now} />
+              </Panel>
+            </div>
+
+            {snapshot.scorecard && snapshot.scorecard.length > 0 && (
+              <Panel title="Changes to the agents" subtitle="How the party did after each change, on active time">
+                <Scorecard rows={snapshot.scorecard} />
+              </Panel>
+            )}
           </>
         )}
       </main>

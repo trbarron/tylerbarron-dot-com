@@ -1,4 +1,5 @@
-import type { Post, Snapshot } from '~/utils/runescapeRascals/types';
+import type { Bot, Post, Snapshot } from '~/utils/runescapeRascals/types';
+import { Swatch } from './markers';
 import { ago } from './format';
 import Clamp from './Clamp';
 
@@ -48,6 +49,47 @@ export function Plan({ plan }: { plan: Snapshot['plan'] }) {
             <span className="mt-0.5 block font-mono text-xs leading-relaxed text-neutral-700">
               {e.asks.map((a) => `asks ${a.to}: ${a.what}`).join(' · ')}
             </span>
+          )}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/** Each character's routine: the steps their code runs without asking the model, current one marked. */
+export function Routines({ bots }: { bots: Bot[] }) {
+  return (
+    <ul className="m-0 list-none px-4 py-2">
+      {bots.map((b, i) => (
+        <li key={b.name} className="border-t-2 border-neutral-200 py-1.5 text-sm first:border-t-0">
+          <span className="mr-1 inline-flex items-center gap-1.5 font-extrabold uppercase">
+            <Swatch index={i} />
+            {b.name}
+          </span>
+          {b.routine ? (
+            <>
+              <span className="font-bold">{b.routine.name}</span>
+              {b.routine.repeat && <span className="ml-1 font-mono text-xs text-neutral-700">(repeats)</span>}
+              <ol className="m-0 mt-1 list-none p-0 font-mono text-xs leading-snug">
+                {b.routine.steps.map((s, k) => (
+                  <li
+                    key={k}
+                    aria-current={k === b.routine!.step ? 'step' : undefined}
+                    className={
+                      k === b.routine!.step
+                        ? 'font-bold text-black'
+                        : k < b.routine!.step
+                          ? 'text-neutral-500 line-through'
+                          : 'text-neutral-700'
+                    }
+                  >
+                    {k === b.routine!.step ? '▸' : ' '} {k + 1}. {s}
+                  </li>
+                ))}
+              </ol>
+            </>
+          ) : (
+            <span className="font-mono text-xs text-neutral-700">deciding</span>
           )}
         </li>
       ))}

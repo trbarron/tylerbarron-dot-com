@@ -23,7 +23,7 @@ export interface Bot {
   totalLevel: number;
   combat: number | null;
   hp: { cur: number; max: number } | null;
-  /** The current standing order, e.g. "mine (copper) until Mining 15 (3 min)". */
+  /** What they are doing now, e.g. "bronze bars: step 3/5, smelt (bronze) (2 min)". */
   action: string;
   actionSince: number;
   location: string;
@@ -33,10 +33,57 @@ export interface Bot {
   skills: Skill[];
   missing: string[];
   goal: string;
+  /** The routine running now, if any: named steps run in order, optionally looping. */
+  routine?: Routine | null;
+  /** Their bank as last seen open (only the owner can withdraw from it). */
+  bank?: { t: number; items: Record<string, number> } | null;
   deaths: number;
   /** When the screenshot was taken (ms), 0 if none yet. */
   shotAt: number;
   metrics?: BotMetrics;
+}
+
+export interface Routine {
+  name: string;
+  repeat: boolean;
+  /** Index of the step running now. */
+  step: number;
+  steps: string[];
+}
+
+export type RouteOutcome = 'safe' | 'hurt' | 'died' | 'failed';
+
+/** One road in the party's travel log, between two landmarks (by name). */
+export interface Route {
+  from: string;
+  to: string;
+  trips: number;
+  safe: number;
+  hurt: number;
+  died: number;
+  failed: number;
+  last: { bot: string; t: number; outcome: RouteOutcome; note?: string };
+}
+
+/** One change to the agents and how the party did until the next one (active time only). */
+export interface ScorecardRow {
+  t: string;
+  name: string;
+  note: string;
+  from: number;
+  to: number;
+  activeHours: number;
+  decisionsPerHour: number | null;
+  stepsPerHour: number | null;
+  medianStepSeconds: number | null;
+  blocked: number | null;
+  interrupted: number | null;
+  postsPerHour: number | null;
+  xpPerHour: number | null;
+  xpShare: { making: number; gathering: number; combat: number; thieving: number };
+  deaths: number;
+  milestones: number;
+  costPerHour: number | null;
 }
 
 export interface Milestone {
@@ -90,6 +137,9 @@ export interface Snapshot {
   log: LogEntry[];
   history: { t: number; levels: Record<string, number> }[];
   landmarks: { name: string; short?: string; x: number; z: number }[];
+  /** Newer snapshots only. */
+  routes?: Route[];
+  scorecard?: ScorecardRow[];
   party: { costPerHour: number; cacheHitRate: number; councils: number; councilsAgreed: number };
   spend: { usd: number; budgetUsd: number; calls: number; model: string };
 }
