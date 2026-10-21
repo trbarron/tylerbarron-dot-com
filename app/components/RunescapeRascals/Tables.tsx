@@ -1,15 +1,17 @@
 import type { ReactNode } from 'react';
 import type { Bot, BotMetrics } from '~/utils/runescapeRascals/types';
 import { Swatch } from './markers';
-import { pct } from './format';
+import { ago, pct } from './format';
 
 // Both tables put the characters in columns, so they read the same way side by side.
 
-const TH = 'border-2 border-black bg-black px-2 py-1 text-right text-xs font-bold tracking-wider text-white uppercase';
-const TD = 'border-2 border-black px-2 py-1 text-right font-mono text-sm tabular-nums';
-const FIRST = 'text-left';
+export const TH =
+  'border-2 border-black bg-black px-2 py-1 text-right text-xs font-bold tracking-wider text-white uppercase';
+export const TD = 'border-2 border-black px-2 py-1 text-right font-mono text-sm tabular-nums';
+// TD aligns right, so the first column needs the important modifier to win.
+export const FIRST = 'text-left!';
 
-function Head({ bots, label }: { bots: Bot[]; label: string }) {
+export function Head({ bots, label }: { bots: Bot[]; label: string }) {
   return (
     <thead>
       <tr>
@@ -24,6 +26,45 @@ function Head({ bots, label }: { bots: Bot[]; label: string }) {
         ))}
       </tr>
     </thead>
+  );
+}
+
+/** Everything the party has in its banks, with each owner in a column (banks are personal). */
+export function StoresTable({ bots, now }: { bots: Bot[]; now: number }) {
+  const banked = bots.filter((b) => b.bank);
+  const items = [...new Set(banked.flatMap((b) => Object.keys(b.bank!.items)))]
+    .filter((n) => !/^coins$/i.test(n))
+    .map((n) => ({ n, total: banked.reduce((s, b) => s + (b.bank!.items[n] ?? 0), 0) }))
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 14);
+  if (!items.length)
+    return <p className="m-0 px-4 py-6 text-center font-mono text-xs text-neutral-700 uppercase">No bank seen yet</p>;
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full border-collapse">
+        <Head bots={banked} label="Item" />
+        <tbody>
+          {items.map(({ n }) => (
+            <tr key={n}>
+              <td className={`${TD} ${FIRST} font-neo`}>{n}</td>
+              {banked.map((b) => (
+                <td key={b.name} className={TD}>
+                  {b.bank!.items[n] ? b.bank!.items[n].toLocaleString('en-US') : '–'}
+                </td>
+              ))}
+            </tr>
+          ))}
+          <tr>
+            <td className={`${TD} ${FIRST} font-neo text-xs text-neutral-700`}>Last looked</td>
+            {banked.map((b) => (
+              <td key={b.name} className={`${TD} text-xs text-neutral-700`}>
+                {ago(b.bank!.t, now)}
+              </td>
+            ))}
+          </tr>
+        </tbody>
+      </table>
+    </div>
   );
 }
 
@@ -96,12 +137,12 @@ const METRICS: [string, (m: BotMetrics) => ReactNode, string][] = [
   [
     'XP per hour',
     (m) => (m.xpPerHour == null ? '–' : m.xpPerHour.toLocaleString('en-US')),
-    'All skills combined; shown after ten minutes.',
+    'All skills combined, per active hour (time the party was running).',
   ],
   [
     'Decisions per hour',
     (m) => m.decisionsPerHour ?? '–',
-    'Times the model was asked to set a new order; shown after ten minutes.',
+    'Times the model was asked to set a new routine, per active hour.',
   ],
   ['Repeat picks', (m) => pct(m.repeatRate), 'Picked the same action as the order before.'],
   ['Time resting', (m) => pct(m.rest), 'Share of order time spent resting.'],
@@ -117,7 +158,7 @@ const METRICS: [string, (m: BotMetrics) => ReactNode, string][] = [
     'Rank correlation between what their abilities favour and where their time goes (1 is a perfect match).',
   ],
   ['Prompt cache', (m) => pct(m.cacheHitRate), 'Input tokens served from the prompt cache.'],
-  ['Model cost', (m) => `$${m.costUsd.toFixed(3)}`, 'This run.'],
+  ['Model cost', (m) => `$${m.costUsd.toFixed(3)}`, 'Over the last 3 hours.'],
 ];
 
 export function NumbersTable({ bots }: { bots: Bot[] }) {
@@ -125,7 +166,7 @@ export function NumbersTable({ bots }: { bots: Bot[] }) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full border-collapse">
-        <Head bots={withMetrics} label="This run" />
+        <Head bots={withMetrics} label="Last 3 hours" />
         <tbody>
           {METRICS.map(([label, value, hint]) => (
             <tr key={label}>
