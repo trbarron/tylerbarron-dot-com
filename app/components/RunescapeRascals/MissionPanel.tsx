@@ -1,6 +1,7 @@
 import Panel from '~/components/Panel';
 import type { Mission } from '~/utils/runescapeRascals/types';
 import { ago } from './format';
+import Clamp from './Clamp';
 
 /** The party's mission: a vision chosen in council, and the milestones towards it. */
 export default function MissionPanel({ mission, now }: { mission: Mission | null; now: number }) {
@@ -17,7 +18,7 @@ export default function MissionPanel({ mission, now }: { mission: Mission | null
       subtitle={`Proposed by ${mission.proposedBy} · council ${mission.council}${mission.unanimous ? ' · unanimous' : ''} · ${ago(mission.set, now)}`}
     >
       <div className="px-4 pt-3 pb-4">
-        <p className="m-0 mb-3 text-base">{mission.mission}</p>
+        <p className="m-0 mb-4 text-base leading-relaxed">{mission.mission}</p>
         <ol className="m-0 grid list-none gap-2 p-0 md:grid-cols-3">
           {mission.milestones.map((m) => (
             <li
@@ -30,10 +31,12 @@ export default function MissionPanel({ mission, now }: { mission: Mission | null
               >
                 {m.done ? '✓' : ''}
               </span>
-              <span className={`block text-sm font-bold ${m.done ? 'line-through' : ''}`}>
+              <span className={`block text-sm leading-snug font-bold ${m.done ? 'line-through' : ''}`}>
                 M{m.id} {m.what}
               </span>
-              <span className="block font-mono text-xs text-neutral-700">needs {m.needs}</span>
+              <Clamp lines={2} className="mt-1 font-mono text-xs leading-relaxed text-neutral-700">
+                needs {m.needs}
+              </Clamp>
             </li>
           ))}
         </ol>

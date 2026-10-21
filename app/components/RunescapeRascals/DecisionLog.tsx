@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { LogEntry } from '~/utils/runescapeRascals/types';
 import { clock } from './format';
+import Clamp from './Clamp';
 
 const KIND: Record<string, [label: string, solid: boolean]> = {
   decided: ['Decided', true],
@@ -57,7 +58,7 @@ export default function DecisionLog({ log, names, mounted }: DecisionLogProps) {
           return (
             <li
               key={`${e.t}-${k}`}
-              className="grid grid-cols-[3rem_4rem_1fr] items-baseline gap-2 border-t-2 border-neutral-200 py-1.5 first:border-t-0 sm:grid-cols-[3rem_4rem_6rem_1fr]"
+              className="grid grid-cols-[3rem_4rem_1fr] items-baseline gap-2 border-t-2 border-neutral-200 py-2 first:border-t-0 sm:grid-cols-[3rem_4rem_6rem_1fr]"
             >
               <time className="font-mono text-xs text-neutral-700" dateTime={new Date(e.t).toISOString()}>
                 {mounted ? clock(e.t) : ''}
@@ -71,8 +72,14 @@ export default function DecisionLog({ log, names, mounted }: DecisionLogProps) {
                 </span>
               </span>
               <span className="col-span-3 text-sm sm:col-span-1">
-                <span className="font-semibold">{e.title}</span>
-                {e.detail && <span className="block font-mono text-xs text-neutral-700">{e.detail}</span>}
+                <Clamp lines={2} className="leading-snug font-semibold">
+                  {e.title}
+                </Clamp>
+                {e.detail && (
+                  <Clamp lines={1} className="mt-0.5 font-mono text-xs leading-relaxed text-neutral-700">
+                    {e.detail}
+                  </Clamp>
+                )}
               </span>
             </li>
           );

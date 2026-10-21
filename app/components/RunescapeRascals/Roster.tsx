@@ -1,15 +1,17 @@
 import { useState } from 'react';
-import Button from '~/components/Button';
 import type { Bot } from '~/utils/runescapeRascals/types';
 import { Swatch } from './markers';
 import { ago } from './format';
+import Clamp from './Clamp';
 
 interface RosterProps {
   bots: Bot[];
   now: number;
 }
 
-/** One strip with each character's level, current order and place; screenshots open below. */
+const shotUrl = (b: Bot) => `/api/runescapeRascals/shot/${b.name}?t=${b.shotAt}`;
+
+/** One strip with each character's level, current order, place and a thumbnail; full screenshots open below. */
 export default function Roster({ bots, now }: RosterProps) {
   const [open, setOpen] = useState<Set<string>>(() => new Set());
   const toggle = (name: string) =>
@@ -26,7 +28,7 @@ export default function Roster({ bots, now }: RosterProps) {
         {bots.map((b, i) => (
           <div
             key={b.name}
-            className={`relative flex min-w-0 flex-col gap-1 px-3 pt-3 pb-14 ${i % 2 ? 'border-l-4' : ''} ${i >= 2 ? 'border-t-4 md:border-t-0' : ''} ${i === 2 ? 'md:border-l-4' : ''} border-black`}
+            className={`flex min-w-0 flex-col gap-2 p-3 ${i % 2 ? 'border-l-4' : ''} ${i >= 2 ? 'border-t-4 md:border-t-0' : ''} ${i === 2 ? 'md:border-l-4' : ''} border-black`}
           >
             <div className="flex items-baseline justify-between gap-2">
               <span className="flex items-center gap-2 text-xl leading-none font-extrabold tracking-tight uppercase">
@@ -38,18 +40,36 @@ export default function Roster({ bots, now }: RosterProps) {
                 <span className="ml-1 text-xs font-bold tracking-wider">LVL</span>
               </span>
             </div>
-            <div className="text-sm font-bold break-words uppercase">{b.action.replace(/_/g, ' ')}</div>
-            <div className="font-mono text-xs text-neutral-700">{b.location}</div>
-            <Button
-              size="sm"
-              variant={open.has(b.name) ? 'primary' : 'secondary'}
+            <button
+              type="button"
               aria-expanded={open.has(b.name)}
               aria-controls="rascals-screens"
+              aria-label={`${open.has(b.name) ? 'Hide' : 'Show'} ${b.name}'s screen`}
               onClick={() => toggle(b.name)}
-              className="absolute right-3 bottom-2"
+              className={`group relative block cursor-pointer border-2 border-black p-0 ${open.has(b.name) ? 'outline-2 outline-offset-2 outline-black' : ''}`}
             >
-              Screen
-            </Button>
+              {b.shotAt ? (
+                <img
+                  src={shotUrl(b)}
+                  alt=""
+                  width={765}
+                  height={503}
+                  loading="lazy"
+                  className="block aspect-[765/503] h-auto w-full object-cover"
+                />
+              ) : (
+                <span className="grid aspect-[765/503] place-items-center bg-neutral-100 font-mono text-[10px] text-neutral-700 uppercase">
+                  No screenshot yet
+                </span>
+              )}
+              <span className="absolute right-0 bottom-0 bg-black px-1.5 py-0.5 text-[10px] font-bold tracking-wider text-white uppercase group-hover:underline">
+                {open.has(b.name) ? 'Close' : 'Enlarge'}
+              </span>
+            </button>
+            <Clamp lines={2} className="text-sm leading-snug font-bold break-words uppercase">
+              {b.action.replace(/_/g, ' ')}
+            </Clamp>
+            <div className="font-mono text-xs leading-snug text-neutral-700">{b.location}</div>
           </div>
         ))}
       </div>
@@ -59,7 +79,7 @@ export default function Roster({ bots, now }: RosterProps) {
             <figure key={b.name} className="m-0 border-2 border-black">
               {b.shotAt ? (
                 <img
-                  src={`/api/runescapeRascals/shot/${b.name}?t=${b.shotAt}`}
+                  src={shotUrl(b)}
                   alt={`In-game view from ${b.name}`}
                   width={765}
                   height={503}

@@ -1,5 +1,6 @@
 import type { Post, Snapshot } from '~/utils/runescapeRascals/types';
 import { ago } from './format';
+import Clamp from './Clamp';
 
 /** The party's message board: what they say to each other, newest first. */
 export function Board({ posts, now }: { posts: Post[]; now: number }) {
@@ -11,7 +12,7 @@ export function Board({ posts, now }: { posts: Post[]; now: number }) {
         .slice()
         .reverse()
         .map((p) => (
-          <li key={p.id} className="border-t-2 border-neutral-200 py-1.5 first:border-t-0">
+          <li key={p.id} className="border-t-2 border-neutral-200 py-2 first:border-t-0">
             <div className="font-mono text-xs text-neutral-700">
               <span className="font-neo mr-1 font-extrabold text-black uppercase">{p.from}</span>
               {p.to !== 'all' && `→ ${p.to} · `}
@@ -22,7 +23,9 @@ export function Board({ posts, now }: { posts: Post[]; now: number }) {
                 </span>
               ) : null}
             </div>
-            <p className="m-0 text-sm">{p.text}</p>
+            <Clamp lines={3} className="mt-0.5 text-sm leading-snug">
+              {p.text}
+            </Clamp>
           </li>
         ))}
     </ol>
@@ -38,11 +41,11 @@ export function Plan({ plan }: { plan: Snapshot['plan'] }) {
   return (
     <ul className="m-0 list-none px-4 py-2">
       {Object.entries(plan.entries).map(([name, e]) => (
-        <li key={name} className="border-t-2 border-neutral-200 py-1.5 text-sm first:border-t-0">
+        <li key={name} className="border-t-2 border-neutral-200 py-2 text-sm leading-snug first:border-t-0">
           <span className="mr-1 font-extrabold uppercase">{name}</span>
           {e.commitment}
           {e.asks.length > 0 && (
-            <span className="block font-mono text-xs text-neutral-700">
+            <span className="mt-0.5 block font-mono text-xs leading-relaxed text-neutral-700">
               {e.asks.map((a) => `asks ${a.to}: ${a.what}`).join(' · ')}
             </span>
           )}

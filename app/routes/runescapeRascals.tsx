@@ -19,7 +19,7 @@ import LevelChart from '~/components/RunescapeRascals/LevelChart';
 import DecisionLog from '~/components/RunescapeRascals/DecisionLog';
 import WorldMap from '~/components/RunescapeRascals/WorldMap';
 import { Board, Plan } from '~/components/RunescapeRascals/Talk';
-import { ago, pct, useNow } from '~/components/RunescapeRascals/format';
+import { ago, useNow } from '~/components/RunescapeRascals/format';
 
 export function meta() {
   return buildMeta({
@@ -86,8 +86,12 @@ export default function RunescapeRascals() {
           </Notice>
         ) : (
           <>
-            <Roster bots={snapshot.bots} now={now} />
             <MissionPanel mission={snapshot.teamGoal} now={now} />
+            <Roster bots={snapshot.bots} now={now} />
+
+            <Panel title="Total level over time">
+              <LevelChart names={names} history={snapshot.history} mounted={mounted} />
+            </Panel>
 
             <div className="grid items-stretch gap-4 md:grid-cols-2">
               <Panel
@@ -98,7 +102,7 @@ export default function RunescapeRascals() {
                 <SkillsTable bots={snapshot.bots} />
               </Panel>
               <Panel
-                title="By the numbers"
+                title="Meta stats"
                 aside={
                   <span className="font-mono text-xs text-neutral-700">${snapshot.party.costPerHour.toFixed(3)}/h</span>
                 }
@@ -107,10 +111,6 @@ export default function RunescapeRascals() {
                 <NumbersTable bots={snapshot.bots} />
               </Panel>
             </div>
-
-            <Panel title="Total level over time">
-              <LevelChart names={names} history={snapshot.history} mounted={mounted} />
-            </Panel>
 
             <div className="grid items-stretch gap-4 md:grid-cols-[7fr_5fr]">
               <Panel
@@ -135,10 +135,7 @@ export default function RunescapeRascals() {
               <Panel title="Message board" className="flex h-full min-w-0 flex-col">
                 <Board posts={snapshot.board} now={now} />
               </Panel>
-              <Panel
-                title="Party plan"
-                className="h-full min-w-0"
-              >
+              <Panel title="Party plan" className="h-full min-w-0">
                 <Plan plan={snapshot.plan} />
               </Panel>
             </div>
