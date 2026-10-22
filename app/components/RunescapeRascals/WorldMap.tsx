@@ -1,6 +1,6 @@
 import type { Bot, Route, Snapshot } from '~/utils/runescapeRascals/types';
 import walkedRoutes from '~/utils/runescapeRascals/walked-routes.json';
-import { DASHES, Marker } from './markers';
+import { Marker } from './markers';
 
 /** Places that would stretch the map without anyone usually being there. */
 const OFF_MAP = new Set(['Falador', 'Tutorial Island', 'Varrock']);
@@ -119,7 +119,7 @@ function roadTitle(r: Road) {
   return `${r.a} ↔ ${r.b}: ${walked}${harm}`;
 }
 
-/** Where everyone is, on real game coordinates, with ~10 minutes of trail and the roads they have walked. */
+/** Where everyone is, on real game coordinates, and the roads they have walked. */
 export default function WorldMap({ bots, landmarks, routes = [] }: WorldMapProps) {
   const places = landmarks.filter((l) => !OFF_MAP.has(l.name));
   const walked = roads(routes);
@@ -221,20 +221,6 @@ export default function WorldMap({ bots, landmarks, routes = [] }: WorldMapProps
           </g>
         );
       })}
-      {bots.map((b, i) =>
-        b.trail.length > 1 ? (
-          <polyline
-            key={`trail-${b.name}`}
-            points={b.trail.map((p) => `${X(p.x)},${Y(p.z)}`).join(' ')}
-            fill="none"
-            stroke="#000"
-            strokeWidth={1.5}
-            strokeOpacity={0.35}
-            strokeDasharray={DASHES[i] || undefined}
-            strokeLinejoin="round"
-          />
-        ) : null,
-      )}
       {bots.map((b, i) => {
         if (!b.pos) return null;
         const x = X(b.pos.x);
