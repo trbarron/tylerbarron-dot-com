@@ -269,14 +269,15 @@ def render_chess_card(card: dict, out: Path) -> None:
     print(f"Wrote {out} ({out.stat().st_size // 1024} KB)")
 
 
-# The Runescape Rascals card: the grey world map from the page, cropped to the
-# party's home ground (Draynor to Varrock), with the Lumbridge-Varrock road they
-# scouted on day one and a marker where each of the four works.
+# The Runescape Rascals card: the grey world map from the page with every route the
+# party has walked, from its travel log (og-assets/rascals-routes.json, exported by
+# runscape-local's agents/map/export-routes.ts), thicker the more it has been walked.
 RASCALS_MAP = ROOT / "public" / "images" / "runescape-rascals" / "f2p-map.webp"
+RASCALS_ROUTES = ROOT / "scripts" / "og-assets" / "rascals-routes.json"
 # The map image covers world x 2880-3360, z 3120-3520 at 4 px per tile, north up.
 MAP_X0, MAP_Z1, MAP_PX = 2880, 3520, 4
 MAP_W, MAP_H = 500, 470
-CROP_X0, CROP_X1, CROP_Z1 = 3060, 3330, 3444
+CROP_X0, CROP_X1, CROP_Z1 = 2985, 3305, 3445
 
 
 def render_rascals_card(card: dict, out: Path) -> None:
@@ -297,22 +298,43 @@ def render_rascals_card(card: dict, out: Path) -> None:
     def at(x: float, z: float) -> tuple[float, float]:
         return (map_x + (x - CROP_X0) * MAP_PX * scale, map_y + (CROP_Z1 - z) * MAP_PX * scale)
 
-    # The road Bram and Wren scouted from Lumbridge to Varrock west bank, dashed.
-    road = [at(3222, 3218), at(3236, 3260), at(3240, 3330), at(3205, 3392), at(3185, 3436 - 4)]
-    for (ax, ay), (bx, by) in zip(road, road[1:]):
-        steps = int(math.hypot(bx - ax, by - ay) // 12)
-        for i in range(0, steps, 2):
-            t0, t1 = i / steps, min(1, (i + 1) / steps)
-            draw.line([(ax + (bx - ax) * t0, ay + (by - ay) * t0), (ax + (bx - ax) * t1, ay + (by - ay) * t1)], fill=BLACK, width=5)
+    # Both directions of a route are one road; busier roads draw thicker and on top.
+    roads: dict[tuple[str, str], dict] = {}
+    for r in json.loads(RASCALS_ROUTES.read_text()):
+        key = tuple(sorted((r["from"], r["to"])))
+        road = roads.setdefault(key, {"trips": 0, "path": r["path"]})
+        road["trips"] += r["trips"]
+    lines = img.copy()
+    line_draw = ImageDraw.Draw(lines)
+    # Roads walked only once or twice are noise at this size.
+    ordered = sorted((r for r in roads.values() if r["trips"] >= 3), key=lambda r: r["trips"])
+    width = lambda trips: round(1 + 1.9 * math.log10(trips + 1))
 
-    # One marker per character where they spend their days.
-    label_font = load_font(22)
-    for letter, x, z in card["party"]:
-        cx, cy = at(x, z)
-        r = 17
-        draw.ellipse([cx - r, cy - r, cx + r, cy + r], fill=BLACK, outline=WHITE, width=3)
-        w = draw.textlength(letter, font=label_font)
-        draw.text((cx - w / 2, cy - 13), letter, font=label_font, fill=WHITE)
+    def smooth(path: list) -> list:
+        """Resample the tile path every few tiles, then average neighbours, so the
+        pathfinder's stair-steps read as a road."""
+        pts = [path[0]]
+        for p in path[1:]:
+            (ax, az), (bx, bz) = pts[-1], p
+            steps = int(math.hypot(bx - ax, bz - az) // 4)
+            pts += [(ax + (bx - ax) * i / steps, az + (bz - az) * i / steps) for i in range(1, steps)] + [p]
+        k = 3
+        out = [pts[0]]
+        for i in range(1, len(pts) - 1):
+            win = pts[max(0, i - k) : i + k + 1]
+            out.append((sum(p[0] for p in win) / len(win), sum(p[1] for p in win) / len(win)))
+        return [at(x, z) for x, z in out + [pts[-1]]]
+
+    for road in ordered:
+        road["pts"] = smooth(road["path"])
+    for road in ordered:
+        pts = road["pts"]
+        line_draw.line(pts, fill=WHITE, width=width(road["trips"]) + 3, joint="curve")
+    for road in ordered:
+        pts = road["pts"]
+        line_draw.line(pts, fill=BLACK, width=width(road["trips"]), joint="curve")
+    # Keep the lines inside the map panel.
+    img.paste(lines.crop((map_x, map_y, map_x + MAP_W, map_y + MAP_H)), (map_x, map_y))
 
     text_w = map_x - MARGIN - 48
     draw.text((MARGIN, MARGIN - 8), "BARRON WASTELAND · AGENTS", font=load_font(26), fill=WHITE)

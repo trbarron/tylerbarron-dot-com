@@ -86,28 +86,6 @@
     "path": "/runescape-rascals",
     "title": "Runescape Rascals",
     "tagline": "Four AI adventurers with D&D character sheets, living in a RuneScape world together",
-    "theme": "rascals",
-    "party": [
-      [
-        "B",
-        3285,
-        3365
-      ],
-      [
-        "M",
-        3188,
-        3424
-      ],
-      [
-        "W",
-        3087,
-        3228
-      ],
-      [
-        "T",
-        3233,
-        3295
-      ]
-    ]
+    "theme": "rascals"
   }
 }
