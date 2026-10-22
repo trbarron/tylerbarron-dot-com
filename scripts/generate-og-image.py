@@ -270,10 +270,11 @@ def render_chess_card(card: dict, out: Path) -> None:
 
 
 # The Runescape Rascals card: the grey world map from the page with every route the
-# party has walked, from its travel log (og-assets/rascals-routes.json, exported by
-# runscape-local's agents/map/export-routes.ts), thicker the more it has been walked.
+# party has walked, from its travel log (app/utils/runescapeRascals/walked-routes.json, the
+# same paths the page draws; exported by runscape-local's agents/map/export-routes.ts),
+# thicker the more it has been walked.
 RASCALS_MAP = ROOT / "public" / "images" / "runescape-rascals" / "f2p-map.webp"
-RASCALS_ROUTES = ROOT / "scripts" / "og-assets" / "rascals-routes.json"
+RASCALS_ROUTES = ROOT / "app" / "utils" / "runescapeRascals" / "walked-routes.json"
 # The map image covers world x 2880-3360, z 3120-3520 at 4 px per tile, north up.
 MAP_X0, MAP_Z1, MAP_PX = 2880, 3520, 4
 MAP_W, MAP_H = 500, 470

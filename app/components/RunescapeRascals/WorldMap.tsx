@@ -1,4 +1,5 @@
 import type { Bot, Route, Snapshot } from '~/utils/runescapeRascals/types';
+import walkedRoutes from '~/utils/runescapeRascals/walked-routes.json';
 import { DASHES, Marker } from './markers';
 
 /** Places that would stretch the map without anyone usually being there. */
@@ -12,12 +13,47 @@ const PAD = 24;
  */
 const BASEMAP = { href: '/images/runescape-rascals/f2p-map.webp', x0: 2880, x1: 3360, z0: 3120, z1: 3520 };
 
-/** How a road is drawn, worst outcome first: identity stays with the characters' dashes. */
-const ROAD = {
-  died: { stroke: '#000', label: 'someone died' },
-  hurt: { stroke: '#525252', label: 'someone got hurt' },
-  safe: { stroke: '#c4c4c4', label: 'safe' },
-} as const;
+/** Roads walked fewer times than this are left off: one-off detours are noise at this size. */
+const WORN = 3;
+const ROAD_STROKE = '#404040';
+
+type Pt = [number, number];
+
+/**
+ * Resample a tile path every few tiles, then average neighbours, so the pathfinder's
+ * stair-steps read as a road (the same smoothing as the share card).
+ */
+function smooth(path: Pt[]): Pt[] {
+  const pts: Pt[] = [path[0]];
+  for (const p of path.slice(1)) {
+    const [ax, az] = pts[pts.length - 1];
+    const steps = Math.floor(Math.hypot(p[0] - ax, p[1] - az) / 4);
+    for (let i = 1; i < steps; i++) pts.push([ax + ((p[0] - ax) * i) / steps, az + ((p[1] - az) * i) / steps]);
+    pts.push(p);
+  }
+  const k = 3;
+  const out: Pt[] = [pts[0]];
+  for (let i = 1; i < pts.length - 1; i++) {
+    const win = pts.slice(Math.max(0, i - k), i + k + 1);
+    out.push([win.reduce((n, q) => n + q[0], 0) / win.length, win.reduce((n, q) => n + q[1], 0) / win.length]);
+  }
+  return [...out, pts[pts.length - 1]];
+}
+
+const pairKey = (a: string, b: string) => [a, b].sort().join('|');
+
+/**
+ * The roads as walked, traced offline with the game's own pathfinder (runscape-local's
+ * agents/map/export-routes.ts) since the live snapshot only names each road's two ends.
+ * Both directions of a road merged, smoothed once at load.
+ */
+const TRACED = new Map<string, { trips: number; path: Pt[] }>();
+for (const r of walkedRoutes as { from: string; to: string; trips: number; path: Pt[] }[]) {
+  const key = pairKey(r.from, r.to);
+  const known = TRACED.get(key);
+  if (known) known.trips += r.trips;
+  else TRACED.set(key, { trips: r.trips, path: smooth(r.path) });
+}
 
 interface Road {
   a: string;
@@ -25,24 +61,36 @@ interface Road {
   trips: number;
   died: number;
   hurt: number;
-  worst: keyof typeof ROAD;
+  /** World points along the walking path. */
+  path: Pt[];
 }
 
-/** The travel log, with both directions of a road merged. */
+/**
+ * The traced roads walked at least WORN times, with the live travel log's counts where it has
+ * seen more (it only keeps recent roads, so it can't replace the export) and its harm.
+ */
 function roads(routes: Route[]): Road[] {
-  const byPair = new Map<string, Road>();
+  const live = new Map<string, { trips: number; died: number; hurt: number }>();
   for (const r of routes) {
-    const [a, b] = [r.from, r.to].sort();
-    const road = byPair.get(`${a}|${b}`) ?? { a, b, trips: 0, died: 0, hurt: 0, worst: 'safe' as const };
+    const key = pairKey(r.from, r.to);
+    const road = live.get(key) ?? { trips: 0, died: 0, hurt: 0 };
     road.trips += r.trips - r.failed;
     road.died += r.died;
     road.hurt += r.hurt;
-    road.worst = road.died ? 'died' : road.hurt ? 'hurt' : 'safe';
-    byPair.set(`${a}|${b}`, road);
+    live.set(key, road);
   }
-  // One-off safe trips are noise on a map this small; anything that hurt someone always shows.
-  return [...byPair.values()].filter((r) => r.trips >= 2 || r.died || r.hurt);
+  const out: Road[] = [];
+  for (const [key, traced] of TRACED) {
+    const [a, b] = key.split('|');
+    const seen = live.get(key);
+    const trips = Math.max(traced.trips, seen?.trips ?? 0);
+    if (trips >= WORN) out.push({ a, b, trips, died: seen?.died ?? 0, hurt: seen?.hurt ?? 0, path: traced.path });
+  }
+  // Busiest last, so they draw on top where roads share a stretch.
+  return out.sort((x, y) => x.trips - y.trips);
 }
+
+const roadWidth = (trips: number) => 0.8 + 1.1 * Math.log10(trips + 1);
 
 interface WorldMapProps {
   bots: Bot[];
@@ -54,24 +102,27 @@ interface WorldMapProps {
 export function RoadKey() {
   return (
     <p className="m-0 flex flex-wrap gap-x-4 gap-y-1 px-4 pb-3 font-mono text-xs text-neutral-700">
-      {(['safe', 'hurt', 'died'] as const).map((k) => (
-        <span key={k} className="inline-flex items-center gap-1.5">
-          <svg width={22} height={10} viewBox="0 0 22 10" aria-hidden="true">
-            <line x1={1} y1={5} x2={21} y2={5} stroke={ROAD[k].stroke} strokeWidth={3} strokeLinecap="round" />
-          </svg>
-          {k === 'died' ? 'someone died (✕)' : ROAD[k].label}
-        </span>
-      ))}
-      <span>thicker = walked more · roads walked once are hidden</span>
+      <span className="inline-flex items-center gap-1.5">
+        <svg width={22} height={10} viewBox="0 0 22 10" aria-hidden="true">
+          <line x1={2} y1={5} x2={20} y2={5} stroke="#fff" strokeWidth={5.5} strokeLinecap="round" />
+          <line x1={2} y1={5} x2={20} y2={5} stroke={ROAD_STROKE} strokeWidth={3} strokeLinecap="round" />
+        </svg>
+        road they walk (thicker = more)
+      </span>
     </p>
   );
+}
+
+function roadTitle(r: Road) {
+  const walked = `walked ${r.trips} time${r.trips === 1 ? '' : 's'}`;
+  const harm = `${r.died ? `, ${r.died} died` : ''}${r.hurt ? `, ${r.hurt} hurt` : ''}`;
+  return `${r.a} ↔ ${r.b}: ${walked}${harm}`;
 }
 
 /** Where everyone is, on real game coordinates, with ~10 minutes of trail and the roads they have walked. */
 export default function WorldMap({ bots, landmarks, routes = [] }: WorldMapProps) {
   const places = landmarks.filter((l) => !OFF_MAP.has(l.name));
-  const at = new Map(places.map((l) => [l.name, l]));
-  const walked = roads(routes).filter((r) => at.has(r.a) && at.has(r.b));
+  const walked = roads(routes);
   const pts = [...places, ...bots.flatMap((b) => (b.pos ? [b.pos] : []))];
   if (!pts.length) return null;
   const minX = Math.min(...pts.map((p) => p.x)) - PAD;
@@ -81,6 +132,7 @@ export default function WorldMap({ bots, landmarks, routes = [] }: WorldMapProps
   const H = Math.round((W * (maxZ - minZ)) / (maxX - minX));
   const X = (x: number) => ((x - minX) / (maxX - minX)) * W;
   const Y = (z: number) => ((maxZ - z) / (maxZ - minZ)) * H;
+  const line = (path: Pt[]) => path.map(([x, z]) => `${X(x).toFixed(1)},${Y(z).toFixed(1)}`).join(' ');
   // Labels as boxes [x0, y0, x1, y1], so a place label that would sit on a character's name or
   // another label is left off (the base map names the big places anyway). Characters first.
   const taken: number[][] = bots.flatMap((b) => {
@@ -118,37 +170,31 @@ export default function WorldMap({ bots, landmarks, routes = [] }: WorldMapProps
         preserveAspectRatio="none"
         aria-hidden="true"
       />
-      {walked.map((r) => {
-        const a = at.get(r.a)!;
-        const b = at.get(r.b)!;
-        const style = ROAD[r.worst];
-        const mx = (X(a.x) + X(b.x)) / 2;
-        const my = (Y(a.z) + Y(b.z)) / 2;
-        return (
-          <g key={`${r.a}|${r.b}`}>
-            <title>{`${r.a} ↔ ${r.b}: walked ${r.trips} time${r.trips === 1 ? '' : 's'}${r.died ? `, ${r.died} died` : ''}${r.hurt ? `, ${r.hurt} hurt` : ''}`}</title>
-            <line
-              x1={X(a.x)}
-              y1={Y(a.z)}
-              x2={X(b.x)}
-              y2={Y(b.z)}
-              stroke={style.stroke}
-              strokeWidth={Math.min(5, 1.5 + Math.log2(r.trips))}
-              strokeLinecap="round"
-            />
-            {r.died > 0 && (
-              <g>
-                <circle cx={mx} cy={my} r={6.5} fill="#fff" stroke="#000" strokeWidth={2} />
-                <path
-                  d={`M${mx - 3},${my - 3}L${mx + 3},${my + 3}M${mx + 3},${my - 3}L${mx - 3},${my + 3}`}
-                  stroke="#000"
-                  strokeWidth={2}
-                />
-              </g>
-            )}
-          </g>
-        );
-      })}
+      {/* Every road's white edge before any road, so where two meet they read as one. */}
+      {walked.map((r) => (
+        <polyline
+          key={`edge-${r.a}|${r.b}`}
+          points={line(r.path)}
+          fill="none"
+          stroke="#fff"
+          strokeWidth={roadWidth(r.trips) + 2.5}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      ))}
+      {walked.map((r) => (
+        <polyline
+          key={`${r.a}|${r.b}`}
+          points={line(r.path)}
+          fill="none"
+          stroke={ROAD_STROKE}
+          strokeWidth={roadWidth(r.trips)}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <title>{roadTitle(r)}</title>
+        </polyline>
+      ))}
       {places.map((l) => {
         const x = X(l.x);
         const y = Y(l.z);
