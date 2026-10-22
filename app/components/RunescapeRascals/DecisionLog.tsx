@@ -1,7 +1,11 @@
 import { useState } from 'react';
 import type { LogEntry } from '~/utils/runescapeRascals/types';
 import { clock } from './format';
-import Clamp from './Clamp';
+import Clamp, { TOGGLE } from './Clamp';
+
+/** Rows shown before "Show more", and the most it will ever show. */
+const FIRST_ROWS = 10;
+const MAX_ROWS = 120;
 
 const KIND: Record<string, [label: string, solid: boolean]> = {
   decided: ['Decided', true],
@@ -27,12 +31,13 @@ interface DecisionLogProps {
 /** Every decision, how each order ended, and council moments, newest first. */
 export default function DecisionLog({ log, names, mounted }: DecisionLogProps) {
   const [filter, setFilter] = useState('all');
+  const [more, setMore] = useState(false);
   const options = ['all', ...names, 'council'];
-  const rows = log
+  const matching = log
     .slice()
     .reverse()
-    .filter((e) => filter === 'all' || e.bot === filter)
-    .slice(0, 120);
+    .filter((e) => filter === 'all' || e.bot === filter);
+  const rows = matching.slice(0, more ? MAX_ROWS : FIRST_ROWS);
 
   return (
     <div className="flex h-full flex-col">
@@ -49,7 +54,7 @@ export default function DecisionLog({ log, names, mounted }: DecisionLogProps) {
           </button>
         ))}
       </div>
-      <ol className="m-0 min-h-80 flex-1 basis-0 list-none overflow-y-auto px-4 pt-2 pb-3">
+      <ol className={`m-0 flex-1 list-none overflow-y-auto px-4 pt-2 pb-3 ${more ? 'max-h-[40rem]' : ''}`}>
         {rows.length === 0 && (
           <li className="py-6 text-center font-mono text-xs text-neutral-700 uppercase">Nothing yet</li>
         )}
@@ -85,6 +90,13 @@ export default function DecisionLog({ log, names, mounted }: DecisionLogProps) {
           );
         })}
       </ol>
+      {matching.length > FIRST_ROWS && (
+        <div className="px-4 pb-3">
+          <button type="button" aria-expanded={more} onClick={() => setMore(!more)} className={TOGGLE}>
+            {more ? 'Show fewer' : `Show more (${Math.min(matching.length, MAX_ROWS) - FIRST_ROWS})`}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
