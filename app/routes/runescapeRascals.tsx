@@ -110,7 +110,7 @@ export default function RunescapeRascals() {
                 <div className="flex flex-1 items-center p-2">
                   <WorldMap bots={snapshot.bots} landmarks={snapshot.landmarks} routes={snapshot.routes} />
                 </div>
-                {snapshot.routes && snapshot.routes.length > 0 && <RoadKey />}
+                <RoadKey />
               </Panel>
             </div>
 
