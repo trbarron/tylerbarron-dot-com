@@ -6,16 +6,8 @@
     "theme": "chess",
     "fen": "r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/2P2N2/PP1P1PPP/RNBQK2R w KQkq - 3 5",
     "arrows": [
-      [
-        "d2",
-        "d4",
-        "green"
-      ],
-      [
-        "f3",
-        "g5",
-        "red"
-      ]
+      ["d2", "d4", "green"],
+      ["f3", "g5", "red"]
     ]
   },
   "chesser-guesser": {
@@ -31,13 +23,7 @@
     "tagline": "Spot the blunders as a chess game plays out",
     "theme": "chess",
     "fen": "r1bqkbnr/pppp1ppp/2n5/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR b KQkq - 3 3",
-    "arrows": [
-      [
-        "g8",
-        "f6",
-        "red"
-      ]
-    ]
+    "arrows": [["g8", "f6", "red"]]
   },
   "collaborative-checkmate": {
     "path": "/collaborative-checkmate",
@@ -45,13 +31,7 @@
     "tagline": "Play chess with your friends",
     "theme": "chess",
     "fen": "6k1/5ppp/8/8/8/8/5PPP/3R2K1 w - - 0 1",
-    "arrows": [
-      [
-        "d1",
-        "d8",
-        "green"
-      ]
-    ]
+    "arrows": [["d1", "d8", "green"]]
   },
   "multiple-choice-chess": {
     "path": "/multiple-choice-chess",
@@ -60,26 +40,10 @@
     "theme": "chess",
     "fen": "r1bqkbnr/1ppp1ppp/p1n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 4",
     "arrows": [
-      [
-        "b5",
-        "a4",
-        "blue"
-      ],
-      [
-        "b1",
-        "c3",
-        "blue"
-      ],
-      [
-        "e1",
-        "g1",
-        "blue"
-      ],
-      [
-        "d2",
-        "d4",
-        "blue"
-      ]
+      ["b5", "a4", "blue"],
+      ["b1", "c3", "blue"],
+      ["e1", "g1", "blue"],
+      ["d2", "d4", "blue"]
     ]
   },
   "runescape-rascals": {

@@ -3,6 +3,10 @@
 # Regenerate with: python3 scripts/generate-pizza-data.py --db <path>
 public/images/pizza/*.json
 
+# Generated route polylines for the Rascals share card, minified like the pizza data.
+# Regenerate with runscape-local's agents/map/export-routes.ts.
+scripts/og-assets/rascals-routes.json
+
 # Generated
 package-lock.json
 app/posts/compiled/
