@@ -155,6 +155,7 @@ export default function WorldMap({ bots, landmarks, routes = [] }: WorldMapProps
         const right = x > W * 0.75;
         return (
           <g key={l.name}>
+            <title>{l.name}</title>
             <rect x={x - 2.5} y={y - 2.5} width={5} height={5} fill="#fff" stroke="#404040" strokeWidth={1.5} />
             {placeLabel.get(l.name) && (
               <text

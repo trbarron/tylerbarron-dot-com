@@ -19,7 +19,7 @@ import LevelChart from '~/components/RunescapeRascals/LevelChart';
 import DecisionLog from '~/components/RunescapeRascals/DecisionLog';
 import WorldMap, { RoadKey } from '~/components/RunescapeRascals/WorldMap';
 import Scorecard from '~/components/RunescapeRascals/Scorecard';
-import { Board, Plan, Routines } from '~/components/RunescapeRascals/Talk';
+import { Board, Routines } from '~/components/RunescapeRascals/Talk';
 import { ago, useNow } from '~/components/RunescapeRascals/format';
 
 export function meta() {
@@ -87,31 +87,12 @@ export default function RunescapeRascals() {
           </Notice>
         ) : (
           <>
-            <MissionPanel mission={snapshot.teamGoal} now={now} />
+            <MissionPanel mission={snapshot.teamGoal} plan={snapshot.plan} now={now} />
             <Roster bots={snapshot.bots} now={now} />
 
             <Panel title="Total level over time">
               <LevelChart names={names} history={snapshot.history} mounted={mounted} />
             </Panel>
-
-            <div className="grid items-stretch gap-4 md:grid-cols-2">
-              <Panel
-                title="Skills"
-                aside={<span className="text-xs text-neutral-700">underlined = best in the party</span>}
-                className="h-full min-w-0"
-              >
-                <SkillsTable bots={snapshot.bots} />
-              </Panel>
-              <Panel
-                title="Meta stats"
-                aside={
-                  <span className="font-mono text-xs text-neutral-700">${snapshot.party.costPerHour.toFixed(3)}/h</span>
-                }
-                className="h-full min-w-0"
-              >
-                <NumbersTable bots={snapshot.bots} />
-              </Panel>
-            </div>
 
             <div className="grid items-stretch gap-4 md:grid-cols-[7fr_5fr]">
               <Panel
@@ -137,33 +118,63 @@ export default function RunescapeRascals() {
               <Panel title="Message board" className="flex h-full min-w-0 flex-col">
                 <Board posts={snapshot.board} now={now} />
               </Panel>
-              <Panel title="Party plan" className="h-full min-w-0">
-                <Plan plan={snapshot.plan} />
+              <Panel
+                title="Skills"
+                aside={<span className="text-xs text-neutral-700">underlined = best in the party</span>}
+                className="h-full min-w-0"
+              >
+                <SkillsTable bots={snapshot.bots} />
               </Panel>
             </div>
 
-            <div className="grid items-stretch gap-4 md:grid-cols-2">
-              <Panel
-                title="Routines"
-                subtitle="Steps their code runs without asking the model"
-                className="h-full min-w-0"
-              >
-                <Routines bots={snapshot.bots} />
-              </Panel>
-              <Panel
-                title="Banks"
-                subtitle="Each bank is personal: only its owner can withdraw"
-                className="h-full min-w-0"
-              >
-                <StoresTable bots={snapshot.bots} now={now} />
-              </Panel>
-            </div>
-
-            {snapshot.scorecard && snapshot.scorecard.length > 0 && (
-              <Panel title="Changes to the agents" subtitle="How the party did after each change, on active time">
-                <Scorecard rows={snapshot.scorecard} />
-              </Panel>
-            )}
+            {/* Diagnostics for whoever runs the agents: closed by default so a first visit isn't a wall of tables. */}
+            <details className="group border-4 border-black bg-white">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-4 py-3 hover:bg-black hover:text-white [&::-webkit-details-marker]:hidden">
+                <span className="min-w-0">
+                  <span className="block text-sm font-extrabold tracking-wider uppercase">Under the hood</span>
+                  <span className="block text-xs text-neutral-600 group-hover:text-white/70">
+                    Metrics, routines, banks and changes to the agents
+                  </span>
+                </span>
+                <span aria-hidden="true" className="text-sm font-bold group-open:rotate-180">
+                  ↓
+                </span>
+              </summary>
+              <div className="flex flex-col gap-4 border-t-4 border-black bg-neutral-50 p-4">
+                <div className="grid items-stretch gap-4 md:grid-cols-2">
+                  <Panel
+                    title="Meta stats"
+                    aside={
+                      <span className="font-mono text-xs text-neutral-700">
+                        ${snapshot.party.costPerHour.toFixed(3)}/h
+                      </span>
+                    }
+                    className="h-full min-w-0"
+                  >
+                    <NumbersTable bots={snapshot.bots} />
+                  </Panel>
+                  <Panel
+                    title="Routines"
+                    subtitle="Steps their code runs without asking the model"
+                    className="h-full min-w-0"
+                  >
+                    <Routines bots={snapshot.bots} />
+                  </Panel>
+                </div>
+                <Panel title="Banks" subtitle="Each bank is personal: only its owner can withdraw" className="min-w-0">
+                  <StoresTable bots={snapshot.bots} now={now} />
+                </Panel>
+                {snapshot.scorecard && snapshot.scorecard.length > 0 && (
+                  <Panel
+                    title="Changes to the agents"
+                    subtitle="How the party did after each change, on active time"
+                    className="min-w-0"
+                  >
+                    <Scorecard rows={snapshot.scorecard} />
+                  </Panel>
+                )}
+              </div>
+            </details>
           </>
         )}
       </main>

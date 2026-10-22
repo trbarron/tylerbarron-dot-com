@@ -1,18 +1,26 @@
+import { useState } from 'react';
 import type { Bot, Post, Snapshot } from '~/utils/runescapeRascals/types';
 import { Swatch } from './markers';
 import { ago } from './format';
-import Clamp from './Clamp';
+import Clamp, { TOGGLE } from './Clamp';
+
+/** Posts shown before "Show all". */
+const FIRST_POSTS = 5;
 
 /** The party's message board: what they say to each other, newest first. */
 export function Board({ posts, now }: { posts: Post[]; now: number }) {
+  const [all, setAll] = useState(false);
   if (!posts.length)
     return <p className="m-0 px-4 py-6 text-center font-mono text-xs text-neutral-700 uppercase">Nothing posted yet</p>;
+  const shown = posts
+    .slice()
+    .reverse()
+    .slice(0, all ? undefined : FIRST_POSTS);
   return (
-    <ol className="m-0 min-h-56 flex-1 basis-0 list-none overflow-y-auto px-4 py-2">
-      {posts
-        .slice()
-        .reverse()
-        .map((p) => (
+    <div className="flex flex-1 flex-col">
+      {/* Folded, the latest few posts set the height; opened, they scroll inside a capped box. */}
+      <ol className={`m-0 flex-1 list-none overflow-y-auto px-4 py-2 ${all ? 'max-h-[32rem]' : ''}`}>
+        {shown.map((p) => (
           <li key={p.id} className="border-t-2 border-neutral-200 py-2 first:border-t-0">
             <div className="font-mono text-xs text-neutral-700">
               <span className="font-neo mr-1 font-extrabold text-black uppercase">{p.from}</span>
@@ -29,7 +37,15 @@ export function Board({ posts, now }: { posts: Post[]; now: number }) {
             </Clamp>
           </li>
         ))}
-    </ol>
+      </ol>
+      {posts.length > FIRST_POSTS && (
+        <div className="px-4 pb-3">
+          <button type="button" aria-expanded={all} onClick={() => setAll(!all)} className={TOGGLE}>
+            {all ? 'Show fewer' : `Show all ${posts.length}`}
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
 

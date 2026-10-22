@@ -2,6 +2,10 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 
 const CLAMP: Record<number, string> = { 1: 'line-clamp-1', 2: 'line-clamp-2', 3: 'line-clamp-3' };
 
+/** The look of every "More" / "Show all" link on the page. */
+export const TOGGLE =
+  'font-neo mt-0.5 cursor-pointer border-0 bg-transparent p-0 text-[10px] font-bold tracking-wider text-black uppercase underline underline-offset-2 hover:bg-transparent hover:text-neutral-700';
+
 /** Hiding a single line saves less than the "More" link costs, so only clamp past this. */
 const GRACE_LINES = 1;
 
@@ -39,12 +43,7 @@ export default function Clamp({ lines = 2, className = '', children }: ClampProp
         {children}
       </span>
       {cut && (
-        <button
-          type="button"
-          aria-expanded={open}
-          onClick={() => setOpen(!open)}
-          className="font-neo mt-0.5 cursor-pointer border-0 bg-transparent p-0 text-[10px] font-bold tracking-wider text-black uppercase underline underline-offset-2 hover:bg-transparent hover:text-neutral-700"
-        >
+        <button type="button" aria-expanded={open} onClick={() => setOpen(!open)} className={TOGGLE}>
           {open ? 'Less' : 'More'}
         </button>
       )}
