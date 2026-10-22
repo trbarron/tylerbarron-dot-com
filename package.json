@@ -1,6 +1,6 @@
 {
   "name": "tb-website",
-  "version": "5.52.0",
+  "version": "5.53.0",
   "private": true,
   "sideEffects": false,
   "type": "module",
