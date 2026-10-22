@@ -194,12 +194,6 @@
     @apply cursor-not-allowed border-gray-300 bg-gray-200 text-gray-500;
   }
 
-  /* Footer social links - override button styling */
-  footer a[type='button']:hover {
-    background-color: var(--color-accent) !important;
-    color: #ffffff !important;
-  }
-
   /* Input styles */
   input,
   textarea,
