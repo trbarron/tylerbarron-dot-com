@@ -144,7 +144,7 @@ def render_post_card(title: str, date_label: str, out: Path) -> None:
 # --- Project cards -----------------------------------------------------------
 # One card per entry in app/utils/projectCards.json, which buildMeta (seo.ts)
 # also reads to point each project page at its card. `theme` picks the
-# template; only "chess" exists so far.
+# template: "chess" or "rascals".
 
 ROOT = Path(__file__).resolve().parent.parent
 # cburnett pieces (Colin M.L. Burnett, GPLv2+), the same set the site's boards use,
@@ -269,7 +269,77 @@ def render_chess_card(card: dict, out: Path) -> None:
     print(f"Wrote {out} ({out.stat().st_size // 1024} KB)")
 
 
-THEMES = {"chess": render_chess_card}
+# The Runescape Rascals card: the grey world map from the page, cropped to the
+# party's home ground (Draynor to Varrock), with the Lumbridge-Varrock road they
+# scouted on day one and a marker where each of the four works.
+RASCALS_MAP = ROOT / "public" / "images" / "runescape-rascals" / "f2p-map.webp"
+# The map image covers world x 2880-3360, z 3120-3520 at 4 px per tile, north up.
+MAP_X0, MAP_Z1, MAP_PX = 2880, 3520, 4
+MAP_W, MAP_H = 500, 470
+CROP_X0, CROP_X1, CROP_Z1 = 3060, 3330, 3444
+
+
+def render_rascals_card(card: dict, out: Path) -> None:
+    img, _ = new_card()
+    img = img.convert("RGBA")
+    draw = ImageDraw.Draw(img)
+
+    # Crop the map to the party's ground and scale it into the panel.
+    scale = MAP_W / ((CROP_X1 - CROP_X0) * MAP_PX)
+    crop_h = round(MAP_H / scale)
+    left, top = (CROP_X0 - MAP_X0) * MAP_PX, (MAP_Z1 - CROP_Z1) * MAP_PX
+    world = Image.open(RASCALS_MAP).convert("RGB").crop((left, top, left + (CROP_X1 - CROP_X0) * MAP_PX, top + crop_h))
+    world = world.resize((MAP_W, MAP_H), Image.LANCZOS)
+    map_x, map_y = WIDTH - MARGIN - MAP_W, (HEIGHT - MAP_H) // 2
+    draw.rectangle([map_x - BOARD_FRAME, map_y - BOARD_FRAME, map_x + MAP_W + BOARD_FRAME - 1, map_y + MAP_H + BOARD_FRAME - 1], fill=WHITE)
+    img.paste(world, (map_x, map_y))
+
+    def at(x: float, z: float) -> tuple[float, float]:
+        return (map_x + (x - CROP_X0) * MAP_PX * scale, map_y + (CROP_Z1 - z) * MAP_PX * scale)
+
+    # The road Bram and Wren scouted from Lumbridge to Varrock west bank, dashed.
+    road = [at(3222, 3218), at(3236, 3260), at(3240, 3330), at(3205, 3392), at(3185, 3436 - 4)]
+    for (ax, ay), (bx, by) in zip(road, road[1:]):
+        steps = int(math.hypot(bx - ax, by - ay) // 12)
+        for i in range(0, steps, 2):
+            t0, t1 = i / steps, min(1, (i + 1) / steps)
+            draw.line([(ax + (bx - ax) * t0, ay + (by - ay) * t0), (ax + (bx - ax) * t1, ay + (by - ay) * t1)], fill=BLACK, width=5)
+
+    # One marker per character where they spend their days.
+    label_font = load_font(22)
+    for letter, x, z in card["party"]:
+        cx, cy = at(x, z)
+        r = 17
+        draw.ellipse([cx - r, cy - r, cx + r, cy + r], fill=BLACK, outline=WHITE, width=3)
+        w = draw.textlength(letter, font=label_font)
+        draw.text((cx - w / 2, cy - 13), letter, font=label_font, fill=WHITE)
+
+    text_w = map_x - MARGIN - 48
+    draw.text((MARGIN, MARGIN - 8), "BARRON WASTELAND · AGENTS", font=load_font(26), fill=WHITE)
+    title_font = fit_font(draw, max(card["title"].upper().split(), key=len), text_w, start=84)
+    title_lines = wrap_to_width(draw, card["title"].upper(), title_font, text_w)
+    tag_font = load_font(30)
+    tag_lines = wrap_to_width(draw, card["tagline"], tag_font, text_w)
+    t_line = sum(title_font.getmetrics())
+    g_line = sum(tag_font.getmetrics()) + 6
+    y = (HEIGHT - (len(title_lines) * t_line + 28 + len(tag_lines) * g_line)) // 2
+    for line in title_lines:
+        draw.text((MARGIN, y), line, font=title_font, fill=WHITE)
+        y += t_line
+    y += 28
+    for line in tag_lines:
+        draw.text((MARGIN, y), line, font=tag_font, fill=WHITE)
+        y += g_line
+
+    url = f"{URL}{card['path']}"
+    draw.text((MARGIN, HEIGHT - MARGIN - 26), url, font=fit_font(draw, url, text_w, start=26), fill=WHITE)
+
+    out.parent.mkdir(parents=True, exist_ok=True)
+    img.convert("RGB").save(out, "PNG", optimize=True)
+    print(f"Wrote {out} ({out.stat().st_size // 1024} KB)")
+
+
+THEMES = {"chess": render_chess_card, "rascals": render_rascals_card}
 
 
 def render_project_cards() -> None:
