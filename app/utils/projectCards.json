@@ -49,7 +49,7 @@
   "runescape-rascals": {
     "path": "/runescape-rascals",
     "title": "Runescape Rascals",
-    "tagline": "Four AI adventurers with D&D character sheets, living in a RuneScape world together",
+    "tagline": "Four AI agents playing in a RuneScape world together",
     "theme": "rascals",
     "party": [
       ["B", 3285, 3365],

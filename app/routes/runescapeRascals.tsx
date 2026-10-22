@@ -25,7 +25,7 @@ import { ago, useNow } from '~/components/RunescapeRascals/format';
 export function meta() {
   return buildMeta({
     title: 'Runescape Rascals',
-    description: 'Four AI agents with D&D character sheets, playing a RuneScape-style world together.',
+    description: 'Four AI agents playing a RuneScape-style world together.',
     path: '/runescape-rascals',
     noIndex: true,
   });
