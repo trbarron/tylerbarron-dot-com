@@ -20,6 +20,7 @@
  *   --widths     comma list of viewport widths (default 1280,390)
  *   --open       CSS selector clicked on the "after" page for one extra shot with it open
  *                (a closed <details> summary, say); skipped quietly if it is not there
+ *   --full-page  show full-page comparisons instead of automatic difference crops
  *   --focus      CSS/text selector of one element, shot on its own at each width too
  *                (a chart panel, say); the open target's panel is cropped the same way
  *   --hover      "<selector>@<x>,<y>": move the pointer to that fraction (0-1) of the element's box
@@ -38,6 +39,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { chromium } from '@playwright/test';
+import { writeDifferenceCrops } from './lib/screenshot-diff.mjs';
 import {
   readCaptureConfig,
   captureWidths,
@@ -208,6 +210,10 @@ try {
   await cleanup();
 }
 
+if (!focus && !argv.includes('--full-page')) {
+  for (const width of widths) written.push(...(await writeDifferenceCrops(out, label(width))));
+}
+
 console.log(`${written.length} screenshots in ${out}:\n  ${written.join('\n  ')}`);
 
 // ---------------------------------------------------------------------------- PR comment
@@ -270,14 +276,19 @@ async function postComment() {
     const sections = [];
     for (const width of widths) {
       const w = label(width);
-      // Prefer the focused crop for the pair: a full page is mostly the part nobody changed.
-      const key = has(`before-${w}-focus.png`) ? `${w}-focus` : w;
-      const rows = [
-        `| Before | After |`,
-        `|---|---|`,
-        `| ${has(`before-${key}.png`) ? img(`before-${key}.png`, `before, ${w}`) : '_not on production yet_'} | ${img(`after-${key}.png`, `after, ${w}`)} |`,
-      ];
-      let block = `### ${w[0].toUpperCase()}${w.slice(1)} (${width}px)\n\n${rows.join('\n')}`;
+      const pair = (key) =>
+        [
+          '| Before | After |',
+          '|---|---|',
+          `| ${has(`before-${key}.png`) ? img(`before-${key}.png`, `before, ${w}`) : '_not on production yet_'} | ${img(`after-${key}.png`, `after, ${w}`)} |`,
+        ].join('\n');
+      let block = `### ${w[0].toUpperCase()}${w.slice(1)} (${width}px)`;
+      if (has(`after-${w}-focus.png`)) block += `\n\n${pair(`${w}-focus`)}`;
+      else if (argv.includes('--full-page')) block += `\n\n${pair(w)}`;
+      else if (has(`after-${w}-change-1.png`)) {
+        for (let k = 1; has(`after-${w}-change-${k}.png`); k++)
+          block += `\n\nChange ${k}:\n\n${pair(`${w}-change-${k}`)}`;
+      } else block += '\n\nNo visual differences detected above the pixel tolerance.';
       for (let k = 1; has(`after-${w}-hover-${k}.png`); k++) {
         block += `\n\nHovering:\n\n${img(`after-${w}-hover-${k}.png`, `hover ${k}, ${w}`)}`;
       }
