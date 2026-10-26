@@ -22,6 +22,8 @@
  *                (a closed <details> summary, say); skipped quietly if it is not there
  *   --focus      CSS/text selector of one element, shot on its own at each width too
  *                (a chart panel, say); the open target's panel is cropped the same way
+ *   --hover      "<selector>@<x>,<y>": move the pointer to that fraction (0-1) of the element's box
+ *                on the "after" page and shoot the element; repeat the flag for more shots
  *   --no-comment  save the files only: no push, no PR comment
  *   --env-file   a .env to borrow variables from for the dev server (only --env-keys)
  *   --env-keys   comma list of variables to take from it (default REDIS_URL,REDIS_TLS_URL)
@@ -47,6 +49,7 @@ const local = flag('local', 'http://localhost:5173').replace(/\/$/, '');
 const widths = flag('widths', '1280,390').split(',').map(Number);
 const open = flag('open');
 const focus = flag('focus');
+const hovers = argv.flatMap((a, i) => (a === '--hover' ? [argv[i + 1]] : []));
 const root = path.resolve(import.meta.dirname, '..');
 const branch = execSync('git rev-parse --abbrev-ref HEAD', { cwd: root }).toString().trim().replace(/\//g, '-');
 const out = flag('out', path.join(os.homedir(), 'Desktop', 'pr-screenshots', branch)).replace(/^~/, os.homedir());
@@ -102,6 +105,19 @@ try {
         if (await el.count()) {
           await el.screenshot({ path: path.join(out, `${base}-focus.png`) });
           written.push(`${base}-focus.png`);
+        }
+      }
+      if (name === 'after') {
+        for (const [k, spec] of hovers.entries()) {
+          const [selector, at = '0.5,0.5'] = spec.split(/@(?=[\d.]+,[\d.]+$)/);
+          const el = page.locator(selector).first();
+          const box = (await el.count()) ? await el.boundingBox() : null;
+          if (!box) continue;
+          const [fx, fy] = at.split(',').map(Number);
+          await page.mouse.move(box.x + box.width * fx, box.y + box.height * fy);
+          await el.screenshot({ path: path.join(out, `${base}-hover-${k + 1}.png`) });
+          written.push(`${base}-hover-${k + 1}.png`);
+          await page.mouse.move(0, 0);
         }
       }
       if (open && name === 'after') {
@@ -191,6 +207,9 @@ async function postComment() {
         `| ${has(`before-${key}.png`) ? img(`before-${key}.png`, `before, ${w}`) : '_not on production yet_'} | ${img(`after-${key}.png`, `after, ${w}`)} |`,
       ];
       let block = `### ${w[0].toUpperCase()}${w.slice(1)} (${width}px)\n\n${rows.join('\n')}`;
+      for (let k = 1; has(`after-${w}-hover-${k}.png`); k++) {
+        block += `\n\nHovering:\n\n${img(`after-${w}-hover-${k}.png`, `hover ${k}, ${w}`)}`;
+      }
       if (has(`after-${w}-open-panel.png`))
         block += `\n\nOpened:\n\n${img(`after-${w}-open-panel.png`, `opened, ${w}`)}`;
       block += `\n\n<details><summary>Full page</summary>\n\n| Before | After |\n|---|---|\n| ${img(`before-${w}.png`, `before full page, ${w}`)} | ${img(`after-${w}.png`, `after full page, ${w}`)} |\n\n</details>`;
