@@ -71,6 +71,7 @@ describe('GET /api/runescapeRascals/shot/:name', () => {
     mockGetBuffer.mockResolvedValue(null);
     const res = await shotLoader(shotArgs('wren'));
     expect(res.status).toBe(404);
+    expect(res.headers.get('Cache-Control')).toBe('no-store');
   });
 });
 
