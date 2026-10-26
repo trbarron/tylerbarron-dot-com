@@ -66,9 +66,7 @@ export default function RunescapeRascals() {
       <Navbar />
       <main className="font-neo mx-auto flex w-full max-w-6xl flex-grow flex-col gap-4 p-4 text-black">
         <header className="border-4 border-black bg-white px-4 py-3">
-          <h1 className="m-0 text-3xl leading-none font-extrabold tracking-tight uppercase md:text-4xl">
-            Runescape Rascals
-          </h1>
+          <h1 className="font-rs m-0 text-2xl leading-none font-normal uppercase md:text-4xl">Runescape Rascals</h1>
           {snapshot && (
             <p className="mt-2 mb-0 flex flex-wrap gap-x-4 gap-y-1 font-mono text-xs uppercase">
               <span className="inline-flex items-center gap-1.5">
