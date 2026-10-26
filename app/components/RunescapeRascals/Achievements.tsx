@@ -13,17 +13,17 @@ export default function Achievements({ achievements, names, now }: AchievementsP
   const newest = [...achievements].sort((a, b) => b.t - a.t);
   const per = names.map((n) => ({ n, count: achievements.filter((a) => a.by === n).length }));
   return (
-    <details className="group border-4 border-black bg-white">
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-4 py-3 hover:bg-black hover:text-white [&::-webkit-details-marker]:hidden">
+    <details className="group/panel border-4 border-black bg-white">
+      <summary className="group/head flex cursor-pointer list-none items-center justify-between gap-2 px-4 py-3 hover:bg-black hover:text-white [&::-webkit-details-marker]:hidden">
         <span className="min-w-0">
           <span className="block text-sm font-extrabold tracking-wider uppercase">
             Achievements <span className="font-mono">{achievements.length}</span>
           </span>
-          <span className="block text-xs text-neutral-600 group-hover:text-white/70">
+          <span className="block text-xs text-neutral-600 group-hover/head:text-white/70">
             {per.map((p) => `${p.n} ${p.count}`).join(' · ')}
           </span>
         </span>
-        <span aria-hidden="true" className="text-sm font-bold group-open:rotate-180">
+        <span aria-hidden="true" className="text-sm font-bold group-open/panel:rotate-180">
           ↓
         </span>
       </summary>

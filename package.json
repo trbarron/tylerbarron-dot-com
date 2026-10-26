@@ -29,7 +29,8 @@
     "check:design": "node scripts/check-design.mjs",
     "check:lambda-deps": "node scripts/check-lambda-deps.mjs",
     "prepare": "husky",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "pr-screenshots": "node scripts/pr-screenshots.mjs"
   },
   "dependencies": {
     "@ballatech/react-router7-preset-aws": "^1.0.1",
