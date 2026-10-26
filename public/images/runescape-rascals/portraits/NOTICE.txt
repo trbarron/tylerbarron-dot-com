@@ -1,0 +1,3 @@
+Character portraits for /runescape-rascals, rendered from each character's save file by the game client's
+own model code (agents/portraits in the runscape-local project). The models and kits are copyright Jagex Ltd.
+Used only for the non-commercial /runescape-rascals fan project page.
