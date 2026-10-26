@@ -1,0 +1,44 @@
+---
+title: Learning From an Inhuman Teacher
+date: 2026-10-13
+ai: no
+unlisted: true
+---
+
+## The Inspiration
+
+[This article](https://www.autodidacts.io/how-wise-do-our-mentors-need-to-be/) really made me think. The piece is worth reading but one of the (many) good points came from this diagram:
+
+<img src="/images/posts/marginalMaiaMentor/importance-of-wise-mentors.png" alt="Diagram of how wise a mentor needs to be relative to the mentee" className="mx-auto" />
+
+Embedded in this is how a mentor can know more and use that to guide the mentee. Its a game of metering -- you need to know what information to give and when. But it can be hard to know what order to implement teachings in. What is someone close to grasping? What does someone need more layers of learning in order to understand? What is a reasonable mistake to overlook now knowing that it can be fixed in the future?
+
+## Alright here comes AI
+
+As with everything, this has been disrupted with the explosion of AI into _everything_. Games such as [Pokemon](https://www.reddit.com/r/PokemonChampions/comments/1x770ix/unfortunately_vgc_ai_bots_have_hit_the_pokemon/), [Stratego](https://arstechnica.com/science/2026/10/ai-finally-beat-the-best-stratego-player-in-history-and-did-it-on-a-budget/) and [Camel Up](https://tylerbarron.com/camel-up-cup) have had huge bot efforts put into them and now they outperform humans. These are at the frontiers of their respective games.
+
+The catch is -- these may not be good mentors. There is no guarantee that their strategy is what humans should aim for. Maybe it is! Maybe not!
+
+## Stop talking abstractly. What are you talking about?
+
+Okay fine. I'm talking about chess.
+
+Chess has been able to experience the consequences of black box computer domination before most other domains. As long as I've been alive humans have definitively lost the battle against computers.
+
+With that, the best humans and the best bots don't play the same. Humans aren't built like computers and computers aren't build like humans. This shows -- humans can identify bots play (example) because it is just _different_. It's often not worth trying to emulate computer's ability to see so far into the future.
+
+## So how can you learn from a bot?
+
+Its tricky! You can use it to learn what you did wrong I guess.
+
+For example, one of the two biggest chess websites, Lichess, flags a move as a "mistake" if it reduces the chance you win the game by 10% or more. This is technically correct but we don't know if the player is ready to see this... or even if a *human* should see it!
+
+### Can you do something about it?
+
+I can try! This thought process inspired me to make the [Marginal Maia Mentor](https://tylerbarron.com/marginal-maia-mentor)
+
+The basis of this is the [Maia model](https://www.maiachess.com/) which is designed to play like a human and the [Stockfish model](https://stockfishchess.org/) which is the most powerful bot ever. Using both of these together we show you your moves if someone marginally stronger would have made a better move.
+
+Specifically the tool filters your moves to make flashcards if a marginally better player (100 Elo stronger) would make *and* if that move is substantially better than the one you made (10% winning chance change, like Lichess).
+
+By doing this you will be shown improvements if someone within reach would have done better. You won't be shown the cataclysmic mistake you may have made if someone slightly better than you would have also made that mistake. That's fine. We'll learn it when we're ready.

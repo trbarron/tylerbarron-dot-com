@@ -24,6 +24,8 @@ export interface PostMeta {
   date: string;
   type?: string;
   subtitle?: string;
+  /** `unlisted: true` frontmatter: reachable by URL, but absent from every list. */
+  unlisted: boolean;
 }
 
 // Eagerly bundle every pre-compiled post. Empty in dev (dir may not exist),
@@ -46,6 +48,7 @@ function toMeta(slug: string, frontmatter: Frontmatter): PostMeta {
     date: frontmatter.date,
     type: frontmatter.type,
     subtitle: frontmatter.subtitle,
+    unlisted: frontmatter.unlisted === true || frontmatter.unlisted === 'true',
   };
 }
 
@@ -75,8 +78,11 @@ export async function getPost(slug: string): Promise<CompiledPost | null> {
   return BY_SLUG[slug] ?? null;
 }
 
-/** List metadata for every post, newest first. */
-export async function getAllPostMeta(): Promise<PostMeta[]> {
+/**
+ * List metadata for every post, newest first. Unlisted posts are left out
+ * (homepage, feed, sitemap, prev/next) unless `includeUnlisted` is set.
+ */
+export async function getAllPostMeta({ includeUnlisted = false } = {}): Promise<PostMeta[]> {
   let metas: PostMeta[];
 
   if (import.meta.env.DEV) {
@@ -97,6 +103,8 @@ export async function getAllPostMeta(): Promise<PostMeta[]> {
   } else {
     metas = Object.entries(BY_SLUG).map(([slug, { frontmatter }]) => toMeta(slug, frontmatter));
   }
+
+  if (!includeUnlisted) metas = metas.filter((m) => !m.unlisted);
 
   return metas.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }

@@ -61,6 +61,7 @@ export const meta: MetaFunction<typeof loader> = ({ data, params }) => {
       path: `/blog/${params.slug}`,
       type: 'article',
       image,
+      noIndex: data.frontmatter.unlisted === true,
     }),
     // Article structured data; pairs with the Person schema on the homepage.
     {
@@ -143,7 +144,7 @@ export default function BlogPost() {
           </div>
           {writtenWithoutAi && (
             <p className="font-neo mt-12 border-t-2 border-black pt-4 text-base font-medium text-black">
-              this was not written with AI, nor was it as much as grammar checked with AI. Enjoy
+              this was written without AI. not even for grammar. enjoy my thoughts :)
             </p>
           )}
         </article>
