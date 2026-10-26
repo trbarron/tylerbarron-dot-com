@@ -24,6 +24,8 @@
  *                (a chart panel, say); the open target's panel is cropped the same way
  *   --hover      "<selector>@<x>,<y>": move the pointer to that fraction (0-1) of the element's box
  *                on the "after" page and shoot the element; repeat the flag for more shots
+ *   --config     repository capture settings (default pr-screenshots.config.json)
+ *   --reuse-server explicitly allow an already running server after verifying its checkout
  *   --no-comment  save the files only: no push, no PR comment
  *   --env-file   a .env to borrow variables from for the dev server (only --env-keys)
  *   --env-keys   comma list of variables to take from it (default REDIS_URL,REDIS_TLS_URL)
@@ -36,6 +38,15 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { chromium } from '@playwright/test';
+import {
+  readCaptureConfig,
+  captureWidths,
+  widthLabel,
+  serverCommand,
+  readyForCapture,
+  revealFocus,
+  openControl,
+} from './lib/pr-screenshots.mjs';
 
 const argv = process.argv.slice(2);
 const flag = (name, fallback) => {
@@ -43,23 +54,24 @@ const flag = (name, fallback) => {
   return i >= 0 ? argv[i + 1] : fallback;
 };
 
+const root = path.resolve(import.meta.dirname, '..');
+const config = readCaptureConfig(root, flag('config', 'pr-screenshots.config.json'));
 const route = flag('route', '/');
-const prod = flag('prod', 'https://tylerbarron.com').replace(/\/$/, '');
-const local = flag('local', 'http://localhost:5173').replace(/\/$/, '');
-const widths = flag('widths', '1280,390').split(',').map(Number);
+const prod = flag('prod', config.productionUrl).replace(/\/$/, '');
+const local = flag('local', config.localUrl).replace(/\/$/, '');
+const widths = captureWidths(flag('widths', config.widths ?? [1280, 390]));
 const open = flag('open');
 const focus = flag('focus');
 const hovers = argv.flatMap((a, i) => (a === '--hover' ? [argv[i + 1]] : []));
-const root = path.resolve(import.meta.dirname, '..');
 const branch = execSync('git rev-parse --abbrev-ref HEAD', { cwd: root }).toString().trim().replace(/\//g, '-');
 const out = flag('out', path.join(os.homedir(), 'Desktop', 'pr-screenshots', branch)).replace(/^~/, os.homedir());
-const label = (w) => (w <= 600 ? 'phone' : 'desktop');
+const label = widthLabel;
 
 // Borrow just the named variables from another project's .env, never the whole file.
 const env = { ...process.env };
 const envFile = flag('env-file');
 if (envFile) {
-  const keys = flag('env-keys', 'REDIS_URL,REDIS_TLS_URL').split(',');
+  const keys = flag('env-keys', (config.envKeys ?? []).join(',')).split(',');
   for (const line of fs.readFileSync(path.resolve(envFile), 'utf-8').split('\n')) {
     const m = line.match(/^([A-Z0-9_]+)=(.*)$/);
     if (m && keys.includes(m[1])) env[m[1]] = m[2].trim().replace(/^["']|["']$/g, '');
@@ -68,42 +80,92 @@ if (envFile) {
 
 const answering = (url) =>
   fetch(url, { signal: AbortSignal.timeout(3000) }).then(
-    () => true,
+    (response) => response.ok,
     () => false,
   );
 
 let server = null;
-if (!(await answering(local))) {
-  console.log(`starting the dev server for ${local} ...`);
-  server = spawn('npm', ['run', 'dev'], { cwd: root, env, stdio: 'ignore', detached: true });
-  const deadline = Date.now() + 120_000;
-  while (!(await answering(local))) {
-    if (Date.now() > deadline) {
-      process.kill(-server.pid);
-      throw new Error('the dev server did not come up in 2 minutes');
-    }
-    await new Promise((r) => setTimeout(r, 1000));
-  }
-}
-
-fs.mkdirSync(out, { recursive: true });
-const browser = await chromium.launch();
+let browser = null;
 const written = [];
+const cleanup = async () => {
+  const closing = browser;
+  const owned = server;
+  browser = null;
+  server = null;
+  let failure;
+  try {
+    await closing?.close();
+  } catch (error) {
+    failure = error;
+  }
+  if (owned?.pid) {
+    try {
+      process.kill(-owned.pid, 'SIGTERM');
+    } catch (error) {
+      if (error.code !== 'ESRCH') failure ??= error;
+    }
+  }
+  if (failure) throw failure;
+};
+for (const signal of ['SIGINT', 'SIGTERM'])
+  process.once(signal, () => {
+    void cleanup().finally(() => process.exit(1));
+  });
 try {
+  if (await answering(local)) {
+    if (!argv.includes('--reuse-server'))
+      throw new Error(
+        `${local} is already in use. Verify it serves this checkout, then use --reuse-server, or choose an unused --local port.`,
+      );
+    console.log(`using the explicitly selected existing server at ${local}`);
+  } else {
+    const [command, ...args] = serverCommand(config.startCommand, local);
+    console.log(`starting the dev server for ${local} ...`);
+    server = spawn(command, args, { cwd: root, env, stdio: ['ignore', 'pipe', 'pipe'], detached: true });
+    server.stdout.resume();
+    server.stderr.resume();
+    let failed;
+    server.on('error', (error) => {
+      failed = error;
+    });
+    const deadline = Date.now() + 120_000;
+    while (!(await answering(local))) {
+      if (failed) throw failed;
+      if (server.exitCode !== null)
+        throw new Error(`Development server exited ${server.exitCode} before becoming ready.`);
+      if (Date.now() > deadline) throw new Error('the dev server did not come up in 2 minutes');
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    }
+  }
+  fs.mkdirSync(out, { recursive: true });
+  browser = await chromium.launch();
   for (const width of widths) {
     for (const [name, origin] of [
       ['before', prod],
       ['after', local],
     ]) {
       const page = await browser.newPage({ viewport: { width, height: 900 } });
-      await page.goto(origin + route, { waitUntil: 'networkidle', timeout: 60_000 });
+      const errors = [];
+      page.on('pageerror', (error) => errors.push(error.message));
+      const response = await page.goto(origin + route, { waitUntil: 'domcontentloaded', timeout: 60_000 });
+      if (!response?.ok()) throw new Error(`${name} page returned HTTP ${response?.status() ?? 'unknown'}`);
+      await readyForCapture(page, config.readySelector);
+      if (errors.length) throw new Error(`${name} page errors: ${errors.join('; ')}`);
       const base = `${name}-${label(width)}`;
-      await page.screenshot({ path: path.join(out, `${base}.png`), fullPage: true });
+      await page.screenshot({
+        path: path.join(out, `${base}.png`),
+        fullPage: true,
+        animations: 'disabled',
+        caret: 'hide',
+      });
       written.push(`${base}.png`);
       if (focus) {
         const el = page.locator(focus).first();
+        if (!(await el.count()) && name === 'after') throw new Error(`Focus target not found: ${focus}`);
         if (await el.count()) {
-          await el.screenshot({ path: path.join(out, `${base}-focus.png`) });
+          await revealFocus(el);
+          await readyForCapture(page);
+          await el.screenshot({ path: path.join(out, `${base}-focus.png`), animations: 'disabled', caret: 'hide' });
           written.push(`${base}-focus.png`);
         }
       }
@@ -111,7 +173,9 @@ try {
         for (const [k, spec] of hovers.entries()) {
           const [selector, at = '0.5,0.5'] = spec.split(/@(?=[\d.]+,[\d.]+$)/);
           const el = page.locator(selector).first();
-          const box = (await el.count()) ? await el.boundingBox() : null;
+          if (!(await el.count())) throw new Error(`Hover target not found: ${selector}`);
+          await revealFocus(el);
+          const box = await el.boundingBox();
           if (!box) continue;
           const [fx, fy] = at.split(',').map(Number);
           await page.mouse.move(box.x + box.width * fx, box.y + box.height * fy);
@@ -123,19 +187,25 @@ try {
       if (open && name === 'after') {
         const target = page.locator(open).first();
         if (await target.count()) {
-          await target.click();
-          await page.screenshot({ path: path.join(out, `${base}-open.png`), fullPage: true });
+          await openControl(target);
+          await readyForCapture(page);
+          await page.screenshot({
+            path: path.join(out, `${base}-open.png`),
+            fullPage: true,
+            animations: 'disabled',
+            caret: 'hide',
+          });
           written.push(`${base}-open.png`);
           await target.locator('xpath=..').screenshot({ path: path.join(out, `${base}-open-panel.png`) });
           written.push(`${base}-open-panel.png`);
         }
       }
+      if (errors.length) throw new Error(`${name} page errors: ${errors.join('; ')}`);
       await page.close();
     }
   }
 } finally {
-  await browser.close();
-  if (server) process.kill(-server.pid);
+  await cleanup();
 }
 
 console.log(`${written.length} screenshots in ${out}:\n  ${written.join('\n  ')}`);
@@ -176,20 +246,21 @@ async function postComment() {
     fs.mkdirSync(dir, { recursive: true });
     for (const f of written) fs.copyFileSync(path.join(out, f), path.join(dir, f));
     run('git', ['add', '-A'], scratch);
-    run(
-      'git',
-      [
-        '-c',
-        'user.name=pr-screenshots',
-        '-c',
-        'user.email=pr-screenshots@users.noreply.github.com',
-        'commit',
-        '--quiet',
-        '-m',
-        `screenshots for #${pr.number}`,
-      ],
-      scratch,
-    );
+    if (run('git', ['status', '--porcelain'], scratch))
+      run(
+        'git',
+        [
+          '-c',
+          'user.name=pr-screenshots',
+          '-c',
+          'user.email=pr-screenshots@users.noreply.github.com',
+          'commit',
+          '--quiet',
+          '-m',
+          `screenshots for #${pr.number}`,
+        ],
+        scratch,
+      );
     run('git', ['push', '--quiet', 'origin', BRANCH], scratch);
     const sha = run('git', ['rev-parse', 'HEAD'], scratch);
     const raw = (f) => `https://raw.githubusercontent.com/${repo.nameWithOwner}/${sha}/pr-${pr.number}/${f}`;

@@ -11,16 +11,20 @@ const CACHE = 'public, max-age=300, s-maxage=300';
 export async function loader({ params }: LoaderFunctionArgs) {
   const name = params.name ?? '';
   if (!(BOT_NAMES as readonly string[]).includes(name)) {
-    return Response.json({ error: 'Unknown character.' }, { status: 404 });
+    return Response.json({ error: 'Unknown character.' }, { status: 404, headers: { 'Cache-Control': 'no-store' } });
   }
   try {
     const jpeg = await readShot(name);
-    if (!jpeg) return Response.json({ error: 'No screenshot yet.' }, { status: 404 });
+    if (!jpeg)
+      return Response.json({ error: 'No screenshot yet.' }, { status: 404, headers: { 'Cache-Control': 'no-store' } });
     return new Response(new Uint8Array(jpeg), {
       headers: { 'Content-Type': 'image/jpeg', 'Cache-Control': CACHE },
     });
   } catch (error) {
     console.error('Error reading Runescape Rascals screenshot:', error);
-    return Response.json({ error: 'Could not load the screenshot.' }, { status: 500 });
+    return Response.json(
+      { error: 'Could not load the screenshot.' },
+      { status: 500, headers: { 'Cache-Control': 'no-store' } },
+    );
   }
 }

@@ -1,0 +1,8 @@
+{
+  "productionUrl": "https://tylerbarron.com",
+  "localUrl": "http://localhost:5173",
+  "startCommand": ["npm", "run", "dev", "--", "--host", "{hostname}", "--port", "{port}", "--strictPort"],
+  "widths": [1280, 390],
+  "readySelector": "main",
+  "envKeys": ["REDIS_URL", "REDIS_TLS_URL"]
+}
