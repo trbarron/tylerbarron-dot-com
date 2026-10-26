@@ -83,7 +83,7 @@ files come from the `stockfish` devDependency, which never ships (it's 251 MB).
 
 Releases are **fully automated by semantic-release** (`release` in `package.json`), driven by
 [Conventional Commits](https://www.conventionalcommits.org): `fix:` and `perf:` → patch,
-`feat:` → minor, `feat!:`/`BREAKING CHANGE:` → major (commit-analyzer's default rules).
+`feat:` → minor, `feat!:`/`BREAKING CHANGE:` → major (commit-analyzer's default rules). The optional scope names the project (`feat(rascals): …`); the allowed list is `commitlint.config.js`.
 Other types (`chore:`, `ci:`, `docs:`, `refactor:`, `test:`) don't release.
 
 Flow: on push to `master`, the deploy job runs `npx semantic-release` **before** the

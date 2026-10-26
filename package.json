@@ -98,11 +98,6 @@
   "engines": {
     "node": ">=24.0.0"
   },
-  "commitlint": {
-    "extends": [
-      "@commitlint/config-conventional"
-    ]
-  },
   "release": {
     "branches": [
       "master"
