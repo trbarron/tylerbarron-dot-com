@@ -47,6 +47,9 @@ export interface Bot {
   deaths: number;
   /** When the screenshot was taken (ms), 0 if none yet. */
   shotAt: number;
+  /** Version of the last successfully published appearance; absent on older snapshots. */
+  portraitVersion?: string;
+  portraitAt?: number;
   metrics?: BotMetrics;
 }
 

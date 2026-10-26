@@ -6,6 +6,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type { LoaderFunctionArgs } from 'react-router';
 import { loader as snapshotLoader } from '~/routes/api/runescapeRascals/snapshot';
+import { loader as portraitLoader } from '~/routes/api/runescapeRascals/portrait';
 import { loader as shotLoader } from '~/routes/api/runescapeRascals/shot';
 
 const mockGet = vi.fn();
@@ -70,5 +71,32 @@ describe('GET /api/runescapeRascals/shot/:name', () => {
     mockGetBuffer.mockResolvedValue(null);
     const res = await shotLoader(shotArgs('wren'));
     expect(res.status).toBe(404);
+  });
+});
+
+const portraitArgs = (name: string, kind: string) =>
+  ({ ...shotArgs(name), params: { name, kind } }) as unknown as LoaderFunctionArgs;
+describe('GET /api/runescapeRascals/portrait/:name/:kind', () => {
+  beforeEach(() => vi.clearAllMocks());
+  it('serves head and body PNG bytes under the expected Redis keys', async () => {
+    mockGetBuffer.mockResolvedValue(Buffer.from([137, 80, 78, 71]));
+    for (const kind of ['head', 'body']) {
+      const response = await portraitLoader(portraitArgs('trish', kind));
+      expect(mockGetBuffer).toHaveBeenLastCalledWith(`runescapeRascals:portrait:trish:${kind}`);
+      expect(response.headers.get('Content-Type')).toBe('image/png');
+      expect(response.headers.get('Cache-Control')).toContain('max-age=300');
+      expect(new Uint8Array(await response.arrayBuffer())).toEqual(new Uint8Array([137, 80, 78, 71]));
+    }
+  });
+  it('rejects invalid names and portrait kinds before Redis access', async () => {
+    expect((await portraitLoader(portraitArgs('../snapshot', 'head'))).status).toBe(404);
+    expect((await portraitLoader(portraitArgs('trish', 'other'))).status).toBe(404);
+    expect(mockGetBuffer).not.toHaveBeenCalled();
+  });
+  it('does not cache a missing portrait, allowing a subsequent publication to appear', async () => {
+    mockGetBuffer.mockResolvedValue(null);
+    const response = await portraitLoader(portraitArgs('wren', 'head'));
+    expect(response.status).toBe(404);
+    expect(response.headers.get('Cache-Control')).toBe('no-store');
   });
 });

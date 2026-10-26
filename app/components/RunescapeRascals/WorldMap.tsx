@@ -1,17 +1,16 @@
 import type { Bot, Route, Snapshot } from '~/utils/runescapeRascals/types';
 import walkedRoutes from '~/utils/runescapeRascals/walked-routes.json';
+import { partyViewport, insideMap, pathInView } from '~/utils/runescapeRascals/mapViewport';
+import mapBounds from '~/utils/runescapeRascals/world-map.json';
 import { Marker } from './markers';
 
-/** Places that would stretch the map without anyone usually being there. */
-const OFF_MAP = new Set(['Falador', 'Tutorial Island', 'Varrock']);
 const W = 480;
-const PAD = 24;
 
 /**
- * The free-to-play mainland, rendered in grey from the game's own world map (rs-sdk's
+ * The full surface including the wilderness, rendered in grey from the game's own world map (rs-sdk's
  * /mapview, by runscape-local's agents/map/render-basemap.ts), and the world tiles it covers.
  */
-const BASEMAP = { href: '/images/runescape-rascals/f2p-map.webp', x0: 2880, x1: 3360, z0: 3120, z1: 3520 };
+const BASEMAP = { href: '/images/runescape-rascals/world-map.webp', ...mapBounds };
 
 /** Roads walked fewer times than this are left off: one-off detours are noise at this size. */
 const WORN = 3;
@@ -121,14 +120,11 @@ function roadTitle(r: Road) {
 
 /** Where everyone is, on real game coordinates, and the roads they have walked. */
 export default function WorldMap({ bots, landmarks, routes = [] }: WorldMapProps) {
-  const places = landmarks.filter((l) => !OFF_MAP.has(l.name));
-  const walked = roads(routes);
-  const pts = [...places, ...bots.flatMap((b) => (b.pos ? [b.pos] : []))];
-  if (!pts.length) return null;
-  const minX = Math.min(...pts.map((p) => p.x)) - PAD;
-  const maxX = Math.max(...pts.map((p) => p.x)) + PAD;
-  const minZ = Math.min(...pts.map((p) => p.z)) - PAD;
-  const maxZ = Math.max(...pts.map((p) => p.z)) + PAD;
+  if (!bots.some((b) => b.pos) && !landmarks.length) return null;
+  const view = partyViewport(bots);
+  const places = landmarks.filter((l) => insideMap(l, view));
+  const walked = roads(routes).filter((r) => pathInView(r.path, view));
+  const { x0: minX, x1: maxX, z0: minZ, z1: maxZ } = view;
   const H = Math.round((W * (maxZ - minZ)) / (maxX - minX));
   const X = (x: number) => ((x - minX) / (maxX - minX)) * W;
   const Y = (z: number) => ((maxZ - z) / (maxZ - minZ)) * H;
@@ -156,7 +152,7 @@ export default function WorldMap({ bots, landmarks, routes = [] }: WorldMapProps
   return (
     <svg
       viewBox={`0 0 ${W} ${H}`}
-      className="block h-auto w-full"
+      className="block h-auto w-full overflow-hidden"
       role="img"
       aria-label="Map of where each character is"
     >
