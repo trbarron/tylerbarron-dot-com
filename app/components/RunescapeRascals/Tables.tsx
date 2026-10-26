@@ -36,7 +36,7 @@ export function StoresTable({ bots, now }: { bots: Bot[]; now: number }) {
   const banked = bots.filter((b) => b.bank);
   const items = [...new Set(banked.flatMap((b) => Object.keys(b.bank!.items)))]
     .filter((n) => !/^coins$/i.test(n))
-    .map((n) => ({ n, total: banked.reduce((s, b) => s + (b.bank!.items[n] ?? 0), 0) }))
+    .map((n) => ({ n, total: banked.reduce((s, b) => s + (b.bank!.items[n] ?? '–'), 0) }))
     .sort((a, b) => b.total - a.total)
     .slice(0, 14);
   if (!items.length)
@@ -165,11 +165,21 @@ const METRICS: [string, (m: BotMetrics) => ReactNode, string][] = [
   ['Repeat picks', (m) => pct(m.repeatRate), 'Picked the same action as the order before.'],
   ['Time resting', (m) => pct(m.rest), 'Share of order time spent resting.'],
   [
-    'Promises kept',
+    'New promises kept',
     (m) => (m.commitments.made ? `${m.commitments.done}/${m.commitments.made}` : '–'),
-    'Commitments later marked done.',
+    'Of promises created in the last 3 hours, how many were resolved as done.',
   ],
-  ['Promises dropped', (m) => m.commitments.dropped, ''],
+  [
+    'Earlier promises kept',
+    (m) => String(m.commitments.carriedDone ?? '–'),
+    'Promises created before the reporting window and resolved as done within it.',
+  ],
+  [
+    'Earlier promises dropped',
+    (m) => String(m.commitments.carriedDropped ?? '–'),
+    'Promises created before the reporting window and dropped within it.',
+  ],
+  ['New promises dropped', (m) => m.commitments.dropped, ''],
   [
     'Fits leanings',
     (m) => (m.leaningAlignment == null ? '–' : m.leaningAlignment.toFixed(2)),
