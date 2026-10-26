@@ -8,8 +8,27 @@ interface RosterProps {
   now: number;
 }
 
-const headUrl = (b: Bot) => `/images/runescape-rascals/portraits/${b.name.toLowerCase()}-head.png`;
-const bodyUrl = (b: Bot) => `/images/runescape-rascals/portraits/${b.name.toLowerCase()}-body.png`;
+function Portrait({ bot, kind }: { bot: Bot; kind: 'head' | 'body' }) {
+  const [failed, setFailed] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const fallback = `/images/runescape-rascals/portraits/${bot.name.toLowerCase()}-${kind}.png`;
+  const live = !!bot.portraitVersion && !failed;
+  return (
+    <img
+      src={
+        live
+          ? `/api/runescapeRascals/portrait/${bot.name}/${kind}?v=${encodeURIComponent(bot.portraitVersion!)}`
+          : fallback
+      }
+      alt=""
+      width={kind === 'head' ? 84 : 30}
+      height={84}
+      loading="lazy"
+      className={`h-[90px] w-full object-contain ${hidden ? 'invisible' : ''}`}
+      onError={() => (live ? setFailed(true) : setHidden(true))}
+    />
+  );
+}
 const shotUrl = (b: Bot) => `/api/runescapeRascals/shot/${b.name}?t=${b.shotAt}`;
 
 /** One strip with each character's level, current order, place and a thumbnail; full screenshots open below. */
@@ -33,24 +52,8 @@ export default function Roster({ bots, now }: RosterProps) {
           >
             {/* Head, full body and name + level take a third each (on a phone the name drops below the two figures). */}
             <div className="grid grid-cols-2 items-center gap-1 md:h-[90px] md:grid-cols-3">
-              <img
-                src={headUrl(b)}
-                alt=""
-                width={84}
-                height={84}
-                loading="lazy"
-                className="h-[90px] w-full object-contain"
-                onError={(e) => e.currentTarget.remove()}
-              />
-              <img
-                src={bodyUrl(b)}
-                alt=""
-                width={30}
-                height={84}
-                loading="lazy"
-                className="h-[90px] w-full object-contain"
-                onError={(e) => e.currentTarget.remove()}
-              />
+              <Portrait key={`${b.name}-head-${b.portraitVersion ?? 'static'}`} bot={b} kind="head" />
+              <Portrait key={`${b.name}-body-${b.portraitVersion ?? 'static'}`} bot={b} kind="body" />
               <div className="col-span-2 flex min-w-0 items-baseline justify-between gap-2 md:col-span-1 md:flex-col md:items-start md:justify-center md:gap-1">
                 <span className="flex items-center gap-1 text-base leading-none font-extrabold tracking-tight uppercase md:text-[18px]">
                   {b.name}

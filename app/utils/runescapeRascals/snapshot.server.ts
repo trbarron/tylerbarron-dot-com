@@ -17,3 +17,8 @@ export async function readSnapshot(): Promise<Snapshot | null> {
 export async function readShot(name: string): Promise<Buffer | null> {
   return getRedisClient().getBuffer(shotKey(name));
 }
+
+/** Latest rendered head or body (PNG bytes); versioned URLs are supplied by the snapshot. */
+export async function readPortrait(name: string, kind: 'head' | 'body'): Promise<Buffer | null> {
+  return getRedisClient().getBuffer(`runescapeRascals:portrait:${name}:${kind}`);
+}
