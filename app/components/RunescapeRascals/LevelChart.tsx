@@ -15,6 +15,10 @@ interface LevelChartProps {
 const H = 180;
 const M = { l: 36, r: 96, t: 8, b: 22 };
 const ACH = '#737373';
+/** How close, in pixels, the pointer must be to a line to pick it out. */
+const NEAR = 16;
+/** The line under the pointer: a character's, or the achievements count. */
+type Active = { kind: 'bot'; name: string; index: number } | { kind: 'ach' };
 
 function niceTicks(lo: number, hi: number, n: number): number[] {
   const span = hi - lo || 1;
@@ -66,6 +70,42 @@ function Tooltip({ sample, unlocked, x, width, mounted }: TooltipProps) {
   );
 }
 
+interface FocusTipProps {
+  lines: string[];
+  title: string;
+  x: number;
+  y: number;
+  width: number;
+}
+
+/** What the highlighted line is: a title and a few short lines, beside the point it was read at. */
+function FocusTip({ lines, title, x, y, width }: FocusTipProps) {
+  const boxW = 188;
+  const boxH = 24 + lines.length * 14;
+  const bx = x + 14 + boxW > width - M.r ? x - 14 - boxW : x + 14;
+  const by = Math.max(M.t + 2, Math.min(y - boxH / 2, H - M.b - boxH - 2));
+  return (
+    <g pointerEvents="none">
+      <rect x={bx} y={by} width={boxW} height={boxH} fill="#fff" stroke="#000" strokeWidth={2} />
+      <text x={bx + 8} y={by + 15} fontFamily="Inter, sans-serif" fontWeight={800} fontSize={11}>
+        {title}
+      </text>
+      {lines.map((line, k) => (
+        <text
+          key={k}
+          x={bx + 8}
+          y={by + 29 + k * 14}
+          fontFamily="IBM Plex Mono, monospace"
+          fontSize={10}
+          fill="#404040"
+        >
+          {line}
+        </text>
+      ))}
+    </g>
+  );
+}
+
 /**
  * Total level over time: one line per character, told apart by dash and marker. When the
  * snapshot has achievements, the party's running unlock count is a stepped grey line on a
@@ -75,6 +115,7 @@ export default function LevelChart({ names, history, achievements = [], mounted 
   const box = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(900);
   const [hover, setHover] = useState<number | null>(null);
+  const [active, setActive] = useState<Active | null>(null);
 
   useEffect(() => {
     const el = box.current;
@@ -135,27 +176,77 @@ export default function LevelChart({ names, history, achievements = [], mounted 
   const labels = mounted ? [...new Map(tickTimes.map((t) => [clock(t), t])).entries()] : [];
   const sample = hover == null ? null : history[hover];
 
-  const onMove = (e: React.MouseEvent<SVGRectElement>) => {
+  const onMove = (e: React.PointerEvent<SVGRectElement>) => {
     const rect = e.currentTarget.ownerSVGElement!.getBoundingClientRect();
     const px = ((e.clientX - rect.left) / rect.width) * width;
+    const py = ((e.clientY - rect.top) / rect.height) * H;
     let best = 0;
     history.forEach((s, k) => {
       if (Math.abs(X(s.t) - px) < Math.abs(X(history[best].t) - px)) best = k;
     });
     setHover(best);
+    // The nearest line at that moment, if the pointer is close enough to mean it.
+    const at = history[best];
+    const candidates: { a: Active; y: number }[] = names.flatMap((n, i) =>
+      at.levels[n] != null ? [{ a: { kind: 'bot', name: n, index: i } as Active, y: Y(at.levels[n]) }] : [],
+    );
+    if (hasAch) candidates.push({ a: { kind: 'ach' }, y: Y2(countAt(at.t)) });
+    const near = candidates.map((c) => ({ ...c, d: Math.abs(c.y - py) })).sort((a, b) => a.d - b.d)[0];
+    setActive(near && near.d <= NEAR ? near.a : null);
   };
+
+  // Everything not under the pointer steps back while one line is picked out.
+  const isActive = (kind: 'bot' | 'ach', name?: string) =>
+    active?.kind === 'ach' ? kind === 'ach' : active?.kind === 'bot' && kind === 'bot' && active.name === name;
+  const dim = (on: boolean) => (active && !on ? 0.18 : 1);
+  const ordered = [...series].sort((a, b) => Number(isActive('bot', a.n)) - Number(isActive('bot', b.n)));
+  const sortedUnlocks = [...achievements].sort((a, b) => a.t - b.t);
+  const focus = (() => {
+    if (!sample || !active) return null;
+    if (active.kind === 'bot') {
+      const v = sample.levels[active.name];
+      const first = history.find((h) => h.levels[active.name] != null)?.levels[active.name] ?? v;
+      return {
+        x: X(sample.t),
+        y: Y(v),
+        title: active.name.toUpperCase(),
+        lines: [
+          `Total level ${v}${mounted ? ` at ${clock(sample.t)}` : ''}`,
+          `${v - first >= 0 ? '+' : ''}${v - first} since the chart starts`,
+          'Every skill level added up',
+        ],
+      };
+    }
+    const latest = [...sortedUnlocks].reverse().find((a) => a.t <= sample.t);
+    const clip = (t: string) => (t.length > 28 ? `${t.slice(0, 27)}…` : t);
+    return {
+      x: X(sample.t),
+      y: Y2(countAt(sample.t)),
+      title: 'ACHIEVEMENTS',
+      lines: [
+        `${countAt(sample.t)} unlocked${mounted ? ` by ${clock(sample.t)}` : ''}`,
+        latest ? `Latest: ${clip(latest.name)}` : 'None yet at this point',
+        'Party total, right axis',
+      ],
+    };
+  })();
 
   return (
     <div ref={box} className="relative px-2 pt-2 pb-1">
       <div className="mb-1 flex flex-wrap gap-x-4 gap-y-1 px-2 text-xs font-bold tracking-wider uppercase">
         {names.map((n, i) => (
-          <span key={n} className="inline-flex items-center gap-1">
+          <span
+            key={n}
+            className={`inline-flex items-center gap-1 ${active && !isActive('bot', n) ? 'opacity-40' : ''} ${isActive('bot', n) ? 'underline' : ''}`}
+          >
             <Swatch index={i} dashed />
             {n}
           </span>
         ))}
         {hasAch && (
-          <span className="inline-flex items-center gap-1 text-neutral-600">
+          <span
+            className={`inline-flex items-center gap-1 text-neutral-600 ${active && !isActive('ach') ? 'opacity-40' : ''} ${isActive('ach') ? 'underline' : ''}`}
+          >
             <svg width={22} height={8} aria-hidden="true">
               <line x1={0} x2={22} y1={4} y2={4} stroke={ACH} strokeWidth={3} />
             </svg>
@@ -201,7 +292,7 @@ export default function LevelChart({ names, history, achievements = [], mounted 
         ))}
         <line x1={M.l} x2={width - M.r} y1={H - M.b} y2={H - M.b} stroke="#000" strokeWidth={2} />
         {hasAch && (
-          <g>
+          <g opacity={dim(isActive('ach'))}>
             {niceTicks(aLo, aHi, 4).map((v) => (
               <text
                 key={v}
@@ -223,19 +314,19 @@ export default function LevelChart({ names, history, achievements = [], mounted 
               points={stepPts.map((p) => p.join(',')).join(' ')}
               fill="none"
               stroke={ACH}
-              strokeWidth={3}
+              strokeWidth={isActive('ach') ? 4.5 : 3}
               strokeLinejoin="round"
             />
           </g>
         )}
-        {series.map(({ n, i, pts }) =>
+        {ordered.map(({ n, i, pts }) =>
           pts.length ? (
-            <g key={n}>
+            <g key={n} opacity={dim(isActive('bot', n))}>
               <polyline
                 points={pts.map((p) => p.join(',')).join(' ')}
                 fill="none"
                 stroke="#000"
-                strokeWidth={2}
+                strokeWidth={isActive('bot', n) ? 3.5 : 2}
                 strokeDasharray={DASHES[i] || undefined}
                 strokeLinejoin="round"
                 strokeLinecap="round"
@@ -245,7 +336,15 @@ export default function LevelChart({ names, history, achievements = [], mounted 
           ) : null,
         )}
         {ends.map((e) => (
-          <text key={e.n} x={width - M.r + 9} y={e.y + 4} fontFamily="Inter, sans-serif" fontWeight={800} fontSize={11}>
+          <text
+            key={e.n}
+            x={width - M.r + 9}
+            y={e.y + 4}
+            fontFamily="Inter, sans-serif"
+            fontWeight={800}
+            fontSize={11}
+            opacity={dim(isActive('bot', e.n))}
+          >
             {e.n.toUpperCase()}
           </text>
         ))}
@@ -256,17 +355,27 @@ export default function LevelChart({ names, history, achievements = [], mounted 
           width={width - M.l - M.r}
           height={H - M.t - M.b}
           fill="transparent"
-          onMouseMove={onMove}
-          onMouseLeave={() => setHover(null)}
+          onPointerMove={onMove}
+          onPointerLeave={() => {
+            setHover(null);
+            setActive(null);
+          }}
         />
-        {sample && (
-          <Tooltip
-            sample={sample}
-            unlocked={hasAch ? countAt(sample.t) : null}
-            x={X(sample.t)}
-            width={width}
-            mounted={mounted}
-          />
+        {focus && (
+          <circle cx={focus.x} cy={focus.y} r={5} fill="#000" stroke="#fff" strokeWidth={2} pointerEvents="none" />
+        )}
+        {focus ? (
+          <FocusTip lines={focus.lines} title={focus.title} x={focus.x} y={focus.y} width={width} />
+        ) : (
+          sample && (
+            <Tooltip
+              sample={sample}
+              unlocked={hasAch ? countAt(sample.t) : null}
+              x={X(sample.t)}
+              width={width}
+              mounted={mounted}
+            />
+          )
         )}
       </svg>
     </div>
