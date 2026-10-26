@@ -15,6 +15,7 @@ import type { Snapshot } from '~/utils/runescapeRascals/types';
 import Roster from '~/components/RunescapeRascals/Roster';
 import MissionPanel from '~/components/RunescapeRascals/MissionPanel';
 import { NumbersTable, SkillsTable, StoresTable } from '~/components/RunescapeRascals/Tables';
+import Achievements from '~/components/RunescapeRascals/Achievements';
 import LevelChart from '~/components/RunescapeRascals/LevelChart';
 import DecisionLog from '~/components/RunescapeRascals/DecisionLog';
 import WorldMap, { RoadKey } from '~/components/RunescapeRascals/WorldMap';
@@ -91,8 +92,17 @@ export default function RunescapeRascals() {
             <Roster bots={snapshot.bots} now={now} />
 
             <Panel title="Total level over time">
-              <LevelChart names={names} history={snapshot.history} mounted={mounted} />
+              <LevelChart
+                names={names}
+                history={snapshot.history}
+                achievements={snapshot.achievements}
+                mounted={mounted}
+              />
             </Panel>
+
+            {snapshot.achievements && snapshot.achievements.length > 0 && (
+              <Achievements achievements={snapshot.achievements} names={names} now={now} />
+            )}
 
             <div className="grid items-stretch gap-4 md:grid-cols-[7fr_5fr]">
               <Panel

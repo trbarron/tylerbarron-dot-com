@@ -121,6 +121,14 @@ export interface LogEntry {
   detail?: string;
 }
 
+export interface Achievement {
+  id: string;
+  name: string;
+  /** The character who unlocked it. */
+  by: string;
+  t: number;
+}
+
 export interface Snapshot {
   generatedAt: number;
   uptimeMin: number;
@@ -136,6 +144,8 @@ export interface Snapshot {
   board: Post[];
   log: LogEntry[];
   history: { t: number; levels: Record<string, number> }[];
+  /** Every firsts-and-marks unlock, oldest first. Newer snapshots only. */
+  achievements?: Achievement[];
   landmarks: { name: string; short?: string; x: number; z: number }[];
   /** Newer snapshots only. */
   routes?: Route[];
