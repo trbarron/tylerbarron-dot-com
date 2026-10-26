@@ -82,8 +82,21 @@
   font-display: swap;
 }
 
+/*
+ * The game's own bold 12 pixel font, for the /runescape-rascals title only. Crisp at multiples of
+ * 12px. Source and notice: /fonts/runescape-bold-12-NOTICE.txt.
+ */
+@font-face {
+  font-family: 'RuneScape Bold 12';
+  src: url('/fonts/runescape-bold-12.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme {
   --font-mono: 'IBM Plex Mono', 'SF Mono', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
+  --font-rs: 'RuneScape Bold 12', 'Inter', system-ui, sans-serif;
   --font-neo: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif;
 
   --spacing-xl: 49rem;
