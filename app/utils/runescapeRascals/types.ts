@@ -13,7 +13,14 @@ export interface BotMetrics {
   repeatRate: number;
   rest: number;
   leaningAlignment: number | null;
-  commitments: { made: number; done: number; dropped: number; open: number };
+  commitments: {
+    made: number;
+    done: number;
+    dropped: number;
+    open: number;
+    carriedDone?: number;
+    carriedDropped?: number;
+  };
   costUsd: number;
   cacheHitRate: number;
 }
