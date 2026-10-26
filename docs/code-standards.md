@@ -420,6 +420,10 @@ test('theRiddler route matches baseline', async ({ page }) => {
 });
 ```
 
+### Screenshots in PRs
+
+Regression baselines (above) are not PR screenshots. For a PR that changes how a page looks, run `npm run pr-screenshots`: it captures production against the branch and posts the comment itself. See `CLAUDE.md` for the flags.
+
 ### Existing Tests
 
 **Requirement**: All existing tests must continue to pass after refactoring.
