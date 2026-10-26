@@ -134,6 +134,7 @@ export default function RunescapeRascals() {
                 className="h-full min-w-0"
               >
                 <SkillsTable bots={snapshot.bots} />
+                <p className="m-0 px-4 py-2 text-xs text-neutral-700">Skill icons are the game's own, © Jagex Ltd.</p>
               </Panel>
             </div>
 

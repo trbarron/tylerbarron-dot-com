@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import type { Bot, BotMetrics } from '~/utils/runescapeRascals/types';
 import { Swatch } from './markers';
+import { SkillIcon } from './SkillIcon';
 import { ago, pct } from './format';
 import { TOGGLE } from './Clamp';
 
@@ -94,7 +95,12 @@ export function SkillsTable({ bots }: { bots: Bot[] }) {
             const top = Math.max(...levels);
             return (
               <tr key={s}>
-                <td className={`${TD} ${FIRST} font-neo`}>{s}</td>
+                <td className={`${TD} ${FIRST} font-neo`}>
+                  <span className="inline-flex items-center gap-2">
+                    <SkillIcon skill={s} />
+                    {s}
+                  </span>
+                </td>
                 {levels.map((v, i) => (
                   <td
                     key={bots[i].name}
