@@ -60,8 +60,8 @@ export default function Roster({ bots, now, assetBase }: RosterProps) {
                 onClick={() => setTurning((t) => (t === b.name ? null : b.name))}
                 className={`grid grid-cols-2 items-center gap-1 ${imageButton} ${turning === b.name ? 'bg-neutral-100' : ''}`}
               >
-                <Portrait key={`${b.name}-head-${b.portraitVersion}`} bot={b} kind="head" />
-                <Portrait key={`${b.name}-body-${b.portraitVersion}`} bot={b} kind="body" />
+                <Portrait key={`${b.name}-head-${b.portraitVersion}`} bot={b} kind="head" assetBase={assetBase} />
+                <Portrait key={`${b.name}-body-${b.portraitVersion}`} bot={b} kind="body" assetBase={assetBase} />
               </button>
               <div className="min-w-0 min-[480px]:order-3">
                 <p className="m-0 text-xs leading-snug font-semibold break-words min-[480px]:text-sm">
