@@ -5,23 +5,26 @@ import { SkillIcon } from './SkillIcon';
 import { ago, pct } from './format';
 import { TOGGLE } from './Clamp';
 
-// Both tables put the characters in columns, so they read the same way side by side.
+// Desktop tables put the characters in columns, so they read the same way side by side.
 
 export const TH =
-  'border-2 border-black bg-black px-2 py-1 text-right text-xs font-bold tracking-wider text-white uppercase';
-export const TD = 'border-2 border-black px-2 py-1 text-right font-mono text-sm tabular-nums';
+  'border-2 border-black bg-black px-1 py-2 text-right text-[10px] font-bold tracking-normal sm:px-2 sm:py-1 sm:text-xs sm:tracking-wider text-white uppercase';
+export const TD =
+  'border-2 border-black px-1 py-1 text-right font-mono text-xs tabular-nums whitespace-normal [overflow-wrap:anywhere] sm:px-2 sm:text-sm';
 // TD aligns right, so the first column needs the important modifier to win.
 export const FIRST = 'text-left!';
 
-export function Head({ bots, label }: { bots: Bot[]; label: string }) {
+export function Head({ bots, label, selected }: { bots: Bot[]; label: string; selected?: string }) {
   return (
     <thead>
       <tr>
-        <th className={`${TH} ${FIRST}`}>{label}</th>
+        <th className={`${TH} ${FIRST} ${selected ? 'w-[60%]' : 'w-[36%]'} sm:w-auto`}>{label}</th>
         {bots.map((b, i) => (
-          <th key={b.name} className={TH}>
-            <span className="inline-flex items-center gap-1">
-              <Swatch index={i} inverted />
+          <th key={b.name} className={`${TH} ${selected && b.name !== selected ? 'hidden sm:table-cell' : ''}`}>
+            <span className="inline-flex max-w-full items-center gap-1">
+              <span className="hidden sm:inline-flex">
+                <Swatch index={i} inverted />
+              </span>
               {b.name}
             </span>
           </th>
@@ -31,26 +34,60 @@ export function Head({ bots, label }: { bots: Bot[]; label: string }) {
   );
 }
 
+/** A readable two-column view on phones; desktop keeps all characters side by side. */
+function CharacterTabs({
+  bots,
+  selected,
+  onSelect,
+  label,
+}: {
+  bots: Bot[];
+  selected?: string;
+  onSelect: (name: string) => void;
+  label: string;
+}) {
+  return (
+    <div role="group" aria-label={label} className="flex flex-wrap gap-1 p-2 sm:hidden">
+      {bots.map((b) => (
+        <button
+          key={b.name}
+          type="button"
+          aria-pressed={b.name === selected}
+          onClick={() => onSelect(b.name)}
+          className={`min-h-10 min-w-0 flex-1 cursor-pointer border-2 border-black px-1 py-2 text-xs tracking-normal ${b.name === selected ? 'bg-black text-white' : 'bg-white text-black hover:bg-neutral-100 hover:text-black'}`}
+        >
+          {b.name}
+        </button>
+      ))}
+    </div>
+  );
+}
+const characterCell = (name: string, selected?: string) =>
+  `${TD} text-sm whitespace-nowrap ${name !== selected ? 'hidden sm:table-cell' : ''}`;
+
 /** Everything the party has in its banks, with each owner in a column (banks are personal). */
 export function StoresTable({ bots, now }: { bots: Bot[]; now: number }) {
+  const [owner, setOwner] = useState<string | null>(null);
   const banked = bots.filter((b) => b.bank);
+  const selected = banked.find((b) => b.name === owner)?.name ?? banked[0]?.name;
   const items = [...new Set(banked.flatMap((b) => Object.keys(b.bank!.items)))]
     .filter((n) => !/^coins$/i.test(n))
-    .map((n) => ({ n, total: banked.reduce((s, b) => s + (b.bank!.items[n] ?? '–'), 0) }))
+    .map((n) => ({ n, total: banked.reduce((s, b) => s + (b.bank!.items[n] ?? 0), 0) }))
     .sort((a, b) => b.total - a.total)
     .slice(0, 14);
   if (!items.length)
     return <p className="m-0 px-4 py-6 text-center font-mono text-xs text-neutral-700 uppercase">No bank seen yet</p>;
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full border-collapse">
-        <Head bots={banked} label="Item" />
+    <div className="max-w-full min-w-0">
+      <CharacterTabs bots={banked} selected={selected} onSelect={setOwner} label="Bank owner" />
+      <table className="w-full table-fixed border-collapse sm:table-auto">
+        <Head bots={banked} label="Item" selected={selected} />
         <tbody>
           {items.map(({ n }) => (
             <tr key={n}>
               <td className={`${TD} ${FIRST} font-neo`}>{n}</td>
               {banked.map((b) => (
-                <td key={b.name} className={TD}>
+                <td key={b.name} className={characterCell(b.name, selected)}>
                   {b.bank!.items[n] ? b.bank!.items[n].toLocaleString('en-US') : '–'}
                 </td>
               ))}
@@ -59,7 +96,7 @@ export function StoresTable({ bots, now }: { bots: Bot[]; now: number }) {
           <tr>
             <td className={`${TD} ${FIRST} font-neo text-xs text-neutral-700`}>Last looked</td>
             {banked.map((b) => (
-              <td key={b.name} className={`${TD} text-xs text-neutral-700`}>
+              <td key={b.name} className={`${characterCell(b.name, selected)} text-xs text-neutral-700`}>
                 {ago(b.bank!.t, now)}
               </td>
             ))}
@@ -86,8 +123,8 @@ export function SkillsTable({ bots }: { bots: Bot[] }) {
   const shown = showAll ? trained : trained.slice(0, TOP_SKILLS);
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full border-collapse">
+    <div className="max-w-full min-w-0">
+      <table className="w-full table-fixed border-collapse sm:table-auto">
         <Head bots={bots} label="Skill" />
         <tbody>
           {shown.map((s) => {
@@ -96,9 +133,9 @@ export function SkillsTable({ bots }: { bots: Bot[] }) {
             return (
               <tr key={s}>
                 <td className={`${TD} ${FIRST} font-neo`}>
-                  <span className="inline-flex items-center gap-2">
+                  <span className="inline-flex max-w-full items-center gap-1 sm:gap-2">
                     <SkillIcon skill={s} />
-                    {s}
+                    <span className="min-w-0 [overflow-wrap:anywhere]">{s}</span>
                   </span>
                 </td>
                 {levels.map((v, i) => (
@@ -190,11 +227,14 @@ const METRICS: [string, (m: BotMetrics) => ReactNode, string][] = [
 ];
 
 export function NumbersTable({ bots }: { bots: Bot[] }) {
+  const [character, setCharacter] = useState<string | null>(null);
   const withMetrics = bots.filter((b) => b.metrics);
+  const selected = withMetrics.find((b) => b.name === character)?.name ?? withMetrics[0]?.name;
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full border-collapse">
-        <Head bots={withMetrics} label="Last 3 hours" />
+    <div className="max-w-full min-w-0">
+      <CharacterTabs bots={withMetrics} selected={selected} onSelect={setCharacter} label="Character metrics" />
+      <table className="w-full table-fixed border-collapse sm:table-auto">
+        <Head bots={withMetrics} label="Last 3 hours" selected={selected} />
         <tbody>
           {METRICS.map(([label, value, hint]) => (
             <tr key={label}>
@@ -202,7 +242,7 @@ export function NumbersTable({ bots }: { bots: Bot[] }) {
                 {label}
               </td>
               {withMetrics.map((b) => (
-                <td key={b.name} className={TD}>
+                <td key={b.name} className={characterCell(b.name, selected)}>
                   {value(b.metrics!)}
                 </td>
               ))}
@@ -211,7 +251,7 @@ export function NumbersTable({ bots }: { bots: Bot[] }) {
           <tr>
             <td className={`${TD} ${FIRST} font-neo`}>Deaths (all time)</td>
             {withMetrics.map((b) => (
-              <td key={b.name} className={TD}>
+              <td key={b.name} className={characterCell(b.name, selected)}>
                 {b.deaths}
               </td>
             ))}

@@ -8,18 +8,16 @@ interface PortraitViewerProps {
 
 /** Pixels of sideways drag that turn the figure by one view. */
 const DRAG_STEP = 14;
-const SPIN_MS = 110;
 
 const liveUrl = (b: Bot, kind: 'head' | 'body', angle: number) =>
   `/api/runescapeRascals/portrait/${b.name}/${kind}?v=${encodeURIComponent(b.portraitVersion ?? '')}&a=${angle}`;
 const staticUrl = (b: Bot, kind: 'head' | 'body') =>
   `/images/runescape-rascals/portraits/${b.name.toLowerCase()}-${kind}.png`;
 
-/** A larger head and body that turn through every stored view: drag, use the slider or arrow keys, or let it spin. */
+/** A larger head and body that turn through every stored view: drag or use the arrow keys. */
 export default function PortraitViewer({ bot, onClose }: PortraitViewerProps) {
   const views = bot.portraitVersion && bot.portraitAngles && bot.portraitAngles > 1 ? bot.portraitAngles : 1;
   const [angle, setAngle] = useState(0);
-  const [spinning, setSpinning] = useState(false);
   const drag = useRef<{ x: number; from: number } | null>(null);
   const turn = (to: number) => setAngle(((Math.round(to) % views) + views) % views);
 
@@ -30,12 +28,6 @@ export default function PortraitViewer({ bot, onClose }: PortraitViewerProps) {
       for (let a = 0; a < views; a++) new Image().src = liveUrl(bot, kind, a);
   }, [bot, views]);
 
-  useEffect(() => {
-    if (!spinning || views < 2) return;
-    const id = setInterval(() => setAngle((a) => (a + 1) % views), SPIN_MS);
-    return () => clearInterval(id);
-  }, [spinning, views]);
-
   const src = (kind: 'head' | 'body') => (views > 1 ? liveUrl(bot, kind, angle) : staticUrl(bot, kind));
 
   return (
@@ -43,23 +35,37 @@ export default function PortraitViewer({ bot, onClose }: PortraitViewerProps) {
       id="rascals-portraits"
       role="group"
       aria-label={`${bot.name}, turned through ${views} views`}
-      className="border-t-4 border-black p-3"
+      className="border-t-2 border-black bg-neutral-50 p-3"
     >
-      <div className="mb-2 flex items-center justify-between gap-2">
-        <span className="text-sm font-extrabold tracking-wider uppercase">{bot.name}</span>
+      <div className="mx-auto mb-2 flex max-w-md items-center justify-between gap-2">
+        <div>
+          <span className="text-sm font-extrabold tracking-wider uppercase">{bot.name}</span>
+          <p id="portrait-turn-hint" className="m-0 mt-1 text-xs text-neutral-600">
+            {views > 1 ? 'Drag to rotate · ← → when focused' : 'Front view'}
+          </p>
+        </div>
         <button
           type="button"
           onClick={onClose}
-          className="cursor-pointer border-2 border-black px-2 py-1 text-xs font-bold tracking-wider uppercase hover:underline"
+          className="cursor-pointer border-2 border-black bg-transparent px-2 py-1 text-xs font-bold tracking-wider text-black uppercase hover:bg-neutral-200 hover:text-black"
         >
           Close
         </button>
       </div>
       <div
-        className={`flex touch-pan-y items-end justify-center gap-8 select-none ${views > 1 ? 'cursor-grab active:cursor-grabbing' : ''}`}
+        tabIndex={views > 1 ? 0 : undefined}
+        role="group"
+        aria-label={`Rotate ${bot.name}`}
+        aria-describedby="portrait-turn-hint"
+        onKeyDown={(e) => {
+          if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+            e.preventDefault();
+            turn(angle + (e.key === 'ArrowRight' ? 1 : -1));
+          }
+        }}
+        className={`mx-auto grid max-w-md touch-pan-y grid-cols-[minmax(0,1fr)_minmax(0,0.65fr)] items-end justify-center gap-4 py-3 select-none focus-visible:outline-2 focus-visible:outline-black ${views > 1 ? 'cursor-grab active:cursor-grabbing' : ''}`}
         onPointerDown={(e) => {
           if (views < 2) return;
-          setSpinning(false);
           drag.current = { x: e.clientX, from: angle };
           e.currentTarget.setPointerCapture(e.pointerId);
         }}
@@ -76,7 +82,7 @@ export default function PortraitViewer({ bot, onClose }: PortraitViewerProps) {
           width={256}
           height={256}
           draggable={false}
-          className="h-[200px] w-[200px] object-contain [image-rendering:pixelated] md:h-[256px] md:w-[256px]"
+          className="h-auto max-h-44 w-full object-contain [image-rendering:pixelated]"
         />
         <img
           src={src('body')}
@@ -84,35 +90,9 @@ export default function PortraitViewer({ bot, onClose }: PortraitViewerProps) {
           width={126}
           height={354}
           draggable={false}
-          className="h-[280px] w-auto object-contain [image-rendering:pixelated] md:h-[354px]"
+          className="h-auto max-h-60 w-full object-contain [image-rendering:pixelated]"
         />
       </div>
-      {views > 1 ? (
-        <div className="mt-3 flex items-center gap-3">
-          <button
-            type="button"
-            aria-pressed={spinning}
-            onClick={() => setSpinning((s) => !s)}
-            className="cursor-pointer border-2 border-black px-2 py-1 text-xs font-bold tracking-wider uppercase hover:underline"
-          >
-            {spinning ? 'Stop' : 'Spin'}
-          </button>
-          <input
-            type="range"
-            min={0}
-            max={views - 1}
-            value={angle}
-            aria-label={`Turn ${bot.name}`}
-            onChange={(e) => {
-              setSpinning(false);
-              setAngle(Number(e.target.value));
-            }}
-            className="min-w-0 flex-1 accent-black"
-          />
-        </div>
-      ) : (
-        <p className="mt-3 font-mono text-xs text-neutral-700 uppercase">Front view only for now</p>
-      )}
     </div>
   );
 }

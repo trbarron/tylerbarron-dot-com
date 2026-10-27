@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import type { Bot } from '~/utils/runescapeRascals/types';
 import { ago } from './format';
-import Clamp from './Clamp';
 import PortraitViewer from './PortraitViewer';
+import { activitySummary } from '~/utils/runescapeRascals/activity';
 
 interface RosterProps {
   bots: Bot[];
@@ -25,113 +25,114 @@ function Portrait({ bot, kind }: { bot: Bot; kind: 'head' | 'body' }) {
       width={kind === 'head' ? 84 : 30}
       height={84}
       loading="lazy"
-      className={`h-[90px] w-full object-contain ${hidden ? 'invisible' : ''}`}
+      className={`h-16 w-full object-contain min-[480px]:h-20 ${hidden ? 'invisible' : ''}`}
       onError={() => (live ? setFailed(true) : setHidden(true))}
     />
   );
 }
 const shotUrl = (b: Bot) => `/api/runescapeRascals/shot/${b.name}?t=${b.shotAt}`;
+const imageButton =
+  'cursor-pointer border-0 bg-transparent p-0 text-black hover:bg-neutral-100 hover:text-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black';
 
-/** One strip with each character's level, current order, place and a thumbnail; full screenshots open below. */
 export default function Roster({ bots, now }: RosterProps) {
-  const [open, setOpen] = useState<Set<string>>(() => new Set());
-  const toggle = (name: string) =>
-    setOpen((prev) => {
-      const next = new Set(prev);
-      if (!next.delete(name)) next.add(name);
-      return next;
-    });
-  const shown = bots.filter((b) => open.has(b.name));
+  const [screen, setScreen] = useState<string | null>(null);
   const [turning, setTurning] = useState<string | null>(null);
   const turned = bots.find((b) => b.name === turning);
-
+  const shown = bots.find((b) => b.name === screen);
   return (
     <section className="font-neo border-4 border-black bg-white text-black" aria-label="The party">
-      <div className="grid grid-cols-2 md:grid-cols-4">
+      <div className="grid min-[480px]:grid-cols-2 lg:grid-cols-4">
         {bots.map((b, i) => (
-          <div
+          <article
             key={b.name}
-            className={`flex min-w-0 flex-col gap-2 p-3 ${i % 2 ? 'border-l-4' : ''} ${i >= 2 ? 'border-t-4 md:border-t-0' : ''} ${i === 2 ? 'md:border-l-4' : ''} border-black`}
+            className={`min-w-0 border-black p-3 ${i > 0 ? 'border-t-2' : ''} ${i === 1 ? 'min-[480px]:border-t-0' : ''} ${i % 2 ? 'min-[480px]:border-l-2' : ''} ${i === 2 ? 'lg:border-l-2' : ''} lg:border-t-0`}
           >
-            {/* Head, full body and name + level take a third each (on a phone the name drops below the two figures). */}
-            <div className="grid grid-cols-2 items-center gap-1 md:h-[90px] md:grid-cols-3">
+            <header className="mb-2 flex items-baseline justify-between gap-2">
+              <h2 className="m-0 text-base leading-none font-extrabold uppercase">{b.name}</h2>
+              <span className="text-xl leading-none font-extrabold tabular-nums">
+                {b.totalLevel}
+                <span className="ml-1 text-[10px] font-bold tracking-wide text-neutral-600 uppercase">Total level</span>
+              </span>
+            </header>
+            <div className="grid grid-cols-[48px_minmax(0,1fr)_72px] items-center gap-2 min-[480px]:grid-cols-1">
               <button
                 type="button"
                 aria-expanded={turning === b.name}
                 aria-controls="rascals-portraits"
-                aria-label={`${turning === b.name ? 'Hide' : 'Show'} ${b.name} turning`}
+                aria-label={`View ${b.name}'s character`}
                 onClick={() => setTurning((t) => (t === b.name ? null : b.name))}
-                className={`col-span-2 grid cursor-pointer grid-cols-2 items-center gap-1 p-0 md:col-span-2 ${turning === b.name ? 'outline-2 outline-offset-2 outline-black' : ''}`}
+                className={`grid grid-cols-2 items-center gap-1 ${imageButton} ${turning === b.name ? 'bg-neutral-100' : ''}`}
               >
-                <Portrait key={`${b.name}-head-${b.portraitVersion ?? 'static'}`} bot={b} kind="head" />
-                <Portrait key={`${b.name}-body-${b.portraitVersion ?? 'static'}`} bot={b} kind="body" />
+                <Portrait key={`${b.name}-head-${b.portraitVersion}`} bot={b} kind="head" />
+                <Portrait key={`${b.name}-body-${b.portraitVersion}`} bot={b} kind="body" />
               </button>
-              <div className="col-span-2 flex min-w-0 items-baseline justify-between gap-2 md:col-span-1 md:flex-col md:items-start md:justify-center md:gap-1">
-                <span className="flex items-center gap-1 text-base leading-none font-extrabold tracking-tight uppercase md:text-[18px]">
-                  {b.name}
-                </span>
-                <span className="text-[26px] leading-none font-extrabold tabular-nums md:text-[30px]">
-                  {b.totalLevel}
-                  <span className="ml-0.5 text-[11px] font-bold tracking-wider">LVL</span>
-                </span>
+              <div className="min-w-0 min-[480px]:order-3">
+                <p className="m-0 text-xs leading-snug font-semibold break-words min-[480px]:text-sm">
+                  {activitySummary(b)}
+                </p>
+                <p className="mt-1 mb-0 text-xs leading-snug break-words text-neutral-600">{b.location}</p>
               </div>
-            </div>
-            <button
-              type="button"
-              aria-expanded={open.has(b.name)}
-              aria-controls="rascals-screens"
-              aria-label={`${open.has(b.name) ? 'Hide' : 'Show'} ${b.name}'s screen`}
-              onClick={() => toggle(b.name)}
-              className={`group relative block cursor-pointer border-2 border-black p-0 ${open.has(b.name) ? 'outline-2 outline-offset-2 outline-black' : ''}`}
-            >
-              {b.shotAt ? (
-                <img
-                  src={shotUrl(b)}
-                  alt=""
-                  width={765}
-                  height={503}
-                  loading="lazy"
-                  className="block aspect-[765/503] h-auto w-full object-cover"
-                />
-              ) : (
-                <span className="grid aspect-[765/503] place-items-center bg-neutral-100 font-mono text-[10px] text-neutral-700 uppercase">
-                  No screenshot yet
+              <button
+                type="button"
+                aria-expanded={screen === b.name}
+                aria-controls="rascals-screens"
+                aria-label={`View ${b.name}'s screen`}
+                onClick={() => setScreen((s) => (s === b.name ? null : b.name))}
+                className={`group relative mx-auto block w-full max-w-60 overflow-hidden lg:max-w-none ${imageButton}`}
+              >
+                {b.shotAt ? (
+                  <img
+                    src={shotUrl(b)}
+                    alt=""
+                    width={765}
+                    height={503}
+                    loading="lazy"
+                    className="block aspect-[765/503] h-auto w-full object-cover"
+                  />
+                ) : (
+                  <span className="grid aspect-[765/503] place-items-center bg-neutral-100 font-mono text-[10px] text-neutral-700">
+                    No screenshot yet
+                  </span>
+                )}
+                <span className="absolute right-0 bottom-0 bg-white/90 px-1 py-0.5 text-[9px] font-bold text-black normal-case group-hover:underline min-[480px]:text-[10px]">
+                  {screen === b.name ? 'Close screen' : 'View screen'}
                 </span>
-              )}
-              <span className="absolute right-0 bottom-0 bg-black px-1.5 py-0.5 text-[10px] font-bold tracking-wider text-white uppercase group-hover:underline">
-                {open.has(b.name) ? 'Close' : 'Enlarge'}
-              </span>
-            </button>
-            <Clamp lines={2} className="text-sm leading-snug font-bold break-words uppercase">
-              {b.action.replace(/_/g, ' ')}
-            </Clamp>
-            <div className="font-mono text-xs leading-snug text-neutral-700">{b.location}</div>
-          </div>
+              </button>
+            </div>
+          </article>
         ))}
       </div>
       {turned && <PortraitViewer key={turned.name} bot={turned} onClose={() => setTurning(null)} />}
-      {shown.length > 0 && (
-        <div id="rascals-screens" className="grid gap-3 border-t-4 border-black p-3 md:grid-cols-2">
-          {shown.map((b) => (
-            <figure key={b.name} className="m-0 border-2 border-black">
-              {b.shotAt ? (
-                <img
-                  src={shotUrl(b)}
-                  alt={`In-game view from ${b.name}`}
-                  width={765}
-                  height={503}
-                  className="block h-auto w-full"
-                />
-              ) : (
-                <div className="grid aspect-[765/503] place-items-center bg-neutral-100 font-mono text-xs text-neutral-700 uppercase">
-                  No screenshot yet
-                </div>
-              )}
-              <figcaption className="border-t-2 border-black px-2 py-1 text-xs font-bold tracking-wider uppercase">
-                {b.name} · {b.shotAt ? ago(b.shotAt, now) : 'waiting'}
-              </figcaption>
-            </figure>
-          ))}
+      {shown && (
+        <div id="rascals-screens" className="border-t-2 border-black p-3">
+          <figure className="mx-auto my-0 max-w-3xl">
+            <figcaption className="mb-2 flex items-center justify-between gap-2 text-xs text-neutral-600">
+              <span>
+                <strong className="text-black uppercase">{shown.name}</strong> ·{' '}
+                {shown.shotAt ? ago(shown.shotAt, now) : 'waiting'}
+              </span>
+              <button
+                type="button"
+                onClick={() => setScreen(null)}
+                className="cursor-pointer border-0 bg-transparent px-2 py-1 text-xs text-black hover:bg-neutral-100 hover:text-black"
+              >
+                Close screen
+              </button>
+            </figcaption>
+            {shown.shotAt && (
+              <img
+                src={shotUrl(shown)}
+                alt={`In-game view from ${shown.name}`}
+                width={765}
+                height={503}
+                className="block h-auto w-full"
+              />
+            )}
+            <details className="mt-3 text-sm">
+              <summary className="cursor-pointer font-semibold">Activity details</summary>
+              <p className="mt-2 break-words">{shown.action.replace(/_/g, ' ')}</p>
+            </details>
+          </figure>
         </div>
       )}
     </section>
