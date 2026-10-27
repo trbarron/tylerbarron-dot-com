@@ -1,5 +1,6 @@
 // The snapshot the party's orchestrator (runscape-local/agents) publishes to Redis every
-// 15 seconds. This page only reads it; the shape is owned by agents/dashboard.ts there.
+// 15 seconds (positions and actions) and, in slower sections, the rest. This page only reads it; the
+// shape is owned by agents/dashboard.ts there and the sections by agents/lanes.ts.
 
 export interface Skill {
   name: string;
@@ -143,6 +144,8 @@ export interface Achievement {
 
 export interface Snapshot {
   generatedAt: number;
+  /** When any character last did or decided anything. Newer snapshots only. */
+  lastEventAt?: number;
   uptimeMin: number;
   partyTotal: number;
   bots: Bot[];
