@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { Bot } from '~/utils/runescapeRascals/types';
 import { ago } from './format';
 import Clamp from './Clamp';
+import PortraitViewer from './PortraitViewer';
 
 interface RosterProps {
   bots: Bot[];
@@ -41,6 +42,8 @@ export default function Roster({ bots, now }: RosterProps) {
       return next;
     });
   const shown = bots.filter((b) => open.has(b.name));
+  const [turning, setTurning] = useState<string | null>(null);
+  const turned = bots.find((b) => b.name === turning);
 
   return (
     <section className="font-neo border-4 border-black bg-white text-black" aria-label="The party">
@@ -52,8 +55,17 @@ export default function Roster({ bots, now }: RosterProps) {
           >
             {/* Head, full body and name + level take a third each (on a phone the name drops below the two figures). */}
             <div className="grid grid-cols-2 items-center gap-1 md:h-[90px] md:grid-cols-3">
-              <Portrait key={`${b.name}-head-${b.portraitVersion ?? 'static'}`} bot={b} kind="head" />
-              <Portrait key={`${b.name}-body-${b.portraitVersion ?? 'static'}`} bot={b} kind="body" />
+              <button
+                type="button"
+                aria-expanded={turning === b.name}
+                aria-controls="rascals-portraits"
+                aria-label={`${turning === b.name ? 'Hide' : 'Show'} ${b.name} turning`}
+                onClick={() => setTurning((t) => (t === b.name ? null : b.name))}
+                className={`col-span-2 grid cursor-pointer grid-cols-2 items-center gap-1 p-0 md:col-span-2 ${turning === b.name ? 'outline-2 outline-offset-2 outline-black' : ''}`}
+              >
+                <Portrait key={`${b.name}-head-${b.portraitVersion ?? 'static'}`} bot={b} kind="head" />
+                <Portrait key={`${b.name}-body-${b.portraitVersion ?? 'static'}`} bot={b} kind="body" />
+              </button>
               <div className="col-span-2 flex min-w-0 items-baseline justify-between gap-2 md:col-span-1 md:flex-col md:items-start md:justify-center md:gap-1">
                 <span className="flex items-center gap-1 text-base leading-none font-extrabold tracking-tight uppercase md:text-[18px]">
                   {b.name}
@@ -97,6 +109,7 @@ export default function Roster({ bots, now }: RosterProps) {
           </div>
         ))}
       </div>
+      {turned && <PortraitViewer key={turned.name} bot={turned} onClose={() => setTurning(null)} />}
       {shown.length > 0 && (
         <div id="rascals-screens" className="grid gap-3 border-t-4 border-black p-3 md:grid-cols-2">
           {shown.map((b) => (

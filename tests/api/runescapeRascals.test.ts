@@ -75,8 +75,14 @@ describe('GET /api/runescapeRascals/shot/:name', () => {
   });
 });
 
-const portraitArgs = (name: string, kind: string) =>
-  ({ ...shotArgs(name), params: { name, kind } }) as unknown as LoaderFunctionArgs;
+const portraitArgs = (name: string, kind: string, angle?: string) =>
+  ({
+    request: new Request(
+      `https://example.com/api/runescapeRascals/portrait/${name}/${kind}${angle ? `?a=${angle}` : ''}`,
+    ),
+    params: { name, kind },
+    context: {},
+  }) as unknown as LoaderFunctionArgs;
 describe('GET /api/runescapeRascals/portrait/:name/:kind', () => {
   beforeEach(() => vi.clearAllMocks());
   it('serves head and body PNG bytes under the expected Redis keys', async () => {
@@ -88,6 +94,20 @@ describe('GET /api/runescapeRascals/portrait/:name/:kind', () => {
       expect(response.headers.get('Cache-Control')).toContain('max-age=300');
       expect(new Uint8Array(await response.arrayBuffer())).toEqual(new Uint8Array([137, 80, 78, 71]));
     }
+  });
+  it('serves the other views under an angle suffix, and angle 0 under the original key', async () => {
+    mockGetBuffer.mockResolvedValue(Buffer.from([137, 80, 78, 71]));
+    await portraitLoader(portraitArgs('mike', 'body', '5'));
+    expect(mockGetBuffer).toHaveBeenLastCalledWith('runescapeRascals:portrait:mike:body:5');
+    await portraitLoader(portraitArgs('mike', 'body', '0'));
+    expect(mockGetBuffer).toHaveBeenLastCalledWith('runescapeRascals:portrait:mike:body');
+  });
+  it('rejects a bad view number before Redis access', async () => {
+    mockGetBuffer.mockClear();
+    for (const angle of ['-1', '64', '1.5', 'x']) {
+      expect((await portraitLoader(portraitArgs('mike', 'head', angle))).status).toBe(404);
+    }
+    expect(mockGetBuffer).not.toHaveBeenCalled();
   });
   it('rejects invalid names and portrait kinds before Redis access', async () => {
     expect((await portraitLoader(portraitArgs('../snapshot', 'head'))).status).toBe(404);

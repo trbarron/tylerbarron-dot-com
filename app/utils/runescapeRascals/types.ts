@@ -49,6 +49,8 @@ export interface Bot {
   shotAt: number;
   /** Version of the last successfully published appearance; absent on older snapshots. */
   portraitVersion?: string;
+  /** Views around the figure the live portrait was rendered with; absent means the front view only. */
+  portraitAngles?: number;
   portraitAt?: number;
   metrics?: BotMetrics;
 }
