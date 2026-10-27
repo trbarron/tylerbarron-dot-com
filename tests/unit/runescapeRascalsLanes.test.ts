@@ -5,7 +5,16 @@ const fast = {
   generatedAt: 1060,
   lastEventAt: 1055,
   uptimeMin: 7,
-  bots: [{ name: 'bram', action: 'smelting', actionSince: 5, location: 'Falador', pos: { x: 2, z: 2 }, hp: { cur: 9, max: 9 } }],
+  bots: [
+    {
+      name: 'bram',
+      action: 'smelting',
+      actionSince: 5,
+      location: 'Falador',
+      pos: { x: 2, z: 2 },
+      hp: { cur: 9, max: 9 },
+    },
+  ],
 };
 const core = { partyTotal: 40, bots: [{ name: 'bram', goal: 'mine', skills: [] }], board: [], plan: null };
 
