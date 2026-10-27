@@ -3,24 +3,22 @@ import type { Bot } from '~/utils/runescapeRascals/types';
 import { ago } from './format';
 import PortraitViewer from './PortraitViewer';
 import { activitySummary } from '~/utils/runescapeRascals/activity';
+import { portraitUrl, shotUrl } from '~/utils/runescapeRascals/imageUrls';
 
 interface RosterProps {
   bots: Bot[];
   now: number;
+  assetBase?: string;
 }
 
-function Portrait({ bot, kind }: { bot: Bot; kind: 'head' | 'body' }) {
+function Portrait({ bot, kind, assetBase }: { bot: Bot; kind: 'head' | 'body'; assetBase?: string }) {
   const [failed, setFailed] = useState(false);
   const [hidden, setHidden] = useState(false);
   const fallback = `/images/runescape-rascals/portraits/${bot.name.toLowerCase()}-${kind}.png`;
   const live = !!bot.portraitVersion && !failed;
   return (
     <img
-      src={
-        live
-          ? `/api/runescapeRascals/portrait/${bot.name}/${kind}?v=${encodeURIComponent(bot.portraitVersion!)}`
-          : fallback
-      }
+      src={live ? portraitUrl(bot, kind, 0, assetBase) : fallback}
       alt=""
       width={kind === 'head' ? 84 : 30}
       height={84}
@@ -30,11 +28,10 @@ function Portrait({ bot, kind }: { bot: Bot; kind: 'head' | 'body' }) {
     />
   );
 }
-const shotUrl = (b: Bot) => `/api/runescapeRascals/shot/${b.name}?t=${b.shotAt}`;
 const imageButton =
   'cursor-pointer border-0 bg-transparent p-0 text-black hover:bg-neutral-100 hover:text-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black';
 
-export default function Roster({ bots, now }: RosterProps) {
+export default function Roster({ bots, now, assetBase }: RosterProps) {
   const [screen, setScreen] = useState<string | null>(null);
   const [turning, setTurning] = useState<string | null>(null);
   const turned = bots.find((b) => b.name === turning);
@@ -82,7 +79,7 @@ export default function Roster({ bots, now }: RosterProps) {
               >
                 {b.shotAt ? (
                   <img
-                    src={shotUrl(b)}
+                    src={shotUrl(b, assetBase)}
                     alt=""
                     width={765}
                     height={503}
@@ -102,7 +99,9 @@ export default function Roster({ bots, now }: RosterProps) {
           </article>
         ))}
       </div>
-      {turned && <PortraitViewer key={turned.name} bot={turned} onClose={() => setTurning(null)} />}
+      {turned && (
+        <PortraitViewer key={turned.name} bot={turned} assetBase={assetBase} onClose={() => setTurning(null)} />
+      )}
       {shown && (
         <div id="rascals-screens" className="border-t-2 border-black p-3">
           <figure className="mx-auto my-0 max-w-3xl">
@@ -121,7 +120,7 @@ export default function Roster({ bots, now }: RosterProps) {
             </figcaption>
             {shown.shotAt && (
               <img
-                src={shotUrl(shown)}
+                src={shotUrl(shown, assetBase)}
                 alt={`In-game view from ${shown.name}`}
                 width={765}
                 height={503}

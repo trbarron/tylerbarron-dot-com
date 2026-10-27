@@ -144,6 +144,8 @@ export interface Achievement {
 
 export interface Snapshot {
   generatedAt: number;
+  /** Where the live portraits and screenshots are served from (the bucket); absent means the API routes. */
+  assetBase?: string;
   /** When any character last did or decided anything. Newer snapshots only. */
   lastEventAt?: number;
   uptimeMin: number;
