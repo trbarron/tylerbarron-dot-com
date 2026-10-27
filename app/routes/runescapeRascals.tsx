@@ -122,7 +122,7 @@ export default function RunescapeRascals() {
               </Panel>
             </div>
 
-            <div className="grid items-stretch gap-4 md:grid-cols-2">
+            <div className="grid items-stretch gap-4 lg:grid-cols-2">
               <Panel title="Message board" className="flex h-full min-w-0 flex-col">
                 <Board posts={snapshot.board} now={now} />
               </Panel>
@@ -150,7 +150,7 @@ export default function RunescapeRascals() {
                 </span>
               </summary>
               <div className="flex flex-col gap-4 border-t-4 border-black bg-neutral-50 p-4">
-                <div className="grid items-stretch gap-4 md:grid-cols-2">
+                <div className="grid items-stretch gap-4 lg:grid-cols-2">
                   <Panel
                     title="Meta stats"
                     aside={

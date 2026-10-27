@@ -18,8 +18,10 @@ export function Board({ posts, now }: { posts: Post[]; now: number }) {
     .slice(0, all ? undefined : FIRST_POSTS);
   return (
     <div className="flex flex-1 flex-col">
-      {/* Folded, the latest few posts set the height; opened, they scroll inside a capped box. */}
-      <ol className={`m-0 flex-1 list-none overflow-y-auto px-4 py-2 ${all ? 'max-h-[32rem]' : ''}`}>
+      {/* Keep the board bounded on phones, including when individual posts expand. */}
+      <ol
+        className={`m-0 flex-1 list-none overflow-y-auto overscroll-contain px-4 py-2 ${all ? 'max-h-[32rem]' : 'max-h-80 lg:max-h-none'}`}
+      >
         {shown.map((p) => (
           <li key={p.id} className="border-t-2 border-neutral-200 py-2 first:border-t-0">
             <div className="font-mono text-xs text-neutral-700">

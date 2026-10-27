@@ -36,6 +36,8 @@ export default function MissionPanel({ mission, plan, now }: MissionPanelProps) 
       </Panel>
     );
   }
+  const active = mission.milestones.filter((m) => !m.done);
+  const completed = mission.milestones.filter((m) => m.done);
   return (
     <Panel
       title={`Mission: ${mission.title}`}
@@ -45,8 +47,8 @@ export default function MissionPanel({ mission, plan, now }: MissionPanelProps) 
         <Clamp lines={2} className="mb-4 text-base leading-relaxed">
           {mission.mission}
         </Clamp>
-        <ol className="m-0 grid list-none gap-2 p-0 md:grid-cols-3">
-          {mission.milestones.map((m) => (
+        <ol className="m-0 grid list-none gap-2 p-0 sm:grid-cols-2">
+          {active.map((m) => (
             <li key={m.id} className={`border-2 border-black px-3 py-2 ${m.done ? 'bg-neutral-100' : ''}`}>
               <span className="mb-1 flex items-center gap-1.5">
                 <span className="font-mono text-xs font-bold">M{m.id}</span>
@@ -60,6 +62,21 @@ export default function MissionPanel({ mission, plan, now }: MissionPanelProps) 
             </li>
           ))}
         </ol>
+        {completed.length > 0 && (
+          <details className="mt-3 text-sm">
+            <summary className="cursor-pointer py-1 font-semibold text-neutral-600">
+              {completed.length} completed
+            </summary>
+            <ul className="m-0 mt-2 list-none space-y-2 p-0">
+              {completed.map((m) => (
+                <li key={m.id} className="text-sm text-neutral-600">
+                  <span className="mr-2 font-mono text-xs">M{m.id} ✓</span>
+                  {m.what}
+                </li>
+              ))}
+            </ul>
+          </details>
+        )}
         <PlanFold plan={plan} />
       </div>
     </Panel>
