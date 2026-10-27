@@ -7,7 +7,6 @@ import { getRedisClient } from '~/utils/redis.server';
 import type { Bot, Snapshot } from './types';
 
 const SNAPSHOT_KEY = 'runescapeRascals:snapshot';
-const shotKey = (name: string) => `runescapeRascals:shot:${name}`;
 
 const FAST_KEY = `${SNAPSHOT_KEY}:fast`;
 
@@ -78,14 +77,4 @@ export async function readSnapshot(): Promise<Snapshot | null> {
   const values = fast ? await Promise.all(names.map(readSection)) : [];
   const parts = Object.fromEntries(names.flatMap((n, i) => (values[i] ? [[n, values[i]]] : []))) as Parts;
   return assembleSnapshot(fast, parts) ?? readLegacySnapshot();
-}
-
-/** The latest in-game screenshot for a bot (JPEG bytes), or null. */
-export async function readShot(name: string): Promise<Buffer | null> {
-  return getRedisClient().getBuffer(shotKey(name));
-}
-
-/** Latest rendered head or body (PNG bytes); versioned URLs are supplied by the snapshot. Angle 0 is the front. */
-export async function readPortrait(name: string, kind: 'head' | 'body', angle = 0): Promise<Buffer | null> {
-  return getRedisClient().getBuffer(`runescapeRascals:portrait:${name}:${kind}${angle ? `:${angle}` : ''}`);
 }

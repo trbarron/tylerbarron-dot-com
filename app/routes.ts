@@ -77,8 +77,6 @@ export default [
 
   // API routes for Runescape Rascals (read-only; the party's orchestrator publishes to Redis)
   route('api/runescapeRascals/snapshot', 'routes/api/runescapeRascals/snapshot.ts'),
-  route('api/runescapeRascals/shot/:name', 'routes/api/runescapeRascals/shot.ts'),
-  route('api/runescapeRascals/portrait/:name/:kind', 'routes/api/runescapeRascals/portrait.ts'),
 
   // API routes for Blunder Watch
   route('api/blunderWatch/game', 'routes/api/blunderWatch/game.ts'),
