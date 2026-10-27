@@ -87,7 +87,7 @@ export default function RunescapeRascals() {
         ) : (
           <>
             <MissionPanel mission={snapshot.teamGoal} plan={snapshot.plan} now={now} />
-            <Roster bots={snapshot.bots} now={now} />
+            <Roster bots={snapshot.bots} now={now} assetBase={snapshot.assetBase} />
 
             <Panel title="Total level over time">
               <LevelChart

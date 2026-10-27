@@ -1,21 +1,21 @@
 import { useEffect, useRef, useState } from 'react';
+import { portraitUrl } from '~/utils/runescapeRascals/imageUrls';
 import type { Bot } from '~/utils/runescapeRascals/types';
 
 interface PortraitViewerProps {
   bot: Bot;
+  assetBase?: string;
   onClose: () => void;
 }
 
 /** Pixels of sideways drag that turn the figure by one view. */
 const DRAG_STEP = 14;
 
-const liveUrl = (b: Bot, kind: 'head' | 'body', angle: number) =>
-  `/api/runescapeRascals/portrait/${b.name}/${kind}?v=${encodeURIComponent(b.portraitVersion ?? '')}&a=${angle}`;
 const staticUrl = (b: Bot, kind: 'head' | 'body') =>
   `/images/runescape-rascals/portraits/${b.name.toLowerCase()}-${kind}.png`;
 
 /** A larger head and body that turn through every stored view: drag or use the arrow keys. */
-export default function PortraitViewer({ bot, onClose }: PortraitViewerProps) {
+export default function PortraitViewer({ bot, assetBase, onClose }: PortraitViewerProps) {
   const views = bot.portraitVersion && bot.portraitAngles && bot.portraitAngles > 1 ? bot.portraitAngles : 1;
   const [angle, setAngle] = useState(0);
   const drag = useRef<{ x: number; from: number } | null>(null);
@@ -25,10 +25,10 @@ export default function PortraitViewer({ bot, onClose }: PortraitViewerProps) {
   useEffect(() => {
     if (views < 2) return;
     for (const kind of ['head', 'body'] as const)
-      for (let a = 0; a < views; a++) new Image().src = liveUrl(bot, kind, a);
-  }, [bot, views]);
+      for (let a = 0; a < views; a++) new Image().src = portraitUrl(bot, kind, a, assetBase);
+  }, [bot, views, assetBase]);
 
-  const src = (kind: 'head' | 'body') => (views > 1 ? liveUrl(bot, kind, angle) : staticUrl(bot, kind));
+  const src = (kind: 'head' | 'body') => (views > 1 ? portraitUrl(bot, kind, angle, assetBase) : staticUrl(bot, kind));
 
   return (
     <div
