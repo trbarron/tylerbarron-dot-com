@@ -3,7 +3,7 @@
 
 import { readSnapshot } from '~/utils/runescapeRascals/snapshot.server';
 
-// The orchestrator publishes every 15 seconds, so a short shared cache loses nothing.
+// The fast lane is published every 15 seconds, so a short shared cache loses nothing.
 const CACHE = 'public, max-age=10, s-maxage=10';
 
 export async function loader() {
