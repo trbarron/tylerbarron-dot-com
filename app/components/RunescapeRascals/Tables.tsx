@@ -3,8 +3,6 @@ import type { Bot, BotMetrics } from '~/utils/runescapeRascals/types';
 import { Swatch } from './markers';
 import { SkillIcon } from './SkillIcon';
 import { ago, pct } from './format';
-import { TOGGLE } from './Clamp';
-
 // Desktop tables put the characters in columns, so they read the same way side by side.
 
 export const TH =
@@ -109,25 +107,21 @@ export function StoresTable({ bots, now }: { bots: Bot[]; now: number }) {
 
 /** Not real skills: the client reports a couple of unused stat slots. */
 const PLACEHOLDER = /^stat\d+$/i;
-/** Highest skills shown before "All skills". */
-const TOP_SKILLS = 5;
 
 export function SkillsTable({ bots }: { bots: Bot[] }) {
-  const [showAll, setShowAll] = useState(false);
   const level = (b: Bot, s: string) => b.skills.find((x) => x.name === s)?.level ?? 1;
   const all = [...new Set(bots.flatMap((b) => b.skills.map((s) => s.name)))].filter((n) => !PLACEHOLDER.test(n));
   const trained = all
     .filter((n) => bots.some((b) => level(b, n) > 1))
     .sort((a, b) => Math.max(...bots.map((x) => level(x, b))) - Math.max(...bots.map((x) => level(x, a))));
   const untrained = all.filter((n) => !trained.includes(n));
-  const shown = showAll ? trained : trained.slice(0, TOP_SKILLS);
 
   return (
     <div className="max-w-full min-w-0">
       <table className="w-full table-fixed border-collapse sm:table-auto">
         <Head bots={bots} label="Skill" />
         <tbody>
-          {shown.map((s) => {
+          {trained.map((s) => {
             const levels = bots.map((b) => level(b, s));
             const top = Math.max(...levels);
             return (
@@ -165,7 +159,7 @@ export function SkillsTable({ bots }: { bots: Bot[] }) {
               </td>
             ))}
           </tr>
-          {showAll && untrained.length > 0 && (
+          {untrained.length > 0 && (
             <tr>
               <td
                 colSpan={bots.length + 1}
@@ -177,13 +171,6 @@ export function SkillsTable({ bots }: { bots: Bot[] }) {
           )}
         </tbody>
       </table>
-      {trained.length > TOP_SKILLS && (
-        <div className="px-4 py-2">
-          <button type="button" aria-expanded={showAll} onClick={() => setShowAll(!showAll)} className={TOGGLE}>
-            {showAll ? 'Top skills only' : `All skills (${trained.length - TOP_SKILLS} more)`}
-          </button>
-        </div>
-      )}
     </div>
   );
 }
