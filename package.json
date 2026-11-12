@@ -9,7 +9,7 @@
     "build:arc": "npm run compile:mdx && npm run build && npm run build:arc:assets && npm run build:arc:server && npm run build:arc:deps",
     "build:arc:assets": "mkdir -p public && cp -r build/client/* public/",
     "build:arc:server": "mkdir -p server && NODE_ENV=production npx esbuild server.ts --platform=node --target=node24 --format=esm --bundle --minify --tree-shaking=true --outfile=server/index.mjs '--external:@aws-sdk/*' --external:aws-sdk '--external:@react-router/*' --external:react --external:react-dom '--external:./build/*' && rm -rf server/build/server && mkdir -p server/build/server && cp -r build/server/* server/build/server/",
-    "build:arc:deps": "cd server && npm install --omit=dev --no-audit --no-fund",
+    "build:arc:deps": "node scripts/install-lambda-deps.mjs",
     "compile:mdx": "node --env-file-if-exists=.env scripts/compile-mdx.mjs",
     "analyze": "node scripts/analyze-bundle.mjs",
     "deploy:images": "node --env-file=.env scripts/upload-images-to-s3.mjs",
