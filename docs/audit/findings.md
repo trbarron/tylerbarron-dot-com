@@ -6,13 +6,43 @@ Structural, security and performance review of the repo at `5.61.1`, with the go
 
 ## Status
 
-Addressed in the follow-up PR: D1, D2, D3 (advisory and Dependabot), S1 (except rank verification and the id in the URL), S2 (code side), S3, S5, P1 (code side) and A1. Two findings turned out differently from what is written below:
+This file is the audit as written, kept for its reasoning. It is **not** the list of what is still open: several findings have been fixed since, and two were wrong. For current status and for the work that remains, see [`README.md`](README.md) and the briefs in [`tasks/`](tasks/).
+
+Where each finding stands:
+
+| Finding | Status | Remaining work |
+| --- | --- | --- |
+| D1 | Done, except tagging before the build | Task 10 |
+| D2 | Done | |
+| D3 | Advisory cleared, Dependabot on, dependencies updated | Tasks 22, 23, 28 |
+| D4 | Open | Task 09 |
+| D5 | Open | Task 26 |
+| D6 | Open (unverified) | Task 14 |
+| D7, D8 | Open | Task 13 |
+| D9 | Open | Task 24 |
+| S1 | Mostly done | Task 12 |
+| S2 | Code done; CloudFront side open | Task 06 |
+| S3 | Done; production not yet confirmed healthy | Task 01 |
+| S4 | `create` limited; three writers open | Task 11 |
+| S5 | Done | |
+| S6 | Eval scoped to Maia; the rest open | Tasks 15, 16 |
+| S7 | Site no longer runs bots | Tasks 02, 03, 27 |
+| S8 | Open | Task 07 |
+| P1 | Code done; CloudFront side open | Tasks 04, 05 |
+| P2 | Open | Task 19 |
+| P3 | Open | Task 18 |
+| P4 | Open | Task 20 |
+| A1 | Done | |
+| A2 | Open | Task 17 |
+| A3 | Open | Task 18 |
+| A4 | Open | Task 21 |
+| A5 | Open | Task 08 |
+| A6 | Open | Task 21 |
+
+Two findings were wrong as written:
 
 - **D1:** an S3 lifecycle rule is the wrong way to prune old assets. An unchanged file keeps its old upload date, so a month without deploys would expire the live site's files. The deploy prunes by age *and* absence from the current build instead.
-- **S6.1:** `'unsafe-eval'` cannot be dropped everywhere. Blog posts no longer need it, but onnxruntime-web's WebGPU build (Maia Drills) uses `new Function`, so it is now granted on the Maia page only and every other page gets `'wasm-unsafe-eval'`.
-- **S7:** resolved by removal. The site no longer invokes the tournament Lambda; submissions are queued in Redis and emailed, and tournaments are run by hand.
-
-Still open: the console-side items (S2 origin request policy, S7, S8, D4, P1 cache policy), S4 for the remaining writers, D5–D9, S6.2, A2–A6, P2–P4.
+- **S6.1:** `'unsafe-eval'` cannot be dropped everywhere. Blog posts no longer need it, but onnxruntime-web's WebGPU build (Maia Drills) uses `new Function`, so it is granted on the Maia page only and every other page gets `'wasm-unsafe-eval'`.
 
 ## Summary
 
