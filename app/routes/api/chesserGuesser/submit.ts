@@ -7,6 +7,8 @@ import { getRedisClient } from '~/utils/redis.server';
 import { calculatePuzzleScore } from '~/utils/chesserGuesser/puzzleSelection';
 import { getTodayDateString } from '~/utils/chesserGuesser/seededRandom';
 import { rateLimitMiddleware } from '~/utils/chesserGuesser/rateLimit.server';
+import { checkRateLimit } from '~/utils/rateLimit.server';
+import { isRecentPuzzleDate } from '~/utils/dailySubmission';
 
 const TTL_7_DAYS = 7 * 24 * 60 * 60; // 7 days in seconds
 
@@ -39,17 +41,30 @@ export async function action({ request }: ActionFunctionArgs) {
       );
     }
 
-    const dateString = date || getTodayDateString();
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+    const today = getTodayDateString();
+    const dateString = date ?? today;
+    if (typeof dateString !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
       return Response.json({ error: 'Invalid date format. Use YYYY-MM-DD.' }, { status: 400 });
     }
 
-    if (typeof puzzleIndex !== 'number' || puzzleIndex < 0 || puzzleIndex > 3) {
+    if (!isRecentPuzzleDate(dateString, today)) {
+      return Response.json({ error: 'Only today’s or yesterday’s puzzles can be submitted.' }, { status: 400 });
+    }
+
+    if (!Number.isInteger(puzzleIndex) || puzzleIndex < 0 || puzzleIndex > 3) {
       return Response.json({ error: 'Invalid puzzle index. Must be 0-3.' }, { status: 400 });
     }
 
-    if (typeof guess !== 'number') {
+    if (typeof guess !== 'number' || !Number.isFinite(guess)) {
       return Response.json({ error: 'Invalid guess. Must be a number.' }, { status: 400 });
+    }
+
+    const limit = await checkRateLimit(request, 'chesserGuesser', 'submit', { max: 40, windowSeconds: 3600 });
+    if (!limit.allowed) {
+      return Response.json(
+        { error: 'Too many submissions from this address. Try again later.' },
+        { status: 429, headers: { 'Retry-After': String(limit.retryAfter) } },
+      );
     }
 
     // Check rate limit (cooldown between submissions)
@@ -103,10 +118,8 @@ export async function action({ request }: ActionFunctionArgs) {
 
     // Update puzzles completed count
     const completedKey = `chesserGuesser:completed:${dateString}:${username}`;
-    const completed = parseInt((await redis.get(completedKey)) || '0', 10);
-    const newCompleted = completed + 1;
-
-    await redis.setex(completedKey, TTL_7_DAYS, newCompleted.toString());
+    const newCompleted = await redis.incr(completedKey);
+    await redis.expire(completedKey, TTL_7_DAYS);
 
     // Calculate total score by summing all individual puzzle scores from Redis
     const puzzleKeys = Array.from({ length: 4 }, (_, i) => `chesserGuesser:submission:${dateString}:${username}:${i}`);
