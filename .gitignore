@@ -49,3 +49,6 @@ Thumbs.db
 *.sqlite
 *.sqlite-journal
 *.sqlite-wal
+
+# Bots pulled from the Camel Up Cup waiting list (npm run camel:queue -- pull).
+/camel-bots

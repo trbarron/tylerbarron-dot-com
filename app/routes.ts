@@ -69,7 +69,6 @@ export default [
 
   // API routes for Camel Up Cup bot submissions
   route('api/camelUpCup/submit', 'routes/api/camelUpCup/submit.ts'),
-  route('api/camelUpCup/status', 'routes/api/camelUpCup/status.ts'),
 
   // API routes for Media Format Appreciation Profile shared results
   route('api/mediaProfile/share', 'routes/api/mediaProfile/share.ts'),

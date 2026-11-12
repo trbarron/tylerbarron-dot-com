@@ -72,6 +72,27 @@ chooses. CloudFront only sends that header when the default behavior's origin re
 policy includes it; without it the limits still work for honest traffic but can be
 dodged by sending a different `X-Forwarded-For` each time.
 
+## Camel Up Cup: queued and emailed, never run here
+
+A submitted bot is stored in the Redis hash `camelup:pending` (at most 25 waiting) and
+announced by email through the SNS topic named in `CAMEL_NOTIFY_TOPIC_ARN`; the email
+includes the bot's code. Nothing on the site executes it. `npm run camel:queue` lists the
+waiting bots, `-- pull [dir]` writes them out as `.py` files, and `-- done <id>` removes
+them after the tournament, which is run by hand and publishes `leaderboard.json` under
+`images/camel-up/` as before. The Lambda's role needs `sns:Publish` on that topic; without
+it, or without the variable, submissions are still queued and the failure is logged.
+
+## Content-Security-Policy: eval on the Maia page only
+
+`app/utils/csp.server.ts` builds the policy per document. Every page gets
+`'wasm-unsafe-eval'`; only `/marginal-maia-mentor` gets `'unsafe-eval'`, because
+onnxruntime-web's WebGPU build uses `new Function`. A policy is fixed when a document
+loads, so that page must never be entered by client-side navigation: its route's
+`clientLoader` turns any such navigation into a full page load, its empty `loader` keeps
+that from running on first load (which would loop), and `shouldRevalidate` keeps `?deck=`
+changes from reloading. A new page that needs eval goes in `EVAL_PAGES` and needs the same
+three exports.
+
 ## Redis
 
 `app/utils/redis.server.ts` verifies the server's TLS certificate. A provider with a
@@ -101,15 +122,15 @@ against, and a package listed there must also be in the root `package.json`.
 `check:lambda-deps` fails on a version mismatch as well as a missing package.
 
 No AWS SDK package ships. `app/utils/camelUpCup/tournament.server.ts` does use
-`@aws-sdk/client-lambda` to invoke the tournament Lambda, but Lambda's Node runtime
-includes the AWS SDK v3, so it resolves there; bundling it (with `@smithy/*`) doubled
-the Lambda to 36 MB. It's imported dynamically inside `dispatchSubmission`, so only a
-submission loads it. Locally it resolves from the root devDependency. AWS recommends
+`@aws-sdk/client-sns` to email a Camel Up Cup submission, but Lambda's Node runtime
+includes the AWS SDK v3, so it resolves there; bundling the SDK (with `@smithy/*`)
+doubled the Lambda to 36 MB. It's imported dynamically inside `notifySubmission`, so only
+a submission loads it. Locally it resolves from the root devDependency. AWS recommends
 bundling the SDK so a runtime update can't change its version under you; for one
-`InvokeCommand` that risk is small, and it's the first thing to check if Camel Up Cup
-submissions start failing. `@aws-sdk/client-s3` is a devDependency used only by the
-upload scripts. Root membership tells you nothing about what ships;
-`server/package.json` is the authority.
+`PublishCommand` that risk is small, and a failed email never loses a submission (the
+bot is already in Redis). `@aws-sdk/client-s3` is a devDependency used only by the upload
+scripts. Root membership tells you nothing about what ships; `server/package.json` is the
+authority.
 
 The Vite SSR build externalizes all npm deps, so anything an SSR-rendered module imports
 must either be in `server/package.json` or listed in `ssr.noExternal` in

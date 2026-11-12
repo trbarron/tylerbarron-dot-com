@@ -1,5 +1,5 @@
-// Shapes produced by the camel-up-tournament Lambda (Camel_Up_Cup_2K18 repo,
-// lambda/handler.py) and published to the CDN bucket as JSON.
+// The leaderboard is produced by the tournament runner (Camel_Up_Cup_2K18 repo)
+// and published to the CDN bucket as JSON.
 
 export interface LeaderboardBot {
   name: string;
@@ -29,15 +29,12 @@ export interface Leaderboard {
   bots: LeaderboardBot[];
 }
 
-export type SubmissionPhase = 'queued' | 'validating' | 'running' | 'complete' | 'rejected' | 'error';
-
-export interface SubmissionStatus {
+/** A bot waiting for Tyler to run a tournament (Redis hash `camelup:pending`). */
+export interface PendingSubmission {
   id: string;
-  phase: SubmissionPhase;
-  botName: string | null;
-  gamesDone: number;
-  totalGames: number;
-  updated: string;
-  rank?: number | null;
-  reason?: string;
+  botName: string;
+  author: string;
+  code: string;
+  /** ISO-8601 UTC. */
+  submitted: string;
 }

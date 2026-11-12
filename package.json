@@ -29,7 +29,8 @@
     "check:lambda-deps": "node scripts/check-lambda-deps.mjs",
     "prepare": "husky",
     "typecheck": "tsc",
-    "pr-screenshots": "node scripts/pr-screenshots.mjs"
+    "pr-screenshots": "node scripts/pr-screenshots.mjs",
+    "camel:queue": "node --env-file-if-exists=.env scripts/camel-queue.mjs"
   },
   "dependencies": {
     "@ballatech/react-router7-preset-aws": "^1.0.1",
@@ -47,8 +48,8 @@
   },
   "devDependencies": {
     "@architect/architect": "^12.0.0",
-    "@aws-sdk/client-lambda": "^3.1078.0",
     "@aws-sdk/client-s3": "^3.1065.0",
+    "@aws-sdk/client-sns": "^3.1167.0",
     "@commitlint/cli": "^21.0.2",
     "@commitlint/config-conventional": "^21.0.2",
     "@eslint/js": "^9.39.5",
