@@ -27,3 +27,23 @@ updates:
         exclude-patterns:
           - react-router
           - '@react-router/*'
+    # Major versions that can't be taken yet. Remove an entry when its reason goes away.
+    ignore:
+      # The AWS adapter (@ballatech/react-router7-preset-aws) requires React Router 7.
+      - dependency-name: react-router
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@react-router/*'
+        update-types: ['version-update:semver-major']
+      # eslint-plugin-react, -jsx-a11y and -import don't support ESLint 10.
+      - dependency-name: eslint
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@eslint/js'
+        update-types: ['version-update:semver-major']
+      # typescript-eslint supports TypeScript below 6.1.
+      - dependency-name: typescript
+        update-types: ['version-update:semver-major']
+      # Follows the Lambda runtime (nodejs24.x), not the newest Node.
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
+      # Pinned with SHA-256 hashes for the browser and the server (app/utils/chess/stockfish*.ts).
+      - dependency-name: stockfish
