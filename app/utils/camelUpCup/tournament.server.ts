@@ -10,6 +10,7 @@
 
 import { getRedisClient } from '../redis.server';
 import { getImageUrl } from '../cdn';
+import { clientIp as getClientIP } from '../rateLimit.server';
 import type { Leaderboard, SubmissionStatus } from './types';
 
 const LOCK_KEY = 'camelup:lock';
@@ -118,12 +119,6 @@ export async function releaseTournamentLock(id: string): Promise<void> {
   if (holder === id) {
     await redis.del(LOCK_KEY);
   }
-}
-
-export function getClientIP(request: Request): string {
-  const forwardedFor = request.headers.get('x-forwarded-for');
-  if (forwardedFor) return forwardedFor.split(',')[0].trim();
-  return request.headers.get('x-real-ip') ?? 'unknown';
 }
 
 function dailyKey(): string {
