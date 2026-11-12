@@ -61,8 +61,25 @@ whose loader reads live data or whose server render depends on the query string 
 Rating's `?town=`, Maia's `?deck=`). The deploy ends with a `/*` invalidation
 (non-blocking).
 
-This only takes effect if the distribution's default behavior uses a cache policy that
-honours the origin's `Cache-Control` and keeps cookies and headers out of the cache key.
+On 12 November 2026 the default behavior was changed from managed `CachingDisabled`
+to `site-honour-origin` (`85e06858-fe24-40d4-b9e8-ae426f6156a9`), defined in
+`infra/cloudfront/honour-origin.json`. Minimum and default TTL are zero; maximum TTL
+is one year. All query strings participate in the key; cookies and viewer headers do
+not. The existing `AllViewerExceptHostHeader` origin request policy is unchanged,
+as are the three asset behaviors, the response headers policy and the `www` redirect.
+
+Live requests confirmed hits for `/`, `/blog/2026Goals` and the Rascals snapshot;
+Chesser Guesser, Maia, available games and the `no-store` healthcheck stayed misses.
+Two different query strings caused separate misses. A POST created a game and its
+state was readable by query string. The `www` redirect still preserves path and query.
+Missing blog pages returned 404 (`Error from cloudfront`); their second response had
+an `Age` header, showing CloudFront's separate short error cache still applies. The
+policy does not promise zero caching of error responses; review error TTL separately
+if immediate recovery of a missing URL is needed.
+
+Rollback snapshot for this change: `/private/tmp/site-audit-20261112/distribution-before.json`
+on the executing machine. Restore its `DistributionConfig` using a fresh distribution
+ETag. That file is a local operational backup, not committed infrastructure state.
 
 ## Whose address a rate limit sees
 
@@ -163,23 +180,34 @@ Releases are **fully automated by semantic-release** (`release` in `package.json
 `feat:` → minor, `feat!:`/`BREAKING CHANGE:` → major (commit-analyzer's default rules). The optional scope names the project (`feat(rascals): …`); the allowed list is `commitlint.config.js`.
 Other types (`chore:`, `ci:`, `docs:`, `refactor:`, `test:`) don't release.
 
-Flow: on push to `master`, the deploy job runs `npx semantic-release` **before** the
-build. It analyzes commits since the last tag, and if a release is warranted it bumps
-`package.json` on disk and commits + tags `X.Y.Z` (prefix-less,
-`tagFormat: "${version}"`, matching the legacy `5.0.24` tag). The commit message carries
-`[skip ci]` to avoid re-triggering. The build then reads the bumped `package.json`. There is no
-`CHANGELOG.md`: the release notes live in that commit body and the GitHub Release.
+Flow: on push to `master`, `scripts/plan-release.mjs` calls semantic-release's
+JavaScript API with `dryRun: true` to compute the next version without changing files
+or publishing a tag. The build receives that version as `APP_VERSION`; changes that
+do not warrant a release keep the current `package.json` version.
 
-Because that release commit lands on `master` mid-deploy, a local push made while a
+The workflow builds, publishes assets and deploys the Lambda, then runs
+`scripts/check-live-site.mjs` against the homepage, a blog post, the chess lobby,
+the pizza map and the Redis healthcheck as Googlebot. Requests use a deployment query
+parameter, a timeout and bounded retries. Page footers must show the planned version
+and source commit, so an old cached page cannot pass the deploy check. This relies on
+the HTML cache policy including the query string (see audit task 05).
+
+Only after the deploy and live check succeed does `npx semantic-release` bump
+`package.json`, commit and tag `X.Y.Z` (prefix-less, `tagFormat: "${version}"`).
+The release commit keeps `[skip ci]` to avoid re-triggering. A build, upload, deploy
+or smoke-check failure therefore leaves no new release tag. A release failure after
+deployment is still possible; inspect the run rather than assuming a tag was published.
+There is no `CHANGELOG.md`: release notes live in the commit body and GitHub Release.
+
+Because that release commit lands on `master` near the end of a deploy, a local push made while a
 deploy is running gets rejected as non-fast-forward. Rebase onto `origin/master` and
 push again — `pull.rebase` is already true, and release commits only touch
 `package.json` and `package-lock.json`, so conflicts are unlikely.
 
 The GitHub Release object is created by a separate **non-blocking** `gh release create`
-step in `deploy.yml` (not `@semantic-release/github`): it's the only release action that
-would run after the tag is pushed but before the deploy, and a transient GitHub API
-failure there once aborted a deploy and left a tagged-but-undeployed state (2026-06-10
-outage). If that step gets skipped by an outage, the Release for that tag stays missing
+step in `deploy.yml` (not `@semantic-release/github`), after deployment and tagging.
+A transient GitHub API failure in this step once aborted a deploy and left a
+tagged-but-undeployed state (2026-06-10 outage); it remains non-blocking. If that step gets skipped by an outage, the Release for that tag stays missing
 (tags are the source of truth; semantic-release doesn't read Releases) — recreate it
 with:
 
@@ -187,7 +215,7 @@ with:
 git log -1 --format=%b <tag> | gh release create <tag> --title <tag> --verify-tag --notes-file -
 ```
 
-`package.json` `version` is the footer's source of truth: `vite.config.ts` injects it as
+`vite.config.ts` injects `APP_VERSION` (falling back to `package.json` `version`) as
 `__APP_VERSION__` (and the short commit hash as `__GIT_COMMIT__`); `Footer.tsx` renders
 `v<version> · <hash>`. The deploy checkout uses `fetch-depth: 0` so semantic-release can
 see all tags/history. To cut a release you just push conventional commits — no manual
@@ -202,3 +230,48 @@ runs **commitlint** (`commitlint` in `package.json`, extends `@commitlint/config
 rejects non-conventional messages. The hook installs via the `prepare` script on
 `npm install`; CI sets `HUSKY=0` so it never runs against semantic-release's own release
 commit.
+
+## Running the live check manually
+
+`node scripts/check-live-site.mjs` checks production; pass an origin URL as its first
+argument to check another deployment. Set `APP_VERSION` and `GITHUB_SHA` together to
+require an exact build in the footer. Without `APP_VERSION`, it checks server-rendered
+HTML and Redis health without requiring a particular release. This is read-only.
+
+On 12 November 2026, the live healthcheck returned `200 OK`, the Multiple Choice Chess
+available-games endpoint returned `200`, and all five bot smoke checks passed. No Redis
+TLS opt-out was added. The provider certificate and production environment variables
+were not inspected, so this confirms operational health rather than independently
+proving certificate verification is enabled.
+
+## Deploy invalidation permission
+
+The 12 November deploy run `43255646885` failed its non-blocking invalidation step:
+IAM user `remix-deployer` lacked `cloudfront:CreateInvalidation`. Asset pruning
+succeeded (`236 objects under assets/, 117 in this build, 0 to prune`). The user now
+has inline policy `invalidate-site`, defined in `infra/iam/site-invalidation.json`,
+scoped to distribution `E1TUWNZL0WZZ6J`. IAM simulation returned `allowed`; confirmation
+from a subsequent deploy run remains pending. There was no previous inline policy
+of this name. The user policy list was saved alongside the distribution rollback.
+
+## Infrastructure findings still awaiting decisions
+
+- The existing viewer-request function is `www-to-apex-redirect`. Task 06 must extend
+  it carefully rather than replace its association with a second function. Its live
+  source was saved in `/private/tmp/site-audit-20261112/www-to-apex-live.js`. No function
+  change has been applied. The direct API healthcheck at the `4qklz67ic3` API origin
+  still returns 200; closing that bypass requires the planned origin-secret rollout.
+- The production API `4qklz67ic3` (`TbWebsiteRemixProduction`), `$default` stage,
+  already has rate 50 requests/second and burst 100. The site Lambda is
+  `TbWebsiteRemixProduction-AnyCatchallHTTPLambda-W9sc2MIDWGc5`, role
+  `TbWebsiteRemixProduction-Role-ug891mYULLZo`. It has no reserved concurrency;
+  observed maximum concurrency from 29 October through 12 November was 56, so
+  the audit's suggested cap of 20 would cut below observed traffic. No concurrency
+  cap was added. Account quota: 1000 concurrent executions, 999 unreserved at inspection.
+- Budget `Monthly Budge` already has a USD 5 monthly limit, actual-spend thresholds
+  at 80% and 100%, and a forecast threshold at 100%. Subscriber addresses and delivery
+  were not inspected; no budget or notification was changed.
+- The default behavior already uses response headers policy `RemixAPIPolicy`
+  (`c57b2c88-4e22-4839-8e17-2001d835bfca`), with CORS configuration and empty security
+  header sections. Task 15's instruction to stop when a policy exists applies:
+  preserve the CORS configuration when preparing a later security-header change.

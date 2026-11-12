@@ -64,7 +64,7 @@ Last updated 12 November 2026.
 | D3 | React Router advisory cleared; Dependabot watches npm; all dependencies updated | PR #128, PR #134 |
 | S1 (most) | Multiple Choice Chess no longer returns player ids; atomic join and move; ids from `crypto` | PR #128 |
 | S2 (code side) | One `clientIp()` that prefers a CloudFront-supplied header | PR #128 |
-| S3 | Redis TLS verification on; timeouts; no client thrash | PR #128 |
+| S3 | Redis TLS verification on by default; timeouts; no client thrash. Production health and bot checks passed 12 Nov; no TLS opt-out added. Production TLS environment not inspected. | PR #128; local verification |
 | S5 | Healthcheck no longer fetches a URL built from request headers | PR #128 |
 | S6.1 | `'unsafe-eval'` only on the Maia page; `'wasm-unsafe-eval'` elsewhere | PR #128 |
 | S7 (site side) | The site no longer invokes the tournament Lambda; submissions are queued and emailed | PR #128 |
@@ -78,22 +78,22 @@ Ordered by when to do them. "Needs" says what access the executor must have.
 
 | # | Task | Finding | Needs | Risk | Depends on | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| [01](tasks/01-production-health-and-redis-tls.md) | Confirm production is healthy after the Redis TLS change | S3 | Internet; AWS if a fix is needed | Low | — | **Not started. Do first.** |
+| [01](tasks/01-production-health-and-redis-tls.md) | Confirm production is healthy after the Redis TLS change | S3 | Internet; AWS if a fix is needed | Low | — | Verified 12 Nov: healthcheck `200 OK`, available games `200`. No opt-out added; production TLS settings not inspected. |
 | [02](tasks/02-camel-up-cup-email.md) | Set up the Camel Up Cup submission email | S7 | AWS | Low | 01 | Not started |
 | [28](tasks/28-dependabot-prs.md) | Clear the first batch of Dependabot PRs | D3 | GitHub | Low | PR #134 | Not started |
-| [04](tasks/04-deploy-invalidation-permission.md) | Let the deploy invalidate CloudFront | P1 | AWS | Low | — | Not started |
-| [05](tasks/05-cloudfront-page-caching.md) | Make CloudFront honour the pages' cache headers | P1 | AWS | Medium–high | 01, 04 | Not started |
-| [07](tasks/07-cost-guardrails.md) | Bound the worst-case AWS bill | S8 | AWS | Low–medium | — | Not started |
-| [08](tasks/08-alarms-and-post-deploy-check.md) | Alarms, and a check after every deploy | A5 | AWS + repo | Low | 01 | Not started |
-| [11](tasks/11-rate-limit-writers.md) | Rate-limit the remaining endpoints that write to Redis | S4 | Repo | Low | — | Not started |
-| [06](tasks/06-trustworthy-client-ip.md) | Give the rate limiter an address the client can't forge | S2 | AWS + repo | Medium | 05 | Not started |
+| [04](tasks/04-deploy-invalidation-permission.md) | Let the deploy invalidate CloudFront | P1 | AWS | Low | — | Permission applied 12 Nov; IAM simulation allowed. Pruning already succeeded. Invalidation confirmation on next deploy pending. |
+| [05](tasks/05-cloudfront-page-caching.md) | Make CloudFront honour the pages' cache headers | P1 | AWS | Medium–high | 01, 04 | Applied and verified 12 Nov: static pages/snapshot hit, dynamic pages miss, query keys separated, POST/state and redirect work. Existing short 404 error cache remains. |
+| [07](tasks/07-cost-guardrails.md) | Bound the worst-case AWS bill | S8 | AWS | Low–medium | — | Inspected 12 Nov: throttle 50/burst 100 and USD 5 budget already exist. Peak concurrency 56; proposed cap of 20 unsuitable. No cap changed; owner decision pending. |
+| [08](tasks/08-alarms-and-post-deploy-check.md) | Alarms, and a check after every deploy | A5 | AWS + repo | Low | 01 | Part B implemented locally with retries and version/commit checks; Part A alarms remain open. |
+| [11](tasks/11-rate-limit-writers.md) | Rate-limit the remaining endpoints that write to Redis | S4 | Repo | Low | — | Implemented locally: per-address limits, current/yesterday submissions, atomic completed count. Awaiting merge/deploy; task 06 still needed for trustworthy addresses. |
+| [06](tasks/06-trustworthy-client-ip.md) | Give the rate limiter an address the client can't forge | S2 | AWS + repo | Medium | 05 | Inspection complete: existing www redirect function; direct API returns 200. Paused for owner decision on extending the function. |
 | [03](tasks/03-retire-tournament-lambda.md) | Retire the old tournament Lambda | S7 | AWS | Irreversible | 02 | Not started |
-| [10](tasks/10-release-after-build.md) | Tag a release only after the build exists | D1 | Repo | Medium | — | Not started |
+| [10](tasks/10-release-after-build.md) | Tag a release only after the build exists | D1 | Repo | Medium | — | Implemented locally: dry-run version planning, publish after deploy and bot checks. First real deploy verification pending. |
 | [09](tasks/09-deploy-oidc.md) | Replace the deploy's long-lived AWS keys with OIDC | D4 | AWS + repo | Medium | 04 | Not started |
 | [13](tasks/13-single-image-tree.md) | One image tree, deployed by CI | D7, D8 | Repo; AWS read | Medium | — | Not started |
 | [14](tasks/14-arc-static-duplicate-upload.md) | Find out whether every deploy uploads the images twice | D6 | AWS read; repo | Low to check | — | Not started |
 | [12](tasks/12-mcc-player-id-and-choices.md) | Multiple Choice Chess: secret out of the URL, verify choices | S1 | Repo | Medium | — | Not started |
-| [15](tasks/15-security-headers-policy.md) | Send the security headers on every response | S6.4 | AWS | Low–medium | 05, 06 | Not started |
+| [15](tasks/15-security-headers-policy.md) | Send the security headers on every response | S6.4 | AWS | Low–medium | 05, 06 | Existing RemixAPIPolicy found; preserve its CORS configuration when preparing a change. No header policy changed. |
 | [27](tasks/27-camel-tournament-runner.md) | A local tournament runner for Camel Up Cup | S7 | Other repo; Docker; AWS | Runs untrusted code | 02 | Not started |
 | [16](tasks/16-self-host-engines.md) | Serve Stockfish and the ONNX runtime from the site itself | S6.2 | Repo | Medium | — | Not started |
 | [18](tasks/18-shared-server-helpers.md) | Shared helpers for the older API routes | A3, P3 | Repo | Low–medium | 11 | Not started |
@@ -120,3 +120,39 @@ Two things in `findings.md` turned out wrong when the work was done. They are no
 
 - **Do not use an S3 lifecycle rule to prune old build assets.** A file whose content did not change keeps its old upload date, so a month without deploys would expire the live site's assets. The deploy prunes with `scripts/prune-old-assets.mjs` instead.
 - **`'unsafe-eval'` cannot be removed from the Maia page.** onnxruntime-web's WebGPU build uses `new Function`.
+
+### Review decisions — 12 November 2026
+
+The first implementation batch covers 01 (live verification), 11 (the remaining write
+limits), 10 (release ordering), and the repository half of 08 (post-deploy checks).
+These are bounded changes with direct regression tests and no infrastructure changes.
+Tasks remain in the open table until merged/deployed where applicable.
+
+The other tasks remain candidates rather than approved migrations. Inspect AWS before
+04–07, 09, 13–15 and 26; finish email notifications before retiring the old tournament
+Lambda (02–03). Keep 22–25 behind their observability or runtime prerequisites.
+Defer the larger game URL/choice, engine hosting, image and project registry migrations
+(12, 13, 16–20) to separate changes so each can be verified on its own. Task 21's visual
+test deletion still needs the owner's choice; no visual baselines were removed.
+
+One brief needs care: Chesser Guesser's active puzzle endpoint uses
+`seededRandom.getTodayDateString()` (local calendar date), not the configurable
+`timezone.server.ts` helper. Task 11 preserves that existing day definition and allows
+the preceding calendar date; Blunder Watch continues to use UTC.
+
+Validation for this local batch: lint, typecheck, formatting, design rules, OG cards,
+client/SSR/handler builds and the Lambda dependency check passed. The full suite passed
+551 tests; 19 real-Redis tests were skipped without `TEST_REDIS_URL`. The four page
+routes rendered `200` as Googlebot from the built server, including the expected footer
+version and source commit; all five production smoke checks also passed. Release
+planning and failure ordering have regression tests, but no release was published
+and the modified workflow has not run in GitHub Actions yet.
+
+AWS follow-up on 12 November: deploy logs confirmed the invalidation permission gap
+and successful pruning. Applied the narrowly scoped IAM permission and the reviewed
+origin-controlled cache policy; configuration sources are under `infra/`. Saved the
+pre-change configuration outside the repository, verified distribution propagation,
+ran static/dynamic cache checks, checked query-string separation and a POST/game-state
+round trip, verified the `www` redirect, and repeated all five live bot smoke checks.
+No Lambda function, credential, object or role was deleted. Email setup, budgets,
+concurrency, viewer-IP and response-header changes were not applied.
