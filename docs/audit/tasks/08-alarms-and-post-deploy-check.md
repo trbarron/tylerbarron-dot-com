@@ -28,31 +28,17 @@ Errors go to `console.error` and nowhere else. In June 2026 some routes returned
 
 3. Add an uptime check on the healthcheck, which fails when Redis is unreachable. Either a Route 53 health check on `https://tylerbarron.com/healthcheck` (string match `OK`) with an alarm in `us-east-1`, or a CloudWatch Synthetics canary. The Route 53 check is cheaper and enough.
 
-## Part B — Check after deploy (repo)
+## Part B — Post-deploy check: implemented, first deploy pending
 
-Add a final step to the `deploy` job in `.github/workflows/deploy.yml`, after `🚀 Production Deploy` and before the two cleanup steps. Unlike the cleanup steps it must **fail the job** when the site is broken.
+[PR #136](https://github.com/trbarron/tylerbarron-dot-com/pull/136) adds
+`scripts/check-live-site.mjs` to the deploy workflow. It checks the homepage, a blog
+post, the chess lobby, pizza map and Redis healthcheck as Googlebot, with retries,
+a deployment query key and footer version/commit verification. It fails the job
+before release tagging if the deployment is broken.
 
-What it must check, as a bot (the June failure only showed for bot user agents):
-
-```bash
-check() { # url, expected status
-  code=$(curl -sS -o /tmp/body -w '%{http_code}' -A 'Googlebot/2.1 (+http://www.google.com/bot.html)' "$1")
-  [ "$code" = "$2" ] || { echo "✗ $1 returned $code, expected $2"; head -c 300 /tmp/body; exit 1; }
-  echo "✓ $1 $code"
-}
-check https://tylerbarron.com/ 200
-check https://tylerbarron.com/blog/<a-post-that-will-not-be-deleted> 200
-check https://tylerbarron.com/multiple-choice-chess 200
-check https://tylerbarron.com/pizza-rating 200
-check https://tylerbarron.com/healthcheck 200
-```
-
-- Pick routes whose server render imports different packages: a blog post, a chess page (chessground), the pizza map (d3). That is what the June incident was about.
-- Retry each URL a few times with a short sleep before failing: the new Lambda takes a few seconds to take traffic.
-- If task 05 is done, cached pages may be served from the edge and hide a broken Lambda. Add a cache-busting query string (`?deploy=${{ github.sha }}`) to each URL; the cache key includes the query string.
-- Put the script in `scripts/check-live-site.sh` (or `.mjs`) so it can also be run by hand, and add a unit-testable core if it has any logic worth testing.
-
-Commit as `ci: …`. Run `npm run format:check` before pushing (Prettier checks YAML).
+Do not reimplement it. After the PR merges, verify the live-check step passes on a
+production deploy. Runtime alerting in Part A remains open. Operating instructions
+are in `docs/deployment.md` ("Running the live check manually").
 
 ## Verify
 

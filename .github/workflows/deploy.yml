@@ -214,31 +214,12 @@ jobs:
       - name: 📥 Install deps
         run: npm ci
 
-      # Analyze commits since the last release; if a release is warranted, bump
-      # package.json on disk, commit/tag (with [skip ci] so it
-      # doesn't re-trigger this workflow), and publish a GitHub Release. The bumped
-      # package.json is then read by the build below so the footer shows the new
-      # version. A no-op when no release-worthy commits exist.
-      - name: 🔖 Release (semantic-release)
+      # Determine the footer version without modifying files, committing or tagging.
+      - name: 🔎 Plan release version
+        id: version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release
-
-      # Create the GitHub Release for the tag semantic-release just pushed.
-      # Kept out of semantic-release (and non-blocking) on purpose: this is the
-      # only release step that runs after the tag exists but before the deploy,
-      # so a flaky GitHub API response here used to abort the deploy and leave
-      # a tagged-but-undeployed state (run 27287187104, GitHub outage 2026-06-10).
-      # Idempotent: skips when HEAD isn't a fresh release or the Release exists.
-      - name: 🏷 GitHub Release (non-blocking)
-        continue-on-error: true
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          TAG=$(git tag --points-at HEAD | head -n1)
-          if [ -n "$TAG" ] && ! gh release view "$TAG" --json id >/dev/null 2>&1; then
-            git log -1 --format=%b | gh release create "$TAG" --title "$TAG" --verify-tag --notes-file -
-          fi
+        run: node scripts/plan-release.mjs
 
       # Single source of truth: the same npm scripts used locally. Builds the
       # client + SSR bundles (blog posts included) against the CDN base, bundles
@@ -246,6 +227,7 @@ jobs:
       - name: 🏗 Build
         env:
           NODE_ENV: production
+          APP_VERSION: ${{ steps.version.outputs.version }}
           VITE_CDN_URL: ${{ secrets.VITE_CDN_URL }}
         run: npm run build:arc
 
@@ -320,6 +302,35 @@ jobs:
           # GA_TRACKING_ID is NOT set here: arc deploy doesn't pass process env
           # to the Lambda — production reads it from @env in app.arc.
           VITE_CDN_URL: ${{ secrets.VITE_CDN_URL }}
+
+      # Fail before tagging or cleanup if bot SSR, Redis or the deployed version is broken.
+      - name: 🩺 Check live site as a bot
+        env:
+          APP_VERSION: ${{ steps.version.outputs.version }}
+        run: node scripts/check-live-site.mjs
+
+      # Only a successfully built, deployed and checked version may get a tag.
+      - name: 🔖 Release (semantic-release)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APP_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          npx semantic-release
+          # A skipped release (for example, master advancing during deployment)
+          # must not silently leave package.json behind the deployed footer.
+          test "$(node -p 'JSON.parse(require("fs").readFileSync("package.json", "utf8")).version')" = "$APP_VERSION"
+
+      # A GitHub API outage must not turn a successful deployment into a failure.
+      # Idempotent: skips when HEAD isn't a fresh release or the Release exists.
+      - name: 🏷 GitHub Release (non-blocking)
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG=$(git tag --points-at HEAD | head -n1)
+          if [ -n "$TAG" ] && ! gh release view "$TAG" --json id >/dev/null 2>&1; then
+            git log -1 --format=%b | gh release create "$TAG" --title "$TAG" --verify-tag --notes-file -
+          fi
 
       # Cached HTML (routes that export `headers` from ~/utils/cache) would
       # otherwise keep serving the previous build for up to its s-maxage. Not

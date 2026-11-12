@@ -65,7 +65,7 @@ If CloudFront reads only from the CDN bucket, Architect's copy serves nothing an
 
 ## Verify (if a change is made)
 
-`npm run build:arc && npm run check:lambda-deps`, then `npm run dev:arc` and load a page with images and a chess page. After the real deploy: every check in task 05's Verify section, plus images and fonts load on the live site.
+`npm run build:arc && npm run check:lambda-deps`, then `npm run dev:arc` and load a page with images and a chess page. After the real deploy: the live-site and cache checks in `docs/deployment.md`, plus images and fonts load on the live site.
 
 ## Done when
 

@@ -1,0 +1,14 @@
+{
+  "Name": "site-honour-origin",
+  "Comment": "Cache only what the origin marks cacheable; key on the query string.",
+  "MinTTL": 0,
+  "DefaultTTL": 0,
+  "MaxTTL": 31536000,
+  "ParametersInCacheKeyAndForwardedToOrigin": {
+    "EnableAcceptEncodingGzip": true,
+    "EnableAcceptEncodingBrotli": true,
+    "HeadersConfig": { "HeaderBehavior": "none" },
+    "CookiesConfig": { "CookieBehavior": "none" },
+    "QueryStringsConfig": { "QueryStringBehavior": "all" }
+  }
+}

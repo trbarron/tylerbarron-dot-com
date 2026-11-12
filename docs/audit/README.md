@@ -10,13 +10,13 @@ A structural, security and performance audit of this site, and the work that cam
 
 Give the executor one brief and this README. A brief states what it needs (repository only, AWS credentials, another repository), what it depends on, how risky it is, how to verify the result, and when to stop and ask.
 
-A task marked "AWS" needs a session that can actually reach AWS: the audit was written from a sandbox with no working AWS credentials and no route to the live site, so **nothing in any AWS-side brief has been run**. The commands are written from the documentation and from what the repository says about the account. Treat the read-only inspection step at the top of each brief as mandatory, not as a formality.
+A task marked "AWS" needs a session that can reach AWS. The original audit could not inspect AWS; subsequent inspection and changes are recorded below and in `../deployment.md`. Treat every remaining brief’s read-only inspection step as mandatory.
 
 ## Ground rules for whoever executes a task
 
 1. **Read the whole brief before running anything**, then do the steps in order. Inspect first; change second; verify third.
 2. **If what you see does not match what the brief expects, stop and report.** Do not improvise around a mismatch. The briefs say "stop and ask if" for the cases that were foreseen; the rule also covers the ones that were not.
-3. **Never print or commit a secret.** `npx arc env` prints stored values, including the Redis URL with its password: pipe it through the `sed` shown in task 01 or do not run it on a shared screen. The repository is public.
+3. **Never print or commit a secret.** `npx arc env` prints stored values, including the Redis URL with its password: do not print its raw output on a shared screen. The repository is public.
 4. **Before changing an AWS resource, save its current configuration to a file.** Change one thing at a time. Keep the file until the change has been verified; it is the rollback.
 5. **Irreversible actions need the owner's explicit yes, each time**: deleting a function, a role, a bucket object or an access key; anything in task 03. A brief saying "delete" is not that yes.
 6. **Merging to `master` deploys the site.** Open a PR and let the owner merge unless they have told you to merge.
@@ -45,8 +45,8 @@ From the repository. Items marked _unverified_ are inferred and should be confir
 | CloudFormation stack | `TbWebsiteRemixProduction` _(unverified)_ | Architect's naming convention |
 | Lambda | One function for `/*`, `nodejs24.x`, 2048 MB, 30 s timeout, x86_64 | `app.arc` |
 | CloudFront distribution | `E1TUWNZL0WZZ6J` | `docs/deployment.md` |
-| CloudFront behaviors | `/assets/*`, `/fonts/*`, `/images/*` go to the asset bucket; everything else to API Gateway | `docs/deployment.md` _(unverified)_ |
-| Asset bucket | Repository secret `AWS_BUCKET_NAME`; probably `remix-website-writing-posts` _(unverified)_ | default in the old upload script |
+| CloudFront behaviors | `/assets/*`, `/fonts/*`, `/images/*` go to the asset bucket; everything else to API Gateway | AWS inspection, 12 Nov; `docs/deployment.md` |
+| Asset bucket | `remix-website-writing-posts` | CloudFront origin inspected 12 Nov |
 | Redis | URL in the stored environment variable `REDIS_TLS_URL` (production) | `app.arc`, `app/utils/redis.server.ts` |
 | Deploy | GitHub Actions, `.github/workflows/deploy.yml`, on push to `master`; long-lived AWS keys in repository secrets | |
 | Tournament Lambda | `camel-up-tournament`, deployed from the separate repository `trbarron/Camel_Up_Cup_2K18`; no longer invoked by the site | |
@@ -64,11 +64,11 @@ Last updated 12 November 2026.
 | D3 | React Router advisory cleared; Dependabot watches npm; all dependencies updated | PR #128, PR #134 |
 | S1 (most) | Multiple Choice Chess no longer returns player ids; atomic join and move; ids from `crypto` | PR #128 |
 | S2 (code side) | One `clientIp()` that prefers a CloudFront-supplied header | PR #128 |
-| S3 | Redis TLS verification on; timeouts; no client thrash | PR #128 |
+| S3; task 01 | Redis TLS verification on by default; timeouts; no client thrash. Production health and bot checks passed 12 Nov; no opt-out added. Production TLS settings not independently inspected. | PR #128; `docs/deployment.md` |
 | S5 | Healthcheck no longer fetches a URL built from request headers | PR #128 |
 | S6.1 | `'unsafe-eval'` only on the Maia page; `'wasm-unsafe-eval'` elsewhere | PR #128 |
 | S7 (site side) | The site no longer invokes the tournament Lambda; submissions are queued and emailed | PR #128 |
-| P1 (code side) | Static pages send edge-cache headers; the deploy invalidates | PR #128 |
+| P1; task 05 | Static page headers and origin-controlled CloudFront caching applied and verified. Existing short 404 error cache remains. Invalidation permission verification is tracked in 04. | PR #128; `docs/deployment.md`; `infra/cloudfront/honour-origin.json` |
 | A1 | Blog posts are ordinary modules, one chunk each, with a build-time index | PR #128 |
 | — | `/the-riddler` hydration mismatch fixed | PR #128 |
 
@@ -78,22 +78,20 @@ Ordered by when to do them. "Needs" says what access the executor must have.
 
 | # | Task | Finding | Needs | Risk | Depends on | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| [01](tasks/01-production-health-and-redis-tls.md) | Confirm production is healthy after the Redis TLS change | S3 | Internet; AWS if a fix is needed | Low | — | **Not started. Do first.** |
 | [02](tasks/02-camel-up-cup-email.md) | Set up the Camel Up Cup submission email | S7 | AWS | Low | 01 | Not started |
 | [28](tasks/28-dependabot-prs.md) | Clear the first batch of Dependabot PRs | D3 | GitHub | Low | PR #134 | Not started |
-| [04](tasks/04-deploy-invalidation-permission.md) | Let the deploy invalidate CloudFront | P1 | AWS | Low | — | Not started |
-| [05](tasks/05-cloudfront-page-caching.md) | Make CloudFront honour the pages' cache headers | P1 | AWS | Medium–high | 01, 04 | Not started |
-| [07](tasks/07-cost-guardrails.md) | Bound the worst-case AWS bill | S8 | AWS | Low–medium | — | Not started |
-| [08](tasks/08-alarms-and-post-deploy-check.md) | Alarms, and a check after every deploy | A5 | AWS + repo | Low | 01 | Not started |
-| [11](tasks/11-rate-limit-writers.md) | Rate-limit the remaining endpoints that write to Redis | S4 | Repo | Low | — | Not started |
-| [06](tasks/06-trustworthy-client-ip.md) | Give the rate limiter an address the client can't forge | S2 | AWS + repo | Medium | 05 | Not started |
+| [04](tasks/04-deploy-invalidation-permission.md) | Let the deploy invalidate CloudFront | P1 | AWS | Low | — | Permission applied 12 Nov; IAM simulation allowed. Pruning already succeeded. Invalidation confirmation on next deploy pending. |
+| [07](tasks/07-cost-guardrails.md) | Bound the worst-case AWS bill | S8 | AWS | Low–medium | — | Inspected 12 Nov: throttle 50/burst 100 and USD 5 budget already exist. Peak concurrency 56; proposed cap of 20 unsuitable. No cap changed; owner decision pending. |
+| [08](tasks/08-alarms-and-post-deploy-check.md) | Alarms, and a check after every deploy | A5 | AWS + repo | Low | 01 | Bot checks implemented in PR #136; first deploy pending. Alarms remain open. |
+| [11](tasks/11-rate-limit-writers.md) | Rate-limit the remaining endpoints that write to Redis | S4 | Repo | Low | — | Implemented in PR #136; merge/deploy pending. Task 06 still needed for trustworthy addresses. |
+| [06](tasks/06-trustworthy-client-ip.md) | Give the rate limiter an address the client can't forge | S2 | AWS + repo | Medium | 05 | Inspection complete: existing www redirect function; direct API returns 200. Paused for owner decision on extending the function. |
 | [03](tasks/03-retire-tournament-lambda.md) | Retire the old tournament Lambda | S7 | AWS | Irreversible | 02 | Not started |
-| [10](tasks/10-release-after-build.md) | Tag a release only after the build exists | D1 | Repo | Medium | — | Not started |
+| [10](tasks/10-release-after-build.md) | Tag a release only after the build exists | D1 | Repo | Medium | — | Implemented in PR #136; first real deploy verification pending. |
 | [09](tasks/09-deploy-oidc.md) | Replace the deploy's long-lived AWS keys with OIDC | D4 | AWS + repo | Medium | 04 | Not started |
 | [13](tasks/13-single-image-tree.md) | One image tree, deployed by CI | D7, D8 | Repo; AWS read | Medium | — | Not started |
 | [14](tasks/14-arc-static-duplicate-upload.md) | Find out whether every deploy uploads the images twice | D6 | AWS read; repo | Low to check | — | Not started |
 | [12](tasks/12-mcc-player-id-and-choices.md) | Multiple Choice Chess: secret out of the URL, verify choices | S1 | Repo | Medium | — | Not started |
-| [15](tasks/15-security-headers-policy.md) | Send the security headers on every response | S6.4 | AWS | Low–medium | 05, 06 | Not started |
+| [15](tasks/15-security-headers-policy.md) | Send the security headers on every response | S6.4 | AWS | Low–medium | 05, 06 | Existing RemixAPIPolicy found; preserve its CORS configuration when preparing a change. No header policy changed. |
 | [27](tasks/27-camel-tournament-runner.md) | A local tournament runner for Camel Up Cup | S7 | Other repo; Docker; AWS | Runs untrusted code | 02 | Not started |
 | [16](tasks/16-self-host-engines.md) | Serve Stockfish and the ONNX runtime from the site itself | S6.2 | Repo | Medium | — | Not started |
 | [18](tasks/18-shared-server-helpers.md) | Shared helpers for the older API routes | A3, P3 | Repo | Low–medium | 11 | Not started |
@@ -107,12 +105,14 @@ Ordered by when to do them. "Needs" says what access the executor must have.
 | [25](tasks/25-node-26.md) | Move to Node 26 when Lambda supports it | — | Repo; a deploy | Medium | External | Blocked: `nodejs26.x` was in preview on 12 Nov 2026 |
 | [26](tasks/26-infrastructure-as-code.md) | Put the hand-made AWS resources into code | D5 | AWS + repo | High if careless | 05–08, 15 | Not started |
 
-### Suggested grouping
+### Next work
 
-- **One AWS session, about half a day, low risk:** 01, 02, 04, 07, and the read-only parts of 03, 13 and 14.
-- **One careful AWS session on the CloudFront distribution:** 05, then 06, then 15. One executor, one change at a time, with the saved config for rollback. Do not run these in parallel with each other or with 26.
-- **Repository-only, independent of each other:** 10, 11, 12, 16, 17, 19, 20, 21. Any of these can be handed out today.
-- **After alarms exist (08):** 22, 23, 24.
+- Finish 04 and 10’s deploy verification after [PR #136](https://github.com/trbarron/tylerbarron-dot-com/pull/136) merges. All seven CI checks passed, including 570 tests with real Redis.
+- Finish email notifications before retiring the old tournament Lambda (02–03).
+- Handle 06, then 15, sequentially on CloudFront; both found existing resources that must be preserved.
+- Keep 22–25 behind their observability/runtime prerequisites. Task 21’s visual-test deletion still needs the owner’s choice.
+
+Completed task briefs are removed once their lasting operational details are in `docs/deployment.md`. Task numbers remain stable for dependencies; Git history retains the original briefs. Implemented tasks with verification outstanding keep a short checklist.
 
 ### Corrections made to the audit after it was written
 

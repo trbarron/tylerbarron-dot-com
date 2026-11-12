@@ -41,8 +41,8 @@ Add `infra/README.md` saying what each file is, when it was captured and how to 
 
 Options, least to most invasive:
 
-1. **Policies and functions only.** Create a small CloudFormation stack that owns the cache policy, origin request policy, response headers policy and CloudFront function, then point the existing distribution at the stack-managed ids (an `update-distribution`, as in task 05). The distribution itself stays hand-managed. Low risk.
-2. **Import the distribution** into a stack with CloudFormation resource import. The template must match the live config exactly or the first update will change it. Do it with a change set, read the change set line by line, and have the rollback from task 05 ready.
+1. **Policies and functions only.** Create a small CloudFormation stack that owns the cache policy, origin request policy, response headers policy and CloudFront function, then point the existing distribution at the stack-managed ids (an `update-distribution` with a saved config and ETag). The distribution itself stays hand-managed. Low risk.
+2. **Import the distribution** into a stack with CloudFormation resource import. The template must match the live config exactly or the first update will change it. Do it with a change set, read the change set line by line, and have the distribution rollback described in `docs/deployment.md` ready.
 3. **Recreate from scratch.** Do not. A new distribution means a new domain name, DNS changes and certificate re-association.
 
 Option 1 is the recommended stopping point. Whatever is created, keep templates under `infra/` and add a section to `docs/deployment.md`.
