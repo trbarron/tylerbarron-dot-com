@@ -9,7 +9,7 @@
  * (this shipped once, 2026-06-10). See the verify-lambda-deps skill.
  *
  * Run after the Lambda is assembled the way deploy does it:
- *   npm run compile:mdx && npm run build && npm run build:arc:server && npm run build:arc:deps
+ *   npm run build && npm run build:arc:server && npm run build:arc:deps
  * then this resolves every bare import in server/index.mjs and server/build/server
  * against server/node_modules, the tree the Lambda actually ships (transitive
  * deps included).
@@ -59,7 +59,7 @@ const bundle = [path.join(serverDir, 'index.mjs'), ...files(path.join(serverDir,
 if (!fs.existsSync(bundle[0]) || !fs.existsSync(modulesDir)) {
   console.error(
     '✗ No assembled Lambda in server/. Build it first:\n' +
-      '  npm run compile:mdx && npm run build && npm run build:arc:server && npm run build:arc:deps',
+      '  npm run build && npm run build:arc:server && npm run build:arc:deps',
   );
   process.exit(1);
 }
@@ -108,4 +108,23 @@ if (failures.length) {
   );
   process.exit(1);
 }
+// What's installed must be what the build compiled against: the versions in the
+// root lockfile (scripts/install-lambda-deps.mjs pins them).
+const rootLock = JSON.parse(fs.readFileSync(path.join(root, 'package-lock.json'), 'utf8'));
+const serverPkg = JSON.parse(fs.readFileSync(path.join(serverDir, 'package.json'), 'utf8'));
+const skewed = [];
+for (const name of Object.keys(serverPkg.dependencies ?? {})) {
+  const want = rootLock.packages?.[`node_modules/${name}`]?.version;
+  const manifest = path.join(modulesDir, name, 'package.json');
+  const have = fs.existsSync(manifest) ? JSON.parse(fs.readFileSync(manifest, 'utf8')).version : 'not installed';
+  if (want !== have)
+    skewed.push(`  ${name}: Lambda has ${have}, the build used ${want ?? 'nothing (not in the root lockfile)'}`);
+}
+if (skewed.length) {
+  console.error('✗ The Lambda would run different versions from the ones the build and tests used:\n');
+  for (const s of skewed) console.error(s);
+  console.error('\nInstall with `npm run build:arc:deps`, which pins them to package-lock.json.');
+  process.exit(1);
+}
+
 console.log(`✓ Every package the Lambda imports is installed: ${[...new Set(checked)].join(', ')}.`);

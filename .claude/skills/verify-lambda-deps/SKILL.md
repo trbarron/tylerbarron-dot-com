@@ -21,7 +21,7 @@ browser**. This shipped once already (2026-06-10).
 The quick version is the script CI runs. Assemble `server/` as the deploy does, then check it:
 
 ```bash
-npm run compile:mdx && npm run build && npm run build:arc:server && npm run build:arc:deps
+npm run build && npm run build:arc:server && npm run build:arc:deps
 npm run check:lambda-deps
 ```
 

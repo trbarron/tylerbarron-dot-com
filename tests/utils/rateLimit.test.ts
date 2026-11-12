@@ -57,6 +57,13 @@ describe('checkRateLimit', () => {
 });
 
 describe('clientIp', () => {
+  it("prefers CloudFront's own record of who connected over anything the client sent", () => {
+    const forged = { 'x-forwarded-for': '6.6.6.6, 203.0.113.7' };
+    expect(clientIp(req({ ...forged, 'cloudfront-viewer-address': '203.0.113.7:46532' }))).toBe('203.0.113.7');
+    expect(clientIp(req({ ...forged, 'cloudfront-viewer-address': '2001:db8::1:46532' }))).toBe('2001:db8::1');
+    expect(clientIp(req({ ...forged, 'cloudfront-viewer-address': '[2001:db8::1]:46532' }))).toBe('2001:db8::1');
+  });
+
   it('takes the first x-forwarded-for entry, then x-real-ip', () => {
     expect(clientIp(req({ 'x-forwarded-for': '9.9.9.9, 10.0.0.1' }))).toBe('9.9.9.9');
     expect(clientIp(req({ 'x-real-ip': '8.8.8.8' }))).toBe('8.8.8.8');

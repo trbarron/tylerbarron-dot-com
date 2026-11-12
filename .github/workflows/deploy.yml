@@ -7,9 +7,12 @@ on:
   pull_request:
   workflow_dispatch:
 
+# A newer push replaces a PR's run, but a deploy always finishes: cancelling one
+# between publishing assets and updating the Lambda leaves production
+# half-deployed.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
 
 permissions:
   contents: read
@@ -18,6 +21,8 @@ permissions:
 # never run against semantic-release's automated release commit.
 env:
   HUSKY: 0
+  # The tylerbarron.com distribution (docs/deployment.md).
+  CLOUDFRONT_DISTRIBUTION_ID: E1TUWNZL0WZZ6J
 
 defaults:
   run:
@@ -155,7 +160,7 @@ jobs:
       # every package the SSR bundle imports is installed there. A miss 500s
       # for bots and curl only, so no browser test would catch it.
       - name: 🏗 Build the Lambda
-        run: npm run compile:mdx && npm run build && npm run build:arc:server && npm run build:arc:deps
+        run: npm run build && npm run build:arc:server && npm run build:arc:deps
 
       - name: λ Check the Lambda installs what it imports
         run: npm run check:lambda-deps
@@ -185,11 +190,10 @@ jobs:
     # Only master deploys. PRs run the checks above and stop here, so a PR
     # can never publish assets or overwrite production.
     if: github.ref == 'refs/heads/master'
-    # semantic-release pushes the version bump commit, tag, and GitHub release.
+    # semantic-release pushes the version bump commit and tag; the step after it
+    # creates the GitHub Release.
     permissions:
       contents: write
-      issues: write
-      pull-requests: write
 
     steps:
       - name: ⬇️ Checkout repo
@@ -236,10 +240,9 @@ jobs:
             git log -1 --format=%b | gh release create "$TAG" --title "$TAG" --verify-tag --notes-file -
           fi
 
-      # Single source of truth: the same npm scripts used locally. Compiles MDX
-      # (image src's rewritten to VITE_CDN_URL), builds client + SSR bundles
-      # against the CDN base, bundles the Lambda handler, and installs the
-      # Lambda's prod-only deps in server/.
+      # Single source of truth: the same npm scripts used locally. Builds the
+      # client + SSR bundles (blog posts included) against the CDN base, bundles
+      # the Lambda handler, and installs the Lambda's prod-only deps in server/.
       - name: 🏗 Build
         env:
           NODE_ENV: production
@@ -257,9 +260,11 @@ jobs:
           AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
           AWS_BUCKET_NAME: ${{ secrets.AWS_BUCKET_NAME }}
         run: |
-          # Content-hashed assets are immutable; --delete prunes stale builds.
+          # Content-hashed assets are immutable. No --delete: the Lambda still
+          # in production, cached HTML, and tabs already open all point at the
+          # previous build's files until well after this deploy. Old builds are
+          # pruned by age once the new Lambda is live (last step).
           aws s3 sync build/client/assets/ "s3://$AWS_BUCKET_NAME/assets/" \
-            --delete \
             --cache-control "public,max-age=31536000,immutable"
           # Fonts have fixed names: skip --delete, shorter TTL.
           [ -d build/client/fonts ] && aws s3 sync build/client/fonts/ "s3://$AWS_BUCKET_NAME/fonts/" \
@@ -315,3 +320,25 @@ jobs:
           # GA_TRACKING_ID is NOT set here: arc deploy doesn't pass process env
           # to the Lambda — production reads it from @env in app.arc.
           VITE_CDN_URL: ${{ secrets.VITE_CDN_URL }}
+
+      # Cached HTML (routes that export `headers` from ~/utils/cache) would
+      # otherwise keep serving the previous build for up to its s-maxage. Not
+      # fatal if it fails: old pages still work, since their assets are kept.
+      - name: 🧹 Invalidate cached pages
+        continue-on-error: true
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+        run: aws cloudfront create-invalidation --distribution-id "$CLOUDFRONT_DISTRIBUTION_ID" --paths '/*'
+
+      # Remove hashed assets that no build has shipped for 30 days. Runs last,
+      # and never touches a file the build just deployed.
+      - name: 🧹 Prune old assets
+        continue-on-error: true
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+          AWS_BUCKET_NAME: ${{ secrets.AWS_BUCKET_NAME }}
+        run: node scripts/prune-old-assets.mjs

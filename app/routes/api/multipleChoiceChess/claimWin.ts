@@ -1,5 +1,5 @@
 import type { ActionFunctionArgs } from 'react-router';
-import { getGame, claimWinByAbandonment } from '~/utils/multipleChoiceChess/gameState.server';
+import { getGame, normalizeGameId, claimWinByAbandonment } from '~/utils/multipleChoiceChess/gameState.server';
 
 // A player can claim a win if their opponent's last_seen is older than this.
 // The threshold is enforced server-side; a stale client can't end a live game.
@@ -11,14 +11,15 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   try {
-    const body = (await request.json()) as { game_id: string; player_id: string };
-    const { game_id: gameId, player_id: playerId } = body;
+    const body = (await request.json()) as { game_id?: unknown; player_id?: unknown };
+    const gameId = normalizeGameId(body?.game_id);
+    const playerId = body?.player_id;
 
-    if (!gameId || !playerId) {
+    if (!gameId || typeof playerId !== 'string' || !playerId) {
       return Response.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const game = await getGame(gameId.toLowerCase().trim());
+    const game = await getGame(gameId);
     if (!game) {
       return Response.json({ error: 'Game not found' }, { status: 404 });
     }

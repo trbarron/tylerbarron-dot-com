@@ -1,54 +1,27 @@
-// Server-side plumbing for Camel Up Cup bot tournaments.
+// Server-side plumbing for Camel Up Cup bot submissions.
 //
-// Submissions are dispatched async to the camel-up-tournament Lambda (fixed
-// name, see Camel_Up_Cup_2K18 lambda/deploy.sh). That Lambda publishes
-// leaderboard.json and per-submission status JSON to the CDN bucket under
-// images/camel-up/, which CloudFront serves same-origin — so reads here are
-// plain fetches, no AWS SDK. Only one tournament runs at a time (a full run
-// is ~5 chained Lambda invocations over ~1h), guarded by a Redis lock plus
-// reserved concurrency of 1 on the Lambda itself.
+// The site doesn't run tournaments. A submission is kept in Redis and Tyler is
+// emailed; he pulls the waiting bots (`npm run camel:queue`), runs the
+// tournament on his own machine with as many games as he likes, and publishes
+// leaderboard.json to the CDN bucket under images/camel-up/, which CloudFront
+// serves same-origin (so the read here is a plain fetch).
+//
+// It used to hand each bot straight to a Lambda that ran strangers' Python on
+// submit. That needed a single-run lock, a daily cost cap and a status proxy,
+// and played too few games for the standings to mean much.
 
 import { getRedisClient } from '../redis.server';
 import { getImageUrl } from '../cdn';
-import type { Leaderboard, SubmissionStatus } from './types';
+import { checkRateLimit } from '../rateLimit.server';
+import type { Leaderboard, PendingSubmission } from './types';
 
-const LOCK_KEY = 'camelup:lock';
-const LOCK_TTL_S = 3 * 3600; // outlasts a worst-case tournament run
-const RATE_KEY = 'camelup:ratelimit:';
-const MAX_SUBMISSIONS_PER_HOUR = 3;
-const DAILY_KEY = 'camelup:daily:';
-// Each tournament is ~1h on a 10 GB Lambda (~$0.60), so this caps the
-// worst case at ~$2.40/day no matter how many addresses submit.
-export const MAX_TOURNAMENTS_PER_DAY = 4;
+/** Hash of submission id → PendingSubmission JSON. No expiry: it's a to-do list. */
+export const PENDING_KEY = 'camelup:pending';
+/** Bots waiting at once. Each is up to 64 KB, so this bounds the queue at ~1.6 MB of Redis. */
+export const MAX_PENDING = 25;
+const SUBMIT_LIMIT = { max: 3, windowSeconds: 3600 };
 
-export function isTournamentConfigured(): boolean {
-  return Boolean(process.env.CAMEL_TOURNAMENT_FUNCTION);
-}
-
-export interface SubmissionPayload {
-  id: string;
-  botName: string;
-  author: string;
-  code: string;
-}
-
-export async function dispatchSubmission(payload: SubmissionPayload): Promise<void> {
-  // Not shipped with the site: Lambda's Node runtime includes the AWS SDK v3,
-  // and bundling it doubled the Lambda's size. Locally it resolves from the
-  // root devDependency. Imported here rather than at the top because every
-  // route shares one server bundle, and only a submission needs it.
-  const { LambdaClient, InvokeCommand } = await import('@aws-sdk/client-lambda');
-  const client = new LambdaClient({});
-  await client.send(
-    new InvokeCommand({
-      FunctionName: process.env.CAMEL_TOURNAMENT_FUNCTION,
-      InvocationType: 'Event',
-      Payload: new TextEncoder().encode(JSON.stringify(payload)),
-    }),
-  );
-}
-
-// ── CDN JSON reads ─────────────────────────────────────────────────────────
+// ── Leaderboard (CDN JSON) ─────────────────────────────────────────────────
 
 /** getImageUrl returns a relative path in dev; absolutize against the request. */
 function cdnJsonUrl(request: Request, path: string): string {
@@ -56,115 +29,93 @@ function cdnJsonUrl(request: Request, path: string): string {
   return /^https?:\/\//.test(url) ? url : new URL(url, request.url).toString();
 }
 
-async function fetchCdnJson<T>(request: Request, path: string): Promise<T | null> {
+export async function fetchLeaderboard(request: Request): Promise<Leaderboard | null> {
   try {
-    const res = await fetch(cdnJsonUrl(request, path), {
+    const res = await fetch(cdnJsonUrl(request, 'camel-up/leaderboard.json'), {
       headers: { accept: 'application/json' },
     });
     if (!res.ok) return null;
-    return (await res.json()) as T;
+    return (await res.json()) as Leaderboard;
   } catch {
     return null;
   }
 }
 
-export function fetchLeaderboard(request: Request): Promise<Leaderboard | null> {
-  return fetchCdnJson<Leaderboard>(request, 'camel-up/leaderboard.json');
-}
+// ── The queue ──────────────────────────────────────────────────────────────
 
-export function fetchStatus(request: Request, id: string): Promise<SubmissionStatus | null> {
-  return fetchCdnJson<SubmissionStatus>(request, `camel-up/status/${id}.json`);
-}
-
-// ── Redis lock + rate limit ────────────────────────────────────────────────
-
-/** Returns true if this submission now holds the single-tournament lock. */
-export async function acquireTournamentLock(id: string): Promise<boolean> {
-  const redis = getRedisClient();
-  const result = await redis.set(LOCK_KEY, id, 'EX', LOCK_TTL_S, 'NX');
-  return result === 'OK';
-}
-
-/** The submission id currently holding the lock, if any. */
-export async function activeTournamentId(): Promise<string | null> {
-  try {
-    return await getRedisClient().get(LOCK_KEY);
-  } catch {
-    return null;
-  }
+/** Three submissions an hour per address. Fails open if Redis is down. */
+export async function allowSubmission(request: Request): Promise<boolean> {
+  return (await checkRateLimit(request, 'camelUpCup', 'submit', SUBMIT_LIMIT)).allowed;
 }
 
 /**
- * Acquire the lock, stealing it if the holder's tournament already reached a
- * terminal phase (covers runs that finished with nobody polling /status —
- * otherwise the stale lock would block submissions until its TTL).
+ * Add a bot to the waiting list. Returns how many are now waiting, or null
+ * when the list is full. A Redis error propagates: a bot that wasn't stored
+ * must not be reported as entered.
  */
-export async function tryAcquireTournamentLock(request: Request, id: string): Promise<boolean> {
-  if (await acquireTournamentLock(id)) return true;
-  const holder = await activeTournamentId();
-  if (!holder) return acquireTournamentLock(id);
-  const status = await fetchStatus(request, holder);
-  if (status && ['complete', 'rejected', 'error'].includes(status.phase)) {
-    await releaseTournamentLock(holder);
-    return acquireTournamentLock(id);
-  }
-  return false;
-}
-
-/** Release the lock, but only if `id` still holds it. */
-export async function releaseTournamentLock(id: string): Promise<void> {
+export async function enqueueSubmission(submission: PendingSubmission): Promise<number | null> {
   const redis = getRedisClient();
-  const holder = await redis.get(LOCK_KEY);
-  if (holder === id) {
-    await redis.del(LOCK_KEY);
-  }
+  if ((await redis.hlen(PENDING_KEY)) >= MAX_PENDING) return null;
+  await redis.hset(PENDING_KEY, submission.id, JSON.stringify(submission));
+  return redis.hlen(PENDING_KEY);
 }
 
-export function getClientIP(request: Request): string {
-  const forwardedFor = request.headers.get('x-forwarded-for');
-  if (forwardedFor) return forwardedFor.split(',')[0].trim();
-  return request.headers.get('x-real-ip') ?? 'unknown';
+// ── The email ──────────────────────────────────────────────────────────────
+
+/** SNS subjects are ASCII, one line, under 100 characters. */
+export function emailSubject(submission: Pick<PendingSubmission, 'botName' | 'author'>): string {
+  const author = submission.author.replace(/[^\x20-\x7e]/g, '?').trim();
+  return `Camel Up Cup: ${submission.botName} by ${author}`.slice(0, 99);
 }
 
-function dailyKey(): string {
-  return DAILY_KEY + new Date().toISOString().slice(0, 10);
+export function emailBody(submission: PendingSubmission, waiting: number): string {
+  return [
+    `${submission.botName} by ${submission.author} was entered in the Camel Up Cup.`,
+    '',
+    `Submission id: ${submission.id}`,
+    `Submitted:     ${submission.submitted}`,
+    `Waiting now:   ${waiting}`,
+    '',
+    'To run it, in the site repo:',
+    '  npm run camel:queue -- pull ./camel-bots   # writes each waiting bot to a .py file',
+    `  npm run camel:queue -- done ${submission.id}   # after the tournament`,
+    '',
+    "This is a stranger's code. Read it, and run it in a container with no network and nothing mounted.",
+    '',
+    `──────── ${submission.botName}.py ────────`,
+    submission.code,
+  ].join('\n');
 }
 
 /**
- * Claim one of today's (UTC) tournament slots; false once the daily cap is
- * used up. Unlike the per-IP limit this doesn't fail open: it's the cost
- * backstop, so a Redis error propagates.
+ * Email Tyler through the SNS topic in CAMEL_NOTIFY_TOPIC_ARN. Returns whether
+ * it was sent; never throws, because the queue is the record and the email is
+ * only the nudge.
  */
-export async function claimDailyTournamentSlot(): Promise<boolean> {
-  const redis = getRedisClient();
-  const key = dailyKey();
-  const count = await redis.incr(key);
-  if (count === 1) {
-    await redis.expire(key, 2 * 24 * 3600);
+export async function notifySubmission(submission: PendingSubmission, waiting: number): Promise<boolean> {
+  const topic = process.env.CAMEL_NOTIFY_TOPIC_ARN;
+  if (!topic) {
+    console.warn(`Camel Up Cup: ${submission.id} queued, but CAMEL_NOTIFY_TOPIC_ARN is not set, so no email.`);
+    return false;
   }
-  return count <= MAX_TOURNAMENTS_PER_DAY;
-}
-
-/** Give back a slot whose tournament never started. Best effort. */
-export async function returnDailyTournamentSlot(): Promise<void> {
   try {
-    await getRedisClient().decr(dailyKey());
-  } catch {
-    // The slot stays counted; worst case one fewer tournament today.
-  }
-}
-
-/** Sliding-hour submission limit per IP. Fails open if Redis is down. */
-export async function checkSubmissionRateLimit(request: Request): Promise<boolean> {
-  try {
-    const redis = getRedisClient();
-    const key = RATE_KEY + getClientIP(request);
-    const count = await redis.incr(key);
-    if (count === 1) {
-      await redis.expire(key, 3600);
-    }
-    return count <= MAX_SUBMISSIONS_PER_HOUR;
-  } catch {
+    // Not shipped with the site: Lambda's Node runtime includes the AWS SDK v3.
+    // Locally it resolves from the root devDependency. Imported here rather
+    // than at the top because every route shares one server bundle, and only a
+    // submission needs it.
+    const { SNSClient, PublishCommand } = await import('@aws-sdk/client-sns');
+    // The topic's own region, which need not be the Lambda's.
+    const client = new SNSClient({ region: topic.split(':')[3] });
+    await client.send(
+      new PublishCommand({
+        TopicArn: topic,
+        Subject: emailSubject(submission),
+        Message: emailBody(submission, waiting),
+      }),
+    );
     return true;
+  } catch (error) {
+    console.error(`Camel Up Cup: ${submission.id} queued, but the email failed:`, error);
+    return false;
   }
 }

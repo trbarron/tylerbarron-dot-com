@@ -15,8 +15,9 @@ function getTodayDateString(): string {
   return new Date().toISOString().split('T')[0];
 }
 
-function validateUsername(u: string): boolean {
-  return /^[a-zA-Z0-9_]{1,20}$/.test(u);
+function validateUsername(u: unknown): u is string {
+  // The type check matters: a regex test coerces, so undefined would pass as "undefined".
+  return typeof u === 'string' && /^[a-zA-Z0-9_]{1,20}$/.test(u);
 }
 
 export async function action({ request }: ActionFunctionArgs) {

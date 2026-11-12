@@ -268,161 +268,155 @@ const Riddler = () => {
                 <h3 className="subarticle-title">Other Solutions</h3>
                 <div className="overflow-hidden bg-white break-words">
                   <p>Other solutions worthy of writing up but not dedicating space to here:</p>
-                  <p>
-                    <ul>
-                      <li>
-                        <a href="https://barronwasteland.wordpress.com/2020/07/12/2220/">A Story of Stacking Rings</a>
-                      </li>
-                      <li>
-                        <a href="https://barronwasteland.wordpress.com/2020/06/21/golden-spheres/">Golden Spheres</a>
-                      </li>
-                      <li>
-                        <a href="https://barronwasteland.wordpress.com/2020/06/11/can-you-join-the-worlds-biggest-zoom-call/">
-                          Can You Join the World’s Biggest Zoom Call?
-                        </a>
-                      </li>
-                      <li>
-                        <a href="https://barronwasteland.wordpress.com/2020/03/02/2186/">A Dark Room With Cards</a>
-                      </li>
-                      <li>
-                        <a href="https://barronwasteland.wordpress.com/2020/02/11/jim-propp-and-the-unique-observed-series/">
-                          Jim Propp and the Unique Observed Series
-                        </a>
-                      </li>
-                      <li>
-                        <a href="https://barronwasteland.wordpress.com/2020/01/06/a-hexagon-problem/">
-                          A Hexagon Problem
-                        </a>
-                      </li>
-                      <li>
-                        <a href="https://barronwasteland.wordpress.com/2019/12/22/can-you-find-a-matching-pair-of-socks/">
-                          Can You Find A Matching Pair of Socks?
-                        </a>
-                      </li>
-                      <li>
-                        <a href="https://barronwasteland.wordpress.com/2019/12/18/a-particularly-prismatic-puzzle/">
-                          A Particularly Prismatic Problem
-                        </a>
-                      </li>
-                      <li>
-                        <a href="https://barronwasteland.wordpress.com/2019/12/10/how-fast-can-you-skip-to-your-favorite-song/">
-                          How Fast Can You Skip to Your Favorite Song
-                        </a>
-                      </li>
-                      <li>
-                        <a href="https://barronwasteland.wordpress.com/2019/11/03/new-sultans-dowry-problem/">
-                          New Sultan's Dowery Problem
-                        </a>
-                      </li>
-                      <li>
-                        <a href="https://barronwasteland.wordpress.com/2018/08/19/game-theory-on-a-number-line/">
-                          Game Theory on a Number Line
-                        </a>
-                      </li>
-                      <li>
-                        <a href="https://barronwasteland.wordpress.com/2018/09/15/the-eccentric-billionaire-and-the-banker/">
-                          The Eccentric Billionaire and the Banker
-                        </a>
-                      </li>
-                      <li>
-                        <a href="https://barronwasteland.wordpress.com/2018/09/24/a-tale-of-two-endpoints/">
-                          A Tale of Two Endpoints
-                        </a>
-                      </li>
-                      <li>
-                        <a href="https://barronwasteland.wordpress.com/2018/12/24/2000/">Elf Playlist</a>
-                      </li>
-                      <li>
-                        <a href="https://barronwasteland.wordpress.com/2019/01/22/creating-crossword-grids/">
-                          Creating Crosswords
-                        </a>
-                      </li>
-                      <li>
-                        <a href="https://barronwasteland.wordpress.com/2019/02/17/sum-to-15-card-game/">
-                          Sum to 15 Card Game
-                        </a>
-                      </li>
-                      <li>
-                        <a href="https://barronwasteland.wordpress.com/2019/04/01/a-fivethirtyeight-spelling-be/">
-                          A FiveThirtyEight Spelling Bee
-                        </a>
-                      </li>
-                      <li>
-                        <a href="https://barronwasteland.wordpress.com/2019/04/20/a-circular-conundrum/">
-                          A Circular Conundrum
-                        </a>
-                      </li>
-                      <li>
-                        <a href="https://barronwasteland.wordpress.com/2018/06/17/matching-game/">Matching Game</a>
-                      </li>
-                      <li>
-                        <a href="https://barronwasteland.wordpress.com/2018/06/06/a-classic-construction-problem/">
-                          A Classic Construction Problem
-                        </a>
-                      </li>
-                      <li>
-                        <a href="https://barronwasteland.wordpress.com/2017/11/04/an-amphibious-enigma/">
-                          An Amphibious Enigma
-                        </a>
-                      </li>
-                      <li>
-                        <a href="https://barronwasteland.wordpress.com/2017/10/08/game-show-bright-lights-big-cit/">
-                          Big City, Bright Lights
-                        </a>
-                      </li>
-                      <li>
-                        <a href="https://barronwasteland.wordpress.com/2017/07/06/the-purge-riddler/">The Purge</a>
-                      </li>
-                      <li>
-                        <a href="https://barronwasteland.wordpress.com/2017/04/29/a-painting-puzzl/">
-                          A Painting Puzzle
-                        </a>
-                      </li>
-                      <li>
-                        <a href="https://barronwasteland.wordpress.com/2017/04/23/pick-a-card-any-card/">
-                          Pick a Card, Any Card
-                        </a>
-                      </li>
-                      <li>
-                        <a href="https://barronwasteland.wordpress.com/2017/03/18/a-puzzle-about-domestic-boundaries/">
-                          A Puzzle About Domestic Boundaries
-                        </a>
-                      </li>
-                      <li>
-                        <a href="https://barronwasteland.wordpress.com/2017/01/17/the-riddler-an-impromptu-gambling-problem/">
-                          An Impromptu Gambling Problem
-                        </a>
-                      </li>
-                      <li>
-                        <a href="https://barronwasteland.wordpress.com/2016/10/23/the-riddler-can-you-survive-this-deadly-board-game/">
-                          Can You Survive This Deadly Board Game?
-                        </a>
-                      </li>
-                      <li>
-                        <a href="https://barronwasteland.wordpress.com/2016/09/19/the-riddler-count-von-count/">
-                          Count Von Count
-                        </a>
-                      </li>
-                      <li>
-                        <a href="https://barronwasteland.wordpress.com/2016/05/25/the-riddler/">Jems</a>
-                      </li>
-                      <li>
-                        <a href="https://barronwasteland.wordpress.com/2016/04/16/the-riddler-space-race/">
-                          Space Race
-                        </a>
-                      </li>
-                      <li>
-                        <a href="https://barronwasteland.wordpress.com/2015/12/22/the-riddler-2-which-geyser-gushes-first/">
-                          Which Geyser Gushes First?
-                        </a>
-                      </li>
-                      <li>
-                        <a href="https://barronwasteland.wordpress.com/2015/12/12/the-riddler-1-whats-the-best-way-to-drop-a-smartphone/">
-                          What's the Best Way To Drop A Smartphone?
-                        </a>
-                      </li>
-                    </ul>
-                  </p>
+                  <ul>
+                    <li>
+                      <a href="https://barronwasteland.wordpress.com/2020/07/12/2220/">A Story of Stacking Rings</a>
+                    </li>
+                    <li>
+                      <a href="https://barronwasteland.wordpress.com/2020/06/21/golden-spheres/">Golden Spheres</a>
+                    </li>
+                    <li>
+                      <a href="https://barronwasteland.wordpress.com/2020/06/11/can-you-join-the-worlds-biggest-zoom-call/">
+                        Can You Join the World’s Biggest Zoom Call?
+                      </a>
+                    </li>
+                    <li>
+                      <a href="https://barronwasteland.wordpress.com/2020/03/02/2186/">A Dark Room With Cards</a>
+                    </li>
+                    <li>
+                      <a href="https://barronwasteland.wordpress.com/2020/02/11/jim-propp-and-the-unique-observed-series/">
+                        Jim Propp and the Unique Observed Series
+                      </a>
+                    </li>
+                    <li>
+                      <a href="https://barronwasteland.wordpress.com/2020/01/06/a-hexagon-problem/">
+                        A Hexagon Problem
+                      </a>
+                    </li>
+                    <li>
+                      <a href="https://barronwasteland.wordpress.com/2019/12/22/can-you-find-a-matching-pair-of-socks/">
+                        Can You Find A Matching Pair of Socks?
+                      </a>
+                    </li>
+                    <li>
+                      <a href="https://barronwasteland.wordpress.com/2019/12/18/a-particularly-prismatic-puzzle/">
+                        A Particularly Prismatic Problem
+                      </a>
+                    </li>
+                    <li>
+                      <a href="https://barronwasteland.wordpress.com/2019/12/10/how-fast-can-you-skip-to-your-favorite-song/">
+                        How Fast Can You Skip to Your Favorite Song
+                      </a>
+                    </li>
+                    <li>
+                      <a href="https://barronwasteland.wordpress.com/2019/11/03/new-sultans-dowry-problem/">
+                        New Sultan's Dowery Problem
+                      </a>
+                    </li>
+                    <li>
+                      <a href="https://barronwasteland.wordpress.com/2018/08/19/game-theory-on-a-number-line/">
+                        Game Theory on a Number Line
+                      </a>
+                    </li>
+                    <li>
+                      <a href="https://barronwasteland.wordpress.com/2018/09/15/the-eccentric-billionaire-and-the-banker/">
+                        The Eccentric Billionaire and the Banker
+                      </a>
+                    </li>
+                    <li>
+                      <a href="https://barronwasteland.wordpress.com/2018/09/24/a-tale-of-two-endpoints/">
+                        A Tale of Two Endpoints
+                      </a>
+                    </li>
+                    <li>
+                      <a href="https://barronwasteland.wordpress.com/2018/12/24/2000/">Elf Playlist</a>
+                    </li>
+                    <li>
+                      <a href="https://barronwasteland.wordpress.com/2019/01/22/creating-crossword-grids/">
+                        Creating Crosswords
+                      </a>
+                    </li>
+                    <li>
+                      <a href="https://barronwasteland.wordpress.com/2019/02/17/sum-to-15-card-game/">
+                        Sum to 15 Card Game
+                      </a>
+                    </li>
+                    <li>
+                      <a href="https://barronwasteland.wordpress.com/2019/04/01/a-fivethirtyeight-spelling-be/">
+                        A FiveThirtyEight Spelling Bee
+                      </a>
+                    </li>
+                    <li>
+                      <a href="https://barronwasteland.wordpress.com/2019/04/20/a-circular-conundrum/">
+                        A Circular Conundrum
+                      </a>
+                    </li>
+                    <li>
+                      <a href="https://barronwasteland.wordpress.com/2018/06/17/matching-game/">Matching Game</a>
+                    </li>
+                    <li>
+                      <a href="https://barronwasteland.wordpress.com/2018/06/06/a-classic-construction-problem/">
+                        A Classic Construction Problem
+                      </a>
+                    </li>
+                    <li>
+                      <a href="https://barronwasteland.wordpress.com/2017/11/04/an-amphibious-enigma/">
+                        An Amphibious Enigma
+                      </a>
+                    </li>
+                    <li>
+                      <a href="https://barronwasteland.wordpress.com/2017/10/08/game-show-bright-lights-big-cit/">
+                        Big City, Bright Lights
+                      </a>
+                    </li>
+                    <li>
+                      <a href="https://barronwasteland.wordpress.com/2017/07/06/the-purge-riddler/">The Purge</a>
+                    </li>
+                    <li>
+                      <a href="https://barronwasteland.wordpress.com/2017/04/29/a-painting-puzzl/">A Painting Puzzle</a>
+                    </li>
+                    <li>
+                      <a href="https://barronwasteland.wordpress.com/2017/04/23/pick-a-card-any-card/">
+                        Pick a Card, Any Card
+                      </a>
+                    </li>
+                    <li>
+                      <a href="https://barronwasteland.wordpress.com/2017/03/18/a-puzzle-about-domestic-boundaries/">
+                        A Puzzle About Domestic Boundaries
+                      </a>
+                    </li>
+                    <li>
+                      <a href="https://barronwasteland.wordpress.com/2017/01/17/the-riddler-an-impromptu-gambling-problem/">
+                        An Impromptu Gambling Problem
+                      </a>
+                    </li>
+                    <li>
+                      <a href="https://barronwasteland.wordpress.com/2016/10/23/the-riddler-can-you-survive-this-deadly-board-game/">
+                        Can You Survive This Deadly Board Game?
+                      </a>
+                    </li>
+                    <li>
+                      <a href="https://barronwasteland.wordpress.com/2016/09/19/the-riddler-count-von-count/">
+                        Count Von Count
+                      </a>
+                    </li>
+                    <li>
+                      <a href="https://barronwasteland.wordpress.com/2016/05/25/the-riddler/">Jems</a>
+                    </li>
+                    <li>
+                      <a href="https://barronwasteland.wordpress.com/2016/04/16/the-riddler-space-race/">Space Race</a>
+                    </li>
+                    <li>
+                      <a href="https://barronwasteland.wordpress.com/2015/12/22/the-riddler-2-which-geyser-gushes-first/">
+                        Which Geyser Gushes First?
+                      </a>
+                    </li>
+                    <li>
+                      <a href="https://barronwasteland.wordpress.com/2015/12/12/the-riddler-1-whats-the-best-way-to-drop-a-smartphone/">
+                        What's the Best Way To Drop A Smartphone?
+                      </a>
+                    </li>
+                  </ul>
                 </div>
               </section>
             </div>
@@ -436,3 +430,6 @@ const Riddler = () => {
 };
 
 export default Riddler;
+
+// Same HTML for everyone until the next deploy, so CloudFront may serve it.
+export { cachedPageHeaders as headers } from '~/utils/cache';

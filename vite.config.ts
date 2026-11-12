@@ -3,6 +3,7 @@ import { defineConfig } from 'vite';
 import tailwindcss from '@tailwindcss/vite';
 import { execSync } from 'child_process';
 import { readFileSync } from 'fs';
+import { mdxPosts, postsIndex } from './scripts/lib/vite-posts.mjs';
 
 // Semantic version is the single source of truth (package.json). It works even
 // in CI's shallow clone, where git tags are unavailable.
@@ -23,7 +24,7 @@ const cdnUrl = process.env.VITE_CDN_URL?.replace(/\/?$/, '/');
 export default defineConfig({
   base: cdnUrl ?? '/',
   resolve: { tsconfigPaths: true },
-  plugins: [tailwindcss(), reactRouter()],
+  plugins: [mdxPosts(), postsIndex(), tailwindcss(), reactRouter()],
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
     __GIT_COMMIT__: JSON.stringify(getGitCommit()),

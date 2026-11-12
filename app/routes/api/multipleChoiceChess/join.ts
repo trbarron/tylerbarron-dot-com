@@ -1,5 +1,12 @@
 import type { ActionFunctionArgs } from 'react-router';
-import { joinGame, generatePlayerId, getAvailableGames, getGame } from '~/utils/multipleChoiceChess/gameState.server';
+import {
+  joinGame,
+  generatePlayerId,
+  getAvailableGames,
+  getGame,
+  normalizeGameId,
+  publicView,
+} from '~/utils/multipleChoiceChess/gameState.server';
 
 export async function action({ request }: ActionFunctionArgs) {
   if (request.method !== 'POST') {
@@ -7,10 +14,12 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   try {
-    const body = await request.json();
-    const { game_id: gameId } = body as { game_id?: string };
+    const body = (await request.json().catch(() => null)) as { game_id?: unknown } | null;
+    if (body?.game_id && !normalizeGameId(body.game_id)) {
+      return Response.json({ error: 'Game not found' }, { status: 404 });
+    }
 
-    let targetGameId = gameId?.toLowerCase().trim();
+    let targetGameId = normalizeGameId(body?.game_id) ?? undefined;
 
     // If no game_id supplied, attempt quick match from the available queue
     if (!targetGameId) {
@@ -33,14 +42,15 @@ export async function action({ request }: ActionFunctionArgs) {
     const updated = await joinGame(targetGameId, playerId);
 
     if (!updated) {
-      return Response.json({ error: 'Failed to join game' }, { status: 500 });
+      // Someone else took the seat between the check above and the join.
+      return Response.json({ error: 'Game is no longer available' }, { status: 409 });
     }
 
     return Response.json({
       game_id: targetGameId,
       player_id: playerId,
       color: 'black',
-      state: updated,
+      state: publicView(updated, playerId),
     });
   } catch (err) {
     console.error('Join game error:', err);

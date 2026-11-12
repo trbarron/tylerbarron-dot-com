@@ -1,13 +1,14 @@
-declare module '@fal-works/esbuild-plugin-global-externals' {
-  export type ModuleInfo = any;
-  const content: any;
-  export default content;
+// Blog posts: compiled by @mdx-js/rollup (scripts/lib/vite-posts.mjs).
+declare module '*.mdx' {
+  import type { ComponentType } from 'react';
+  const Post: ComponentType;
+  export default Post;
 }
 
-declare module '@mdx-js/esbuild/lib' {
-  export type Options = any;
-  const content: any;
-  export default content;
+/** slug → frontmatter for every post; no post bodies. */
+declare module 'virtual:posts-index' {
+  const index: Record<string, Record<string, unknown>>;
+  export default index;
 }
 
 // Injected at build time by vite.config.ts `define`.

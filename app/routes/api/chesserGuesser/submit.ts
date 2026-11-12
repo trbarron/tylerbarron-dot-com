@@ -13,9 +13,10 @@ const TTL_7_DAYS = 7 * 24 * 60 * 60; // 7 days in seconds
 /**
  * Validate username
  */
-function validateUsername(username: string): boolean {
-  // 1-20 characters, alphanumeric and underscores only
-  return /^[a-zA-Z0-9_]{1,20}$/.test(username);
+function validateUsername(username: unknown): username is string {
+  // 1-20 characters, alphanumeric and underscores only. The type check matters:
+  // a regex test coerces, so undefined would pass as "undefined".
+  return typeof username === 'string' && /^[a-zA-Z0-9_]{1,20}$/.test(username);
 }
 
 /**

@@ -6,11 +6,10 @@
   "type": "module",
   "scripts": {
     "build": "react-router build --mode=production",
-    "build:arc": "npm run compile:mdx && npm run build && npm run build:arc:assets && npm run build:arc:server && npm run build:arc:deps",
+    "build:arc": "npm run build && npm run build:arc:assets && npm run build:arc:server && npm run build:arc:deps",
     "build:arc:assets": "mkdir -p public && cp -r build/client/* public/",
     "build:arc:server": "mkdir -p server && NODE_ENV=production npx esbuild server.ts --platform=node --target=node24 --format=esm --bundle --minify --tree-shaking=true --outfile=server/index.mjs '--external:@aws-sdk/*' --external:aws-sdk '--external:@react-router/*' --external:react --external:react-dom '--external:./build/*' && rm -rf server/build/server && mkdir -p server/build/server && cp -r build/server/* server/build/server/",
-    "build:arc:deps": "cd server && npm install --omit=dev --no-audit --no-fund",
-    "compile:mdx": "node --env-file-if-exists=.env scripts/compile-mdx.mjs",
+    "build:arc:deps": "node scripts/install-lambda-deps.mjs",
     "analyze": "node scripts/analyze-bundle.mjs",
     "deploy:images": "node --env-file=.env scripts/upload-images-to-s3.mjs",
     "analyze:deps": "cd server && npx npm-check -u",
@@ -30,7 +29,8 @@
     "check:lambda-deps": "node scripts/check-lambda-deps.mjs",
     "prepare": "husky",
     "typecheck": "tsc",
-    "pr-screenshots": "node scripts/pr-screenshots.mjs"
+    "pr-screenshots": "node scripts/pr-screenshots.mjs",
+    "camel:queue": "node --env-file-if-exists=.env scripts/camel-queue.mjs"
   },
   "dependencies": {
     "@ballatech/react-router7-preset-aws": "^1.0.1",
@@ -42,23 +42,24 @@
     "isbot": "^5.2.1",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
-    "react-router": "^7.17.0",
+    "react-router": "^7.18.5",
     "topojson-client": "^3.1.0",
     "yet-another-react-lightbox": "^3.21.5"
   },
   "devDependencies": {
     "@architect/architect": "^12.0.0",
-    "@aws-sdk/client-lambda": "^3.1078.0",
     "@aws-sdk/client-s3": "^3.1065.0",
+    "@aws-sdk/client-sns": "^3.1167.0",
     "@commitlint/cli": "^21.0.2",
     "@commitlint/config-conventional": "^21.0.2",
     "@eslint/js": "^9.39.5",
     "@fontsource-variable/inter": "^5.3.0",
     "@fontsource/ibm-plex-mono": "^5.3.0",
     "@gltf-transform/cli": "^4.4.1",
+    "@mdx-js/rollup": "^3.1.1",
     "@playwright/test": "^1.57.0",
-    "@react-router/dev": "^7.17.0",
-    "@react-router/node": "^7.17.0",
+    "@react-router/dev": "^7.18.5",
+    "@react-router/node": "^7.18.5",
     "@semantic-release/git": "^11.0.1",
     "@tailwindcss/typography": "^0.5.15",
     "@tailwindcss/vite": "^4.3.3",
@@ -78,12 +79,12 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^17.8.0",
     "husky": "^9.1.7",
-    "mdx-bundler": "^10.0.3",
     "prettier": "^3.3.3",
     "prettier-plugin-tailwindcss": "^0.8.1",
     "rehype-img-size": "^1.0.1",
     "rehype-katex": "^7.0.1",
     "rehype-pretty-code": "^0.14.4",
+    "remark-frontmatter": "^5.0.0",
     "remark-gfm": "^4.0.0",
     "remark-math": "^6.0.0",
     "semantic-release": "^25.0.5",
@@ -94,7 +95,8 @@
     "typescript": "^5.1.6",
     "typescript-eslint": "^8.61.0",
     "vite": "^8.1.5",
-    "vitest": "^4.0.15"
+    "vitest": "^4.0.15",
+    "yaml": "^2.9.1"
   },
   "engines": {
     "node": ">=24.0.0"

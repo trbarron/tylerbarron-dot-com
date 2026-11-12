@@ -1,30 +1,18 @@
 // POST /api/camelUpCup/submit — multipart form: botName, author, file (.py)
 //
-// Fast-fails obviously invalid bots, rate-limits by IP, takes the
-// single-tournament Redis lock and one of the day's tournament slots,
-// and dispatches the code to the
-// camel-up-tournament Lambda for real validation + a 500-game run.
-// Responds with { id } for the client to poll /api/camelUpCup/status.
+// Fast-fails obviously invalid bots, rate-limits by IP, adds the bot to the
+// waiting list in Redis and emails Tyler, who runs tournaments by hand.
+// Nothing submitted here is executed by the site.
 
+import { randomUUID } from 'node:crypto';
 import type { ActionFunctionArgs } from 'react-router';
-import { getRedisClient } from '~/utils/redis.server';
 import {
   validateAuthor,
   validateBotCode,
   validateBotName,
   MAX_BOT_FILE_BYTES,
 } from '~/utils/camelUpCup/validation.server';
-import {
-  checkSubmissionRateLimit,
-  claimDailyTournamentSlot,
-  dispatchSubmission,
-  isTournamentConfigured,
-  releaseTournamentLock,
-  returnDailyTournamentSlot,
-  tryAcquireTournamentLock,
-} from '~/utils/camelUpCup/tournament.server';
-
-const META_TTL_S = 7 * 24 * 3600;
+import { allowSubmission, enqueueSubmission, notifySubmission } from '~/utils/camelUpCup/tournament.server';
 
 export async function action({ request }: ActionFunctionArgs) {
   if (request.method !== 'POST') {
@@ -34,10 +22,6 @@ export async function action({ request }: ActionFunctionArgs) {
   const contentLength = Number(request.headers.get('content-length') ?? 0);
   if (contentLength > MAX_BOT_FILE_BYTES + 4096) {
     return Response.json({ error: 'Bot file is too large (max 64 KB).' }, { status: 413 });
-  }
-
-  if (!isTournamentConfigured()) {
-    return Response.json({ error: "Bot submissions aren't available in this environment." }, { status: 503 });
   }
 
   try {
@@ -61,63 +45,33 @@ export async function action({ request }: ActionFunctionArgs) {
       return Response.json({ error: codeErrors.join(' ') }, { status: 400 });
     }
 
-    if (!(await checkSubmissionRateLimit(request))) {
+    if (!(await allowSubmission(request))) {
       return Response.json(
         { error: 'Too many submissions from your address — try again in an hour.' },
         { status: 429 },
       );
     }
 
-    const id = `sub-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+    const submission = {
+      id: `sub-${randomUUID()}`,
+      botName: botName as string,
+      author: (author as string).trim(),
+      code,
+      submitted: new Date().toISOString(),
+    };
 
-    if (!(await tryAcquireTournamentLock(request, id))) {
+    const waiting = await enqueueSubmission(submission);
+    if (waiting === null) {
       return Response.json(
-        { error: 'A tournament is already running. Try again once it finishes (~1 hour).' },
-        { status: 409 },
-      );
-    }
-
-    // Counted only once we hold the lock, so only real starts use a slot
-    let slotClaimed = false;
-    try {
-      slotClaimed = await claimDailyTournamentSlot();
-    } finally {
-      if (!slotClaimed) await releaseTournamentLock(id);
-    }
-    if (!slotClaimed) {
-      return Response.json(
-        { error: "Today's tournament limit is reached. Try again tomorrow (UTC)." },
+        { error: 'The waiting list is full right now. Try again after the next tournament.' },
         { status: 429 },
       );
     }
 
-    try {
-      await dispatchSubmission({
-        id,
-        botName: botName as string,
-        author: (author as string).trim(),
-        code,
-      });
-    } catch (err) {
-      await releaseTournamentLock(id);
-      await returnDailyTournamentSlot();
-      console.error('Camel Up Cup dispatch error:', err);
-      return Response.json({ error: "Couldn't start the tournament — try again shortly." }, { status: 502 });
-    }
+    // The bot is safely queued either way; the email is only the nudge.
+    await notifySubmission(submission, waiting);
 
-    // Poll fallback: lets /status answer "queued" before the Lambda's first
-    // status write lands on the CDN.
-    try {
-      await getRedisClient().setex(
-        `camelup:submission:${id}`,
-        META_TTL_S,
-        JSON.stringify({ botName, author, submitted: Date.now() }),
-      );
-    } catch {
-      // Non-fatal: status polling just starts a beat later.
-    }
-
-    return Response.json({ id });
+    return Response.json({ id: submission.id, botName: submission.botName, waiting });
   } catch (error) {
     console.error('Camel Up Cup submit error:', error);
     return Response.json({ error: 'Failed to submit bot.' }, { status: 500 });

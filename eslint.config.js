@@ -15,7 +15,6 @@ export default tseslint.config(
       'public/**',
       'server/**',
       '.react-router/**',
-      'app/posts/compiled/**',
       'coverage/**',
       'playwright-report/**',
       'test-results/**',
@@ -72,7 +71,8 @@ export default tseslint.config(
       'jsx-a11y/no-autofocus': 'off',
       'jsx-a11y/no-noninteractive-element-interactions': 'off',
       'import/no-named-as-default': 'off',
-      'import/no-unresolved': ['error', { ignore: ['^\\./build/'] }],
+      // `virtual:posts-index` is served by a Vite plugin (scripts/lib/vite-posts.mjs), not a file.
+      'import/no-unresolved': ['error', { ignore: ['^\\./build/', '^virtual:'] }],
 
       // Modernization: forbid inline styles.
       'react/forbid-dom-props': [

@@ -1,3 +1,4 @@
+import { randomInt, randomUUID } from 'node:crypto';
 import { openGames } from '~/utils/multiplayer/openGames.server';
 import { getRedisClient } from '~/utils/redis.server';
 
@@ -33,6 +34,33 @@ export interface GameState {
   black_last_seen: number;
 }
 
+/**
+ * What a client is allowed to see. A player id is the only thing that proves
+ * who is moving, so the stored ids never leave the server: a client learns
+ * which colour it is (`you`) and nothing about the other seat.
+ */
+export type PublicGameState = Omit<GameState, 'white_id' | 'black_id'> & { you: 'white' | 'black' | null };
+
+export function colorOf(game: GameState, playerId: string | null | undefined): 'white' | 'black' | null {
+  if (!playerId) return null;
+  if (game.white_id === playerId) return 'white';
+  if (game.black_id === playerId) return 'black';
+  return null;
+}
+
+export function publicView(game: GameState, playerId: string | null | undefined): PublicGameState {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { white_id, black_id, ...rest } = game;
+  return { ...rest, you: colorOf(game, playerId) };
+}
+
+/** Game codes are lower-case; every read and write goes through this. */
+export function normalizeGameId(gameId: unknown): string | null {
+  if (typeof gameId !== 'string') return null;
+  const id = gameId.toLowerCase().trim();
+  return /^[a-z0-9]{1,12}$/.test(id) ? id : null;
+}
+
 export const INITIAL_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
 function gameKey(gameId: string): string {
@@ -45,13 +73,14 @@ export function generateGameId(): string {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
   let id = '';
   for (let i = 0; i < 6; i++) {
-    id += chars[Math.floor(Math.random() * chars.length)];
+    id += chars[randomInt(chars.length)];
   }
   return id;
 }
 
+/** The player's secret: unguessable, and never sent to anyone but the player it belongs to. */
 export function generatePlayerId(): string {
-  return `p_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  return `p_${randomUUID()}`;
 }
 
 function parseGame(data: Record<string, string>): GameState {
@@ -159,31 +188,22 @@ export async function getGame(gameId: string): Promise<GameState | null> {
   return parseGame(data);
 }
 
+// Take the black seat only if the game is still waiting, in one step: two
+// people joining at once can't both get it.
+const JOIN_SCRIPT = `
+if redis.call('HGET', KEYS[1], 'status') ~= 'waiting' then return 0 end
+redis.call('HSET', KEYS[1], 'black_id', ARGV[1], 'status', 'active', 'last_updated', ARGV[2], 'black_last_seen', ARGV[2], 'white_last_seen', ARGV[2])
+redis.call('EXPIRE', KEYS[1], ARGV[3])
+return 1`;
+
 export async function joinGame(gameId: string, playerId: string): Promise<GameState | null> {
   const redis = getRedisClient();
-  const game = await getGame(gameId);
-
-  if (!game || game.status !== 'waiting') return null;
-
   const now = Date.now();
-  await redis.hset(gameKey(gameId), {
-    black_id: playerId,
-    status: 'active',
-    last_updated: String(now),
-    black_last_seen: String(now),
-    white_last_seen: String(now), // creator just received the join, so refresh
-  });
-  await redis.expire(gameKey(gameId), TTL);
+  // white_last_seen is refreshed too: the creator is about to receive the join.
+  const joined = await redis.eval(JOIN_SCRIPT, 1, gameKey(gameId), playerId, String(now), String(TTL));
+  if (joined !== 1) return null;
   await available.remove(gameId);
-
-  return {
-    ...game,
-    black_id: playerId,
-    status: 'active',
-    last_updated: now,
-    black_last_seen: now,
-    white_last_seen: now,
-  };
+  return getGame(gameId);
 }
 
 // Mark a player as currently active. Called from the state poller so we can
@@ -231,11 +251,20 @@ export interface MoveUpdate {
   resultReason: string;
 }
 
-export async function applyMove(gameId: string, update: MoveUpdate): Promise<void> {
+// Save a move only if the position is still the one it was played from and the
+// game is still active, so a move sent twice (or racing a resignation) applies once.
+const MOVE_SCRIPT = `
+if redis.call('HGET', KEYS[1], 'fen') ~= ARGV[1] or redis.call('HGET', KEYS[1], 'status') ~= 'active' then return 0 end
+redis.call('HSET', KEYS[1], unpack(ARGV, 3))
+redis.call('EXPIRE', KEYS[1], ARGV[2])
+return 1`;
+
+/** Returns false when the game moved on before this move could be saved. */
+export async function applyMove(gameId: string, fromFen: string, update: MoveUpdate): Promise<boolean> {
   const redis = getRedisClient();
   const now = Date.now();
 
-  await redis.hset(gameKey(gameId), {
+  const fields: Record<string, string> = {
     fen: update.fen,
     turn: update.turn,
     last_move: update.move,
@@ -257,8 +286,16 @@ export async function applyMove(gameId: string, update: MoveUpdate): Promise<voi
     result: update.result,
     result_reason: update.resultReason,
     last_updated: String(now),
-  });
-  await redis.expire(gameKey(gameId), TTL);
+  };
+  const saved = await redis.eval(
+    MOVE_SCRIPT,
+    1,
+    gameKey(gameId),
+    fromFen,
+    String(TTL),
+    ...Object.entries(fields).flat(),
+  );
+  return saved === 1;
 }
 
 export async function resignGame(gameId: string, resigningColor: 'white' | 'black'): Promise<void> {
