@@ -9,19 +9,13 @@ let redis: Redis | null = null;
  * Uses singleton pattern to reuse connection across requests
  */
 export function getRedisClient(): Redis {
-  if (redis && redis.status === 'ready') {
+  // Reuse the client unless it has given up for good. A client that is still
+  // connecting or reconnecting queues commands and sends them once it's up;
+  // replacing it would fail whatever another caller had already queued.
+  if (redis && redis.status !== 'end') {
     return redis;
   }
-
-  // Clean up stale connection before creating a new one
-  if (redis) {
-    try {
-      redis.disconnect();
-    } catch {
-      // Ignore errors during cleanup of stale connection
-    }
-    redis = null;
-  }
+  redis = null;
 
   // Get Redis connection details from environment variables
   const redisUrl = process.env.REDIS_URL || process.env.REDIS_TLS_URL;
@@ -30,12 +24,19 @@ export function getRedisClient(): Redis {
     throw new Error('REDIS_URL or REDIS_TLS_URL environment variable is required');
   }
 
-  // Parse Redis URL to check if TLS is needed
   const useTls = redisUrl.startsWith('rediss://');
+  // The server's certificate is verified unless this is set to 0. Only for a
+  // provider that presents a certificate no public CA signed; without the
+  // check, anything on the network path can pose as Redis.
+  const verifyCertificate = process.env.REDIS_TLS_REJECT_UNAUTHORIZED !== '0';
 
   redis = new Redis(redisUrl, {
     maxRetriesPerRequest: 3,
     enableReadyCheck: true,
+    // A frozen Lambda can thaw holding a dead socket. Fail the command rather
+    // than hold the request until the Lambda's own 30-second timeout.
+    connectTimeout: 5_000,
+    commandTimeout: 5_000,
     retryStrategy: (times: number) => {
       if (times > 3) {
         console.error('Redis connection failed after 3 retries');
@@ -43,11 +44,7 @@ export function getRedisClient(): Redis {
       }
       return Math.min(times * 100, 3000); // Exponential backoff
     },
-    ...(useTls && {
-      tls: {
-        rejectUnauthorized: false, // Required for some Redis providers
-      },
-    }),
+    ...(useTls && !verifyCertificate && { tls: { rejectUnauthorized: false } }),
   });
 
   // Surface connection errors; lifecycle events are otherwise silent.
