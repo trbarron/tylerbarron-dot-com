@@ -204,6 +204,12 @@ or smoke-check failure therefore leaves no new release tag. A release failure af
 deployment is still possible; inspect the run rather than assuming a tag was published.
 There is no `CHANGELOG.md`: release notes live in the commit body and GitHub Release.
 
+The first deployment using this order was verified in [run 43265605861](https://github.com/trbarron/tylerbarron-dot-com/actions/runs/43265605861):
+bot checks finished at 17:07:41 UTC, then tag `5.62.1` was created at 17:07:49.
+The live footer showed `v5.62.1 · 1f2e2be`, matching the deployed merge commit and
+released `package.json`; independent live checks passed. A later non-release deploy
+still needs observation to confirm the unchanged-version path in production.
+
 Because that release commit lands on `master` near the end of a deploy, a local push made while a
 deploy is running gets rejected as non-fast-forward. Rebase onto `origin/master` and
 push again — `pull.rebase` is already true, and release commits only touch
@@ -255,8 +261,9 @@ The 12 November deploy run `43255646885` failed its non-blocking invalidation st
 IAM user `remix-deployer` lacked `cloudfront:CreateInvalidation`. Asset pruning
 succeeded (`236 objects under assets/, 117 in this build, 0 to prune`). The user now
 has inline policy `invalidate-site`, defined in `infra/iam/site-invalidation.json`,
-scoped to distribution `E1TUWNZL0WZZ6J`. IAM simulation returned `allowed`; confirmation
-from a subsequent deploy run remains pending. There was no previous inline policy
+scoped to distribution `E1TUWNZL0WZZ6J`. IAM simulation returned `allowed`; production deploy run `43265605861` then
+successfully created invalidation `I27Q2BUPLQL5CX4V92HZXA4QWO` and pruned assets
+(`259 objects under assets/, 117 in this build, 0 to prune`). There was no previous inline policy
 of this name. The user policy list was saved alongside the distribution rollback.
 
 ## Infrastructure findings still awaiting decisions

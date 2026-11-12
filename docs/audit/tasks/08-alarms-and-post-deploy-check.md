@@ -28,7 +28,7 @@ Errors go to `console.error` and nowhere else. In June 2026 some routes returned
 
 3. Add an uptime check on the healthcheck, which fails when Redis is unreachable. Either a Route 53 health check on `https://tylerbarron.com/healthcheck` (string match `OK`) with an alarm in `us-east-1`, or a CloudWatch Synthetics canary. The Route 53 check is cheaper and enough.
 
-## Part B — Post-deploy check: implemented, first deploy pending
+## Part B — Post-deploy check: deployed and verified
 
 [PR #136](https://github.com/trbarron/tylerbarron-dot-com/pull/136) adds
 `scripts/check-live-site.mjs` to the deploy workflow. It checks the homepage, a blog
@@ -36,8 +36,9 @@ post, the chess lobby, pizza map and Redis healthcheck as Googlebot, with retrie
 a deployment query key and footer version/commit verification. It fails the job
 before release tagging if the deployment is broken.
 
-Do not reimplement it. After the PR merges, verify the live-check step passes on a
-production deploy. Runtime alerting in Part A remains open. Operating instructions
+Verified in production deploy run `43265605861` on 12 November 2026; independent
+live bot checks also passed with the expected version and source commit. Do not
+reimplement it. Runtime alerting in Part A remains open. Operating instructions
 are in `docs/deployment.md` ("Running the live check manually").
 
 ## Verify

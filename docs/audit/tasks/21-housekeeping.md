@@ -33,7 +33,12 @@ Do not delete without asking.
 
 **4. Missing API tests**
 
-Multiple Choice Chess has tests for `move` and `state` but none for `join`, `resign`, `claimWin` or `create`. Add them in the style of `tests/api/multipleChoiceChessMove.test.ts`. Cases worth having: a stranger cannot resign or claim a win; `claimWin` is refused while the opponent was seen within 90 seconds; `join` on a full game returns `409`; `create` returns `429` past its limit.
+Implemented on the follow-up branch in `tests/api/multipleChoiceChessLifecycle.test.ts`:
+32 tests cover create, join, resign and claimWin. They verify stranger refusals,
+malformed identities, inactive games, the exact 90-second abandonment boundary for
+both colors, full games and lost join races, creation quotas, and public responses
+that do not leak the opponent’s secret. The existing normalization/public-view helpers
+are exercised alongside a stubbed persistence layer. Awaiting PR merge.
 
 **5. Three copies of the agent guidance**
 
