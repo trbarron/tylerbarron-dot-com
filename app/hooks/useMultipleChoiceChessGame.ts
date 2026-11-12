@@ -4,7 +4,7 @@ import { usePolling } from '~/hooks/usePolling';
 import { parseUci, uciArrow } from '~/utils/chess/moves';
 import { getEngine, getThinkTime, isEngineTimeoutError } from '~/utils/multipleChoiceChess/stockfishEngine';
 import type { CandidateMove } from '~/utils/multipleChoiceChess/moveParser';
-import type { GameState } from '~/utils/multipleChoiceChess/gameState.server';
+import type { PublicGameState as GameState } from '~/utils/multipleChoiceChess/gameState.server';
 import type { MoveHistoryEntry } from '~/utils/multipleChoiceChess/types';
 
 export type Phase =
@@ -58,14 +58,8 @@ export function useMultipleChoiceChessGame({ gameId, playerId }: UseMultipleChoi
 
   const myColorRef = useRef<'white' | 'black' | null>(null);
 
-  const getMyColor = useCallback(
-    (gs: GameState): 'white' | 'black' | null => {
-      if (gs.white_id === playerId) return 'white';
-      if (gs.black_id === playerId) return 'black';
-      return null;
-    },
-    [playerId],
-  );
+  // The server says which side this player is; it never sends either player's id.
+  const getMyColor = useCallback((gs: GameState): 'white' | 'black' | null => gs.you, []);
 
   const isMyTurn = useCallback(
     (gs: GameState): boolean => {

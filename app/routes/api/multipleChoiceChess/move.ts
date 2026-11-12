@@ -1,8 +1,13 @@
 import type { ActionFunctionArgs } from 'react-router';
 import { Chess } from 'chess.js';
-import { getGame, applyMove } from '~/utils/multipleChoiceChess/gameState.server';
+import { getGame, applyMove, normalizeGameId } from '~/utils/multipleChoiceChess/gameState.server';
 import { parseUci } from '~/utils/chess/moves';
 import { pointsForRank } from '~/utils/multipleChoiceChess/scoring';
+
+// The rank is the player's own engine's opinion and is taken on trust (see
+// docs/multiple-choice-chess.md); the shape of what they send is not.
+const VALID_RANKS = new Set([0, 1, 2, 4, 6]);
+const UCI_RE = /^[a-h][1-8][a-h][1-8][qrbn]?$/;
 
 function incrementRankCounts(rank: number, rank1: number, rank2: number, rank4: number, rank6: number) {
   return {
@@ -19,21 +24,32 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   try {
-    const body = (await request.json()) as {
-      game_id: string;
-      player_id: string;
-      move: string; // UCI notation e.g. "e2e4"
-      rank: number; // 1 | 2 | 4 | 6
-      choices: string[]; // all four UCI moves that were shown
-    };
-
-    const { game_id: gameId, player_id: playerId, move, rank, choices } = body;
+    // move: UCI ("e2e4"). rank: 1 | 2 | 4 | 6, or 0 for the no-engine fallback.
+    // choices: the UCI moves that were shown (four, fewer in a cramped position).
+    const body = (await request.json()) as Record<string, unknown> | null;
+    const gameId = normalizeGameId(body?.game_id);
+    const playerId = body?.player_id;
+    const move = body?.move;
+    const rank = body?.rank;
+    const choices = body?.choices;
 
     if (!gameId || !playerId || !move || rank === undefined || rank === null || !choices) {
       return Response.json({ error: 'Missing required fields' }, { status: 400 });
     }
+    if (
+      typeof playerId !== 'string' ||
+      typeof move !== 'string' ||
+      typeof rank !== 'number' ||
+      !VALID_RANKS.has(rank) ||
+      !Array.isArray(choices) ||
+      choices.length > 4 ||
+      !choices.every((c): c is string => typeof c === 'string' && UCI_RE.test(c)) ||
+      !choices.includes(move)
+    ) {
+      return Response.json({ error: 'Malformed move' }, { status: 400 });
+    }
 
-    const game = await getGame(gameId.toLowerCase().trim());
+    const game = await getGame(gameId);
     if (!game) {
       return Response.json({ error: 'Game not found' }, { status: 404 });
     }
@@ -104,7 +120,7 @@ export async function action({ request }: ActionFunctionArgs) {
           : 'repetition';
     }
 
-    await applyMove(gameId, {
+    const saved = await applyMove(gameId, game.fen, {
       fen: newFen,
       turn: nextTurn,
       move,
@@ -126,6 +142,9 @@ export async function action({ request }: ActionFunctionArgs) {
       result: gameResult,
       resultReason,
     });
+    if (!saved) {
+      return Response.json({ error: 'The game moved on. Refresh and try again.' }, { status: 409 });
+    }
 
     return Response.json({ ok: true, status, result: gameResult, result_reason: resultReason });
   } catch (err) {
