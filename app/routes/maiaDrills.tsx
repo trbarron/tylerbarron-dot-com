@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
-import type { LinksFunction } from 'react-router';
+import type { ClientLoaderFunctionArgs, LinksFunction, ShouldRevalidateFunctionArgs } from 'react-router';
 import { Navbar } from '~/components/Navbar';
 import Footer from '~/components/Footer';
 import AddGames from '~/components/MaiaDrills/AddGames';
@@ -20,6 +20,31 @@ import Button from '~/components/Button';
 import Panel from '~/components/Panel';
 import { useCopy } from '~/hooks/useCopy';
 import Notice from '~/components/Notice';
+
+// This page's document carries a looser Content-Security-Policy than the rest
+// of the site: the Maia engine's WebGPU build needs eval (~/utils/csp.server).
+// A policy is fixed when a document loads, so arriving here by client-side
+// navigation would keep the previous page's policy and the engine would fail.
+// A clientLoader only runs on client-side navigation, so this turns every one
+// into a real page load, whatever link started it. The promise never settles:
+// the browser is already leaving.
+//
+// The empty server loader is what keeps this off the first load: a route with
+// a clientLoader and no loader runs the clientLoader while hydrating too,
+// which here would reload the page forever.
+export function loader() {
+  return null;
+}
+
+export function clientLoader({ request }: ClientLoaderFunctionArgs) {
+  window.location.assign(request.url);
+  return new Promise<never>(() => {});
+}
+
+// Moving around inside the page (?deck=...) must not reload it.
+export function shouldRevalidate({ currentUrl, nextUrl }: ShouldRevalidateFunctionArgs) {
+  return currentUrl.pathname !== nextUrl.pathname;
+}
 
 export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: chessgroundBase },

@@ -10,57 +10,15 @@ import type { AppLoadContext, EntryContext } from 'react-router';
 import { ServerRouter } from 'react-router';
 import { isbot } from 'isbot';
 import { renderToPipeableStream } from 'react-dom/server';
+import { contentSecurityPolicy } from '~/utils/csp.server';
 
 const ABORT_DELAY = 5_000;
 
 // Security headers for document responses. Static assets are served from the
 // CDN bucket and don't pass through here, but headers only matter on documents.
-//
-// CSP caveats, all load-bearing:
-// - 'unsafe-eval': onnxruntime-web's WebGPU build (Maia Drills) generates
-//   functions with `new Function`, and its worker inherits this policy. Blog
-//   posts no longer need it (they are ordinary modules now), and Stockfish
-//   only needs to compile WASM, so if Maia ever moves to a build without
-//   `new Function` this can become 'wasm-unsafe-eval'.
-// - 'unsafe-inline': React Router's hydration script and the gtag bootstrap
-//   are inline. Tightening to nonces would require plumbing one through
-//   root.tsx and this file.
-// - blob: workers: Stockfish bootstraps from a Blob URL (it importScripts the
-//   unpkg-hosted engine), and Timer.tsx uses a blob worker. Maia Drills' worker
-//   does the same with onnxruntime-web from jsDelivr, which then imports its
-//   own .mjs loader from there, hence jsDelivr in script-src.
-const CONTENT_SECURITY_POLICY = [
-  "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://www.googletagmanager.com https://unpkg.com https://cdn.jsdelivr.net https://giscus.app",
-  "worker-src 'self' blob:",
-  "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https://www.googletagmanager.com https://*.google-analytics.com",
-  "font-src 'self'",
-  [
-    "connect-src 'self' blob:",
-    // Google Analytics (incl. regional endpoints)
-    'https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com',
-    // Stockfish engine + WASM (multiple choice chess)
-    'https://unpkg.com',
-    // Cat tracker camera + chesser guesser puzzle APIs
-    'https://nj3ho46btl.execute-api.us-west-2.amazonaws.com https://f73vgbj1jk.execute-api.us-west-2.amazonaws.com',
-    // US state boundaries for the pizza map (jsdelivr). The pizza datasets
-    // themselves are same-origin now (/images/pizza/*), so they need no grant.
-    'https://cdn.jsdelivr.net',
-    // Maia Drills: players' games, and the Maia model. Hugging Face answers
-    // the model URL with a redirect to its storage CDN on *.hf.co.
-    'https://lichess.org https://api.chess.com https://huggingface.co https://*.hf.co',
-  ].join(' '),
-  "media-src 'self'",
-  'frame-src https://www.youtube.com https://giscus.app',
-  "object-src 'none'",
-  "base-uri 'self'",
-  "form-action 'self'",
-  "frame-ancestors 'none'",
-].join('; ');
-
-function applySecurityHeaders(headers: Headers) {
-  headers.set('Content-Security-Policy', CONTENT_SECURITY_POLICY);
+// The policy itself, and why each grant is there: ~/utils/csp.server.
+function applySecurityHeaders(headers: Headers, request: Request) {
+  headers.set('Content-Security-Policy', contentSecurityPolicy(new URL(request.url).pathname));
   headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
   headers.set('X-Content-Type-Options', 'nosniff');
   headers.set('X-Frame-Options', 'DENY');
@@ -98,7 +56,7 @@ function handleBotRequest(
         const stream = Readable.toWeb(body) as ReadableStream;
 
         responseHeaders.set('Content-Type', 'text/html');
-        applySecurityHeaders(responseHeaders);
+        applySecurityHeaders(responseHeaders, request);
 
         resolve(
           new Response(stream, {
@@ -142,7 +100,7 @@ function handleBrowserRequest(
         const stream = Readable.toWeb(body) as ReadableStream;
 
         responseHeaders.set('Content-Type', 'text/html');
-        applySecurityHeaders(responseHeaders);
+        applySecurityHeaders(responseHeaders, request);
 
         resolve(
           new Response(stream, {

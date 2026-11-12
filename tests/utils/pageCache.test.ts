@@ -16,6 +16,18 @@ const cached = fs
   .filter((f) => f.endsWith('.tsx') && /cachedPageHeaders as headers/.test(source(f)))
   .sort();
 
+describe('the Maia page', () => {
+  // Its document has a looser CSP, so it must always be a full page load
+  // (clientLoader), must not loop on first load (loader), and must not reload
+  // when ?deck= changes (shouldRevalidate). Losing any one breaks the page.
+  it('keeps all three exports that make its Content-Security-Policy work', () => {
+    const maia = source('maiaDrills.tsx');
+    expect(maia).toMatch(/export function clientLoader/);
+    expect(maia).toMatch(/export function loader/);
+    expect(maia).toMatch(/export function shouldRevalidate/);
+  });
+});
+
 describe('cached pages', () => {
   it('are exactly the ones that render the same for everyone', () => {
     expect(cached).toEqual([
