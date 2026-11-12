@@ -223,16 +223,23 @@ describe.skipIf(!isLocal)('collaborativeCheckmate game.server (real Redis)', () 
   it('writes a newcomer’s presence before the save that seats them', async () => {
     // Otherwise a poll landing in between sees a seated player with no presence and frees the seat.
     const id = newId();
-    const monitor = await redis().duplicate().monitor();
-    const commands: string[][] = [];
-    monitor.on('monitor', (_time: string, args: string[]) => commands.push(args));
-    await joinGame(id, 'eve', false);
-    await new Promise((r) => setTimeout(r, 50));
-    monitor.disconnect();
-    const presence = commands.findIndex((c) => c[0].toLowerCase() === 'hset' && c[1].endsWith(`seen:${id}`));
-    const seating = commands.findIndex((c) => c[0].toLowerCase() === 'eval' && c.some((a) => a.includes('"eve"')));
-    expect(presence).toBeGreaterThanOrEqual(0);
-    expect(seating).toBeGreaterThan(presence);
+    // Observe the commands on this connection, including MULTI's queued writes.
+    // MONITOR adds separate sockets and can receive replies during its startup
+    // handshake; a fixed sleep also doesn't guarantee all observations arrived.
+    const sent = vi.spyOn(redis(), 'sendCommand');
+    try {
+      await joinGame(id, 'eve', false);
+      const commands = sent.mock.calls.map(([command]) => [command.name, ...command.args.map(String)]);
+      const presence = commands.findIndex((c) => c[0] === 'hset' && c[1].endsWith(`seen:${id}`));
+      const presenceCommit = commands.findIndex((c, i) => i > presence && c[0] === 'exec');
+      const seating = commands.findIndex((c) => c[0] === 'eval' && c.some((a) => a.includes('"eve"')));
+      expect(presence).toBeGreaterThanOrEqual(0);
+      expect(presenceCommit).toBeGreaterThan(presence);
+      expect(seating).toBeGreaterThan(presenceCommit);
+      expect(await redis().hget(`collaborativeCheckmate:seen:${id}`, 'eve')).toBe(String(now));
+    } finally {
+      sent.mockRestore();
+    }
   });
 
   it('lets a fifth visitor watch, but not act', async () => {
