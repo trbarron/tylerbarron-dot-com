@@ -83,7 +83,7 @@ If step 1 showed the `execute-api` URL answers directly, pick one:
 
 3. Direct access is refused: `curl https://<execute-api-host>/healthcheck` returns 403 (shared secret) or fails to connect.
 
-4. The site itself still works: the checks in task 05's Verify section all pass.
+4. The site still works: run `node scripts/check-live-site.mjs` and the cache checks in `docs/deployment.md` ("Pages cached at the edge").
 
 ## Stop and ask if
 

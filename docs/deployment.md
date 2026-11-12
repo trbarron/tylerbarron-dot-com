@@ -70,7 +70,12 @@ as are the three asset behaviors, the response headers policy and the `www` redi
 
 Live requests confirmed hits for `/`, `/blog/2026Goals` and the Rascals snapshot;
 Chesser Guesser, Maia, available games and the `no-store` healthcheck stayed misses.
-Two different query strings caused separate misses. A POST created a game and its
+Two different query strings caused separate misses. To recheck caching, request a URL
+twice with `curl -sS -D - -o /dev/null https://tylerbarron.com/` and inspect `x-cache`,
+`age` and `cache-control`. Repeat for `/blog/2026Goals` and the snapshot (expect a hit),
+and `/chesser-guesser`, `/marginal-maia-mentor`, `/api/multipleChoiceChess/available`
+and `/healthcheck` (expect misses). Run `node scripts/check-live-site.mjs` for bot
+rendering and Redis health. A POST created a game and its
 state was readable by query string. The `www` redirect still preserves path and query.
 Missing blog pages returned 404 (`Error from cloudfront`); their second response had
 an `Age` header, showing CloudFront's separate short error cache still applies. The
@@ -190,7 +195,7 @@ The workflow builds, publishes assets and deploys the Lambda, then runs
 the pizza map and the Redis healthcheck as Googlebot. Requests use a deployment query
 parameter, a timeout and bounded retries. Page footers must show the planned version
 and source commit, so an old cached page cannot pass the deploy check. This relies on
-the HTML cache policy including the query string (see audit task 05).
+the HTML cache policy including the query string (as configured above).
 
 Only after the deploy and live check succeed does `npx semantic-release` bump
 `package.json`, commit and tag `X.Y.Z` (prefix-less, `tagFormat: "${version}"`).
@@ -275,3 +280,17 @@ of this name. The user policy list was saved alongside the distribution rollback
   (`c57b2c88-4e22-4839-8e17-2001d835bfca`), with CORS configuration and empty security
   header sections. Task 15's instruction to stop when a policy exists applies:
   preserve the CORS configuration when preparing a later security-header change.
+
+## Changing CloudFront safely
+
+Before any distribution change, save `aws cloudfront get-distribution-config --id
+E1TUWNZL0WZZ6J` to a private local file. It contains the ETag and full
+`DistributionConfig`; it may also contain origin secrets, so never commit it. Make a
+separate JSON file containing only `DistributionConfig`, edit the intended fields,
+and compare it with the original before applying. Use `aws cloudfront
+update-distribution --id E1TUWNZL0WZZ6J --if-match <saved-etag>
+--distribution-config file://<edited-config>`; an ETag mismatch means inspect again,
+not retry blindly. Wait for distribution status `Deployed`, then run the cache and
+live-site checks above. To roll back, fetch a fresh ETag and apply the saved original
+`DistributionConfig`, then invalidate `/*`. Preserve unrelated origins, behaviors,
+edge functions and response-header policies on every change.

@@ -33,7 +33,7 @@ Do not add `Permissions-Policy` here either unless you copy the value from `entr
 
 1. Save the config: `aws cloudfront get-distribution-config --id E1TUWNZL0WZZ6J > dist-before.json`. Note any `ResponseHeadersPolicyId` already set on any behavior; if one exists, stop and report it.
 2. `aws cloudfront create-response-headers-policy` with the four headers under `SecurityHeadersConfig`, each with `"Override": false`.
-3. Set `ResponseHeadersPolicyId` on `DefaultCacheBehavior` and on each item of `CacheBehaviors.Items`, then `update-distribution` with the saved `ETag`, as in task 05 step 4. Diff before and after: only those fields change.
+3. Set `ResponseHeadersPolicyId` on `DefaultCacheBehavior` and on each item of `CacheBehaviors.Items`, then `update-distribution` with the saved `ETag`, following "Changing CloudFront safely" in `docs/deployment.md`. Diff before and after: only those fields change.
 4. `aws cloudfront wait distribution-deployed --id E1TUWNZL0WZZ6J`.
 
 ## Verify
@@ -50,7 +50,7 @@ done
 - `https://tylerbarron.com/marginal-maia-mentor` still has `'unsafe-eval'` in its CSP, and the homepage has `'wasm-unsafe-eval'` only.
 - Blog comments (the giscus iframe) and embedded YouTube videos still load: `X-Frame-Options: DENY` applies to this site being framed, not to frames it embeds.
 
-Roll back with the saved config as in task 05.
+Roll back with the saved config following "Changing CloudFront safely" in `docs/deployment.md`.
 
 ## Done when
 

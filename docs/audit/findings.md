@@ -6,38 +6,7 @@ Structural, security and performance review of the repo at `5.61.1`, with the go
 
 ## Status
 
-This file is the audit as written, kept for its reasoning. It is **not** the list of what is still open: several findings have been fixed since, and two were wrong. For current status and for the work that remains, see [`README.md`](README.md) and the briefs in [`tasks/`](tasks/).
-
-Where each finding stands:
-
-| Finding | Status | Remaining work |
-| --- | --- | --- |
-| D1 | Done, except tagging before the build | Task 10 |
-| D2 | Done | |
-| D3 | Advisory cleared, Dependabot on, dependencies updated | Tasks 22, 23, 28 |
-| D4 | Open | Task 09 |
-| D5 | Open | Task 26 |
-| D6 | Open (unverified) | Task 14 |
-| D7, D8 | Open | Task 13 |
-| D9 | Open | Task 24 |
-| S1 | Mostly done | Task 12 |
-| S2 | Code done; CloudFront side open | Task 06 |
-| S3 | Done; production not yet confirmed healthy | Task 01 |
-| S4 | `create` limited; three writers open | Task 11 |
-| S5 | Done | |
-| S6 | Eval scoped to Maia; the rest open | Tasks 15, 16 |
-| S7 | Site no longer runs bots | Tasks 02, 03, 27 |
-| S8 | Open | Task 07 |
-| P1 | Code done; CloudFront side open | Tasks 04, 05 |
-| P2 | Open | Task 19 |
-| P3 | Open | Task 18 |
-| P4 | Open | Task 20 |
-| A1 | Done | |
-| A2 | Open | Task 17 |
-| A3 | Open | Task 18 |
-| A4 | Open | Task 21 |
-| A5 | Open | Task 08 |
-| A6 | Open | Task 21 |
+This file is a historical audit, kept for its reasoning. Its descriptions and suggested commands refer to the pre-fix code and are not current operating instructions. It is **not** the list of what is still open: several findings have been fixed since, and two were wrong. For current status and for the work that remains, see [`README.md`](README.md) and the briefs in [`tasks/`](tasks/).
 
 Two findings were wrong as written:
 
