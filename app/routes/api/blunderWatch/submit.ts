@@ -8,6 +8,8 @@ import type { ActionFunctionArgs } from 'react-router';
 import { getRedisClient } from '~/utils/redis.server';
 import { calculateScore } from '~/utils/blunderWatch/scoring';
 import type { Flag } from '~/utils/blunderWatch/types';
+import { checkRateLimit } from '~/utils/rateLimit.server';
+import { isRecentPuzzleDate } from '~/utils/dailySubmission';
 
 const TTL_7_DAYS = 7 * 24 * 60 * 60;
 
@@ -28,7 +30,8 @@ export async function action({ request }: ActionFunctionArgs) {
   try {
     const body = await request.json();
     const { username, date: dateParam, flags } = body;
-    const date = dateParam || getTodayDateString();
+    const today = getTodayDateString();
+    const date = dateParam ?? today;
 
     if (!validateUsername(username)) {
       return Response.json(
@@ -37,12 +40,24 @@ export async function action({ request }: ActionFunctionArgs) {
       );
     }
 
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
       return Response.json({ error: 'Invalid date format.' }, { status: 400 });
+    }
+
+    if (!isRecentPuzzleDate(date, today)) {
+      return Response.json({ error: 'Only today’s or yesterday’s game can be submitted.' }, { status: 400 });
     }
 
     if (!Array.isArray(flags)) {
       return Response.json({ error: 'flags must be an array.' }, { status: 400 });
+    }
+
+    const limit = await checkRateLimit(request, 'blunderWatch', 'submit', { max: 10, windowSeconds: 3600 });
+    if (!limit.allowed) {
+      return Response.json(
+        { error: 'Too many submissions from this address. Try again later.' },
+        { status: 429, headers: { 'Retry-After': String(limit.retryAfter) } },
+      );
     }
 
     const redis = getRedisClient();
