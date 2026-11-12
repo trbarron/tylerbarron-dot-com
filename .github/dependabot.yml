@@ -4,3 +4,26 @@ updates:
     directory: /
     schedule:
       interval: daily
+
+  # The Lambda takes its versions from this lockfile too (scripts/install-lambda-deps.mjs),
+  # so one update covers both.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      # These three pin each other to the same exact version and must move together.
+      react-router:
+        patterns:
+          - react-router
+          - '@react-router/*'
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
+        exclude-patterns:
+          - react-router
+          - '@react-router/*'
