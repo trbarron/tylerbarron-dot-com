@@ -29,10 +29,10 @@ export const PUBLIC_PAGE_MAX = 50;
 
 /**
  * The scale ids the client may submit. This list is the validation authority —
- * `posts/mediaFormatAppreciationProfile.mdx` carries its own copy for rendering,
- * because mdx-bundler compiles each post standalone and cannot import from
- * `~/`. Adding a category means editing both, and an id that appears only in
- * the post will be rejected here.
+ * `posts/mediaFormatAppreciationProfile.mdx` carries its own copy for rendering
+ * (this file is server-only, so the post can't import it). Adding a category
+ * means editing both, and an id that appears only in the post will be rejected
+ * here.
  */
 export const SCALE_IDS = [
   'movies',

@@ -5,9 +5,8 @@ from `CLAUDE.md`, which keeps only the rules you can violate without meaning to.
 
 ## Lambda zip: SSR build + handler + prod node_modules (no client assets)
 
-The deployed Lambda (`server/`) contains the SSR build (`build/server/`, including the
-~84 KB `posts.server` chunk of compiled MDX) plus the esbuilt `index.mjs` and prod
-`node_modules`. Client assets, fonts, and blog images are **not** in the Lambda —
+The deployed Lambda (`server/`) contains the SSR build (`build/server/`, including one
+chunk per blog post) plus the esbuilt `index.mjs` and prod `node_modules`. Client assets, fonts, and blog images are **not** in the Lambda —
 they're served **same-origin through CloudFront**: the asset bucket is an origin on the
 `tylerbarron.com` distribution (E1TUWNZL0WZZ6J) with `/assets/*`, `/fonts/*`,
 `/images/*` behaviors (CachingOptimized, `Compress: True`). `VITE_CDN_URL` is
@@ -21,14 +20,64 @@ variant out of band. Don't diagnose a compression problem from one cold `curl` �
 a dozen times over a couple of minutes first. Objects under 1,000 bytes are never
 compressed at all.
 
-## Blog posts are bundled, not fetched from S3
+## Blog posts are ordinary modules
 
-`npm run compile:mdx` writes compiled posts to `app/posts/compiled/*.json` (gitignored).
-`app/utils/posts.server.ts` bundles them into the SSR build via `import.meta.glob`
-(prod) or compiles `posts/*.mdx` on the fly (dev, gated by `import.meta.env.DEV` so
-`mdx-bundler` is tree-shaken from prod). Image `src`s are rewritten to `VITE_CDN_URL` at
-compile time — so `compile:mdx` must run with that env set (CI Build step does). No
-runtime S3 fetch for posts.
+`posts/*.mdx` are compiled by `@mdx-js/rollup` as part of the Vite build
+(`scripts/lib/vite-posts.mjs`); there is no separate compile step, and dev and production
+take the same path. Each post is its own chunk on the server and in the browser, loaded
+through `app/utils/postModules.ts`. The blog route's loader awaits the post before
+rendering, so the post is in the server's HTML; in the browser the chunk is fetched
+alongside the route's data on navigation.
+
+Listings (homepage, feed, sitemap, prev/next) read `virtual:posts-index`, a build-time
+map of slug to frontmatter served by the same Vite plugin. They never import a post body,
+so the cost of a listing doesn't grow with the length of the posts.
+
+Images in posts are referenced as `/images/...` and left that way: the CDN is the same
+origin as the site.
+
+## What happens to the previous build on deploy
+
+The deploy uploads `build/client/assets/` **without** `--delete`. The previous build's
+hashed files have to outlive the deploy: the Lambda still in production renders HTML that
+points at them until `arc deploy` finishes, edge-cached pages point at them for as long as
+they are cached, and so do tabs that are already open. After the deploy,
+`scripts/prune-old-assets.mjs` deletes files under `assets/` that are both older than 30
+days and absent from the build just shipped. (An S3 lifecycle rule would be wrong here: a
+file whose content didn't change keeps its old upload date, so a quiet month would expire
+the live site's assets.)
+
+Runs on `master` are never cancelled by a newer push (`concurrency` in `deploy.yml`); a
+deploy cancelled between publishing assets and updating the Lambda is the half-state this
+avoids.
+
+## Pages cached at the edge
+
+Routes that render the same HTML for everyone export `headers` from `~/utils/cache`
+(`s-maxage=300, stale-while-revalidate=86400`, `max-age=0` for browsers):
+the homepage, blog posts, and the static project pages. `tests/utils/pageCache.test.ts`
+lists them and fails if one starts reading the request or Redis. Don't add it to a route
+whose loader reads live data or whose server render depends on the query string (Pizza
+Rating's `?town=`, Maia's `?deck=`). The deploy ends with a `/*` invalidation
+(non-blocking).
+
+This only takes effect if the distribution's default behavior uses a cache policy that
+honours the origin's `Cache-Control` and keeps cookies and headers out of the cache key.
+
+## Whose address a rate limit sees
+
+`clientIp()` in `app/utils/rateLimit.server.ts` prefers `CloudFront-Viewer-Address`,
+which CloudFront sets itself, over the first `X-Forwarded-For` entry, which the client
+chooses. CloudFront only sends that header when the default behavior's origin request
+policy includes it; without it the limits still work for honest traffic but can be
+dodged by sending a different `X-Forwarded-For` each time.
+
+## Redis
+
+`app/utils/redis.server.ts` verifies the server's TLS certificate. A provider with a
+certificate no public CA signed needs `REDIS_TLS_REJECT_UNAUTHORIZED=0` in `@env`
+(`arc env --add --env production REDIS_TLS_REJECT_UNAUTHORIZED 0`); prefer fixing the
+certificate. Commands time out after 5 seconds.
 
 ## Lambda response size cap is 6 MB (effectively ~4.5 MB raw)
 
@@ -41,8 +90,15 @@ unpkg CDN; see `app/utils/chess/stockfish.ts`.
 ## Lambda dependencies: two lists that must stay in sync
 
 The Lambda installs `server/package.json` (a separate, hand-maintained list: the AWS
-preset, `chess.js`, `ioredis`, `isbot`, `react`, `react-dom`, `react-router`) — ~17 MB
-installed, dominated by `react-dom` (7.9 MB) and `react-router` (5 MB).
+preset, `@react-router/node`, `chess.js`, `ioredis`, `isbot`, `react`, `react-dom`,
+`react-router`) — ~17 MB installed, dominated by `react-dom` (7.9 MB) and `react-router`
+(5 MB).
+
+That file decides **which** packages ship, not which versions. `npm run build:arc:deps`
+(`scripts/install-lambda-deps.mjs`) installs each one at exactly the version in the root
+`package-lock.json`, so the Lambda runs what the build compiled against and the tests ran
+against, and a package listed there must also be in the root `package.json`.
+`check:lambda-deps` fails on a version mismatch as well as a missing package.
 
 No AWS SDK package ships. `app/utils/camelUpCup/tournament.server.ts` does use
 `@aws-sdk/client-lambda` to invoke the tournament Lambda, but Lambda's Node runtime

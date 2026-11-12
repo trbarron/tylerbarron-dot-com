@@ -17,8 +17,11 @@ const ABORT_DELAY = 5_000;
 // CDN bucket and don't pass through here, but headers only matter on documents.
 //
 // CSP caveats, all load-bearing:
-// - 'unsafe-eval': blog posts evaluate compiled MDX via `new Function` at
-//   runtime, and Stockfish compiles WASM (blog.$slug.tsx, stockfishEngine.ts).
+// - 'unsafe-eval': onnxruntime-web's WebGPU build (Maia Drills) generates
+//   functions with `new Function`, and its worker inherits this policy. Blog
+//   posts no longer need it (they are ordinary modules now), and Stockfish
+//   only needs to compile WASM, so if Maia ever moves to a build without
+//   `new Function` this can become 'wasm-unsafe-eval'.
 // - 'unsafe-inline': React Router's hydration script and the gtag bootstrap
 //   are inline. Tightening to nonces would require plumbing one through
 //   root.tsx and this file.

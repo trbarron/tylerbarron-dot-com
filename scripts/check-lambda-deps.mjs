@@ -9,7 +9,7 @@
  * (this shipped once, 2026-06-10). See the verify-lambda-deps skill.
  *
  * Run after the Lambda is assembled the way deploy does it:
- *   npm run compile:mdx && npm run build && npm run build:arc:server && npm run build:arc:deps
+ *   npm run build && npm run build:arc:server && npm run build:arc:deps
  * then this resolves every bare import in server/index.mjs and server/build/server
  * against server/node_modules, the tree the Lambda actually ships (transitive
  * deps included).
@@ -59,7 +59,7 @@ const bundle = [path.join(serverDir, 'index.mjs'), ...files(path.join(serverDir,
 if (!fs.existsSync(bundle[0]) || !fs.existsSync(modulesDir)) {
   console.error(
     '✗ No assembled Lambda in server/. Build it first:\n' +
-      '  npm run compile:mdx && npm run build && npm run build:arc:server && npm run build:arc:deps',
+      '  npm run build && npm run build:arc:server && npm run build:arc:deps',
   );
   process.exit(1);
 }

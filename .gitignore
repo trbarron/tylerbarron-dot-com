@@ -9,7 +9,6 @@ node_modules
 /public/build
 /public/assets
 /public/static.json
-/app/posts/compiled
 /.react-router
 /server/*
 !/server/package.json

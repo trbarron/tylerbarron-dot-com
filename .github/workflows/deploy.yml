@@ -160,7 +160,7 @@ jobs:
       # every package the SSR bundle imports is installed there. A miss 500s
       # for bots and curl only, so no browser test would catch it.
       - name: 🏗 Build the Lambda
-        run: npm run compile:mdx && npm run build && npm run build:arc:server && npm run build:arc:deps
+        run: npm run build && npm run build:arc:server && npm run build:arc:deps
 
       - name: λ Check the Lambda installs what it imports
         run: npm run check:lambda-deps
@@ -240,10 +240,9 @@ jobs:
             git log -1 --format=%b | gh release create "$TAG" --title "$TAG" --verify-tag --notes-file -
           fi
 
-      # Single source of truth: the same npm scripts used locally. Compiles MDX
-      # (image src's rewritten to VITE_CDN_URL), builds client + SSR bundles
-      # against the CDN base, bundles the Lambda handler, and installs the
-      # Lambda's prod-only deps in server/.
+      # Single source of truth: the same npm scripts used locally. Builds the
+      # client + SSR bundles (blog posts included) against the CDN base, bundles
+      # the Lambda handler, and installs the Lambda's prod-only deps in server/.
       - name: 🏗 Build
         env:
           NODE_ENV: production

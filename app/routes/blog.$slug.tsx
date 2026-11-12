@@ -1,44 +1,47 @@
 import { Link, useLoaderData } from 'react-router';
-import type { LoaderFunctionArgs, MetaFunction } from 'react-router';
+import type { ClientLoaderFunctionArgs, LoaderFunctionArgs, MetaFunction } from 'react-router';
 import { buildMeta, SITE_URL } from '~/utils/seo';
-import { useMemo } from 'react';
-import * as React from 'react';
-import * as ReactDOM from 'react-dom';
-import * as jsxRuntime from 'react/jsx-runtime';
+import { use } from 'react';
 import { Navbar } from '../components/Navbar.js';
 import Footer from '../components/Footer.js';
 import Giscus from '~/components/Giscus';
-
-// Inline MDX component evaluator (replaces getMDXComponent from mdx-bundler/client)
-function getMDXComponent(code: string) {
-  const scope = {
-    React,
-    ReactDOM,
-    _jsx_runtime: jsxRuntime,
-  };
-  const fn = new Function(...Object.keys(scope), code);
-  return fn(...Object.values(scope)).default;
-}
+import { loadPost } from '~/utils/postModules';
 
 export const loader = async ({ params }: LoaderFunctionArgs) => {
-  const { slug } = params;
-  const { getPost, getAllPostMeta } = await import('~/utils/posts.server');
-  const post = await getPost(slug!);
-  if (!post) {
+  const slug = params.slug!;
+  const { getPostFrontmatter, getAllPostMeta } = await import('~/utils/posts.server');
+  const frontmatter = await getPostFrontmatter(slug);
+  const body = loadPost(slug);
+  if (!frontmatter || !body) {
     throw new Response('Not Found', { status: 404 });
   }
+  // Loaded before rendering starts, so the post is in the first HTML the server sends.
+  await body;
 
   // Prev/next within the same bucket (writing vs. project posts), newest first.
   const all = await getAllPostMeta();
-  const isProject = post.frontmatter.type === 'project';
+  const isProject = frontmatter.type === 'project';
   const siblings = all.filter((p) => (p.type === 'project') === isProject);
   const idx = siblings.findIndex((p) => p.slug === slug);
   const toLink = (p?: { slug: string; title: string }) => (p ? { slug: p.slug, title: p.title } : null);
   const newer = toLink(siblings[idx - 1]);
   const older = toLink(siblings[idx + 1]);
 
-  return { slug: slug!, code: post.code, frontmatter: post.frontmatter, newer, older };
+  return { slug, frontmatter, newer, older };
 };
+
+// Navigating to a post in the browser: fetch its chunk alongside its data, so
+// the page changes once, complete. (Not run for the first, server-rendered load.)
+export const clientLoader = async ({ params, serverLoader }: ClientLoaderFunctionArgs) => {
+  const [data] = await Promise.all([serverLoader<typeof loader>(), loadPost(params.slug!)]);
+  return data;
+};
+
+/** The post itself. Suspends only while its chunk is still arriving (first load, before hydration). */
+function PostBody({ slug }: { slug: string }) {
+  const { default: Post } = use(loadPost(slug)!);
+  return <Post />;
+}
 
 export const meta: MetaFunction<typeof loader> = ({ data, params }) => {
   if (!data) {
@@ -107,10 +110,7 @@ function PostNavCard({ slug, title, direction }: PostNavCardProps) {
 }
 
 export default function BlogPost() {
-  const { slug, code, frontmatter, newer, older } = useLoaderData<typeof loader>();
-
-  // Use getMDXComponent from mdx-bundler/client
-  const Component = useMemo(() => getMDXComponent(code), [code]);
+  const { slug, frontmatter, newer, older } = useLoaderData<typeof loader>();
 
   // Comments are on by default; opt out per post with `comments: false` frontmatter.
   const commentsEnabled = frontmatter.comments !== false;
@@ -140,7 +140,7 @@ export default function BlogPost() {
           </header>
 
           <div className="prose prose-lg prose-headings:font-neo prose-headings:font-extrabold prose-headings:text-black prose-headings:uppercase prose-headings:tracking-tight prose-headings:border-b-2 prose-headings:border-accent prose-headings:pb-2 prose-p:font-neo prose-p:text-black prose-p:leading-relaxed prose-p:font-medium prose-p:text-lg prose-strong:text-black prose-strong:font-extrabold prose-a:text-black prose-a:no-underline prose-a:border-b-2 prose-a:border-black prose-a:pb-0.5 prose-a:font-semibold prose-a:transition-all prose-a:hover:bg-accent prose-a:hover:text-white prose-a:hover:border-accent prose-a:hover:px-1 prose-a:hover:-mx-1 prose-li:font-neo prose-li:text-black prose-li:font-medium prose-li:text-lg prose-li:my-1 prose-ul:font-neo prose-ul:text-black prose-ul:ml-6 prose-ul:my-4 prose-ul:list-disc prose-ul:pl-2 prose-ol:font-neo prose-ol:text-black prose-ol:ml-6 prose-ol:my-4 prose-ol:list-decimal prose-ol:pl-2 prose-code:bg-neutral-100 prose-code:text-black prose-code:font-mono prose-code:text-[0.85em] prose-code:font-normal prose-code:before:content-none prose-code:after:content-none prose-code:px-1.5 prose-code:py-0.5 prose-pre:bg-neutral-100 prose-pre:text-black prose-pre:border-l-4 prose-pre:border-black prose-pre:font-mono prose-pre:text-sm prose-blockquote:border-l-4 prose-blockquote:border-accent prose-blockquote:bg-gray-100 prose-blockquote:font-neo prose-blockquote:pl-4 prose-blockquote:py-2 prose-blockquote:font-semibold prose-blockquote:text-lg prose-blockquote:not-italic prose-blockquote:before:content-none prose-blockquote:after:content-none prose-img:border-2 prose-img:border-black prose-img:transition-all prose-table:border-2 prose-table:border-black prose-table:font-neo prose-table:bg-white prose-table:font-medium prose-th:bg-black prose-th:text-white prose-th:border prose-th:border-black prose-th:font-bold prose-th:uppercase prose-td:border prose-td:border-black prose-td:px-2 prose-td:py-1 mx-auto max-w-none tracking-normal">
-            <Component />
+            <PostBody slug={slug} />
           </div>
           {writtenWithoutAi && (
             <p className="font-neo mt-12 border-t-2 border-black pt-4 text-base font-medium text-black">
