@@ -61,7 +61,7 @@ Last updated 12 November 2026.
 | --- | --- | --- |
 | D1 | Previous assets survive deploys; master runs are not cancelled. Release 5.62.1 was tagged after deployment and live bot checks. A non-release deploy remains to verify in task 10. | PR #128, PR #136; deploy run 43265605861 |
 | D2 | The Lambda's dependencies are installed at the root lockfile's versions | PR #128 |
-| D3 | React Router advisory cleared; Dependabot watches npm; all dependencies updated | PR #128, PR #134 |
+| D3; task 28 | React Router advisory cleared; dependencies updated; original Dependabot PRs #129–#133 all closed. New grouped updates such as #135 remain routine dependency maintenance. | PR #128, PR #134; GitHub verified 12 Nov |
 | S1 (most) | Multiple Choice Chess no longer returns player ids; atomic join and move; ids from `crypto` | PR #128 |
 | S2 (code side) | One `clientIp()` that prefers a CloudFront-supplied header | PR #128 |
 | S3; task 01 | Redis TLS verification on by default; timeouts; no client thrash. Production health and bot checks passed 12 Nov; no opt-out added. Production TLS settings not independently inspected. | PR #128; `docs/deployment.md` |
@@ -80,7 +80,6 @@ Ordered by when to do them. "Needs" says what access the executor must have.
 | # | Task | Finding | Needs | Risk | Depends on | Status |
 | --- | --- | --- | --- | --- | --- | --- |
 | [02](tasks/02-camel-up-cup-email.md) | Set up the Camel Up Cup submission email | S7 | AWS | Low | 01 | Not started |
-| [28](tasks/28-dependabot-prs.md) | Clear the first batch of Dependabot PRs | D3 | GitHub | Low | PR #134 | Not started |
 | [07](tasks/07-cost-guardrails.md) | Bound the worst-case AWS bill | S8 | AWS | Low–medium | — | Inspected 12 Nov: throttle 50/burst 100 and USD 5 budget already exist. Peak concurrency 56; proposed cap of 20 unsuitable. No cap changed; owner decision pending. |
 | [08](tasks/08-alarms-and-post-deploy-check.md) | Alarms, and a check after every deploy | A5 | AWS + repo | Low | 01 | Bot checks passed in production run 43265605861. Runtime alarms remain open. |
 | [06](tasks/06-trustworthy-client-ip.md) | Give the rate limiter an address the client can't forge | S2 | AWS + repo | Medium | 05 | Inspection complete: existing www redirect function; direct API returns 200. Paused for owner decision on extending the function. |
@@ -97,7 +96,7 @@ Ordered by when to do them. "Needs" says what access the executor must have.
 | [17](tasks/17-project-registry.md) | One registry for projects | A2 | Repo | Medium | — | Not started |
 | [19](tasks/19-polling-efficiency.md) | Make polling cheaper | P2 | Repo | Low–medium | — | Not started |
 | [20](tasks/20-images-and-dead-code.md) | Lazy images, modern formats, unused helpers | P4 | Repo | Low | 13 | Not started |
-| [21](tasks/21-housekeeping.md) | Entry files, tests, duplicated docs | A4, A6 | Repo | Low | — | Item 4: 32 lifecycle/authorization API tests added on follow-up branch. Other items remain open. |
+| [21](tasks/21-housekeeping.md) | Entry files, tests, duplicated docs | A4, A6 | Repo | Low | — | Item 4 covered by 32 tests in PR #137 (GitHub still reports open). Remaining items stay in the brief. |
 | [22](tasks/22-ioredis-6.md) | Upgrade ioredis to 6 | Deps | Repo; real Redis | Medium–high | 01, 08 | Not started |
 | [23](tasks/23-react-router-future-flags.md) | Opt into React Router's v8 behaviours | D3 | Repo | Medium | 08 | Not started |
 | [24](tasks/24-lambda-arm64.md) | Run the Lambda on arm64 | D9 | Repo; a deploy | Low–medium | 08 | Not started |
@@ -106,13 +105,25 @@ Ordered by when to do them. "Needs" says what access the executor must have.
 
 ### Next work
 
+Recommended order for the remaining work:
+
+1. **08 — Runtime alarms:** detect Redis outages, Lambda errors and throttling. Post-deploy bot checks are already verified; choose an alert destination before creating notifications.
+2. **06 — Trustworthy client IP and direct-origin protection:** make the deployed rate limits enforceable. Preserve the existing `www` redirect and roll out origin verification in stages.
+3. **09 — Deploy OIDC:** remove long-lived CI credentials after successful migration deploys; preserve the working invalidation permission.
+4. **02, then 03 — Submission email and tournament retirement:** make queued bots visible to the owner before deleting the unused execution infrastructure. Task 27 supplies the later local runner.
+5. **12 — Player secrets and choices:** remove Multiple Choice Chess secrets from URLs and persist the offered choices per position.
+6. **13–14, then 19 — Asset deployment and polling:** remove the manual image-upload trap, inspect duplicate uploads, and reduce repeated game polling payloads/Redis reads.
+
+Task 07 needs a concurrency/budget-delivery decision, not the original cap of 20: the existing API throttle and USD 5 budget are already recorded. Tasks 15 and 26 follow the CloudFront decisions; 22–25 remain behind observability/runtime prerequisites. The remaining refactors (16–18, 20–21) can be separate, focused PRs.
+
+
 - [PR #136](https://github.com/trbarron/tylerbarron-dot-com/pull/136) deployed as 5.62.1 in [run 43265605861](https://github.com/trbarron/tylerbarron-dot-com/actions/runs/43265605861). All seven checks, live bot verification, release tagging, invalidation and pruning passed. Independent live checks confirmed the version/source footer, Redis health, stale-date rejection and static/dynamic cache behavior.
 - Confirm a non-release deployment preserves the version to finish task 10.
 - Finish email notifications before retiring the old tournament Lambda (02–03).
 - Handle 06, then 15, sequentially on CloudFront; both found existing resources that must be preserved.
 - Keep 22–25 behind their observability/runtime prerequisites. Task 21’s visual-test deletion still needs the owner’s choice.
 
-Completed task briefs are removed once their lasting operational details are in `docs/deployment.md`. Task numbers remain stable for dependencies; Git history retains the original briefs. Implemented tasks with verification outstanding keep a short checklist.
+Completed task briefs are deleted in the same closeout PR after verification, once lasting operational details are in `docs/deployment.md`. Completed subitems are removed from partially open briefs and recorded in this index. Task numbers remain stable for dependencies; Git history retains the original briefs. Implemented tasks with verification outstanding keep a short checklist.
 
 ### Corrections made to the audit after it was written
 

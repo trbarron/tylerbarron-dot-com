@@ -31,15 +31,6 @@
 
 Do not delete without asking.
 
-**4. Missing API tests**
-
-Implemented on the follow-up branch in `tests/api/multipleChoiceChessLifecycle.test.ts`:
-32 tests cover create, join, resign and claimWin. They verify stranger refusals,
-malformed identities, inactive games, the exact 90-second abandonment boundary for
-both colors, full games and lost join races, creation quotas, and public responses
-that do not leak the opponent’s secret. The existing normalization/public-view helpers
-are exercised alongside a stubbed persistence layer. Awaiting PR merge.
-
 **5. Three copies of the agent guidance**
 
 `AGENT.md`, `AGENTS.md` and `CLAUDE.md` are identical 24-line files. Either replace two with symlinks to the third (check that Git and the tools that read them follow symlinks on the owner's machines), or add a check to CI that the three are byte-identical. The CI check is the safer choice; a dependency-free script in `scripts/` and a step in the `design` job is enough.
