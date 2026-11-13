@@ -70,6 +70,7 @@ Last updated 13 November 2026.
 | S7; tasks 02–03 | Submission email confirmed end to end; old camel-up-tournament function, its dedicated role/policy, site invoke policy and legacy setting removed with owner approval. Former role could read/write only camel-up/* and images/camel-up/*, with prefix-scoped listing, logging and self-invocation. Leaderboard retained; no resources shared that role. | AWS verified 13 Nov; `docs/deployment.md`; `infra/iam/camel-notify.json` |
 | P1; task 05 | Static page headers and origin-controlled CloudFront caching applied and verified. Existing short 404 error cache remains. Invalidation and pruning both succeeded in deploy run 43265605861 (task 04 complete). | PR #128; `docs/deployment.md`; `infra/cloudfront/honour-origin.json` |
 | S4; task 11 | Per-address writer limits, current/yesterday score dates and atomic completion counts deployed in 5.62.1. Task 06 still needed for trustworthy client addresses. | PR #136; deploy run 43265605861 |
+| A5; task 08 | Four runtime/uptime alarms configured and healthy; both regional subscriptions confirmed. Each alarm successfully published its test notification, the owner received all four emails, and normal evaluation restored OK. Post-deploy bot checks are also verified. | AWS and owner verified 13 Nov; `infra/monitoring/`; `docs/deployment.md` |
 | A1 | Blog posts are ordinary modules, one chunk each, with a build-time index | PR #128 |
 | — | `/the-riddler` hydration mismatch fixed | PR #128 |
 
@@ -80,7 +81,6 @@ Ordered by when to do them. "Needs" says what access the executor must have.
 | # | Task | Finding | Needs | Risk | Depends on | Status |
 | --- | --- | --- | --- | --- | --- | --- |
 | [07](tasks/07-cost-guardrails.md) | Bound the worst-case AWS bill | S8 | AWS | Low–medium | — | Inspected 12 Nov: throttle 50/burst 100 and USD 5 budget already exist. Peak concurrency 56; proposed cap of 20 unsuitable. No cap changed; owner decision pending. |
-| [08](tasks/08-alarms-and-post-deploy-check.md) | Alarms, and a check after every deploy | A5 | AWS + repo | Low | 01 | Bot checks verified; four runtime/uptime alarms configured with separate regional topics. External probes healthy. Owner-selected regional email subscriptions created; confirmations and delivery testing remain. |
 | [06](tasks/06-trustworthy-client-ip.md) | Give the rate limiter an address the client can't forge | S2 | AWS + repo | Medium | 05 | Inspection complete: existing www redirect function; direct API returns 200. Paused for owner decision on extending the function. |
 | [09](tasks/09-deploy-oidc.md) | Replace the deploy's long-lived AWS keys with OIDC | D4 | AWS + repo | Medium | 04 | Not started |
 | [13](tasks/13-single-image-tree.md) | One image tree, deployed by CI | D7, D8 | Repo; AWS read | Medium | — | Not started |
@@ -102,18 +102,18 @@ Ordered by when to do them. "Needs" says what access the executor must have.
 
 ### Next work
 
-1. **08 — Runtime alarms:** detect Redis outages, Lambda errors and throttling. Post-deploy bot checks are verified; choose an alert destination before creating notifications.
-2. **06, then 15 — Edge security:** preserve the existing redirect, establish trustworthy client IPs and direct-origin protection, then extend security headers.
-3. **09 — Deploy OIDC:** replace long-lived CI credentials after migration deploys succeed.
-4. **12 — Player secrets and choices:** remove chess credentials from URLs and persist offered choices.
-5. **13–14, then 19 — Assets and polling:** automate image deployment, inspect duplicate uploads and reduce polling costs.
+1. **06, then 15 — Edge security:** preserve the existing redirect, establish trustworthy client IPs and direct-origin protection, then extend security headers.
+2. **09 — Deploy OIDC:** replace long-lived CI credentials after migration deploys succeed.
+3. **12 — Player secrets and choices:** remove chess credentials from URLs and persist offered choices.
+4. **13–14, then 19 — Assets and polling:** automate image deployment, inspect duplicate uploads and reduce polling costs.
 
 Release ordering and the unchanged-version path are verified in production runs
 43265605861 and 43294486638. Tasks 02–03 are complete: submission emails received,
 approved execution resources retired, leaderboard/email/health verified. Task 27
 remains for the local runner.
 
-Task 07 still needs a concurrency/budget-delivery decision; observed peak concurrency
+Task 08 is complete and its brief removed; four named notification paths were
+verified through to the owner’s inbox. Task 07 still needs a concurrency/budget-delivery decision; observed peak concurrency
 was 56, so the original proposed cap of 20 is unsuitable. Tasks 22–25 remain behind
 observability/runtime prerequisites. Task 21’s visual-test deletion needs the owner’s
 choice; the other refactors can be separate focused PRs.
