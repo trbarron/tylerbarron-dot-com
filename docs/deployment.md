@@ -315,3 +315,43 @@ not retry blindly. Wait for distribution status `Deployed`, then run the cache a
 live-site checks above. To roll back, fetch a fresh ETag and apply the saved original
 `DistributionConfig`, then invalidate `/*`. Preserve unrelated origins, behaviors,
 edge functions and response-header policies on every change.
+
+## Runtime monitoring
+
+Configured on 13 November 2026; recipient selection, SNS subscription confirmation
+and notification delivery tests remain pending. Do not treat configured alarms as
+verified email delivery until those steps pass. Camel Up Cup uses its own separate
+notification topic.
+
+| Alarm | Region | Condition |
+| --- | --- | --- |
+| `site-lambda-errors` | `us-west-2` | Lambda `Errors`, Sum ≥ 5 in 300 seconds |
+| `site-5xx` | `us-west-2` | HTTP API `5xx`, Sum ≥ 10 in 300 seconds |
+| `site-lambda-throttles` | `us-west-2` | Lambda `Throttles`, Sum ≥ 1 in 300 seconds |
+| `site-healthcheck` | `us-east-1` | Route 53 `HealthCheckStatus` < 1 in two consecutive 60-second periods |
+
+The Lambda alarms use function dimension
+`TbWebsiteRemixProduction-AnyCatchallHTTPLambda-W9sc2MIDWGc5`; the HTTP API alarm uses
+`ApiId=4qklz67ic3`. Both API metric dimension sets were inspected; the alarm uses the
+API-level series. Runtime count metrics treat missing data as `notBreaching` so a
+quiet site does not alert. The continuously sampled health metric treats missing
+data as `breaching`; two missing/unhealthy periods alert after startup.
+
+Route 53 health check `9da1d67a-da64-5102-092f-938725853205` sends HTTPS requests to
+`https://tylerbarron.com/healthcheck`, requires body string `OK`, enables SNI, and uses
+30-second checks with failure threshold 3 in `us-west-2`, `us-east-1` and `eu-west-1`.
+Probes in all three regions returned 200 and found the required string. It is a
+standalone monitor; no DNS routing configuration was changed. All four alarms
+subsequently reached `OK`, including two healthy one-minute uptime datapoints.
+
+Regional SNS topics are named `site-runtime-alerts` in account `027237787789`, in
+`us-west-2` for runtime metrics and `us-east-1` for Route 53 health metrics. Their
+policies preserve the owner policy and allow `cloudwatch.amazonaws.com` to publish
+only for the four exact alarm ARNs with the expected source account. Route 53 metrics
+are published in `us-east-1`, so its notification topic is regional too. Recipient
+addresses belong only in SNS, never in this repository.
+
+Definitions and resource IDs are in `infra/monitoring/`. Before editing existing
+alarms or topic policies, save their current configurations. The pre-setup snapshots
+(empty site alarm sets and default topic policies) are in
+`/private/tmp/site-runtime-alarms-20261113` on the executing machine.

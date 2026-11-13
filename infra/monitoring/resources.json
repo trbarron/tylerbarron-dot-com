@@ -1,0 +1,7 @@
+{
+  "HealthCheckId": "9da1d67a-da64-5102-092f-938725853205",
+  "Topics": {
+    "us-west-2": "arn:aws:sns:us-west-2:027237787789:site-runtime-alerts",
+    "us-east-1": "arn:aws:sns:us-east-1:027237787789:site-runtime-alerts"
+  }
+}
