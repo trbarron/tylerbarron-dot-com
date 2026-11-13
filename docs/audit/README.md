@@ -49,17 +49,17 @@ From the repository. Items marked _unverified_ are inferred and should be confir
 | Asset bucket | `remix-website-writing-posts` | CloudFront origin inspected 12 Nov |
 | Redis | URL in the stored environment variable `REDIS_TLS_URL` (production) | `app.arc`, `app/utils/redis.server.ts` |
 | Deploy | GitHub Actions, `.github/workflows/deploy.yml`, on push to `master`; long-lived AWS keys in repository secrets | |
-| Tournament Lambda | `camel-up-tournament`, deployed from the separate repository `trbarron/Camel_Up_Cup_2K18`; no longer invoked by the site | |
+| Camel Up Cup | Submissions queued in Redis and emailed through SNS; old execution infrastructure retired 13 Nov | `docs/deployment.md` |
 
 ## Status
 
-Last updated 12 November 2026.
+Last updated 13 November 2026.
 
 ### Done
 
 | Finding | What was done | Where |
 | --- | --- | --- |
-| D1 | Deploy keeps the previous build's assets and prunes by age afterwards; `master` runs are never cancelled | PR #128 |
+| D1; task 10 | Assets survive deploys; master runs are not cancelled. Release 5.62.1 tagged only after deploy/bot checks; unchanged-version path verified in workflow-dispatch run 43294486638. | PR #128, PR #136; deploy runs 43265605861 and 43294486638 |
 | D2 | The Lambda's dependencies are installed at the root lockfile's versions | PR #128 |
 | D3 | React Router advisory cleared; Dependabot watches npm; all dependencies updated | PR #128, PR #134 |
 | S1 (most) | Multiple Choice Chess no longer returns player ids; atomic join and move; ids from `crypto` | PR #128 |
@@ -67,7 +67,7 @@ Last updated 12 November 2026.
 | S3; task 01 | Redis TLS verification on by default; timeouts; no client thrash. Production health and bot checks passed 12 Nov; no opt-out added. Production TLS settings not independently inspected. | PR #128; `docs/deployment.md` |
 | S5 | Healthcheck no longer fetches a URL built from request headers | PR #128 |
 | S6.1 | `'unsafe-eval'` only on the Maia page; `'wasm-unsafe-eval'` elsewhere | PR #128 |
-| S7 (site side) | The site no longer invokes the tournament Lambda; submissions are queued and emailed | PR #128 |
+| S7; tasks 02–03 | Submission email confirmed end to end; old camel-up-tournament function, its dedicated role/policy, site invoke policy and legacy setting removed with owner approval. Former role could read/write only camel-up/* and images/camel-up/*, with prefix-scoped listing, logging and self-invocation. Leaderboard retained; no resources shared that role. | AWS verified 13 Nov; `docs/deployment.md`; `infra/iam/camel-notify.json` |
 | P1; task 05 | Static page headers and origin-controlled CloudFront caching applied and verified. Existing short 404 error cache remains. Invalidation permission verification is tracked in 04. | PR #128; `docs/deployment.md`; `infra/cloudfront/honour-origin.json` |
 | A1 | Blog posts are ordinary modules, one chunk each, with a build-time index | PR #128 |
 | — | `/the-riddler` hydration mismatch fixed | PR #128 |
@@ -78,15 +78,12 @@ Ordered by when to do them. "Needs" says what access the executor must have.
 
 | # | Task | Finding | Needs | Risk | Depends on | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| [02](tasks/02-camel-up-cup-email.md) | Set up the Camel Up Cup submission email | S7 | AWS | Low | 01 | Not started |
 | [28](tasks/28-dependabot-prs.md) | Clear the first batch of Dependabot PRs | D3 | GitHub | Low | PR #134 | Not started |
 | [04](tasks/04-deploy-invalidation-permission.md) | Let the deploy invalidate CloudFront | P1 | AWS | Low | — | Permission applied 12 Nov; IAM simulation allowed. Pruning already succeeded. Invalidation confirmation on next deploy pending. |
 | [07](tasks/07-cost-guardrails.md) | Bound the worst-case AWS bill | S8 | AWS | Low–medium | — | Inspected 12 Nov: throttle 50/burst 100 and USD 5 budget already exist. Peak concurrency 56; proposed cap of 20 unsuitable. No cap changed; owner decision pending. |
 | [08](tasks/08-alarms-and-post-deploy-check.md) | Alarms, and a check after every deploy | A5 | AWS + repo | Low | 01 | Bot checks implemented in PR #136; first deploy pending. Alarms remain open. |
 | [11](tasks/11-rate-limit-writers.md) | Rate-limit the remaining endpoints that write to Redis | S4 | Repo | Low | — | Implemented in PR #136; merge/deploy pending. Task 06 still needed for trustworthy addresses. |
 | [06](tasks/06-trustworthy-client-ip.md) | Give the rate limiter an address the client can't forge | S2 | AWS + repo | Medium | 05 | Inspection complete: existing www redirect function; direct API returns 200. Paused for owner decision on extending the function. |
-| [03](tasks/03-retire-tournament-lambda.md) | Retire the old tournament Lambda | S7 | AWS | Irreversible | 02 | Not started |
-| [10](tasks/10-release-after-build.md) | Tag a release only after the build exists | D1 | Repo | Medium | — | Implemented in PR #136; first real deploy verification pending. |
 | [09](tasks/09-deploy-oidc.md) | Replace the deploy's long-lived AWS keys with OIDC | D4 | AWS + repo | Medium | 04 | Not started |
 | [13](tasks/13-single-image-tree.md) | One image tree, deployed by CI | D7, D8 | Repo; AWS read | Medium | — | Not started |
 | [14](tasks/14-arc-static-duplicate-upload.md) | Find out whether every deploy uploads the images twice | D6 | AWS read; repo | Low to check | — | Not started |
@@ -107,8 +104,8 @@ Ordered by when to do them. "Needs" says what access the executor must have.
 
 ### Next work
 
-- Finish 04 and 10’s deploy verification after [PR #136](https://github.com/trbarron/tylerbarron-dot-com/pull/136) merges. All seven CI checks passed, including 570 tests with real Redis.
-- Finish email notifications before retiring the old tournament Lambda (02–03).
+- Release ordering and the unchanged-version path are verified in production runs 43265605861 and 43294486638. Invalidation and pruning succeeded.
+- Tasks 02–03 are complete: emails received, approved execution resources retired, leaderboard/email/health verified. Task 27 remains for the local runner.
 - Handle 06, then 15, sequentially on CloudFront; both found existing resources that must be preserved.
 - Keep 22–25 behind their observability/runtime prerequisites. Task 21’s visual-test deletion still needs the owner’s choice.
 
