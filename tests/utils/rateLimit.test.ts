@@ -57,6 +57,41 @@ describe('checkRateLimit', () => {
 });
 
 describe('clientIp', () => {
+  it('prefers the edge-stamped address and preserves native IPv6', () => {
+    for (const ip of ['203.0.113.7', '2001:db8::1234']) {
+      expect(
+        clientIp(
+          req({
+            'x-site-viewer-ip': ` ${ip} `,
+            'cloudfront-viewer-address': '6.6.6.6:123',
+            'x-forwarded-for': '7.7.7.7',
+          }),
+        ),
+      ).toBe(ip);
+    }
+    expect(clientIp(req({ 'x-site-viewer-ip': ' ', 'x-real-ip': '8.8.8.8' }))).toBe('8.8.8.8');
+  });
+
+  it('does not reset a trusted bucket when the caller changes legacy headers', async () => {
+    const results = [];
+    for (let i = 1; i <= 3; i++) {
+      results.push(
+        await checkRateLimit(
+          req({
+            'x-site-viewer-ip': '203.0.113.7',
+            'x-forwarded-for': `10.0.0.${i}`,
+            'cloudfront-viewer-address': `10.1.0.${i}:123`,
+          }),
+          'tool',
+          'save',
+          limit,
+        ),
+      );
+    }
+    expect(results.map((r) => r.allowed)).toEqual([true, true, false]);
+    expect(counts.size).toBe(1);
+  });
+
   it("prefers CloudFront's own record of who connected over anything the client sent", () => {
     const forged = { 'x-forwarded-for': '6.6.6.6, 203.0.113.7' };
     expect(clientIp(req({ ...forged, 'cloudfront-viewer-address': '203.0.113.7:46532' }))).toBe('203.0.113.7');

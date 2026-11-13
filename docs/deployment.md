@@ -88,11 +88,41 @@ ETag. That file is a local operational backup, not committed infrastructure stat
 
 ## Whose address a rate limit sees
 
-`clientIp()` in `app/utils/rateLimit.server.ts` prefers `CloudFront-Viewer-Address`,
-which CloudFront sets itself, over the first `X-Forwarded-For` entry, which the client
-chooses. CloudFront only sends that header when the default behavior's origin request
-policy includes it; without it the limits still work for honest traffic but can be
-dodged by sending a different `X-Forwarded-For` each time.
+The existing `www-to-apex-redirect` viewer-request function overwrites
+`x-site-viewer-ip` with `event.viewer.ip` before preserving its existing www-to-apex
+redirect. Source: `infra/cloudfront/viewer-request.js`. `clientIp()` prefers that
+header, preserving native IPv6, then keeps the legacy address headers as fallbacks.
+The default behavior retains `AllViewerExceptHostHeader`: the function's header is
+forwarded, but the viewer's Host must never reach API Gateway.
+
+The production Lambda guard requires `x-origin-verify` before routing any request,
+including `/healthcheck`. Its value must exactly match `ORIGIN_VERIFY`; production
+fails closed if the setting is absent. Local sandbox and staging bypass this guard.
+CloudFront adds the header on the API origin and overwrites any viewer-supplied
+value ([AWS origin-header documentation](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/add-origin-custom-headers.html)).
+This guard is what makes the stamped IP trustworthy: direct callers can otherwise
+forge any header. It rejects direct requests inside Lambda; it does not eliminate
+the invocation cost of those requests.
+
+Rollout preparation completed on 13 November 2026: AWS function tests passed for
+IPv4, IPv6, forged-header overwrite and redirect query preservation, then the function
+was published. The distribution reached `Deployed` with only the API origin custom
+header changed. Its secret matches both the SecureString parameter
+`/tb-website-remix/production/ORIGIN_VERIFY` and the live Lambda setting. The current
+handler was updated with a revision guard while preserving all other variables;
+`app.arc` now declares the parameter for subsequent deployments. The existing handler
+remains permissive until the enforcing PR is merged. Site and direct-origin health
+both returned `200 OK` during preparation; direct-origin 403 and live rate-limit
+verification remain in audit task 06 until the new handler deploys.
+
+Private pre-change function, distribution and Lambda snapshots are in
+`/private/tmp/site-origin-guard-20261113` on the executing machine. They contain
+secrets and must never be committed. To rotate, first make the handler accept old and
+new secrets during propagation, then update CloudFront and wait for `Deployed`, then
+retire the old value. To undo enforcement, deploy the prior handler before removing
+the CloudFront header or Lambda parameter. Never remove the secret first: production
+fails closed. The execute-api endpoint must stay enabled because it is CloudFront's
+origin; disabling it would also break the public site.
 
 ## Camel Up Cup: queued and emailed, never run here
 
@@ -291,11 +321,6 @@ of this name. The user policy list was saved alongside the distribution rollback
 
 ## Infrastructure findings still awaiting decisions
 
-- The existing viewer-request function is `www-to-apex-redirect`. Task 06 must extend
-  it carefully rather than replace its association with a second function. Its live
-  source was saved in `/private/tmp/site-audit-20261112/www-to-apex-live.js`. No function
-  change has been applied. The direct API healthcheck at the `4qklz67ic3` API origin
-  still returns 200; closing that bypass requires the planned origin-secret rollout.
 - The production API `4qklz67ic3` (`TbWebsiteRemixProduction`), `$default` stage,
   already has rate 50 requests/second and burst 100. The site Lambda is
   `TbWebsiteRemixProduction-AnyCatchallHTTPLambda-W9sc2MIDWGc5`, role

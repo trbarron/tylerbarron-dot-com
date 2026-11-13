@@ -81,7 +81,7 @@ Ordered by when to do them. "Needs" says what access the executor must have.
 | # | Task | Finding | Needs | Risk | Depends on | Status |
 | --- | --- | --- | --- | --- | --- | --- |
 | [07](tasks/07-cost-guardrails.md) | Bound the worst-case AWS bill | S8 | AWS | Low–medium | — | Inspected 12 Nov: throttle 50/burst 100 and USD 5 budget already exist. Peak concurrency 56; proposed cap of 20 unsuitable. No cap changed; owner decision pending. |
-| [06](tasks/06-trustworthy-client-ip.md) | Give the rate limiter an address the client can't forge | S2 | AWS + repo | Medium | 05 | Inspection complete: existing www redirect function; direct API returns 200. Paused for owner decision on extending the function. |
+| [06](tasks/06-trustworthy-client-ip.md) | Give the rate limiter an address the client can't forge | S2 | AWS + repo | Medium | 05 | CloudFront function and origin secret configured; handler and regression tests implemented. Awaiting merge/deploy, direct-origin 403 and live forged-header quota verification. |
 | [09](tasks/09-deploy-oidc.md) | Replace the deploy's long-lived AWS keys with OIDC | D4 | AWS + repo | Medium | 04 | Not started |
 | [13](tasks/13-single-image-tree.md) | One image tree, deployed by CI | D7, D8 | Repo; AWS read | Medium | — | Not started |
 | [14](tasks/14-arc-static-duplicate-upload.md) | Find out whether every deploy uploads the images twice | D6 | AWS read; repo | Low to check | — | Not started |
