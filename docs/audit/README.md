@@ -61,14 +61,15 @@ Last updated 13 November 2026.
 | --- | --- | --- |
 | D1; task 10 | Assets survive deploys; master runs are not cancelled. Release 5.62.1 tagged only after deploy/bot checks; unchanged-version path verified in workflow-dispatch run 43294486638. | PR #128, PR #136; deploy runs 43265605861 and 43294486638 |
 | D2 | The Lambda's dependencies are installed at the root lockfile's versions | PR #128 |
-| D3 | React Router advisory cleared; Dependabot watches npm; all dependencies updated | PR #128, PR #134 |
+| D3; task 28 | React Router advisory cleared; dependencies updated; original Dependabot PRs #129–#133 all closed. New grouped updates such as #135 remain routine dependency maintenance. | PR #128, PR #134; GitHub verified 12 Nov |
 | S1 (most) | Multiple Choice Chess no longer returns player ids; atomic join and move; ids from `crypto` | PR #128 |
 | S2 (code side) | One `clientIp()` that prefers a CloudFront-supplied header | PR #128 |
 | S3; task 01 | Redis TLS verification on by default; timeouts; no client thrash. Production health and bot checks passed 12 Nov; no opt-out added. Production TLS settings not independently inspected. | PR #128; `docs/deployment.md` |
 | S5 | Healthcheck no longer fetches a URL built from request headers | PR #128 |
 | S6.1 | `'unsafe-eval'` only on the Maia page; `'wasm-unsafe-eval'` elsewhere | PR #128 |
 | S7; tasks 02–03 | Submission email confirmed end to end; old camel-up-tournament function, its dedicated role/policy, site invoke policy and legacy setting removed with owner approval. Former role could read/write only camel-up/* and images/camel-up/*, with prefix-scoped listing, logging and self-invocation. Leaderboard retained; no resources shared that role. | AWS verified 13 Nov; `docs/deployment.md`; `infra/iam/camel-notify.json` |
-| P1; task 05 | Static page headers and origin-controlled CloudFront caching applied and verified. Existing short 404 error cache remains. Invalidation permission verification is tracked in 04. | PR #128; `docs/deployment.md`; `infra/cloudfront/honour-origin.json` |
+| P1; task 05 | Static page headers and origin-controlled CloudFront caching applied and verified. Existing short 404 error cache remains. Invalidation and pruning both succeeded in deploy run 43265605861 (task 04 complete). | PR #128; `docs/deployment.md`; `infra/cloudfront/honour-origin.json` |
+| S4; task 11 | Per-address writer limits, current/yesterday score dates and atomic completion counts deployed in 5.62.1. Task 06 still needed for trustworthy client addresses. | PR #136; deploy run 43265605861 |
 | A1 | Blog posts are ordinary modules, one chunk each, with a build-time index | PR #128 |
 | — | `/the-riddler` hydration mismatch fixed | PR #128 |
 
@@ -78,11 +79,8 @@ Ordered by when to do them. "Needs" says what access the executor must have.
 
 | # | Task | Finding | Needs | Risk | Depends on | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| [28](tasks/28-dependabot-prs.md) | Clear the first batch of Dependabot PRs | D3 | GitHub | Low | PR #134 | Not started |
-| [04](tasks/04-deploy-invalidation-permission.md) | Let the deploy invalidate CloudFront | P1 | AWS | Low | — | Permission applied 12 Nov; IAM simulation allowed. Pruning already succeeded. Invalidation confirmation on next deploy pending. |
 | [07](tasks/07-cost-guardrails.md) | Bound the worst-case AWS bill | S8 | AWS | Low–medium | — | Inspected 12 Nov: throttle 50/burst 100 and USD 5 budget already exist. Peak concurrency 56; proposed cap of 20 unsuitable. No cap changed; owner decision pending. |
 | [08](tasks/08-alarms-and-post-deploy-check.md) | Alarms, and a check after every deploy | A5 | AWS + repo | Low | 01 | Bot checks verified; four runtime/uptime alarms configured with separate regional topics. External probes healthy. Recipient selection, confirmation and delivery testing remain. |
-| [11](tasks/11-rate-limit-writers.md) | Rate-limit the remaining endpoints that write to Redis | S4 | Repo | Low | — | Implemented in PR #136; merge/deploy pending. Task 06 still needed for trustworthy addresses. |
 | [06](tasks/06-trustworthy-client-ip.md) | Give the rate limiter an address the client can't forge | S2 | AWS + repo | Medium | 05 | Inspection complete: existing www redirect function; direct API returns 200. Paused for owner decision on extending the function. |
 | [09](tasks/09-deploy-oidc.md) | Replace the deploy's long-lived AWS keys with OIDC | D4 | AWS + repo | Medium | 04 | Not started |
 | [13](tasks/13-single-image-tree.md) | One image tree, deployed by CI | D7, D8 | Repo; AWS read | Medium | — | Not started |
@@ -95,7 +93,7 @@ Ordered by when to do them. "Needs" says what access the executor must have.
 | [17](tasks/17-project-registry.md) | One registry for projects | A2 | Repo | Medium | — | Not started |
 | [19](tasks/19-polling-efficiency.md) | Make polling cheaper | P2 | Repo | Low–medium | — | Not started |
 | [20](tasks/20-images-and-dead-code.md) | Lazy images, modern formats, unused helpers | P4 | Repo | Low | 13 | Not started |
-| [21](tasks/21-housekeeping.md) | Entry files, tests, duplicated docs | A4, A6 | Repo | Low | — | Not started |
+| [21](tasks/21-housekeeping.md) | Entry files, tests, duplicated docs | A4, A6 | Repo | Low | — | Item 4 covered by 32 tests in PR #137; other items remain open. |
 | [22](tasks/22-ioredis-6.md) | Upgrade ioredis to 6 | Deps | Repo; real Redis | Medium–high | 01, 08 | Not started |
 | [23](tasks/23-react-router-future-flags.md) | Opt into React Router's v8 behaviours | D3 | Repo | Medium | 08 | Not started |
 | [24](tasks/24-lambda-arm64.md) | Run the Lambda on arm64 | D9 | Repo; a deploy | Low–medium | 08 | Not started |
@@ -104,12 +102,23 @@ Ordered by when to do them. "Needs" says what access the executor must have.
 
 ### Next work
 
-- Release ordering and the unchanged-version path are verified in production runs 43265605861 and 43294486638. Invalidation and pruning succeeded.
-- Tasks 02–03 are complete: emails received, approved execution resources retired, leaderboard/email/health verified. Task 27 remains for the local runner.
-- Handle 06, then 15, sequentially on CloudFront; both found existing resources that must be preserved.
-- Keep 22–25 behind their observability/runtime prerequisites. Task 21’s visual-test deletion still needs the owner’s choice.
+1. **08 — Runtime alarms:** detect Redis outages, Lambda errors and throttling. Post-deploy bot checks are verified; choose an alert destination before creating notifications.
+2. **06, then 15 — Edge security:** preserve the existing redirect, establish trustworthy client IPs and direct-origin protection, then extend security headers.
+3. **09 — Deploy OIDC:** replace long-lived CI credentials after migration deploys succeed.
+4. **12 — Player secrets and choices:** remove chess credentials from URLs and persist offered choices.
+5. **13–14, then 19 — Assets and polling:** automate image deployment, inspect duplicate uploads and reduce polling costs.
 
-Completed task briefs are removed once their lasting operational details are in `docs/deployment.md`. Task numbers remain stable for dependencies; Git history retains the original briefs. Implemented tasks with verification outstanding keep a short checklist.
+Release ordering and the unchanged-version path are verified in production runs
+43265605861 and 43294486638. Tasks 02–03 are complete: submission emails received,
+approved execution resources retired, leaderboard/email/health verified. Task 27
+remains for the local runner.
+
+Task 07 still needs a concurrency/budget-delivery decision; observed peak concurrency
+was 56, so the original proposed cap of 20 is unsuitable. Tasks 22–25 remain behind
+observability/runtime prerequisites. Task 21’s visual-test deletion needs the owner’s
+choice; the other refactors can be separate focused PRs.
+
+Completed task briefs are deleted in the same closeout PR after verification, once lasting operational details are in `docs/deployment.md`. Completed subitems are removed from partially open briefs and recorded in this index. Task numbers remain stable for dependencies; Git history retains the original briefs. Implemented tasks with verification outstanding keep a short checklist.
 
 ### Corrections made to the audit after it was written
 

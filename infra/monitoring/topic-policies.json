@@ -96,7 +96,7 @@
               "aws:SourceAccount": "027237787789"
             },
             "ArnEquals": {
-              "aws:SourceArn": ["arn:aws:cloudwatch:us-east-1:027237787789:alarm:site-healthcheck"]
+              "aws:SourceArn": "arn:aws:cloudwatch:us-east-1:027237787789:alarm:site-healthcheck"
             }
           }
         }
