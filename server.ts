@@ -6,6 +6,7 @@ if (!process.env.NODE_ENV) {
 
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
+import { isTrustedOrigin } from './app/utils/origin.server';
 
 // WORKAROUND: React Router 7's package.json always points to development build
 // Import the adapter which will internally import react-router
@@ -23,6 +24,13 @@ const requestHandler = createRequestHandler({
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function handlerFn(event: any, context: any) {
+  if (!isTrustedOrigin(event.headers)) {
+    return {
+      statusCode: 403,
+      headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' },
+      body: 'Forbidden',
+    };
+  }
   try {
     // In local dev, serve static files from public directory
     const path = event.rawPath || event.path || event.requestContext?.http?.path;
