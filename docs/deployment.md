@@ -327,7 +327,8 @@ edge functions and response-header policies on every change.
 
 ## Runtime monitoring
 
-Configured on 13 November 2026; recipient selection, SNS subscription confirmation
+Configured on 13 November 2026; the owner selected the operational recipient and
+email subscriptions were created for both regional topics. Both SNS confirmations
 and notification delivery tests remain pending. Do not treat configured alarms as
 verified email delivery until those steps pass. Camel Up Cup uses its own separate
 notification topic.

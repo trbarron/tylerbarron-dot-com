@@ -7,15 +7,15 @@ are in `infra/monitoring/`; exact names, thresholds and health check ID are in
 
 All four alarms reached `OK`; Route 53 probes in all three configured regions
 returned HTTP 200 and matched `OK`, and the uptime metric reported healthy
-datapoints over both evaluation windows. No notification recipient has been
-subscribed yet; a question about using the previously supplied owner address is
-pending. The Camel Up Cup topic is separate and unchanged.
+datapoints over both evaluation windows. The owner selected the operational
+recipient; email subscriptions were created for both regional topics and await
+confirmation. The Camel Up Cup topic is separate and unchanged.
 
 ## Remaining work
 
-1. Obtain the owner's operational-alert recipient choice. Subscribe it once to
-   each `site-runtime-alerts` topic (`us-west-2` and `us-east-1`); have the owner
-   confirm both SNS emails. Do not commit subscriber addresses.
+1. Have the owner confirm both SNS emails for `site-runtime-alerts` in `us-west-2`
+   and `us-east-1`. Subscriptions are already created; do not duplicate them or
+   commit subscriber addresses.
 2. Recheck all four alarm states before notification testing; any real alarm needs
    investigation. The initial uptime metric and `OK` state are already verified.
 3. Exercise each of the four alarms with `set-alarm-state --state-value ALARM` and
