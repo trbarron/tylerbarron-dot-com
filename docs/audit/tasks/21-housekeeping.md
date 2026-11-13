@@ -31,10 +31,6 @@
 
 Do not delete without asking.
 
-**4. Missing API tests**
-
-Multiple Choice Chess has tests for `move` and `state` but none for `join`, `resign`, `claimWin` or `create`. Add them in the style of `tests/api/multipleChoiceChessMove.test.ts`. Cases worth having: a stranger cannot resign or claim a win; `claimWin` is refused while the opponent was seen within 90 seconds; `join` on a full game returns `409`; `create` returns `429` past its limit.
-
 **5. Three copies of the agent guidance**
 
 `AGENT.md`, `AGENTS.md` and `CLAUDE.md` are identical 24-line files. Either replace two with symlinks to the third (check that Git and the tools that read them follow symlinks on the owner's machines), or add a check to CI that the three are byte-identical. The CI check is the safer choice; a dependency-free script in `scripts/` and a step in the `design` job is enough.
