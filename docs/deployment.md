@@ -104,6 +104,27 @@ them after the tournament, which is run by hand and publishes `leaderboard.json`
 `images/camel-up/` as before. The Lambda's role needs `sns:Publish` on that topic; without
 it, or without the variable, submissions are still queued and the failure is logged.
 
+Submission email was verified end to end on 13 November 2026: the owner confirmed
+receipt of both the direct SNS test and the live `NotificationCheck` bot email.
+The test entry was verified in Redis and only that entry was removed; the queue
+was empty afterwards. No submitted code was executed.
+
+- SNS topic: `camel-up-cup-submissions`, ARN
+  `arn:aws:sns:us-west-2:027237787789:camel-up-cup-submissions`.
+- Site role inline policy: `camel-notify`, defined in `infra/iam/camel-notify.json`;
+  it grants only `sns:Publish` to that topic.
+- Architect production parameter:
+  `/tb-website-remix/production/CAMEL_NOTIFY_TOPIC_ARN` (SecureString), activated by
+  production deploy `43294486638`. The confirmed email address lives only in SNS.
+- The old execution infrastructure, dedicated role/policy, site invocation grant
+  and obsolete environment setting were removed with owner approval on 13 November.
+  The live site configuration retains the notification setting. Email permission,
+  the leaderboard object and all five live bot health checks passed afterwards.
+- Private configuration/policy backups and the hash-verified code archive are kept
+  outside the repository in `/private/tmp/camel-retirement-20261112` and
+  `/private/tmp/camel-retirement-20261113`. These may contain secrets; do not commit
+  them. The separate local tournament runner remains audit task 27.
+
 ## Content-Security-Policy: eval on the Maia page only
 
 `app/utils/csp.server.ts` builds the policy per document. Every page gets
@@ -207,8 +228,10 @@ There is no `CHANGELOG.md`: release notes live in the commit body and GitHub Rel
 The first deployment using this order was verified in [run 43265605861](https://github.com/trbarron/tylerbarron-dot-com/actions/runs/43265605861):
 bot checks finished at 17:07:41 UTC, then tag `5.62.1` was created at 17:07:49.
 The live footer showed `v5.62.1 · 1f2e2be`, matching the deployed merge commit and
-released `package.json`; independent live checks passed. A later non-release deploy
-still needs observation to confirm the unchanged-version path in production.
+released `package.json`; independent live checks passed. Workflow-dispatch run
+`43294486638` subsequently verified the no-release path: it built and deployed
+`5.62.1` unchanged, passed bot checks, and semantic-release reported no relevant
+changes in both planning and publication steps.
 
 Because that release commit lands on `master` near the end of a deploy, a local push made while a
 deploy is running gets rejected as non-fast-forward. Rebase onto `origin/master` and
