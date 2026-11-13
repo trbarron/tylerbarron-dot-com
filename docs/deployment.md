@@ -327,11 +327,13 @@ edge functions and response-header policies on every change.
 
 ## Runtime monitoring
 
-Configured on 13 November 2026; the owner selected the operational recipient and
-email subscriptions were created for both regional topics. Both SNS confirmations
-and notification delivery tests remain pending. Do not treat configured alarms as
-verified email delivery until those steps pass. Camel Up Cup uses its own separate
-notification topic.
+Configured and verified end to end on 13 November 2026. Both regional SNS email
+subscriptions are confirmed. All four alarms were exercised once using labeled
+notification tests; CloudWatch action history recorded successful SNS publication
+for each, and the owner confirmed receipt of all four named emails. Normal metric
+evaluation returned every alarm to `OK`; no outage was induced and no state was
+forced back to healthy. Live bot/Redis checks passed. Camel Up Cup uses its own
+separate notification topic.
 
 | Alarm | Region | Condition |
 | --- | --- | --- |
