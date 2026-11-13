@@ -1,0 +1,98 @@
+[
+  {
+    "Region": "us-west-2",
+    "Configuration": {
+      "AlarmName": "site-lambda-errors",
+      "AlarmDescription": "Site Lambda errors: five or more in five minutes.",
+      "ActionsEnabled": true,
+      "AlarmActions": ["arn:aws:sns:us-west-2:027237787789:site-runtime-alerts"],
+      "Namespace": "AWS/Lambda",
+      "MetricName": "Errors",
+      "Dimensions": [
+        {
+          "Name": "FunctionName",
+          "Value": "TbWebsiteRemixProduction-AnyCatchallHTTPLambda-W9sc2MIDWGc5"
+        }
+      ],
+      "Statistic": "Sum",
+      "Period": 300,
+      "EvaluationPeriods": 1,
+      "DatapointsToAlarm": 1,
+      "Threshold": 5,
+      "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+      "TreatMissingData": "notBreaching"
+    }
+  },
+  {
+    "Region": "us-west-2",
+    "Configuration": {
+      "AlarmName": "site-5xx",
+      "AlarmDescription": "Site HTTP API server errors: ten or more in five minutes.",
+      "ActionsEnabled": true,
+      "AlarmActions": ["arn:aws:sns:us-west-2:027237787789:site-runtime-alerts"],
+      "Namespace": "AWS/ApiGateway",
+      "MetricName": "5xx",
+      "Dimensions": [
+        {
+          "Name": "ApiId",
+          "Value": "4qklz67ic3"
+        }
+      ],
+      "Statistic": "Sum",
+      "Period": 300,
+      "EvaluationPeriods": 1,
+      "DatapointsToAlarm": 1,
+      "Threshold": 10,
+      "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+      "TreatMissingData": "notBreaching"
+    }
+  },
+  {
+    "Region": "us-west-2",
+    "Configuration": {
+      "AlarmName": "site-lambda-throttles",
+      "AlarmDescription": "Site Lambda throttling: one or more in five minutes.",
+      "ActionsEnabled": true,
+      "AlarmActions": ["arn:aws:sns:us-west-2:027237787789:site-runtime-alerts"],
+      "Namespace": "AWS/Lambda",
+      "MetricName": "Throttles",
+      "Dimensions": [
+        {
+          "Name": "FunctionName",
+          "Value": "TbWebsiteRemixProduction-AnyCatchallHTTPLambda-W9sc2MIDWGc5"
+        }
+      ],
+      "Statistic": "Sum",
+      "Period": 300,
+      "EvaluationPeriods": 1,
+      "DatapointsToAlarm": 1,
+      "Threshold": 1,
+      "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+      "TreatMissingData": "notBreaching"
+    }
+  },
+  {
+    "Region": "us-east-1",
+    "Configuration": {
+      "AlarmName": "site-healthcheck",
+      "AlarmDescription": "External HTTPS /healthcheck must return OK. Alarm on two unhealthy or missing one-minute periods.",
+      "ActionsEnabled": true,
+      "AlarmActions": ["arn:aws:sns:us-east-1:027237787789:site-runtime-alerts"],
+      "Namespace": "AWS/Route53",
+      "MetricName": "HealthCheckStatus",
+      "Dimensions": [
+        {
+          "Name": "HealthCheckId",
+          "Value": "9da1d67a-da64-5102-092f-938725853205"
+        }
+      ],
+      "Statistic": "Minimum",
+      "Period": 60,
+      "EvaluationPeriods": 2,
+      "DatapointsToAlarm": 2,
+      "Threshold": 1,
+      "ComparisonOperator": "LessThanThreshold",
+      "TreatMissingData": "breaching"
+    }
+  }
+]

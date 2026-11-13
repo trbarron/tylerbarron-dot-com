@@ -1,51 +1,32 @@
-# 08 — Alarms, and a check after every deploy
+# 08 — Verify runtime alert delivery
 
-|            |                                      |
-| ---------- | ------------------------------------ |
-| Finding    | A5                                   |
-| Needs      | AWS credentials (CloudWatch, SNS) for part A; repo only for part B |
-| Risk       | Low                                  |
-| Size       | 2 hours                              |
-| Depends on | 01                                   |
+Post-deploy bot checks are deployed and verified. Four runtime/uptime alarms and
+two regional operational SNS topics were configured on 13 November 2026. Definitions
+are in `infra/monitoring/`; exact names, thresholds and health check ID are in
+`docs/deployment.md` ("Runtime monitoring"). Do not recreate these resources.
 
-## Why
+All four alarms reached `OK`; Route 53 probes in all three configured regions
+returned HTTP 200 and matched `OK`, and the uptime metric reported healthy
+datapoints over both evaluation windows. The owner selected the operational
+recipient; email subscriptions were created for both regional topics and await
+confirmation. The Camel Up Cup topic is separate and unchanged.
 
-Errors go to `console.error` and nowhere else. In June 2026 some routes returned 500 to bots and curl only; browsers recovered client-side, so nobody saw it (`docs/deployment.md`, "Lambda dependencies"). Nothing today would notice a repeat, or notice Redis going away.
+## Remaining work
 
-## Part A — Alarms (AWS)
+1. Have the owner confirm both SNS emails for `site-runtime-alerts` in `us-west-2`
+   and `us-east-1`. Subscriptions are already created; do not duplicate them or
+   commit subscriber addresses.
+2. Recheck all four alarm states before notification testing; any real alarm needs
+   investigation. The initial uptime metric and `OK` state are already verified.
+3. Exercise each of the four alarms with `set-alarm-state --state-value ALARM` and
+   a clearly labeled verification reason. Confirm action history records successful
+   SNS publication and the owner receives each named alarm email. This tests
+   notifications without breaking the website or manufacturing real failures.
+4. Let real evaluation return the alarms to their current data-derived states;
+   investigate any real alarm instead of suppressing it.
+5. Record verified delivery in deployment docs and the audit index. Delete this
+   brief only after those checks pass.
 
-1. Create one SNS topic for operational alerts and subscribe the owner's email (ask for the address; it must not go in the repo). Do not reuse the Camel Up Cup topic from task 02.
-
-2. Create three alarms that notify that topic. Names and thresholds:
-
-   | Alarm | Metric | Condition |
-   | --- | --- | --- |
-   | `site-lambda-errors` | `AWS/Lambda` `Errors`, site function | Sum ≥ 5 in 5 minutes |
-   | `site-5xx` | `AWS/ApiGateway` `5xx` for the site API (HTTP API metric name: `5xx`, dimension `ApiId`) | Sum ≥ 10 in 5 minutes |
-   | `site-lambda-throttles` | `AWS/Lambda` `Throttles`, site function | Sum ≥ 1 in 5 minutes |
-
-   Use `aws cloudwatch put-metric-alarm` with `--treat-missing-data notBreaching`, so a quiet night is not an alarm.
-
-3. Add an uptime check on the healthcheck, which fails when Redis is unreachable. Either a Route 53 health check on `https://tylerbarron.com/healthcheck` (string match `OK`) with an alarm in `us-east-1`, or a CloudWatch Synthetics canary. The Route 53 check is cheaper and enough.
-
-## Part B — Post-deploy check: deployed and verified
-
-[PR #136](https://github.com/trbarron/tylerbarron-dot-com/pull/136) adds
-`scripts/check-live-site.mjs` to the deploy workflow. It checks the homepage, a blog
-post, the chess lobby, pizza map and Redis healthcheck as Googlebot, with retries,
-a deployment query key and footer version/commit verification. It fails the job
-before release tagging if the deployment is broken.
-
-Verified in production deploy run `43265605861` on 12 November 2026; independent
-live bot checks also passed with the expected version and source commit. Do not
-reimplement it. Runtime alerting in Part A remains open. Operating instructions
-are in `docs/deployment.md` ("Running the live check manually").
-
-## Verify
-
-- Part A: set each alarm to `ALARM` once with `aws cloudwatch set-alarm-state` and confirm the email arrives; it returns to `OK` on its own.
-- Part B: the step passes on a real deploy. To prove it can fail, run the script locally against a URL that returns 404.
-
-## Done when
-
-A deploy that produces a broken site turns the workflow red, and a runtime failure sends an email within about five minutes.
+Before changes, save existing configurations. Original snapshots are retained in
+`/private/tmp/site-runtime-alarms-20261113`; these resources had no predecessor site
+alarms or health check. No app deploy is needed for the AWS alarm configuration.
