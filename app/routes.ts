@@ -6,6 +6,12 @@ export default [
   route('favicon.ico', 'routes/favicon[.]ico.ts'),
   route('healthcheck', 'routes/healthcheck.tsx'),
 
+  // Shadow launch: deliberately absent from homepage, navigation and sitemap.
+  route('book-club', 'routes/bookClub.tsx'),
+  route('book-club/:pollId', 'routes/bookClub.$pollId.tsx'),
+  route('book-club/:pollId/host', 'routes/bookClub.host.tsx'),
+  route('api/bookClub/poll', 'routes/api/bookClub/poll.ts'),
+
   // Kebab-case routes (preferred)
   route('blunder-watch', 'routes/blunderWatch.tsx'),
   route('bouldering-tracker', 'routes/boulderingTracker.tsx'),

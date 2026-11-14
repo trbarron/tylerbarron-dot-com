@@ -27,6 +27,7 @@
  *                on the "after" page and shoot the element; repeat the flag for more shots
  *   --config     repository capture settings (default pr-screenshots.config.json)
  *   --reuse-server explicitly allow an already running server after verifying its checkout
+ *   --allow-missing-before  accept a production 404 when capturing a new route
  *   --no-comment  save the files only: no push, no PR comment
  *   --env-file   a .env to borrow variables from for the dev server (only --env-keys)
  *   --env-keys   comma list of variables to take from it (default REDIS_URL,REDIS_TLS_URL)
@@ -150,7 +151,9 @@ try {
       const errors = [];
       page.on('pageerror', (error) => errors.push(error.message));
       const response = await page.goto(origin + route, { waitUntil: 'domcontentloaded', timeout: 60_000 });
-      if (!response?.ok()) throw new Error(`${name} page returned HTTP ${response?.status() ?? 'unknown'}`);
+      const missingBefore = name === 'before' && response?.status() === 404 && argv.includes('--allow-missing-before');
+      if (!response?.ok() && !missingBefore)
+        throw new Error(`${name} page returned HTTP ${response?.status() ?? 'unknown'}`);
       await readyForCapture(page, config.readySelector);
       if (errors.length) throw new Error(`${name} page errors: ${errors.join('; ')}`);
       const base = `${name}-${label(width)}`;
