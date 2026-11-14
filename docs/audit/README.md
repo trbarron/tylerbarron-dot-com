@@ -81,7 +81,7 @@ These are useful improvements, not release blockers. Prefer making games and pos
 
 | #                                             | Task                                     | Why keep it                                                                                                         | Priority             |
 | --------------------------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | -------------------- |
-| [13](tasks/13-single-image-tree.md)           | Deploy all images through CI             | Prevents committed images from silently missing in production; removes a manual publishing step.                    | Next                 |
+| [13](tasks/13-single-image-tree.md)           | Deploy all images through CI             | Prevents committed images from silently missing in production; removes a manual publishing step.                    | Implemented; deploy verification pending |
 | [12](tasks/12-mcc-player-id-and-choices.md)   | Remove chess player secrets from URLs    | Ordinary link sharing and analytics should not expose a player's seat. No anti-cheating system.                     | Soon                 |
 | [09](tasks/09-deploy-oidc.md)                 | Replace long-lived deploy keys with OIDC | Protects the AWS account and its bill, rather than toy game scores. Current deploy works; schedule when convenient. | Soon                 |
 | [07](tasks/07-cost-guardrails.md)             | Check budget-alert delivery              | Existing throttle and USD 5 budget are enough for now; confirm the budget can reach the owner.                      | Small follow-up      |
@@ -92,7 +92,7 @@ These are useful improvements, not release blockers. Prefer making games and pos
 
 Removed from the active audit on 13 November 2026 to fit a personal site with casual games, no accounts and no sensitive user data. These are accepted tradeoffs, not completed fixes:
 
-- **06 and 15 — Additional edge hardening:** no CloudFront viewer-IP function changes, origin-secret rollout or all-response security-header policy. Per-address limits remain best-effort and direct API access remains possible. Existing TLS, page CSP and input validation stay in place.
+- **15 — Additional edge security headers:** no new all-response CloudFront header policy. Existing TLS, page CSP and input validation stay in place. Task 06 was independently merged as PR #141 while this cleanup was in progress; retain its working code and [short rollout verification checklist](tasks/06-trustworthy-client-ip.md), without expanding it into further hardening work.
 - **07 — Extra concurrency tuning:** the API already throttles at 50 requests/second with burst 100. No new Lambda cap; observed concurrency reached 56. A budget alert is a notification, not a spending cap.
 - **12, part 2 — Stored chess choices:** no server-side anti-reroll mechanism. Scores and client engine choices remain unverified; casual cheating is an accepted limitation.
 - **16 — Self-hosting engine runtimes:** keep the working CDN setup unless reliability becomes a problem.

@@ -21,14 +21,14 @@ export interface RateLimitVerdict {
 /**
  * The caller's IP, for bucketing rate limits and nothing else.
  *
- * `CloudFront-Viewer-Address` is set by CloudFront itself (when the origin
- * request policy includes it) to the address that actually connected, as
- * `ip:port`, so a client can't choose it. Without it the only source is
- * `X-Forwarded-For`, whose first entry is whatever the client sent: good enough
- * to bucket honest traffic, trivially forged by anyone trying to dodge a limit.
- * docs/deployment.md has the policy change that turns the trustworthy header on.
+ * The viewer-request function overwrites `x-site-viewer-ip` with event.viewer.ip.
+ * The production origin guard makes that trustworthy by refusing direct callers.
+ * The legacy headers remain fallbacks for local development and older deployments;
+ * a caller can forge them when they are not supplied by trusted infrastructure.
  */
 export function clientIp(request: Request): string {
+  const stamped = request.headers.get('x-site-viewer-ip')?.trim();
+  if (stamped) return stamped;
   const viewer = request.headers.get('cloudfront-viewer-address');
   if (viewer) {
     // "203.0.113.7:46532", or for IPv6 "2001:db8::1:46532" / "[2001:db8::1]:46532".
