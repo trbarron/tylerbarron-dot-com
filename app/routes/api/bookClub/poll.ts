@@ -10,7 +10,7 @@ import {
   validToken,
   validateList,
 } from '~/utils/bookClub/polls.server';
-import { validBallot } from '~/utils/bookClub/types';
+import { normalizeBallot } from '~/utils/bookClub/types';
 
 const HEADERS = { 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex, nofollow', 'Referrer-Policy': 'no-referrer' };
 const json = (body: unknown, status = 200, extra = {}) =>
@@ -58,8 +58,9 @@ export async function action({ request }: ActionFunctionArgs) {
         const name = cleanText(body.name, 40);
         mutation = { kind, name, nameKey: name.normalize('NFKC').toLowerCase() };
       } else if (kind === 'vote') {
-        if (!validBallot(body.ballot)) throw new PollError('Choose two different books up and a third book down.');
-        mutation = { kind, ballot: body.ballot };
+        const ballot = normalizeBallot(body.ballot);
+        if (!ballot) throw new PollError('Invalid ballot.');
+        mutation = { kind, ballot };
       } else if (kind === 'close') mutation = { kind };
       else throw new PollError('Unknown action.');
     }

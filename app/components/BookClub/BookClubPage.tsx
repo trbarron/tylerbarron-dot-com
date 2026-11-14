@@ -1,4 +1,4 @@
-import { useParams } from 'react-router';
+import { Link, useParams } from 'react-router';
 import { Navbar } from '~/components/Navbar';
 import Footer from '~/components/Footer';
 import Notice from '~/components/Notice';
@@ -15,8 +15,10 @@ export default function BookClubPage({ host = false }: { host?: boolean }) {
       <Navbar />
       <main className="mx-auto max-w-3xl space-y-8 px-4 py-10 sm:py-16">
         <header className="space-y-3 border-b-4 border-black pb-6">
-          <h1 className="text-4xl font-extrabold tracking-tight uppercase sm:text-6xl">Book club</h1>
-          <p className="text-lg">voting tool</p>
+          <h1 className="text-4xl font-extrabold tracking-tight uppercase sm:text-6xl">
+            <Link to="/book-club">Book club</Link>
+          </h1>
+          <p className="text-lg">Snazzy voting tool</p>
         </header>
         {pollId ? <ExistingPoll key={`${pollId}:${host}`} id={pollId} host={host} /> : <CreatePoll />}
       </main>

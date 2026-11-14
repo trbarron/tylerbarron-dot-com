@@ -5,12 +5,15 @@ export interface Book {
 }
 export interface Ballot {
   up: string[];
-  down: string;
+  down: string[];
 }
 export interface PollView {
   id: string;
   title: string;
   books: Book[];
+  upVotes: number;
+  downVotes: number;
+  allowMultipleVotes: boolean;
   expiresAt: number;
   closed: boolean;
   host: boolean;
@@ -18,16 +21,20 @@ export interface PollView {
   participants?: { name: string; locked: boolean }[];
   results?: { id: string; title: string; up: number; down: number; score: number }[];
 }
-export function validBallot(value: unknown): value is Ballot {
-  if (!value || typeof value !== 'object') return false;
+/** Accept the original single-downvote payload from already-open browser tabs. */
+export function normalizeBallot(value: unknown): Ballot | null {
+  if (!value || typeof value !== 'object') return null;
   const b = value as Record<string, unknown>;
-  return (
-    Array.isArray(b.up) &&
-    b.up.length === 2 &&
-    b.up.every((x) => typeof x === 'string') &&
-    typeof b.down === 'string' &&
-    new Set([...b.up, b.down]).size === 3
-  );
+  const down = typeof b.down === 'string' ? [b.down] : b.down;
+  if (
+    !Array.isArray(b.up) ||
+    !Array.isArray(down) ||
+    b.up.length > 30 ||
+    down.length > 30 ||
+    ![...b.up, ...down].every((id) => typeof id === 'string')
+  )
+    return null;
+  return { up: b.up, down };
 }
 
 /** React Router also accepts case variants and encoded path segments. */

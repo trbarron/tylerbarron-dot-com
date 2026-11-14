@@ -169,6 +169,15 @@ try {
           throw new Error(`${name} page returned HTTP ${response?.status() ?? 'unknown'}`);
         await readyForCapture(page, capture.readySelector ?? config.readySelector);
         for (const selector of capture.steps ?? []) await page.locator(selector).click();
+        if (name === 'after') {
+          for (const selector of capture.afterSteps ?? []) await page.locator(selector).click();
+          for (const selector of capture.expectDisabled ?? []) {
+            if (!(await page.locator(selector).isDisabled())) throw new Error(`Expected disabled control: ${selector}`);
+          }
+          for (const selector of capture.expectEnabled ?? []) {
+            if (!(await page.locator(selector).isEnabled())) throw new Error(`Expected enabled control: ${selector}`);
+          }
+        }
         if (capture.finalReady) await readyForCapture(page, capture.finalReady);
         if (errors.length) throw new Error(`${name} page errors: ${errors.join('; ')}`);
         const base = `${name}-${captureLabel(capture, width)}`;

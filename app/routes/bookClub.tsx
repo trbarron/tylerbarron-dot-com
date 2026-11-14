@@ -2,7 +2,7 @@ import { buildMeta } from '~/utils/seo';
 export const meta = () =>
   buildMeta({
     title: 'Book Club',
-    description: 'Choose your club’s next read. Two upvotes, one downvote.',
+    description: 'Create a book vote and invite voters.',
     noIndex: true,
   });
 export const headers = () => ({
