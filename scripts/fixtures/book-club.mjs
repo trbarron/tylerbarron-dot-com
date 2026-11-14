@@ -18,6 +18,9 @@ export function scenarios() {
     id,
     title: 'Test Book Club #1',
     books,
+    upVotes: 2,
+    downVotes: 1,
+    allowMultipleVotes: false,
     expiresAt: Date.UTC(2026, 11, 13),
     closed: false,
     host: false,
@@ -45,9 +48,53 @@ export function scenarios() {
     ...extra,
   });
   return [
-    { name: 'create', title: 'Create a vote', route: '/book-club', readySelector: '#book-list' },
+    { name: 'create', title: 'Create a vote', route: '/book-club', responses: {}, readySelector: '#book-list' },
     capture('join', 'Join from invite', poll, null, { readySelector: 'input[autocomplete="name"]' }),
     capture('ballot', 'Choose votes', voter, 'voter', { readySelector: 'button[aria-label="Upvote Go Dog Go"]' }),
+    capture('up-spent', 'Upvotes used', voter, 'voter', {
+      readySelector: 'button[aria-label="Upvote Go Dog Go"]',
+      steps: ['button[aria-label="Upvote Go Dog Go"]', 'button[aria-label="Upvote Fox in Socks"]'],
+      expectDisabled: ['button[aria-label="Upvote A Gentleman in Moscow"]'],
+      expectEnabled: ['button[aria-label="Upvote Go Dog Go"]', 'button[aria-label="Downvote A Gentleman in Moscow"]'],
+    }),
+    capture('down-spent', 'Downvotes used', voter, 'voter', {
+      readySelector: 'button[aria-label="Downvote Go Dog Go"]',
+      steps: ['button[aria-label="Downvote Go Dog Go"]'],
+      expectDisabled: ['button[aria-label="Downvote Fox in Socks"]'],
+      expectEnabled: ['button[aria-label="Downvote Go Dog Go"]', 'button:has-text("Lock in my votes")'],
+    }),
+    capture('multiple', 'Multiple votes', { ...voter, upVotes: 3, downVotes: 2, allowMultipleVotes: true }, 'voter', {
+      readySelector: 'button[aria-label="Upvote Go Dog Go"]',
+      steps: [
+        'button[aria-label="Upvote Go Dog Go"]',
+        'button[aria-label="Upvote Go Dog Go"]',
+        'button[aria-label="Upvote Go Dog Go"]',
+        'button[aria-label="Downvote Fox in Socks"]',
+        'button[aria-label="Downvote Fox in Socks"]',
+      ],
+      expectDisabled: [
+        'button[aria-label="Upvote Go Dog Go"]',
+        'button[aria-label="Upvote Fox in Socks"]',
+        'button[aria-label="Downvote Fox in Socks"]',
+        'button[aria-label="Downvote A Gentleman in Moscow"]',
+      ],
+      expectEnabled: [
+        'button[aria-label="Remove upvote from Go Dog Go"]',
+        'button[aria-label="Remove downvote from Fox in Socks"]',
+      ],
+    }),
+    capture(
+      'multiple-remove',
+      'Remove and reassign',
+      { ...voter, upVotes: 2, downVotes: 1, allowMultipleVotes: true },
+      'voter',
+      {
+        readySelector: 'button[aria-label="Upvote Go Dog Go"]',
+        steps: ['button[aria-label="Upvote Go Dog Go"]', 'button[aria-label="Upvote Go Dog Go"]'],
+        afterSteps: ['button[aria-label="Remove upvote from Go Dog Go"]'],
+        expectEnabled: ['button[aria-label="Upvote Fox in Socks"]', 'button:has-text("Lock in my votes")'],
+      },
+    ),
     capture('confirm', 'Confirm ballot', voter, 'voter', {
       readySelector: 'button[aria-label="Upvote Go Dog Go"]',
       steps: [

@@ -23,7 +23,8 @@ These are review images, not deterministic visual regression tests. Live data ca
 npm run pr-screenshots -- --scenario book-club
 ```
 
-This captures creation, joining, choosing votes, ballot confirmation, locked-in
+This captures creation, joining, choosing votes, exhausted up/down allowances,
+repeated votes and removal, ballot confirmation, locked-in
 ballot, host dashboard, private-host-link disclosure, closing confirmation and
 results. Every state gets desktop and phone comparisons in the same PR comment.
 Use the usual `--local`, `--reuse-server`, `--widths`, `--out` and `--no-comment`
@@ -37,7 +38,8 @@ browser interactions; the real-Redis tests still check backend behavior.
 
 Add or update states in `scripts/fixtures/book-club.mjs`. Each state names a route,
 readiness selector, optional local-storage session, synthetic API responses and
-optional button clicks (for opening a modal). Each page gets a fresh browser
+optional button clicks (for opening a modal) and enabled/disabled checks on the
+branch. Each page gets a fresh browser
 context, so state does not leak between captures. The script waits for the final
 modal or disclosure before shooting. To support another feature, add its fixture
 module and register its name in `captureScenarios()`; the capture and PR-comment

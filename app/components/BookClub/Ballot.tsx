@@ -3,7 +3,8 @@ import Button from '~/components/Button';
 import { TextField } from '~/components/Field';
 import Panel from '~/components/Panel';
 import Dialog from '~/components/Dialog';
-import type { PollView } from '~/utils/bookClub/types';
+import VoteControls from './VoteControls';
+import { normalizeBallot, type PollView } from '~/utils/bookClub/types';
 
 interface Props {
   poll: PollView;
@@ -13,7 +14,7 @@ interface Props {
 export default function Ballot({ poll, busy, act }: Props) {
   const [name, setName] = useState('');
   const [up, setUp] = useState<string[]>([]);
-  const [down, setDown] = useState('');
+  const [down, setDown] = useState<string[]>([]);
   const [confirm, setConfirm] = useState(false);
   if (!poll.self && !poll.closed)
     return (
@@ -39,17 +40,25 @@ export default function Ballot({ poll, busy, act }: Props) {
         </form>
       </Panel>
     );
-  const locked = poll.self?.ballot;
+  const locked = normalizeBallot(poll.self?.ballot);
+  const upVotes = poll.upVotes ?? 2;
+  const downVotes = poll.downVotes ?? 1;
   if (locked || poll.closed)
     return (
       <Panel title={locked ? 'Locked in' : 'Voting is closed'} padded>
         {locked ? (
           <div className="space-y-3">
+            {locked.up.length + locked.down.length === 0 && <p>No votes selected.</p>}
             {poll.books
-              .filter((b) => locked.up.includes(b.id) || locked.down === b.id)
+              .filter((b) => locked.up.includes(b.id) || locked.down.includes(b.id))
               .map((b) => (
                 <p key={b.id} className="border-t-2 border-black pt-3">
-                  <strong>{locked.up.includes(b.id) ? '+1' : '−1'}</strong> · {b.title}
+                  <strong>
+                    {locked.up.includes(b.id)
+                      ? `+${locked.up.filter((id) => id === b.id).length}`
+                      : `−${locked.down.filter((id) => id === b.id).length}`}
+                  </strong>{' '}
+                  · {b.title}
                 </p>
               ))}
             {!poll.closed && <p className="text-sm text-neutral-600">Results available when voting closes.</p>}
@@ -59,68 +68,77 @@ export default function Ballot({ poll, busy, act }: Props) {
         )}
       </Panel>
     );
-  const complete = up.length === 2 && Boolean(down);
   return (
-    <Panel title={`${poll.self?.name}’s ballot`} subtitle="Two books up. One book down.">
+    <Panel title={`${poll.self?.name}’s ballot`} subtitle={`${upVotes} upvotes · ${downVotes} downvotes`}>
       <div className="border-b-2 border-black bg-neutral-100 p-4" aria-live="polite">
-        {up.length}/2 upvotes · {down ? '1' : '0'}/1 downvote
+        {up.length}/{upVotes} upvotes · {down.length}/{downVotes} downvotes
       </div>
       <ul>
         {poll.books.map((book, index) => (
           <li key={book.id} className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-black p-4">
-            <div className="min-w-0 flex-1">
+            <div className={poll.allowMultipleVotes ? 'w-full min-w-0' : 'min-w-0 flex-1'}>
               <span className="text-xs text-neutral-500">{String(index + 1).padStart(2, '0')}</span>
               <p className="text-lg font-bold break-words">{book.title}</p>
             </div>
-            <div className="flex gap-2">
-              <Button
-                size="sm"
-                variant={up.includes(book.id) ? 'primary' : 'secondary'}
-                aria-label={`Upvote ${book.title}`}
-                aria-pressed={up.includes(book.id)}
-                disabled={busy || (!up.includes(book.id) && up.length === 2)}
-                onClick={() => {
-                  setUp(up.includes(book.id) ? up.filter((id) => id !== book.id) : [...up, book.id]);
-                  if (down === book.id) setDown('');
+            <div className={poll.allowMultipleVotes ? 'grid w-full grid-cols-2 gap-3' : 'flex gap-2'}>
+              <VoteControls
+                title={book.title}
+                side="up"
+                count={up.filter((id) => id === book.id).length}
+                used={up.length}
+                allowance={upVotes}
+                multiple={poll.allowMultipleVotes ?? false}
+                busy={busy}
+                add={() => {
+                  setUp([...up, book.id]);
+                  setDown(down.filter((id) => id !== book.id));
                 }}
-              >
-                ↑ +1
-              </Button>
-              <Button
-                size="sm"
-                variant={down === book.id ? 'primary' : 'secondary'}
-                aria-label={`Downvote ${book.title}`}
-                aria-pressed={down === book.id}
-                disabled={busy}
-                onClick={() => {
-                  setDown(down === book.id ? '' : book.id);
+                remove={() => {
+                  const next = [...up];
+                  next.splice(next.indexOf(book.id), 1);
+                  setUp(next);
+                }}
+              />
+              <VoteControls
+                title={book.title}
+                side="down"
+                count={down.filter((id) => id === book.id).length}
+                used={down.length}
+                allowance={downVotes}
+                multiple={poll.allowMultipleVotes ?? false}
+                busy={busy}
+                add={() => {
+                  setDown([...down, book.id]);
                   setUp(up.filter((id) => id !== book.id));
                 }}
-              >
-                ↓ −1
-              </Button>
+                remove={() => {
+                  const next = [...down];
+                  next.splice(next.indexOf(book.id), 1);
+                  setDown(next);
+                }}
+              />
             </div>
           </li>
         ))}
       </ul>
       <div className="space-y-3 p-4">
-        <Button
-          variant="primary"
-          size="lg"
-          className="w-full"
-          disabled={!complete || busy}
-          onClick={() => setConfirm(true)}
-        >
+        <Button variant="primary" size="lg" className="w-full" disabled={busy} onClick={() => setConfirm(true)}>
           Lock in my votes
         </Button>
       </div>
       <Dialog open={confirm} onClose={() => setConfirm(false)} title="Lock in your votes?">
         <div className="space-y-4 p-5">
+          {up.length + down.length === 0 && <p>No votes selected.</p>}
           {poll.books
-            .filter((b) => up.includes(b.id) || down === b.id)
+            .filter((b) => up.includes(b.id) || down.includes(b.id))
             .map((b) => (
               <p key={b.id}>
-                <strong>{up.includes(b.id) ? '+1' : '−1'}</strong> · {b.title}
+                <strong>
+                  {up.includes(b.id)
+                    ? `+${up.filter((id) => id === b.id).length}`
+                    : `−${down.filter((id) => id === b.id).length}`}
+                </strong>{' '}
+                · {b.title}
               </p>
             ))}
           <div className="grid grid-cols-2 gap-3">

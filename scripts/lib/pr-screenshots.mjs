@@ -77,6 +77,9 @@ export async function openControl(locator) {
  * @property {Record<string, unknown>} [responses]
  * @property {string} [readySelector]
  * @property {string[]} [steps]
+ * @property {string[]} [afterSteps]
+ * @property {string[]} [expectEnabled]
+ * @property {string[]} [expectDisabled]
  * @property {string} [finalReady]
  */
 /**

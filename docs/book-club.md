@@ -8,7 +8,10 @@ invitation-only authentication system: anyone who knows the creation URL can use
 ## Host flow
 
 Enter a poll name and 3–30 distinct books, one per line (author text is optional).
-Creating fixes the list and opens the host dashboard. Copy the voter invite link
+Set each voter's upvote and downvote allowances (0–30 each; at least one in total).
+Defaults are two upvotes and one downvote. Enable “Allow multiple votes per book”
+to let a voter spend several votes of the same kind on one book.
+Creating fixes the list and settings and opens the host dashboard. Copy the voter invite link
 for the club. Save the separate **private host link** to manage the vote from a
 second browser or device. Its token is in the URL fragment, consumed into local
 storage and removed from the address bar. Do not share it with voters.
@@ -28,8 +31,14 @@ unique within a poll after normalization and case folding. Use an initial if two
 people have the same name. This is an honor-system club tool, with no accounts or
 identity verification. A different browser cannot reclaim someone else's name.
 
-Choose two **different** books up and a third book down. Choices can be changed
-until the confirmation to lock in; a submitted ballot is final. Each upvote adds
+Use up to the configured allowance in each column. Without the multiple-vote
+toggle, each book accepts at most one vote. With it, add/remove controls adjust
+the count. A book cannot receive both an upvote and a downvote from the same voter;
+selecting the other kind clears the previous kind on that book.
+
+Unselected controls grey out when their allowance is exhausted; removal stays
+available. Voters can lock in partial or empty ballots. Choices can be changed
+until confirmation; a submitted ballot is final. Each upvote adds
 one point and each downvote subtracts one. Draft choices stay in React state;
 refreshing an unsubmitted ballot clears the draft. The local browser retains the
 voter token so a refresh or return visit restores the joined name and final ballot.
@@ -43,7 +52,11 @@ list, voter names and ballots disappear together. Host/voter tokens are random
 256-bit credentials; Redis stores only their SHA-256 hashes. Responses never
 include tokens. Public reads show the list and open/closed state; only the host
 sees participant status. Neither hosts nor voters see totals while voting is open.
-Closed polls expose aggregate totals.
+Closed polls expose aggregate totals. Existing polls without vote settings keep
+the original two-up/one-down rules. Stored single-downvote ballots and old-client
+submissions remain readable; new ballots store both sides as arrays, including
+repeated book IDs when allowed. Lua stores the ballot JSON as text to preserve
+empty arrays without cjson converting them into objects.
 
 Redis Lua makes joins, lock-in and closing atomic. Limits: 100 voters per poll,
 10 creations per address/hour and 120 writes per action/address/hour. Requests
@@ -55,7 +68,8 @@ a retryable error, without a fallback store or a false success message.
 
 `TEST_REDIS_URL=redis://127.0.0.1:16380 npm test` exercises the actual Lua scripts:
 concurrent joins and submissions, duplicate names, finality, role separation,
-invalid ballots, closure and expiry that cannot resurrect a poll. The URL must
+invalid ballots, configured allowances, repeated-vote scoring, partial/empty ballots,
+legacy ballots, closure and expiry that cannot resurrect a poll. The URL must
 be local; tests refuse a remote Redis and delete only their own created poll keys.
 
 Run the usual lint, typecheck, format, design, production build, Lambda dependency
