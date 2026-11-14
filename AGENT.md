@@ -14,6 +14,10 @@ Personal website. Only non-discoverable conventions and operational gotchas live
 - Typography: `font-neo` (Inter) for body text, `font-mono` (IBM Plex Mono) for code — not Tailwind's default `font-sans`. Detailed component patterns: `docs/code-standards.md`.
 - PRs that change what a page looks like get before/after screenshots (production vs. this branch, plus phone width): open the PR, then run `npm run pr-screenshots -- --route /<path>` (automatic difference crops keep comparisons compact; `--focus <selector>` selects a specific panel, `--full-page` restores full pages, `--open <selector>` also shoots a closed `<details>` opened, `--env-file <path>` lends the dev server a `REDIS_URL` for pages that read live data). It pushes the images to the images-only `pr-screenshots` branch and posts, or updates in place, one PR comment: never drag images into the description or commit them to a feature branch by hand. `--no-comment` only saves the files (to `~/Desktop/pr-screenshots/`). Needs `gh` logged in and the repo public.
 
+## Product copy
+
+Keep UI text short, plain and functional. Use literal labels ("Voters", "Create vote") rather than cute metaphors, slogans or conversational headings ("The room", "Ready to call it?"). Omit filler, reassurance, repeated status and instructions the controls already make clear. Do not add implementation, storage, privacy or retention explanations to the UI unless they help someone make a decision. Put validation errors and essential constraints where they are needed. Prefer a concise label or sentence over a paragraph. These preferences apply to new features and edits across the site.
+
 ## Deployment
 
 Full architecture, versioning, and CloudFront notes: `docs/deployment.md`. Read it before changing the build, the deploy workflow, or anything under `server/`.

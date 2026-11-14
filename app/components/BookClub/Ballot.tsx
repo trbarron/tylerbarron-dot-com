@@ -17,7 +17,7 @@ export default function Ballot({ poll, busy, act }: Props) {
   const [confirm, setConfirm] = useState(false);
   if (!poll.self && !poll.closed)
     return (
-      <Panel title="Take your seat" padded>
+      <Panel title="Join vote" padded>
         <form
           className="space-y-4"
           onSubmit={(e) => {
@@ -45,7 +45,6 @@ export default function Ballot({ poll, busy, act }: Props) {
       <Panel title={locked ? 'Locked in' : 'Voting is closed'} padded>
         {locked ? (
           <div className="space-y-3">
-            <p>Your ballot is final. Thanks for helping choose the next read.</p>
             {poll.books
               .filter((b) => locked.up.includes(b.id) || locked.down === b.id)
               .map((b) => (
@@ -53,12 +52,10 @@ export default function Ballot({ poll, busy, act }: Props) {
                   <strong>{locked.up.includes(b.id) ? '+1' : '−1'}</strong> · {b.title}
                 </p>
               ))}
-            {!poll.closed && (
-              <p className="text-sm text-neutral-600">Results will appear here when the host closes voting.</p>
-            )}
+            {!poll.closed && <p className="text-sm text-neutral-600">Results available when voting closes.</p>}
           </div>
         ) : (
-          <p>The host has closed this vote. See the results below.</p>
+          <p>Voting closed.</p>
         )}
       </Panel>
     );
@@ -136,7 +133,7 @@ export default function Ballot({ poll, busy, act }: Props) {
                 setConfirm(false);
               }}
             >
-              {busy ? 'Saving…' : 'Yes, lock them in'}
+              {busy ? 'Saving…' : 'Lock in votes'}
             </Button>
           </div>
         </div>

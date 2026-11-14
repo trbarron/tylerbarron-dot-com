@@ -31,7 +31,7 @@ export default function HostDashboard({ poll, token, busy, act }: Props) {
   }
   return (
     <div className="space-y-6">
-      <Panel title="Invite the club" padded>
+      <Panel title="Invite voters" padded>
         <div className="space-y-4">
           <label className="block text-xs font-bold uppercase" htmlFor="invite-link">
             Voter invite link
@@ -41,7 +41,7 @@ export default function HostDashboard({ poll, token, busy, act }: Props) {
             Copy invite link
           </Button>
           <details>
-            <summary className="cursor-pointer py-3 text-sm font-bold uppercase">Save your private host link</summary>
+            <summary className="cursor-pointer py-3 text-sm font-bold uppercase">Host link</summary>
             <p className="mb-3 text-sm">this should generally not be shared</p>
             <input
               aria-label="Private host link"
@@ -63,7 +63,7 @@ export default function HostDashboard({ poll, token, busy, act }: Props) {
         </div>
       </Panel>
       <Panel
-        title="The room"
+        title="Voters"
         aside={
           <span className="text-sm font-bold">
             {locked}/{participants.length} locked in
@@ -71,7 +71,7 @@ export default function HostDashboard({ poll, token, busy, act }: Props) {
         }
       >
         {participants.length === 0 ? (
-          <p className="p-6">The room is empty. Send the invite link to get everyone started.</p>
+          <p className="p-6">No voters yet.</p>
         ) : (
           <ul>
             {participants.map((v) => (
@@ -91,12 +91,9 @@ export default function HostDashboard({ poll, token, busy, act }: Props) {
         )}
       </Panel>
       {!poll.closed && (
-        <Panel title="Ready to call it?" padded>
+        <Panel title="Close voting" padded>
           <div className="space-y-4">
-            <p>Close voting to stop new ballots and reveal the results to everyone with the invite link.</p>
-            {locked < participants.length && (
-              <p className="font-bold">{participants.length - locked} voter(s) haven’t locked in yet.</p>
-            )}
+            {locked < participants.length && <p className="font-bold">{participants.length - locked} votes pending.</p>}
             <Button variant="danger" disabled={busy} onClick={() => setConfirm(true)}>
               Close voting & reveal results
             </Button>

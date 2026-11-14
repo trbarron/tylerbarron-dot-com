@@ -16,7 +16,7 @@ export default function BookClubPage({ host = false }: { host?: boolean }) {
       <main className="mx-auto max-w-3xl space-y-8 px-4 py-10 sm:py-16">
         <header className="space-y-3 border-b-4 border-black pb-6">
           <h1 className="text-4xl font-extrabold tracking-tight uppercase sm:text-6xl">Book club</h1>
-          <p className="text-lg">The next chapter</p>
+          <p className="text-lg">voting tool</p>
         </header>
         {pollId ? <ExistingPoll key={`${pollId}:${host}`} id={pollId} host={host} /> : <CreatePoll />}
       </main>
@@ -29,7 +29,7 @@ function ExistingPoll({ id, host }: { id: string; host: boolean }) {
   return (
     <div className="space-y-6">
       {error && <Notice>{error}</Notice>}
-      {!poll && !error && <p role="status">Opening the room…</p>}
+      {!poll && !error && <p role="status">Loading…</p>}
       {poll && (
         <>
           <div className="space-y-2">

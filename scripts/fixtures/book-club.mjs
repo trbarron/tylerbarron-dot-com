@@ -59,12 +59,12 @@ export function scenarios() {
       finalReady: 'dialog[open]',
     }),
     capture('locked', 'Locked-in ballot', { ...voter, self: { name: 'Ted', ballot } }, 'voter', {
-      readySelector: 'main section p:has-text("Your ballot is final")',
+      readySelector: 'main section p:has-text("Go Dog Go")',
     }),
     capture('host', 'Host dashboard', host, 'host', { readySelector: '#invite-link' }),
     capture('host-link', 'Private host link', host, 'host', {
       readySelector: '#invite-link',
-      steps: ['summary:has-text("Save your private host link")'],
+      steps: ['summary'],
       finalReady: 'details[open]',
     }),
     capture('close', 'Confirm closing', host, 'host', {

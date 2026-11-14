@@ -13,7 +13,7 @@ export default function CreatePoll() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   return (
-    <Panel title="Build your shortlist" padded>
+    <Panel title="Create vote" padded>
       <form
         className="space-y-6"
         onSubmit={async (e) => {
@@ -39,7 +39,7 @@ export default function CreatePoll() {
         }}
       >
         <TextField
-          label="Name this vote"
+          label="Vote name"
           placeholder="December book club"
           required
           maxLength={120}
@@ -48,7 +48,7 @@ export default function CreatePoll() {
         />
         <div>
           <label htmlFor="book-list" className="mb-1 block text-xs font-bold tracking-wide uppercase">
-            The books
+            Books
           </label>
           <textarea
             id="book-list"
@@ -59,19 +59,12 @@ export default function CreatePoll() {
             value={books}
             onChange={(e) => setBooks(e.target.value)}
             placeholder={'Go Dog Go\nFox in Socks\nA Gentleman in Moscow'}
-            aria-describedby="book-list-hint"
           />
-          <p id="book-list-hint" className="mt-2 text-sm text-neutral-600">
-            One book per line. Add 3–30 books; include authors if you like. The list is fixed once created.
-          </p>
         </div>
         {error && <Notice>{error}</Notice>}
         <Button type="submit" variant="primary" size="lg" className="w-full" disabled={busy}>
-          {busy ? 'Creating…' : 'Create a book vote'}
+          {busy ? 'Creating…' : 'Create vote'}
         </Button>
-        <p className="text-sm text-neutral-600">
-          No accounts. Each person gets two upvotes and one downvote. Votes and names expire 30 days after creation.
-        </p>
       </form>
     </Panel>
   );
