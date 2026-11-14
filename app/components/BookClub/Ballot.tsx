@@ -69,55 +69,39 @@ export default function Ballot({ poll, busy, act }: Props) {
       </Panel>
     );
   return (
-    <Panel title={`${poll.self?.name}’s ballot`} subtitle={`${upVotes} upvotes · ${downVotes} downvotes`}>
+    <Panel title={`${poll.self?.name}’s ballot`}>
       <div className="border-b-2 border-black bg-neutral-100 p-4" aria-live="polite">
-        {up.length}/{upVotes} upvotes · {down.length}/{downVotes} downvotes
+        {upVotes - up.length} {upVotes - up.length === 1 ? 'upvote' : 'upvotes'} left · {downVotes - down.length}{' '}
+        {downVotes - down.length === 1 ? 'downvote' : 'downvotes'} left
       </div>
       <ul>
-        {poll.books.map((book, index) => (
+        {poll.books.map((book) => (
           <li key={book.id} className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-black p-4">
-            <div className={poll.allowMultipleVotes ? 'w-full min-w-0' : 'min-w-0 flex-1'}>
-              <span className="text-xs text-neutral-500">{String(index + 1).padStart(2, '0')}</span>
+            <div className="min-w-0 flex-1">
               <p className="text-lg font-bold break-words">{book.title}</p>
             </div>
-            <div className={poll.allowMultipleVotes ? 'grid w-full grid-cols-2 gap-3' : 'flex gap-2'}>
-              <VoteControls
-                title={book.title}
-                side="up"
-                count={up.filter((id) => id === book.id).length}
-                used={up.length}
-                allowance={upVotes}
-                multiple={poll.allowMultipleVotes ?? false}
-                busy={busy}
-                add={() => {
-                  setUp([...up, book.id]);
-                  setDown(down.filter((id) => id !== book.id));
-                }}
-                remove={() => {
-                  const next = [...up];
-                  next.splice(next.indexOf(book.id), 1);
-                  setUp(next);
-                }}
-              />
-              <VoteControls
-                title={book.title}
-                side="down"
-                count={down.filter((id) => id === book.id).length}
-                used={down.length}
-                allowance={downVotes}
-                multiple={poll.allowMultipleVotes ?? false}
-                busy={busy}
-                add={() => {
-                  setDown([...down, book.id]);
-                  setUp(up.filter((id) => id !== book.id));
-                }}
-                remove={() => {
+            <VoteControls
+              title={book.title}
+              score={up.filter((id) => id === book.id).length - down.filter((id) => id === book.id).length}
+              upRemaining={upVotes - up.length}
+              downRemaining={downVotes - down.length}
+              multiple={poll.allowMultipleVotes ?? false}
+              busy={busy}
+              increase={() => {
+                if (down.includes(book.id)) {
                   const next = [...down];
                   next.splice(next.indexOf(book.id), 1);
                   setDown(next);
-                }}
-              />
-            </div>
+                } else setUp([...up, book.id]);
+              }}
+              decrease={() => {
+                if (up.includes(book.id)) {
+                  const next = [...up];
+                  next.splice(next.indexOf(book.id), 1);
+                  setUp(next);
+                } else setDown([...down, book.id]);
+              }}
+            />
           </li>
         ))}
       </ul>
