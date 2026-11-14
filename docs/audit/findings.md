@@ -10,24 +10,24 @@ This file is a historical audit, kept for its reasoning. Its descriptions and su
 
 Two findings were wrong as written:
 
-- **D1:** an S3 lifecycle rule is the wrong way to prune old assets. An unchanged file keeps its old upload date, so a month without deploys would expire the live site's files. The deploy prunes by age *and* absence from the current build instead.
+- **D1:** an S3 lifecycle rule is the wrong way to prune old assets. An unchanged file keeps its old upload date, so a month without deploys would expire the live site's files. The deploy prunes by age _and_ absence from the current build instead.
 - **S6.1:** `'unsafe-eval'` cannot be dropped everywhere. Blog posts no longer need it, but onnxruntime-web's WebGPU build (Maia Drills) uses `new Function`, so it is granted on the Maia page only and every other page gets `'wasm-unsafe-eval'`.
 
 ## Summary
 
 The newer code is in good shape: Collaborative Checkmate (compare-and-set saves, validated input, a public view of state), Media Profile (edit tokens, body-size limit, rate limits), the pinned and hash-checked server Stockfish, and the CI guards (`lambda-deps`, `og-cards`, design rules) are all patterns worth copying. Most findings are older code that predates those patterns, and a deploy pipeline with a window in which production can break.
 
-Do these first:
+Original priorities at the time of the review (not the current task list):
 
-| #   | Finding                                                                                    | Area     | Effort |
-| --- | ------------------------------------------------------------------------------------------ | -------- | ------ |
-| D1  | Deploy deletes the live site's assets before the new Lambda is live, and can be cancelled between the two | Deploy   | Small  |
-| S1  | Multiple Choice Chess hands each player's secret id to anyone who asks                     | Security | Small  |
-| S2  | Per-IP rate limits can be bypassed with a forged `X-Forwarded-For`                         | Security | Small  |
-| S3  | Redis TLS certificate checking is switched off                                             | Security | Small  |
-| P1  | HTML pages carry no cache headers, so every page view runs the Lambda                      | Perf     | Medium |
-| A1  | Blog posts are shipped as strings and `eval`'d; all posts load together                    | Structure / Security / Perf | Medium |
-| D2  | The Lambda's dependencies are unlocked and can differ from what was built and tested       | Deploy   | Small  |
+| #   | Finding                                                                                                   | Area                        | Effort |
+| --- | --------------------------------------------------------------------------------------------------------- | --------------------------- | ------ |
+| D1  | Deploy deletes the live site's assets before the new Lambda is live, and can be cancelled between the two | Deploy                      | Small  |
+| S1  | Multiple Choice Chess hands each player's secret id to anyone who asks                                    | Security                    | Small  |
+| S2  | Per-IP rate limits can be bypassed with a forged `X-Forwarded-For`                                        | Security                    | Small  |
+| S3  | Redis TLS certificate checking is switched off                                                            | Security                    | Small  |
+| P1  | HTML pages carry no cache headers, so every page view runs the Lambda                                     | Perf                        | Medium |
+| A1  | Blog posts are shipped as strings and `eval`'d; all posts load together                                   | Structure / Security / Perf | Medium |
+| D2  | The Lambda's dependencies are unlocked and can differ from what was built and tested                      | Deploy                      | Small  |
 
 ---
 
@@ -135,12 +135,12 @@ The same file has two reliability gaps:
 
 These create keys for anyone who asks, with no per-address limit:
 
-| Endpoint                                 | What one request creates          | TTL    |
-| ---------------------------------------- | --------------------------------- | ------ |
-| `POST /api/multipleChoiceChess/create`   | a 26-field hash + a lobby entry   | 24 h   |
-| `POST /api/collaborativeCheckmate/join`  | a game per new code + presence    | 24 h   |
-| `POST /api/blunderWatch/submit`          | 2 keys + a leaderboard member per new username | 7 days |
-| `POST /api/chesserGuesser/submit`        | up to 3 keys per new username (cooldown is per username, not per address) | 7 days |
+| Endpoint                                | What one request creates                                                  | TTL    |
+| --------------------------------------- | ------------------------------------------------------------------------- | ------ |
+| `POST /api/multipleChoiceChess/create`  | a 26-field hash + a lobby entry                                           | 24 h   |
+| `POST /api/collaborativeCheckmate/join` | a game per new code + presence                                            | 24 h   |
+| `POST /api/blunderWatch/submit`         | 2 keys + a leaderboard member per new username                            | 7 days |
+| `POST /api/chesserGuesser/submit`       | up to 3 keys per new username (cooldown is per username, not per address) | 7 days |
 
 A loop with random usernames fills Redis or pushes real entries off a leaderboard. The shared `checkRateLimit()` already exists; call it from each of these once S2 is fixed. **Verify** the Redis `maxmemory-policy` is an evicting one (`volatile-ttl` suits this data) so a fill degrades instead of failing every write.
 
@@ -177,14 +177,14 @@ A 2 GB Lambda is reachable by anyone, with API Gateway's default throttle (thous
 
 Measured from a local production build:
 
-| Artifact                                   | Size (raw / gzip)   | Note                                             |
-| ------------------------------------------ | ------------------- | ------------------------------------------------ |
-| `entry.client` + `jsx-runtime` + `root`    | 340 kB / 112 kB     | Baseline JS on every page                        |
-| `index.css`                                | 76 kB / 13 kB       | One stylesheet for all routes                    |
-| `runescapeRascals` route chunk             | 125 kB / 23 kB      | Includes the 80 kB `walked-routes.json`          |
-| `model-viewer`                             | 1,024 kB / 290 kB   | Lazy-loaded by `TrophyModel.tsx`; fine           |
-| Server `index.mjs`                         | 766 kB / 170 kB     | Every route in one module, parsed on cold start  |
-| Server `posts.server` chunk                | 124 kB / 34 kB      | 20 posts; `docs/deployment.md` still says ~84 kB |
+| Artifact                                | Size (raw / gzip) | Note                                             |
+| --------------------------------------- | ----------------- | ------------------------------------------------ |
+| `entry.client` + `jsx-runtime` + `root` | 340 kB / 112 kB   | Baseline JS on every page                        |
+| `index.css`                             | 76 kB / 13 kB     | One stylesheet for all routes                    |
+| `runescapeRascals` route chunk          | 125 kB / 23 kB    | Includes the 80 kB `walked-routes.json`          |
+| `model-viewer`                          | 1,024 kB / 290 kB | Lazy-loaded by `TrophyModel.tsx`; fine           |
+| Server `index.mjs`                      | 766 kB / 170 kB   | Every route in one module, parsed on cold start  |
+| Server `posts.server` chunk             | 124 kB / 34 kB    | 20 posts; `docs/deployment.md` still says ~84 kB |
 
 Client-side code splitting is already good: each project is its own chunk and nothing heavy leaks into the baseline.
 
@@ -279,7 +279,9 @@ Errors go to `console.error` and nowhere else. The 2026-06-10 incident (routes r
 
 ---
 
-## Suggested order
+## Original suggested order (superseded)
+
+This ordering is retained only as historical context. The hobby-site scope and remaining work in [`README.md`](README.md) supersede it; removed suggestions are not obligations.
 
 1. **One small PR each, this week:** D1 (deploy ordering and cancellation), S1 (stop returning ids; random ids), S2 (`clientIp`), S3 (Redis TLS and timeouts), S5 (healthcheck), D3 (`npm audit fix`, Dependabot for npm).
 2. **Console work, an hour:** S8 (throttle, concurrency, budget), S7 (tournament role scope), D4 (OIDC), verify the P1.2 cache policy and S2's direct-endpoint question.

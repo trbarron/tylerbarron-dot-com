@@ -1,10 +1,10 @@
 # 06 — Verify trusted viewer IP and origin enforcement after merge
 
-Implementation and first rollout phase are complete on branch
-`fix/trusted-viewer-ip-and-origin`. The existing CloudFront redirect now stamps
+Implementation merged in PR #141 while the hobby-scope cleanup was in progress.
+This checklist only closes out that existing rollout; it is not new hardening work. The existing CloudFront redirect now stamps
 `x-site-viewer-ip`; its AWS IPv4/IPv6/redirect tests passed. The API origin custom
 header is deployed and its secret matches Parameter Store and the current Lambda.
-The current production handler remains permissive until the enforcing PR merges.
+Verify the enforcing deployment before recording this task as complete.
 See `docs/deployment.md` for resource names, trust model, staging and rollback.
 
 ## Remaining after the enforcing PR deploys
