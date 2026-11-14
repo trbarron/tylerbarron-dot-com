@@ -22,33 +22,34 @@ export default function VoteControls({
   const canIncrease = score < 0 || (upRemaining > 0 && (multiple || score === 0));
   const canDecrease = score > 0 || (downRemaining > 0 && (multiple || score === 0));
   return (
-    <div
-      role="group"
-      aria-label={`Your vote for ${title}`}
-      className="grid w-40 shrink-0 grid-cols-3 items-stretch border-2 border-black"
-    >
+    <div role="group" aria-label={`Your vote for ${title}`} className="flex shrink-0 items-stretch gap-2">
       <Button
         size="sm"
-        className="w-full min-w-0 border-0 px-0 text-xl"
+        className="w-12"
+        variant={score > 0 ? 'primary' : 'secondary'}
         aria-label={`Upvote ${title}`}
-        disabled={busy || !canIncrease}
-        onClick={increase}
+        disabled={busy}
+        aria-disabled={busy || !canIncrease}
+        onClick={() => {
+          if (canIncrease) increase();
+        }}
       >
         ↑
       </Button>
-      <span
-        aria-label={`Your vote: ${score}`}
-        className={`flex min-h-12 items-center justify-center border-x-2 border-black font-mono text-xl ${score !== 0 ? 'bg-black text-white' : 'bg-white text-black'}`}
-      >
+      <span aria-label={`Your vote: ${score}`} className="flex w-10 items-center justify-center font-mono text-xl">
         {score > 0 ? '+' : ''}
         {score}
       </span>
       <Button
         size="sm"
-        className="w-full min-w-0 border-0 px-0 text-xl"
+        className="w-12"
+        variant={score < 0 ? 'primary' : 'secondary'}
         aria-label={`Downvote ${title}`}
-        disabled={busy || !canDecrease}
-        onClick={decrease}
+        disabled={busy}
+        aria-disabled={busy || !canDecrease}
+        onClick={() => {
+          if (canDecrease) decrease();
+        }}
       >
         ↓
       </Button>

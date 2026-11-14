@@ -19,7 +19,8 @@ storage and removed from the address bar. Do not share it with voters.
 The dashboard refreshes every five seconds while visible. It shows joined names,
 which ballots are locked, without running vote totals. It does not show each
 person's choices. The host can close voting permanently, including while some
-people are still choosing; only submitted ballots count. Closing reveals totals to everyone with the invite link. Tied scores stay
+people are still choosing; the confirmation shows any pending votes. The close
+button is outside a panel; a closed-status panel appears after closing. Only submitted ballots count. Closing reveals totals to everyone with the invite link. Tied scores stay
 tied; their display order follows the original list.
 
 The host can vote too by opening the ordinary invite link and entering their name.
@@ -38,8 +39,8 @@ The opposite arrow removes an existing vote and refunds its allowance before
 spending a vote in the other direction. A book never holds both kinds of vote.
 The ballot header shows votes remaining.
 
-Arrows that would spend more votes grey out when their allowance is exhausted; removal stays
-available. Voters can lock in partial or empty ballots. Choices can be changed
+Arrows keep their normal appearance when an allowance is exhausted. Unavailable
+actions are marked aria-disabled and guarded; undo remains available. Voters can lock in partial or empty ballots. Choices can be changed
 until confirmation; a submitted ballot is final. Each upvote adds
 one point and each downvote subtracts one. Draft choices stay in React state;
 refreshing an unsubmitted ballot clears the draft. The local browser retains the

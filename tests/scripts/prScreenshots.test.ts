@@ -30,6 +30,7 @@ describe('book-club screenshot scenarios', () => {
       'confirm',
       'locked',
       'host',
+      'host-closed',
       'host-link',
       'close',
       'results',
