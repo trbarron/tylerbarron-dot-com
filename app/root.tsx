@@ -20,9 +20,13 @@ import faviconUrl from './favicon.png';
 import DichroicBackground from './components/DichroicBackground';
 import { RetroreflectanceProvider } from './components/retroreflectance-context';
 import { buttonClass } from '~/components/Button';
+import { isBookClubPath } from '~/utils/bookClub/types';
 
-export async function loader() {
-  const rawId = process.env.GA_TRACKING_ID?.trim() || null;
+export async function loader({ request }: { request: Request }) {
+  // Book-club links carry private room/session context. Keep this shadow launch
+  // out of analytics, including host-link fragments on the first page load.
+  const privateBookClub = isBookClubPath(new URL(request.url).pathname);
+  const rawId = privateBookClub ? null : process.env.GA_TRACKING_ID?.trim() || null;
   // Validate GA tracking ID format to prevent XSS via dangerouslySetInnerHTML
   const gaTrackingId = rawId && /^(G|GT)-[A-Za-z0-9]+$/.test(rawId) ? rawId : null;
   return { gaTrackingId };
@@ -187,7 +191,7 @@ export default function App() {
   const location = useLocation();
 
   useEffect(() => {
-    if (!gaTrackingId) return;
+    if (!gaTrackingId || isBookClubPath(location.pathname)) return;
     const { gtag } = window;
     if (typeof gtag !== 'function') return;
     // GA4 SPA page view — fires on initial mount and whenever the URL changes.
