@@ -4,5 +4,6 @@
   "startCommand": ["npm", "run", "dev", "--", "--host", "{hostname}", "--port", "{port}", "--strictPort"],
   "widths": [1280, 390],
   "readySelector": "main",
-  "envKeys": ["REDIS_URL", "REDIS_TLS_URL"]
+  "envKeys": ["REDIS_URL", "REDIS_TLS_URL"],
+  "maskSelectors": ["footer > div:has-text(\"version:\")", "[data-screenshot-ignore]"]
 }

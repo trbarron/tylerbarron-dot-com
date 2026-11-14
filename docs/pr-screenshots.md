@@ -44,3 +44,24 @@ context, so state does not leak between captures. The script waits for the final
 modal or disclosure before shooting. To support another feature, add its fixture
 module and register its name in `captureScenarios()`; the capture and PR-comment
 code are shared.
+
+## Ignore changing values
+
+The repository config's `maskSelectors` hides the footer version/commit line and
+any element marked `data-screenshot-ignore`. Matching regions are painted white
+in both captures before difference detection. Their layout space stays intact;
+the live page is unchanged. Masks apply to full pages, focus, hover and opened
+panels, including scenario captures. Missing matches are harmless.
+
+Add masks for changing IDs, timestamps or other values as needed:
+
+```sh
+npm run pr-screenshots -- --route /book-club --mask '.timestamp' --mask '[data-hash]'
+npm run pr-screenshots -- --route /book-club --no-masks
+```
+
+Repeated `--mask` selectors add to the configured defaults. A scenario can also
+provide `maskSelectors`. Use `--no-masks` to inspect the actual values. Select a
+stable container around a changing value (such as the full version line) so
+differences in the value's text width do not create different-sized masks. Mask
+only incidental data; keep labels and UI state visible for review.
