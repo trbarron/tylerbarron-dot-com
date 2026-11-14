@@ -105,6 +105,9 @@ export function scenarios() {
       readySelector: 'main section p:has-text("Go Dog Go")',
     }),
     capture('host', 'Host dashboard', host, 'host', { readySelector: '#invite-link' }),
+    capture('host-closed', 'Closed host dashboard', { ...host, closed: true }, 'host', {
+      readySelector: '#invite-link',
+    }),
     capture('host-link', 'Private host link', host, 'host', {
       readySelector: '#invite-link',
       steps: ['summary'],

@@ -37,7 +37,7 @@ export default function HostDashboard({ poll, token, busy, act }: Props) {
             Voter invite link
           </label>
           <input id="invite-link" className="w-full" readOnly value={invite} onFocus={(e) => e.target.select()} />
-          <Button variant="primary" onClick={() => void copy(invite, 'Invite link copied')}>
+          <Button size="sm" onClick={() => void copy(invite, 'Invite link copied')}>
             Copy invite link
           </Button>
           <details>
@@ -90,18 +90,18 @@ export default function HostDashboard({ poll, token, busy, act }: Props) {
           </ul>
         )}
       </Panel>
-      {!poll.closed && (
-        <Panel title="Close voting" padded>
-          <div className="space-y-4">
-            {locked < participants.length && <p className="font-bold">{participants.length - locked} votes pending.</p>}
-            <Button variant="danger" disabled={busy} onClick={() => setConfirm(true)}>
-              Close voting & reveal results
-            </Button>
-          </div>
+      {poll.closed ? (
+        <Panel padded>
+          <p className="font-bold uppercase">Voting closed</p>
         </Panel>
+      ) : (
+        <Button variant="primary" className="w-full" disabled={busy} onClick={() => setConfirm(true)}>
+          Close voting & reveal results
+        </Button>
       )}
       <Dialog open={confirm} onClose={() => setConfirm(false)} title="Close voting?">
         <div className="space-y-4 p-5">
+          {locked < participants.length && <p>{participants.length - locked} votes pending.</p>}
           <div className="grid grid-cols-2 gap-3">
             <Button onClick={() => setConfirm(false)}>Keep voting open</Button>
             <Button
