@@ -81,6 +81,7 @@ export async function openControl(locator) {
  * @property {string[]} [expectEnabled]
  * @property {string[]} [expectDisabled]
  * @property {string} [finalReady]
+ * @property {string[]} [maskSelectors]
  */
 /**
  * Named, repository-owned fixtures; no arbitrary module paths from the CLI.
@@ -124,4 +125,14 @@ export async function prepareScenario(page, capture, errors) {
       body: JSON.stringify(responses[key]),
     });
   });
+}
+
+/** Mask volatile regions without removing them or shifting the page layout. */
+export function captureMasks(page, config, argv, capture = {}) {
+  if (argv.includes('--no-masks')) return {};
+  const extra = argv.flatMap((value, index) => (value === '--mask' ? [argv[index + 1]] : []));
+  const selectors = [...(config.maskSelectors ?? []), ...(capture.maskSelectors ?? []), ...extra];
+  if (selectors.some((value) => typeof value !== 'string' || !value.trim()))
+    throw new Error('Masks must be nonempty selectors.');
+  return { mask: [...new Set(selectors)].map((selector) => page.locator(selector)), maskColor: '#FFFFFF' };
 }

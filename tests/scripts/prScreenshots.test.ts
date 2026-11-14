@@ -80,3 +80,19 @@ describe('book-club screenshot scenarios', () => {
     expect(fulfill).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('volatile screenshot masks', () => {
+  it('combines configured, scenario and repeated CLI masks for both origins', async () => {
+    const { captureMasks } = await import('../../scripts/lib/pr-screenshots.mjs');
+    const page = { locator: (selector: string) => ({ selector }) };
+    const config = { maskSelectors: ['footer .version'] };
+    const argv = ['--mask', '[data-hash]', '--mask', '.timestamp'];
+    const masks = captureMasks(page, config, argv, { maskSelectors: ['footer .version', '.poll-id'] });
+    expect(masks).toEqual({
+      maskColor: '#FFFFFF',
+      mask: ['footer .version', '.poll-id', '[data-hash]', '.timestamp'].map((selector) => ({ selector })),
+    });
+    expect(captureMasks(page, config, ['--no-masks'])).toEqual({});
+    expect(() => captureMasks(page, config, ['--mask'])).toThrow('nonempty');
+  });
+});
