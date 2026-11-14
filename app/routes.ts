@@ -8,6 +8,7 @@ export default [
 
   // Shadow launch: deliberately absent from homepage, navigation and sitemap.
   route('book-club', 'routes/bookClub.tsx'),
+  route('snazzy-book-club-voting-tool', 'routes/bookClub.alias.ts'),
   route('book-club/:pollId', 'routes/bookClub.$pollId.tsx'),
   route('book-club/:pollId/host', 'routes/bookClub.host.tsx'),
   route('api/bookClub/poll', 'routes/api/bookClub/poll.ts'),
