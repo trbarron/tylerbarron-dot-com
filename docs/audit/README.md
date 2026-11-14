@@ -1,6 +1,6 @@
 # Audit — November 2026
 
-A structural, security and performance audit of this site, and the work that came out of it.
+A structural, security and performance audit of this hobby site, and the practical work worth keeping. The goal is to keep games fun, publishing easy and hosting inexpensive—not to build a production security program.
 
 - **`findings.md`** is the audit itself: what was found, why it matters, and how each finding was checked. Read it for the reasoning.
 - **`tasks/`** holds one brief per piece of remaining work. Each brief is written to be handed to someone, or to a model, with no other context than this folder and the repository.
@@ -30,6 +30,7 @@ A task marked "AWS" needs a session that can reach AWS. The original audit could
    ```
 
    Some tests need a real Redis and skip without one: `TEST_REDIS_URL=redis://localhost:6379 npm test`.
+
 9. **Say what you verified and what you did not.** "Deployed, not tested" is a useful report. "Done" without a check is not.
 10. **Record the outcome**: update the status table here, and for AWS changes add the resulting resource names and ids to `docs/deployment.md` so the next person can find them.
 
@@ -37,19 +38,19 @@ A task marked "AWS" needs a session that can reach AWS. The original audit could
 
 From the repository. Items marked _unverified_ are inferred and should be confirmed by the first task that depends on them.
 
-| Fact | Value | Source |
-| --- | --- | --- |
-| Site | `https://tylerbarron.com` | |
-| Region | `us-west-2` | `app.arc` |
-| Architect app name | `tb-website-remix` | `app.arc` |
-| CloudFormation stack | `TbWebsiteRemixProduction` _(unverified)_ | Architect's naming convention |
-| Lambda | One function for `/*`, `nodejs24.x`, 2048 MB, 30 s timeout, x86_64 | `app.arc` |
-| CloudFront distribution | `E1TUWNZL0WZZ6J` | `docs/deployment.md` |
-| CloudFront behaviors | `/assets/*`, `/fonts/*`, `/images/*` go to the asset bucket; everything else to API Gateway | AWS inspection, 12 Nov; `docs/deployment.md` |
-| Asset bucket | `remix-website-writing-posts` | CloudFront origin inspected 12 Nov |
-| Redis | URL in the stored environment variable `REDIS_TLS_URL` (production) | `app.arc`, `app/utils/redis.server.ts` |
-| Deploy | GitHub Actions, `.github/workflows/deploy.yml`, on push to `master`; long-lived AWS keys in repository secrets | |
-| Camel Up Cup | Submissions queued in Redis and emailed through SNS; old execution infrastructure retired 13 Nov | `docs/deployment.md` |
+| Fact                    | Value                                                                                                          | Source                                       |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| Site                    | `https://tylerbarron.com`                                                                                      |                                              |
+| Region                  | `us-west-2`                                                                                                    | `app.arc`                                    |
+| Architect app name      | `tb-website-remix`                                                                                             | `app.arc`                                    |
+| CloudFormation stack    | `TbWebsiteRemixProduction` _(unverified)_                                                                      | Architect's naming convention                |
+| Lambda                  | One function for `/*`, `nodejs24.x`, 2048 MB, 30 s timeout, x86_64                                             | `app.arc`                                    |
+| CloudFront distribution | `E1TUWNZL0WZZ6J`                                                                                               | `docs/deployment.md`                         |
+| CloudFront behaviors    | `/assets/*`, `/fonts/*`, `/images/*` go to the asset bucket; everything else to API Gateway                    | AWS inspection, 12 Nov; `docs/deployment.md` |
+| Asset bucket            | `remix-website-writing-posts`                                                                                  | CloudFront origin inspected 12 Nov           |
+| Redis                   | URL in the stored environment variable `REDIS_TLS_URL` (production)                                            | `app.arc`, `app/utils/redis.server.ts`       |
+| Deploy                  | GitHub Actions, `.github/workflows/deploy.yml`, on push to `master`; long-lived AWS keys in repository secrets |                                              |
+| Camel Up Cup            | Submissions queued in Redis and emailed through SNS; old execution infrastructure retired 13 Nov               | `docs/deployment.md`                         |
 
 ## Status
 
@@ -57,68 +58,52 @@ Last updated 13 November 2026.
 
 ### Done
 
-| Finding | What was done | Where |
-| --- | --- | --- |
-| D1; task 10 | Assets survive deploys; master runs are not cancelled. Release 5.62.1 tagged only after deploy/bot checks; unchanged-version path verified in workflow-dispatch run 43294486638. | PR #128, PR #136; deploy runs 43265605861 and 43294486638 |
-| D2 | The Lambda's dependencies are installed at the root lockfile's versions | PR #128 |
-| D3; task 28 | React Router advisory cleared; dependencies updated; original Dependabot PRs #129–#133 all closed. New grouped updates such as #135 remain routine dependency maintenance. | PR #128, PR #134; GitHub verified 12 Nov |
-| S1 (most) | Multiple Choice Chess no longer returns player ids; atomic join and move; ids from `crypto` | PR #128 |
-| S2 (code side) | One `clientIp()` that prefers a CloudFront-supplied header | PR #128 |
-| S3; task 01 | Redis TLS verification on by default; timeouts; no client thrash. Production health and bot checks passed 12 Nov; no opt-out added. Production TLS settings not independently inspected. | PR #128; `docs/deployment.md` |
-| S5 | Healthcheck no longer fetches a URL built from request headers | PR #128 |
-| S6.1 | `'unsafe-eval'` only on the Maia page; `'wasm-unsafe-eval'` elsewhere | PR #128 |
+| Finding         | What was done                                                                                                                                                                                                                                                                                                                                            | Where                                                                    |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| D1; task 10     | Assets survive deploys; master runs are not cancelled. Release 5.62.1 tagged only after deploy/bot checks; unchanged-version path verified in workflow-dispatch run 43294486638.                                                                                                                                                                         | PR #128, PR #136; deploy runs 43265605861 and 43294486638                |
+| D2              | The Lambda's dependencies are installed at the root lockfile's versions                                                                                                                                                                                                                                                                                  | PR #128                                                                  |
+| D3; task 28     | React Router advisory cleared; dependencies updated; original Dependabot PRs #129–#133 all closed. New grouped updates such as #135 remain routine dependency maintenance.                                                                                                                                                                               | PR #128, PR #134; GitHub verified 12 Nov                                 |
+| S1 (most)       | Multiple Choice Chess no longer returns player ids; atomic join and move; ids from `crypto`                                                                                                                                                                                                                                                              | PR #128                                                                  |
+| S2 (code side)  | One `clientIp()` that prefers a CloudFront-supplied header                                                                                                                                                                                                                                                                                               | PR #128                                                                  |
+| S3; task 01     | Redis TLS verification on by default; timeouts; no client thrash. Production health and bot checks passed 12 Nov; no opt-out added. Production TLS settings not independently inspected.                                                                                                                                                                 | PR #128; `docs/deployment.md`                                            |
+| S5              | Healthcheck no longer fetches a URL built from request headers                                                                                                                                                                                                                                                                                           | PR #128                                                                  |
+| S6.1            | `'unsafe-eval'` only on the Maia page; `'wasm-unsafe-eval'` elsewhere                                                                                                                                                                                                                                                                                    | PR #128                                                                  |
 | S7; tasks 02–03 | Submission email confirmed end to end; old camel-up-tournament function, its dedicated role/policy, site invoke policy and legacy setting removed with owner approval. Former role could read/write only camel-up/* and images/camel-up/*, with prefix-scoped listing, logging and self-invocation. Leaderboard retained; no resources shared that role. | AWS verified 13 Nov; `docs/deployment.md`; `infra/iam/camel-notify.json` |
-| P1; task 05 | Static page headers and origin-controlled CloudFront caching applied and verified. Existing short 404 error cache remains. Invalidation and pruning both succeeded in deploy run 43265605861 (task 04 complete). | PR #128; `docs/deployment.md`; `infra/cloudfront/honour-origin.json` |
-| S4; task 11 | Per-address writer limits, current/yesterday score dates and atomic completion counts deployed in 5.62.1. Task 06 still needed for trustworthy client addresses. | PR #136; deploy run 43265605861 |
-| A5; task 08 | Four runtime/uptime alarms configured and healthy; both regional subscriptions confirmed. Each alarm successfully published its test notification, the owner received all four emails, and normal evaluation restored OK. Post-deploy bot checks are also verified. | AWS and owner verified 13 Nov; `infra/monitoring/`; `docs/deployment.md` |
-| A1 | Blog posts are ordinary modules, one chunk each, with a build-time index | PR #128 |
-| — | `/the-riddler` hydration mismatch fixed | PR #128 |
+| P1; task 05     | Static page headers and origin-controlled CloudFront caching applied and verified. Existing short 404 error cache remains. Invalidation and pruning both succeeded in deploy run 43265605861 (task 04 complete).                                                                                                                                         | PR #128; `docs/deployment.md`; `infra/cloudfront/honour-origin.json`     |
+| S4; task 11     | Per-address writer limits, current/yesterday score dates and atomic completion counts deployed in 5.62.1. Task 06 still needed for trustworthy client addresses.                                                                                                                                                                                         | PR #136; deploy run 43265605861                                          |
+| A5; task 08     | Four runtime/uptime alarms configured and healthy; both regional subscriptions confirmed. Each alarm successfully published its test notification, the owner received all four emails, and normal evaluation restored OK. Post-deploy bot checks are also verified.                                                                                      | AWS and owner verified 13 Nov; `infra/monitoring/`; `docs/deployment.md` |
+| A1              | Blog posts are ordinary modules, one chunk each, with a build-time index                                                                                                                                                                                                                                                                                 | PR #128                                                                  |
+| —               | `/the-riddler` hydration mismatch fixed                                                                                                                                                                                                                                                                                                                  | PR #128                                                                  |
 
-### Open
+### Remaining work
 
-Ordered by when to do them. "Needs" says what access the executor must have.
+These are useful improvements, not release blockers. Prefer making games and posts over completing an audit checklist. Task numbers stay stable; Git history retains removed briefs.
 
-| # | Task | Finding | Needs | Risk | Depends on | Status |
-| --- | --- | --- | --- | --- | --- | --- |
-| [07](tasks/07-cost-guardrails.md) | Bound the worst-case AWS bill | S8 | AWS | Low–medium | — | Inspected 12 Nov: throttle 50/burst 100 and USD 5 budget already exist. Peak concurrency 56; proposed cap of 20 unsuitable. No cap changed; owner decision pending. |
-| [06](tasks/06-trustworthy-client-ip.md) | Give the rate limiter an address the client can't forge | S2 | AWS + repo | Medium | 05 | Inspection complete: existing www redirect function; direct API returns 200. Paused for owner decision on extending the function. |
-| [09](tasks/09-deploy-oidc.md) | Replace the deploy's long-lived AWS keys with OIDC | D4 | AWS + repo | Medium | 04 | Not started |
-| [13](tasks/13-single-image-tree.md) | One image tree, deployed by CI | D7, D8 | Repo; AWS read | Medium | — | Not started |
-| [14](tasks/14-arc-static-duplicate-upload.md) | Find out whether every deploy uploads the images twice | D6 | AWS read; repo | Low to check | — | Not started |
-| [12](tasks/12-mcc-player-id-and-choices.md) | Multiple Choice Chess: secret out of the URL, verify choices | S1 | Repo | Medium | — | Not started |
-| [15](tasks/15-security-headers-policy.md) | Send the security headers on every response | S6.4 | AWS | Low–medium | 05, 06 | Existing RemixAPIPolicy found; preserve its CORS configuration when preparing a change. No header policy changed. |
-| [27](tasks/27-camel-tournament-runner.md) | A local tournament runner for Camel Up Cup | S7 | Other repo; Docker; AWS | Runs untrusted code | 02 | Not started |
-| [16](tasks/16-self-host-engines.md) | Serve Stockfish and the ONNX runtime from the site itself | S6.2 | Repo | Medium | — | Not started |
-| [18](tasks/18-shared-server-helpers.md) | Shared helpers for the older API routes | A3, P3 | Repo | Low–medium | 11 | Not started |
-| [17](tasks/17-project-registry.md) | One registry for projects | A2 | Repo | Medium | — | Not started |
-| [19](tasks/19-polling-efficiency.md) | Make polling cheaper | P2 | Repo | Low–medium | — | Not started |
-| [20](tasks/20-images-and-dead-code.md) | Lazy images, modern formats, unused helpers | P4 | Repo | Low | 13 | Not started |
-| [21](tasks/21-housekeeping.md) | Entry files, tests, duplicated docs | A4, A6 | Repo | Low | — | Item 4 covered by 32 tests in PR #137; other items remain open. |
-| [22](tasks/22-ioredis-6.md) | Upgrade ioredis to 6 | Deps | Repo; real Redis | Medium–high | 01, 08 | Not started |
-| [23](tasks/23-react-router-future-flags.md) | Opt into React Router's v8 behaviours | D3 | Repo | Medium | 08 | Not started |
-| [24](tasks/24-lambda-arm64.md) | Run the Lambda on arm64 | D9 | Repo; a deploy | Low–medium | 08 | Not started |
-| [25](tasks/25-node-26.md) | Move to Node 26 when Lambda supports it | — | Repo; a deploy | Medium | External | Blocked: `nodejs26.x` was in preview on 12 Nov 2026 |
-| [26](tasks/26-infrastructure-as-code.md) | Put the hand-made AWS resources into code | D5 | AWS + repo | High if careless | 05–08, 15 | Not started |
+| #                                             | Task                                     | Why keep it                                                                                                         | Priority             |
+| --------------------------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | -------------------- |
+| [13](tasks/13-single-image-tree.md)           | Deploy all images through CI             | Prevents committed images from silently missing in production; removes a manual publishing step.                    | Next                 |
+| [12](tasks/12-mcc-player-id-and-choices.md)   | Remove chess player secrets from URLs    | Ordinary link sharing and analytics should not expose a player's seat. No anti-cheating system.                     | Soon                 |
+| [09](tasks/09-deploy-oidc.md)                 | Replace long-lived deploy keys with OIDC | Protects the AWS account and its bill, rather than toy game scores. Current deploy works; schedule when convenient. | Soon                 |
+| [07](tasks/07-cost-guardrails.md)             | Check budget-alert delivery              | Existing throttle and USD 5 budget are enough for now; confirm the budget can reach the owner.                      | Small follow-up      |
+| [14](tasks/14-arc-static-duplicate-upload.md) | Check for duplicate image uploads        | Worth a short inspection alongside 13; change only if the waste is meaningful.                                      | With 13              |
+| [20](tasks/20-images-and-dead-code.md)        | Lazy-load below-the-fold images          | Small improvement for long posts; no image-conversion pipeline.                                                     | When touching images |
 
-### Next work
+### Deliberately out of scope
 
-1. **06, then 15 — Edge security:** preserve the existing redirect, establish trustworthy client IPs and direct-origin protection, then extend security headers.
-2. **09 — Deploy OIDC:** replace long-lived CI credentials after migration deploys succeed.
-3. **12 — Player secrets and choices:** remove chess credentials from URLs and persist offered choices.
-4. **13–14, then 19 — Assets and polling:** automate image deployment, inspect duplicate uploads and reduce polling costs.
+Removed from the active audit on 13 November 2026 to fit a personal site with casual games, no accounts and no sensitive user data. These are accepted tradeoffs, not completed fixes:
 
-Release ordering and the unchanged-version path are verified in production runs
-43265605861 and 43294486638. Tasks 02–03 are complete: submission emails received,
-approved execution resources retired, leaderboard/email/health verified. Task 27
-remains for the local runner.
+- **06 and 15 — Additional edge hardening:** no CloudFront viewer-IP function changes, origin-secret rollout or all-response security-header policy. Per-address limits remain best-effort and direct API access remains possible. Existing TLS, page CSP and input validation stay in place.
+- **07 — Extra concurrency tuning:** the API already throttles at 50 requests/second with burst 100. No new Lambda cap; observed concurrency reached 56. A budget alert is a notification, not a spending cap.
+- **12, part 2 — Stored chess choices:** no server-side anti-reroll mechanism. Scores and client engine choices remain unverified; casual cheating is an accepted limitation.
+- **16 — Self-hosting engine runtimes:** keep the working CDN setup unless reliability becomes a problem.
+- **17, 18 and 21 — Broad refactors and housekeeping:** no project registry, generic API-helper framework, visual-test overhaul or audit-driven cleanup. Fix concrete bugs and simplify code when touching it.
+- **19 — Polling optimization:** no version-response protocol or lobby rewrite without measured cost or latency trouble.
+- **20 — Image conversion pipeline:** current image sizes do not justify it. Keep simple lazy loading only.
+- **22–25 — Major dependency/runtime and architecture migrations:** no upgrades merely to complete this audit. Continue routine dependency maintenance and address actual advisories or support deadlines when relevant.
+- **26 — Infrastructure as code:** operational notes and saved rollback configs are sufficient at this scale.
+- **27 — Local Camel Up tournament runner:** a separate hobby feature to build if wanted, not an audit obligation. The website no longer executes submitted code.
 
-Task 08 is complete and its brief removed; four named notification paths were
-verified through to the owner’s inbox. Task 07 still needs a concurrency/budget-delivery decision; observed peak concurrency
-was 56, so the original proposed cap of 20 is unsuitable. Tasks 22–25 remain behind
-observability/runtime prerequisites. Task 21’s visual-test deletion needs the owner’s
-choice; the other refactors can be separate focused PRs.
-
-Completed task briefs are deleted in the same closeout PR after verification, once lasting operational details are in `docs/deployment.md`. Completed subitems are removed from partially open briefs and recorded in this index. Task numbers remain stable for dependencies; Git history retains the original briefs. Implemented tasks with verification outstanding keep a short checklist.
+Runtime alarms and post-deploy checks are already complete, as are release ordering, writer limits, caching and retirement of the old tournament execution infrastructure. Keep those working without expanding their scope.
 
 ### Corrections made to the audit after it was written
 
