@@ -14,10 +14,9 @@ second browser or device. Its token is in the URL fragment, consumed into local
 storage and removed from the address bar. Do not share it with voters.
 
 The dashboard refreshes every five seconds while visible. It shows joined names,
-which ballots are locked, and aggregate up/down/net totals. It does not show each
+which ballots are locked, without running vote totals. It does not show each
 person's choices. The host can close voting permanently, including while some
-people are still choosing; a confirmation explains that only submitted ballots
-count. Closing reveals totals to everyone with the invite link. Tied scores stay
+people are still choosing; only submitted ballots count. Closing reveals totals to everyone with the invite link. Tied scores stay
 tied; their display order follows the original list.
 
 The host can vote too by opening the ordinary invite link and entering their name.
@@ -43,7 +42,8 @@ creation. Joining, voting, reading and closing never extend it. At expiry the
 list, voter names and ballots disappear together. Host/voter tokens are random
 256-bit credentials; Redis stores only their SHA-256 hashes. Responses never
 include tokens. Public reads show the list and open/closed state; only the host
-sees participant status and live totals. Closed polls expose aggregate totals.
+sees participant status. Neither hosts nor voters see totals while voting is open.
+Closed polls expose aggregate totals.
 
 Redis Lua makes joins, lock-in and closing atomic. Limits: 100 voters per poll,
 10 creations per address/hour and 120 writes per action/address/hour. Requests

@@ -13,6 +13,7 @@
  * PR) and linked from a PR comment that later runs update in place. Needs a public repo and
  * `gh` logged in; with no open PR for the branch, it only saves the files.
  *
+ *   --scenario   named multi-page fixture suite (book-club); captures all states
  *   --route      page path (default /)
  *   --prod       production origin (default https://tylerbarron.com)
  *   --local      local origin (default http://localhost:5173)
@@ -49,6 +50,9 @@ import {
   readyForCapture,
   revealFocus,
   openControl,
+  captureScenarios,
+  scenarioStorageState,
+  prepareScenario,
 } from './lib/pr-screenshots.mjs';
 
 const argv = process.argv.slice(2);
@@ -60,6 +64,9 @@ const flag = (name, fallback) => {
 const root = path.resolve(import.meta.dirname, '..');
 const config = readCaptureConfig(root, flag('config', 'pr-screenshots.config.json'));
 const route = flag('route', '/');
+const scenario = flag('scenario');
+const captures = await captureScenarios(scenario, route);
+const captureLabel = (capture, width) => (capture.name ? `${capture.name}-${widthLabel(width)}` : widthLabel(width));
 const prod = flag('prod', config.productionUrl).replace(/\/$/, '');
 const local = flag('local', config.localUrl).replace(/\/$/, '');
 const widths = captureWidths(flag('widths', config.widths ?? [1280, 390]));
@@ -142,71 +149,80 @@ try {
   }
   fs.mkdirSync(out, { recursive: true });
   browser = await chromium.launch();
-  for (const width of widths) {
-    for (const [name, origin] of [
-      ['before', prod],
-      ['after', local],
-    ]) {
-      const page = await browser.newPage({ viewport: { width, height: 900 } });
-      const errors = [];
-      page.on('pageerror', (error) => errors.push(error.message));
-      const response = await page.goto(origin + route, { waitUntil: 'domcontentloaded', timeout: 60_000 });
-      const missingBefore = name === 'before' && response?.status() === 404 && argv.includes('--allow-missing-before');
-      if (!response?.ok() && !missingBefore)
-        throw new Error(`${name} page returned HTTP ${response?.status() ?? 'unknown'}`);
-      await readyForCapture(page, config.readySelector);
-      if (errors.length) throw new Error(`${name} page errors: ${errors.join('; ')}`);
-      const base = `${name}-${label(width)}`;
-      await page.screenshot({
-        path: path.join(out, `${base}.png`),
-        fullPage: true,
-        animations: 'disabled',
-        caret: 'hide',
-      });
-      written.push(`${base}.png`);
-      if (focus) {
-        const el = page.locator(focus).first();
-        if (!(await el.count()) && name === 'after') throw new Error(`Focus target not found: ${focus}`);
-        if (await el.count()) {
-          await revealFocus(el);
-          await readyForCapture(page);
-          await el.screenshot({ path: path.join(out, `${base}-focus.png`), animations: 'disabled', caret: 'hide' });
-          written.push(`${base}-focus.png`);
+  for (const capture of captures) {
+    for (const width of widths) {
+      for (const [name, origin] of [
+        ['before', prod],
+        ['after', local],
+      ]) {
+        const page = await browser.newPage({
+          viewport: { width, height: 900 },
+          storageState: scenarioStorageState(capture, origin),
+        });
+        const errors = [];
+        page.on('pageerror', (error) => errors.push(error.message));
+        await prepareScenario(page, capture, errors);
+        const response = await page.goto(origin + capture.route, { waitUntil: 'domcontentloaded', timeout: 60_000 });
+        const missingBefore =
+          name === 'before' && response?.status() === 404 && argv.includes('--allow-missing-before');
+        if (!response?.ok() && !missingBefore)
+          throw new Error(`${name} page returned HTTP ${response?.status() ?? 'unknown'}`);
+        await readyForCapture(page, capture.readySelector ?? config.readySelector);
+        for (const selector of capture.steps ?? []) await page.locator(selector).click();
+        if (capture.finalReady) await readyForCapture(page, capture.finalReady);
+        if (errors.length) throw new Error(`${name} page errors: ${errors.join('; ')}`);
+        const base = `${name}-${captureLabel(capture, width)}`;
+        await page.screenshot({
+          path: path.join(out, `${base}.png`),
+          fullPage: true,
+          animations: 'disabled',
+          caret: 'hide',
+        });
+        written.push(`${base}.png`);
+        if (focus) {
+          const el = page.locator(focus).first();
+          if (!(await el.count()) && name === 'after') throw new Error(`Focus target not found: ${focus}`);
+          if (await el.count()) {
+            await revealFocus(el);
+            await readyForCapture(page);
+            await el.screenshot({ path: path.join(out, `${base}-focus.png`), animations: 'disabled', caret: 'hide' });
+            written.push(`${base}-focus.png`);
+          }
         }
-      }
-      if (name === 'after') {
-        for (const [k, spec] of hovers.entries()) {
-          const [selector, at = '0.5,0.5'] = spec.split(/@(?=[\d.]+,[\d.]+$)/);
-          const el = page.locator(selector).first();
-          if (!(await el.count())) throw new Error(`Hover target not found: ${selector}`);
-          await revealFocus(el);
-          const box = await el.boundingBox();
-          if (!box) continue;
-          const [fx, fy] = at.split(',').map(Number);
-          await page.mouse.move(box.x + box.width * fx, box.y + box.height * fy);
-          await el.screenshot({ path: path.join(out, `${base}-hover-${k + 1}.png`) });
-          written.push(`${base}-hover-${k + 1}.png`);
-          await page.mouse.move(0, 0);
+        if (name === 'after') {
+          for (const [k, spec] of hovers.entries()) {
+            const [selector, at = '0.5,0.5'] = spec.split(/@(?=[\d.]+,[\d.]+$)/);
+            const el = page.locator(selector).first();
+            if (!(await el.count())) throw new Error(`Hover target not found: ${selector}`);
+            await revealFocus(el);
+            const box = await el.boundingBox();
+            if (!box) continue;
+            const [fx, fy] = at.split(',').map(Number);
+            await page.mouse.move(box.x + box.width * fx, box.y + box.height * fy);
+            await el.screenshot({ path: path.join(out, `${base}-hover-${k + 1}.png`) });
+            written.push(`${base}-hover-${k + 1}.png`);
+            await page.mouse.move(0, 0);
+          }
         }
-      }
-      if (open && name === 'after') {
-        const target = page.locator(open).first();
-        if (await target.count()) {
-          await openControl(target);
-          await readyForCapture(page);
-          await page.screenshot({
-            path: path.join(out, `${base}-open.png`),
-            fullPage: true,
-            animations: 'disabled',
-            caret: 'hide',
-          });
-          written.push(`${base}-open.png`);
-          await target.locator('xpath=..').screenshot({ path: path.join(out, `${base}-open-panel.png`) });
-          written.push(`${base}-open-panel.png`);
+        if (open && name === 'after') {
+          const target = page.locator(open).first();
+          if (await target.count()) {
+            await openControl(target);
+            await readyForCapture(page);
+            await page.screenshot({
+              path: path.join(out, `${base}-open.png`),
+              fullPage: true,
+              animations: 'disabled',
+              caret: 'hide',
+            });
+            written.push(`${base}-open.png`);
+            await target.locator('xpath=..').screenshot({ path: path.join(out, `${base}-open-panel.png`) });
+            written.push(`${base}-open-panel.png`);
+          }
         }
+        if (errors.length) throw new Error(`${name} page errors: ${errors.join('; ')}`);
+        await page.close();
       }
-      if (errors.length) throw new Error(`${name} page errors: ${errors.join('; ')}`);
-      await page.close();
     }
   }
 } finally {
@@ -214,7 +230,8 @@ try {
 }
 
 if (!focus && !argv.includes('--full-page')) {
-  for (const width of widths) written.push(...(await writeDifferenceCrops(out, label(width))));
+  for (const capture of captures)
+    for (const width of widths) written.push(...(await writeDifferenceCrops(out, captureLabel(capture, width))));
 }
 
 console.log(`${written.length} screenshots in ${out}:\n  ${written.join('\n  ')}`);
@@ -277,30 +294,32 @@ async function postComment() {
     const has = (f) => written.includes(f);
 
     const sections = [];
-    for (const width of widths) {
-      const w = label(width);
-      const pair = (key) =>
-        [
-          '| Before | After |',
-          '|---|---|',
-          `| ${has(`before-${key}.png`) ? img(`before-${key}.png`, `before, ${w}`) : '_not on production yet_'} | ${img(`after-${key}.png`, `after, ${w}`)} |`,
-        ].join('\n');
-      let block = `### ${w[0].toUpperCase()}${w.slice(1)} (${width}px)`;
-      if (has(`after-${w}-focus.png`)) block += `\n\n${pair(`${w}-focus`)}`;
-      else if (argv.includes('--full-page')) block += `\n\n${pair(w)}`;
-      else if (has(`after-${w}-change-1.png`)) {
-        for (let k = 1; has(`after-${w}-change-${k}.png`); k++)
-          block += `\n\nChange ${k}:\n\n${pair(`${w}-change-${k}`)}`;
-      } else block += '\n\nNo visual differences detected above the pixel tolerance.';
-      for (let k = 1; has(`after-${w}-hover-${k}.png`); k++) {
-        block += `\n\nHovering:\n\n${img(`after-${w}-hover-${k}.png`, `hover ${k}, ${w}`)}`;
+    for (const capture of captures) {
+      for (const width of widths) {
+        const w = captureLabel(capture, width);
+        const pair = (key) =>
+          [
+            '| Before | After |',
+            '|---|---|',
+            `| ${has(`before-${key}.png`) ? img(`before-${key}.png`, `before, ${w}`) : '_not on production yet_'} | ${img(`after-${key}.png`, `after, ${w}`)} |`,
+          ].join('\n');
+        let block = `### ${capture.title ? `${capture.title} — ` : ''}${label(width)} (${width}px)`;
+        if (has(`after-${w}-focus.png`)) block += `\n\n${pair(`${w}-focus`)}`;
+        else if (argv.includes('--full-page')) block += `\n\n${pair(w)}`;
+        else if (has(`after-${w}-change-1.png`)) {
+          for (let k = 1; has(`after-${w}-change-${k}.png`); k++)
+            block += `\n\nChange ${k}:\n\n${pair(`${w}-change-${k}`)}`;
+        } else block += '\n\nNo visual differences detected above the pixel tolerance.';
+        for (let k = 1; has(`after-${w}-hover-${k}.png`); k++) {
+          block += `\n\nHovering:\n\n${img(`after-${w}-hover-${k}.png`, `hover ${k}, ${w}`)}`;
+        }
+        if (has(`after-${w}-open-panel.png`))
+          block += `\n\nOpened:\n\n${img(`after-${w}-open-panel.png`, `opened, ${w}`)}`;
+        block += `\n\n<details><summary>Full page</summary>\n\n| Before | After |\n|---|---|\n| ${img(`before-${w}.png`, `before full page, ${w}`)} | ${img(`after-${w}.png`, `after full page, ${w}`)} |\n\n</details>`;
+        sections.push(block);
       }
-      if (has(`after-${w}-open-panel.png`))
-        block += `\n\nOpened:\n\n${img(`after-${w}-open-panel.png`, `opened, ${w}`)}`;
-      block += `\n\n<details><summary>Full page</summary>\n\n| Before | After |\n|---|---|\n| ${img(`before-${w}.png`, `before full page, ${w}`)} | ${img(`after-${w}.png`, `after full page, ${w}`)} |\n\n</details>`;
-      sections.push(block);
     }
-    const body = `${MARKER}\n## Screenshots\n\nProduction vs. this branch, live data. Made by \`npm run pr-screenshots\`; re-running it updates this comment.\n\n${sections.join('\n\n')}\n`;
+    const body = `${MARKER}\n## Screenshots\n\n${scenario ? 'Production vs. this branch, identical synthetic data and browser sessions. API responses are intercepted; no production polls or votes are created.' : 'Production vs. this branch, live data.'} Made by \`npm run pr-screenshots\`; re-running it updates this comment.\n\n${sections.join('\n\n')}\n`;
 
     const comments = JSON.parse(
       run('gh', ['api', `repos/${repo.nameWithOwner}/issues/${pr.number}/comments`, '--paginate']),

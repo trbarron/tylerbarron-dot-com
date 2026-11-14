@@ -134,7 +134,7 @@ export async function readPoll(id: string, token: string): Promise<PollView> {
     self: self ? { name: self.name, ballot: self.ballot } : null,
   };
   if (host) view.participants = voters.map((v) => ({ name: v.name, locked: Boolean(v.ballot) }));
-  if (host || p.closed)
+  if (p.closed)
     view.results = p.books
       .map((book) => {
         const up = voters.filter((v) => v.ballot?.up.includes(book.id)).length;

@@ -16,3 +16,29 @@ For another repository, reuse `scripts/pr-screenshots.mjs`, `scripts/lib/pr-scre
 `--no-comment` only saves local files and needs no GitHub publication. Default publication supports public GitHub repositories: images go to an images-only branch, and one marked PR comment is updated. Private repositories need a different artifact destination before automatic image posting is useful. Environment variable values are never written to screenshot comments.
 
 These are review images, not deterministic visual regression tests. Live data can change between production and branch captures. For stable pixel comparisons, each project should provide equivalent fixtures and authentication in its preview environment. `readySelector` should indicate actual application readiness, not just a loading shell.
+
+## Capture every book-club state
+
+```sh
+npm run pr-screenshots -- --scenario book-club
+```
+
+This captures creation, joining, choosing votes, ballot confirmation, locked-in
+ballot, host dashboard, private-host-link disclosure, closing confirmation and
+results. Every state gets desktop and phone comparisons in the same PR comment.
+Use the usual `--local`, `--reuse-server`, `--widths`, `--out` and `--no-comment`
+options. `--scenario` selects the route list instead of `--route`.
+
+The suite uses the same **synthetic** API responses and local browser sessions for
+production and the branch. It creates no Redis records, needs no real invite or
+host links, and blocks writes to the fixture API. Fixtures include the legacy
+host totals so comparisons can show their removal. This checks presentation and
+browser interactions; the real-Redis tests still check backend behavior.
+
+Add or update states in `scripts/fixtures/book-club.mjs`. Each state names a route,
+readiness selector, optional local-storage session, synthetic API responses and
+optional button clicks (for opening a modal). Each page gets a fresh browser
+context, so state does not leak between captures. The script waits for the final
+modal or disclosure before shooting. To support another feature, add its fixture
+module and register its name in `captureScenarios()`; the capture and PR-comment
+code are shared.

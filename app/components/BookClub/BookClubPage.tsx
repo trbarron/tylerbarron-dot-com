@@ -15,9 +15,8 @@ export default function BookClubPage({ host = false }: { host?: boolean }) {
       <Navbar />
       <main className="mx-auto max-w-3xl space-y-8 px-4 py-10 sm:py-16">
         <header className="space-y-3 border-b-4 border-black pb-6">
-          <p className="text-xs font-bold tracking-widest uppercase">The next chapter</p>
           <h1 className="text-4xl font-extrabold tracking-tight uppercase sm:text-6xl">Book club</h1>
-          <p className="text-lg">Less back-and-forth. More reading.</p>
+          <p className="text-lg">voting tool</p>
         </header>
         {pollId ? <ExistingPoll key={`${pollId}:${host}`} id={pollId} host={host} /> : <CreatePoll />}
       </main>
@@ -30,29 +29,19 @@ function ExistingPoll({ id, host }: { id: string; host: boolean }) {
   return (
     <div className="space-y-6">
       {error && <Notice>{error}</Notice>}
-      {!poll && !error && <p role="status">Opening the room…</p>}
+      {!poll && !error && <p role="status">Loading…</p>}
       {poll && (
         <>
           <div className="space-y-2">
-            <p className="text-xs font-bold tracking-wide uppercase">
-              {host ? 'Host dashboard' : poll.closed ? 'Final results' : 'You’re invited'}
-            </p>
             <h2 className="text-3xl font-extrabold break-words uppercase">{poll.title}</h2>
-            <p className="text-sm text-neutral-600">
-              {poll.closed ? 'Voting closed' : 'Voting open'} · Stored until{' '}
-              {new Date(poll.expiresAt).toLocaleDateString()}
-            </p>
           </div>
           {host ? (
             <HostDashboard poll={poll} token={token} busy={busy} act={act} />
           ) : (
             <Ballot poll={poll} busy={busy} act={act} />
           )}
-          {poll.results && (
-            <Panel
-              title={poll.closed ? 'The club’s ranking' : 'Running totals'}
-              subtitle="One point per upvote, minus one per downvote. Equal scores are tied; book order breaks no ties."
-            >
+          {poll.closed && poll.results && (
+            <Panel title="Results">
               <ol>
                 {poll.results.map((b) => (
                   <li
