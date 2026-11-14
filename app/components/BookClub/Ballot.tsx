@@ -42,7 +42,7 @@ export default function Ballot({ poll, busy, act }: Props) {
   const locked = poll.self?.ballot;
   if (locked || poll.closed)
     return (
-      <Panel title={locked ? `${poll.self?.name}, you’re locked in` : 'Voting is closed'} padded>
+      <Panel title={locked ? 'Locked in' : 'Voting is closed'} padded>
         {locked ? (
           <div className="space-y-3">
             <p>Your ballot is final. Thanks for helping choose the next read.</p>
@@ -126,7 +126,7 @@ export default function Ballot({ poll, busy, act }: Props) {
                 <strong>{up.includes(b.id) ? '+1' : '−1'}</strong> · {b.title}
               </p>
             ))}
-          <div className="flex flex-wrap gap-3">
+          <div className="grid grid-cols-2 gap-3">
             <Button onClick={() => setConfirm(false)}>Keep choosing</Button>
             <Button
               variant="primary"

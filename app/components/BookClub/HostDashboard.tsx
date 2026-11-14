@@ -105,7 +105,7 @@ export default function HostDashboard({ poll, token, busy, act }: Props) {
       )}
       <Dialog open={confirm} onClose={() => setConfirm(false)} title="Close voting?">
         <div className="space-y-4 p-5">
-          <div className="flex flex-wrap gap-3">
+          <div className="grid grid-cols-2 gap-3">
             <Button onClick={() => setConfirm(false)}>Keep voting open</Button>
             <Button
               variant="danger"

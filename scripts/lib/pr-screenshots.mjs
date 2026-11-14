@@ -67,3 +67,58 @@ export async function openControl(locator) {
   );
   if (!alreadyOpen) await locator.click();
 }
+
+/**
+ * @typedef {Object} Capture
+ * @property {string} route
+ * @property {string} [name]
+ * @property {string} [title]
+ * @property {Record<string, string>} [storage]
+ * @property {Record<string, unknown>} [responses]
+ * @property {string} [readySelector]
+ * @property {string[]} [steps]
+ * @property {string} [finalReady]
+ */
+/**
+ * Named, repository-owned fixtures; no arbitrary module paths from the CLI.
+ * @returns {Promise<Capture[]>}
+ */
+export async function captureScenarios(name, route) {
+  if (!name) return [{ route }];
+  if (name !== 'book-club') throw new Error(`Unknown screenshot scenario: ${name}`);
+  const { scenarios } = await import('../fixtures/book-club.mjs');
+  return scenarios();
+}
+export function scenarioStorageState(capture, origin) {
+  return {
+    cookies: [],
+    origins: [
+      {
+        origin: new URL(origin).origin,
+        localStorage: Object.entries(capture.storage ?? {}).map(([name, value]) => ({ name, value })),
+      },
+    ],
+  };
+}
+
+/** Intercept only the named synthetic API reads on both origins; forbid writes. */
+export async function prepareScenario(page, capture, errors) {
+  if (!capture.responses) return;
+  const responses = capture.responses;
+  await page.route('**/api/**', async (route) => {
+    const request = route.request();
+    const url = new URL(request.url());
+    const key = url.pathname + url.search;
+    if (request.method() !== 'GET' || !Object.hasOwn(responses, key)) {
+      errors.push('Scenario attempted an unconfigured API request; no request was sent.');
+      await route.abort('blockedbyclient');
+      return;
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      headers: { 'Cache-Control': 'no-store' },
+      body: JSON.stringify(responses[key]),
+    });
+  });
+}
