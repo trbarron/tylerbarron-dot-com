@@ -69,18 +69,18 @@ export default function Ballot({ poll, busy, act }: Props) {
       </Panel>
     );
   return (
-    <Panel title={`${poll.self?.name}’s ballot`} subtitle={`${upVotes} upvotes · ${downVotes} downvotes`}>
+    <Panel title={`${poll.self?.name}’s ballot`}>
       <div className="border-b-2 border-black bg-neutral-100 p-4" aria-live="polite">
-        {up.length}/{upVotes} upvotes · {down.length}/{downVotes} downvotes
+        {upVotes - up.length} {upVotes - up.length === 1 ? 'upvote' : 'upvotes'} left · {downVotes - down.length}{' '}
+        {downVotes - down.length === 1 ? 'downvote' : 'downvotes'} left
       </div>
       <ul>
-        {poll.books.map((book, index) => (
+        {poll.books.map((book) => (
           <li key={book.id} className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-black p-4">
-            <div className={poll.allowMultipleVotes ? 'w-full min-w-0' : 'min-w-0 flex-1'}>
-              <span className="text-xs text-neutral-500">{String(index + 1).padStart(2, '0')}</span>
+            <div className="w-full min-w-0">
               <p className="text-lg font-bold break-words">{book.title}</p>
             </div>
-            <div className={poll.allowMultipleVotes ? 'grid w-full grid-cols-2 gap-3' : 'flex gap-2'}>
+            <div className="grid w-full grid-cols-2 gap-4">
               <VoteControls
                 title={book.title}
                 side="up"

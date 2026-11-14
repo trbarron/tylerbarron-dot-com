@@ -11,36 +11,36 @@ interface Props {
   remove: () => void;
 }
 export default function VoteControls({ title, side, count, used, allowance, multiple, busy, add, remove }: Props) {
-  const full = used >= allowance;
-  const arrow = side === 'up' ? '↑' : '↓';
+  const label = side === 'up' ? 'Upvotes' : 'Downvotes';
   return (
-    <div
-      className={`flex justify-center gap-1 ${full ? 'bg-neutral-100' : ''}`}
-      role="group"
-      aria-label={`${side === 'up' ? 'Upvotes' : 'Downvotes'} for ${title}`}
-    >
-      {multiple && (
+    <div role="group" aria-label={`${label} for ${title}`} className="min-w-0 space-y-2">
+      <div className="text-center text-xs font-bold uppercase">{label}</div>
+      <div className="grid grid-cols-3 items-stretch border-2 border-black">
         <Button
           size="sm"
-          className="px-2"
+          className="w-full min-w-0 border-0 px-0"
           aria-label={`Remove ${side}vote from ${title}`}
           disabled={busy || count === 0}
           onClick={remove}
         >
           −
         </Button>
-      )}
-      <Button
-        size="sm"
-        className="px-2"
-        variant={count > 0 ? 'primary' : 'secondary'}
-        aria-label={`${side === 'up' ? 'Upvote' : 'Downvote'} ${title}`}
-        aria-pressed={multiple ? undefined : count > 0}
-        disabled={busy || (full && (multiple || count === 0))}
-        onClick={!multiple && count > 0 ? remove : add}
-      >
-        {arrow} {multiple ? count : side === 'up' ? '+1' : '−1'}
-      </Button>
+        <span
+          aria-label={`${count} ${side}votes assigned to ${title}`}
+          className={`flex min-h-12 items-center justify-center border-x-2 border-black font-mono text-2xl ${count > 0 ? 'bg-black text-white' : 'bg-white text-black'}`}
+        >
+          {count}
+        </span>
+        <Button
+          size="sm"
+          className="w-full min-w-0 border-0 px-0"
+          aria-label={`${side === 'up' ? 'Upvote' : 'Downvote'} ${title}`}
+          disabled={busy || used >= allowance || (!multiple && count > 0)}
+          onClick={add}
+        >
+          +
+        </Button>
+      </div>
     </div>
   );
 }

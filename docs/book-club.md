@@ -33,10 +33,11 @@ identity verification. A different browser cannot reclaim someone else's name.
 
 Use up to the configured allowance in each column. Without the multiple-vote
 toggle, each book accepts at most one vote. With it, add/remove controls adjust
-the count. A book cannot receive both an upvote and a downvote from the same voter;
+the count. Counts sit between separate − and + buttons under Upvotes/Downvotes
+labels. The ballot header shows votes remaining. A book cannot receive both an upvote and a downvote from the same voter;
 selecting the other kind clears the previous kind on that book.
 
-Unselected controls grey out when their allowance is exhausted; removal stays
+Add buttons grey out when their allowance is exhausted; removal stays
 available. Voters can lock in partial or empty ballots. Choices can be changed
 until confirmation; a submitted ballot is final. Each upvote adds
 one point and each downvote subtracts one. Draft choices stay in React state;
