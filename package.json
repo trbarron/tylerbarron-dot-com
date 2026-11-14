@@ -11,7 +11,6 @@
     "build:arc:server": "mkdir -p server && NODE_ENV=production npx esbuild server.ts --platform=node --target=node24 --format=esm --bundle --minify --tree-shaking=true --outfile=server/index.mjs '--external:@aws-sdk/*' --external:aws-sdk '--external:@react-router/*' --external:react --external:react-dom '--external:./build/*' && rm -rf server/build/server && mkdir -p server/build/server && cp -r build/server/* server/build/server/",
     "build:arc:deps": "node scripts/install-lambda-deps.mjs",
     "analyze": "node scripts/analyze-bundle.mjs",
-    "deploy:images": "node --env-file=.env scripts/upload-images-to-s3.mjs",
     "analyze:deps": "cd server && npx npm-check -u",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -48,7 +47,6 @@
   },
   "devDependencies": {
     "@architect/architect": "^12.0.1",
-    "@aws-sdk/client-s3": "^3.1162.0",
     "@aws-sdk/client-sns": "^3.1162.0",
     "@commitlint/cli": "^21.2.4",
     "@commitlint/config-conventional": "^21.2.4",

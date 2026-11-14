@@ -171,8 +171,7 @@ doubled the Lambda to 36 MB. It's imported dynamically inside `notifySubmission`
 a submission loads it. Locally it resolves from the root devDependency. AWS recommends
 bundling the SDK so a runtime update can't change its version under you; for one
 `PublishCommand` that risk is small, and a failed email never loses a submission (the
-bot is already in Redis). `@aws-sdk/client-s3` is a devDependency used only by the upload
-scripts. Root membership tells you nothing about what ships; `server/package.json` is the
+bot is already in Redis). Root membership tells you nothing about what ships; `server/package.json` is the
 authority.
 
 The Vite SSR build externalizes all npm deps, so anything an SSR-rendered module imports
@@ -367,3 +366,21 @@ Definitions and resource IDs are in `infra/monitoring/`. Before editing existing
 alarms or topic policies, save their current configurations. The pre-setup snapshots
 (empty site alarm sets and default topic policies) are in
 `/private/tmp/site-runtime-alarms-20261113` on the executing machine.
+
+## Project images deploy automatically
+
+All repository images live under `public/images/`, including the former
+`app/images/<Project>/` files. Project components keep using `getImageUrl()`;
+the `/images/<Project>/<file>` URLs and case are unchanged. The normal CI image
+sync publishes them, so there is no separate `deploy:images` command.
+
+Before the move on 13 November 2026, all 47 project files were found in the CDN
+bucket at matching keys and sizes. Three extra objects (`Global/email.svg`,
+`Global/git.svg`, `Global/in.svg`) were retained; image sync does not use `--delete`.
+Ordinary images now upload with `public,max-age=86400`. Models, pizza data and
+project share cards retain `public,max-age=3600`; hashed build assets remain immutable.
+
+Existing unchanged bucket objects retain their previous cache metadata because
+`aws s3 sync` skips them. No metadata rewrite was performed. Existing browser
+copies cached as immutable can persist until their old TTL expires; use a new
+filename when an image replacement must be visible immediately.
