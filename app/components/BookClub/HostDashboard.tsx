@@ -42,10 +42,7 @@ export default function HostDashboard({ poll, token, busy, act }: Props) {
           </Button>
           <details>
             <summary className="cursor-pointer py-3 text-sm font-bold uppercase">Save your private host link</summary>
-            <p className="mb-3 text-sm">
-              Keep this for returning on another device. Anyone with it can view totals and close voting. Share only the
-              voter invite above with your club.
-            </p>
+            <p className="mb-3 text-sm">this should generally not be shared</p>
             <input
               aria-label="Private host link"
               className="w-full"
@@ -72,7 +69,6 @@ export default function HostDashboard({ poll, token, busy, act }: Props) {
             {locked}/{participants.length} locked in
           </span>
         }
-        subtitle="Updates every five seconds while this tab is visible."
       >
         {participants.length === 0 ? (
           <p className="p-6">The room is empty. Send the invite link to get everyone started.</p>
@@ -109,7 +105,6 @@ export default function HostDashboard({ poll, token, busy, act }: Props) {
       )}
       <Dialog open={confirm} onClose={() => setConfirm(false)} title="Close voting?">
         <div className="space-y-4 p-5">
-          <p>Only locked-in ballots count. Everyone will see the results, and voting can’t be reopened.</p>
           <div className="flex flex-wrap gap-3">
             <Button onClick={() => setConfirm(false)}>Keep voting open</Button>
             <Button

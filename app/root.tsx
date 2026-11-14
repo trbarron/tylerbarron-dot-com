@@ -130,7 +130,7 @@ export function ErrorBoundary() {
   const title = is404 ? '404' : String(status);
   const heading = is404 ? 'Page Not Found' : 'Something Went Wrong';
   const message = is404
-    ? "Whatever you were looking for isn't here."
+    ? "Whatever you were looking for isn't here"
     : isServerError
       ? 'A server error occurred. Try again in a moment.'
       : 'An unexpected error occurred.';

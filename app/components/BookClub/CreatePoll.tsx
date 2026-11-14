@@ -58,9 +58,7 @@ export default function CreatePoll() {
             maxLength={6500}
             value={books}
             onChange={(e) => setBooks(e.target.value)}
-            placeholder={
-              'The Left Hand of Darkness — Ursula K. Le Guin\nPiranesi — Susanna Clarke\nKindred — Octavia E. Butler'
-            }
+            placeholder={'Go Dog Go\nFox in Socks\nA Gentleman in Moscow'}
             aria-describedby="book-list-hint"
           />
           <p id="book-list-hint" className="mt-2 text-sm text-neutral-600">

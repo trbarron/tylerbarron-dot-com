@@ -64,7 +64,7 @@ describe.skipIf(!local)('Book club API with real Redis', () => {
     expect((await voted.json()).self.ballot).toEqual(ballot);
     const host = await (await read(id, hostToken)).json();
     expect(host.participants).toEqual([{ name: 'Alex', locked: true }]);
-    expect(host.results.map((b: { score: number }) => b.score)).toEqual([1, 1, 0, -1]);
+    expect(host.results).toBeUndefined();
     const anonymous = await (await read(id)).json();
     expect(anonymous.self).toBeNull();
     expect(anonymous.results).toBeUndefined();
@@ -74,7 +74,9 @@ describe.skipIf(!local)('Book club API with real Redis', () => {
     expect(ttl).toBeLessThanOrEqual(60);
     expect((await post({ kind: 'close', id }, voter)).status).toBe(403);
     expect((await post({ kind: 'close', id }, hostToken)).status).toBe(200);
-    expect((await (await read(id)).json()).results).toEqual(host.results);
+    const results = (await (await read(id)).json()).results;
+    expect(results.map((b: { score: number }) => b.score)).toEqual([1, 1, 0, -1]);
+    expect((await (await read(id, hostToken)).json()).results).toEqual(results);
     expect((await post({ kind: 'join', id, name: 'Late' }, token())).status).toBe(409);
     expect((await post({ kind: 'vote', id, ballot }, voter)).status).toBe(409);
   });

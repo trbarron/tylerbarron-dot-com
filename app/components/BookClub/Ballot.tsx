@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import Button from '~/components/Button';
 import { TextField } from '~/components/Field';
-import Notice from '~/components/Notice';
 import Panel from '~/components/Panel';
 import Dialog from '~/components/Dialog';
 import type { PollView } from '~/utils/bookClub/types';
@@ -33,15 +32,10 @@ export default function Ballot({ poll, busy, act }: Props) {
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
-            hint="Use a name your club will recognize. Already used? Add an initial."
           />
           <Button type="submit" variant="primary" disabled={busy}>
             {busy ? 'Joining…' : 'Join the vote'}
           </Button>
-          <p className="text-sm text-neutral-600">
-            Use this browser to return to your ballot. Names aren’t verified; this is for your club, on the honor
-            system.
-          </p>
         </form>
       </Panel>
     );
@@ -70,7 +64,7 @@ export default function Ballot({ poll, busy, act }: Props) {
     );
   const complete = up.length === 2 && Boolean(down);
   return (
-    <Panel title={`${poll.self?.name}’s ballot`} subtitle="Two books up. One book down. Three different books.">
+    <Panel title={`${poll.self?.name}’s ballot`} subtitle="Two books up. One book down.">
       <div className="border-b-2 border-black bg-neutral-100 p-4" aria-live="polite">
         {up.length}/2 upvotes · {down ? '1' : '0'}/1 downvote
       </div>
@@ -122,14 +116,9 @@ export default function Ballot({ poll, busy, act }: Props) {
         >
           Lock in my votes
         </Button>
-        <p className="text-sm text-neutral-600">
-          Change your selections as much as you like before locking in. The host sees your name and whether you’re done,
-          not your individual choices.
-        </p>
       </div>
       <Dialog open={confirm} onClose={() => setConfirm(false)} title="Lock in your votes?">
         <div className="space-y-4 p-5">
-          <Notice tone="info">This is your final ballot. You won’t be able to change it.</Notice>
           {poll.books
             .filter((b) => up.includes(b.id) || down === b.id)
             .map((b) => (
