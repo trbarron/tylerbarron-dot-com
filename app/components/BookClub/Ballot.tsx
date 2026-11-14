@@ -77,47 +77,31 @@ export default function Ballot({ poll, busy, act }: Props) {
       <ul>
         {poll.books.map((book) => (
           <li key={book.id} className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-black p-4">
-            <div className="w-full min-w-0">
+            <div className="min-w-0 flex-1">
               <p className="text-lg font-bold break-words">{book.title}</p>
             </div>
-            <div className="grid w-full grid-cols-2 gap-4">
-              <VoteControls
-                title={book.title}
-                side="up"
-                count={up.filter((id) => id === book.id).length}
-                used={up.length}
-                allowance={upVotes}
-                multiple={poll.allowMultipleVotes ?? false}
-                busy={busy}
-                add={() => {
-                  setUp([...up, book.id]);
-                  setDown(down.filter((id) => id !== book.id));
-                }}
-                remove={() => {
-                  const next = [...up];
-                  next.splice(next.indexOf(book.id), 1);
-                  setUp(next);
-                }}
-              />
-              <VoteControls
-                title={book.title}
-                side="down"
-                count={down.filter((id) => id === book.id).length}
-                used={down.length}
-                allowance={downVotes}
-                multiple={poll.allowMultipleVotes ?? false}
-                busy={busy}
-                add={() => {
-                  setDown([...down, book.id]);
-                  setUp(up.filter((id) => id !== book.id));
-                }}
-                remove={() => {
+            <VoteControls
+              title={book.title}
+              score={up.filter((id) => id === book.id).length - down.filter((id) => id === book.id).length}
+              upRemaining={upVotes - up.length}
+              downRemaining={downVotes - down.length}
+              multiple={poll.allowMultipleVotes ?? false}
+              busy={busy}
+              increase={() => {
+                if (down.includes(book.id)) {
                   const next = [...down];
                   next.splice(next.indexOf(book.id), 1);
                   setDown(next);
-                }}
-              />
-            </div>
+                } else setUp([...up, book.id]);
+              }}
+              decrease={() => {
+                if (up.includes(book.id)) {
+                  const next = [...up];
+                  next.splice(next.indexOf(book.id), 1);
+                  setUp(next);
+                } else setDown([...down, book.id]);
+              }}
+            />
           </li>
         ))}
       </ul>
