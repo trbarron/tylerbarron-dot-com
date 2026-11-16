@@ -19,11 +19,25 @@ export interface RateLimitVerdict {
 }
 
 /**
- * The caller's IP. API Gateway sits behind CloudFront here, so x-forwarded-for
- * is the only header that carries it, and the client-supplied portion is
- * untrusted: take the first entry and use it for nothing but bucketing.
+ * The caller's IP, for bucketing rate limits and nothing else.
+ *
+ * The viewer-request function overwrites `x-site-viewer-ip` with event.viewer.ip.
+ * The production origin guard makes that trustworthy by refusing direct callers.
+ * The legacy headers remain fallbacks for local development and older deployments;
+ * a caller can forge them when they are not supplied by trusted infrastructure.
  */
 export function clientIp(request: Request): string {
+  const stamped = request.headers.get('x-site-viewer-ip')?.trim();
+  if (stamped) return stamped;
+  const viewer = request.headers.get('cloudfront-viewer-address');
+  if (viewer) {
+    // "203.0.113.7:46532", or for IPv6 "2001:db8::1:46532" / "[2001:db8::1]:46532".
+    const ip = viewer
+      .trim()
+      .replace(/:\d+$/, '')
+      .replace(/^\[|\]$/g, '');
+    if (ip) return ip;
+  }
   const forwardedFor = request.headers.get('x-forwarded-for');
   if (forwardedFor) return forwardedFor.split(',')[0].trim();
   return request.headers.get('x-real-ip') ?? 'unknown';

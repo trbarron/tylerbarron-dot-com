@@ -4,6 +4,12 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { createActionArgs, createLoaderArgs } from '../setup';
+import { checkRateLimit } from '~/utils/rateLimit.server';
+
+vi.mock('~/utils/rateLimit.server', () => ({
+  checkRateLimit: vi.fn(),
+}));
+
 import { parseAction, parseGameId, parsePlayerId } from '~/utils/collaborativeCheckmate/validate';
 
 const game = vi.hoisted(() => ({
@@ -27,6 +33,7 @@ const post = (path: string, body: unknown) =>
   });
 
 beforeEach(() => {
+  vi.mocked(checkRateLimit).mockReset().mockResolvedValue({ allowed: true, retryAfter: 0 });
   Object.values(game).forEach((fn) => fn.mockReset());
   vi.spyOn(console, 'error').mockImplementation(() => {});
 });
@@ -91,6 +98,14 @@ describe('POST /api/collaborativeCheckmate/join', () => {
     expect((await joinAction(post('/api/collaborativeCheckmate/join', { gameId: 'g1' }))).status).toBe(400);
     const notJson = createActionArgs('/api/collaborativeCheckmate/join', { method: 'POST', body: '{' });
     expect((await joinAction(notJson)).status).toBe(400);
+    expect(game.joinGame).not.toHaveBeenCalled();
+  });
+
+  it('refuses joins past the per-address limit before creating a game', async () => {
+    vi.mocked(checkRateLimit).mockResolvedValue({ allowed: false, retryAfter: 3600 });
+    const res = await joinAction(post('/api/collaborativeCheckmate/join', { gameId: 'g1', playerId: 'ann' }));
+    expect(res.status).toBe(429);
+    expect(res.headers.get('Retry-After')).toBe('3600');
     expect(game.joinGame).not.toHaveBeenCalled();
   });
 

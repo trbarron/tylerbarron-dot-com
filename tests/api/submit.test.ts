@@ -6,12 +6,15 @@ import { createLoaderArgs, createActionArgs } from '../setup';
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { action } from '~/routes/api/chesserGuesser/submit';
+import { checkRateLimit } from '~/utils/rateLimit.server';
+import { rateLimitMiddleware } from '~/utils/chesserGuesser/rateLimit.server';
 
 // Mock Redis
 const mockRedis = {
   get: vi.fn(),
   set: vi.fn(),
   setex: vi.fn(),
+  incr: vi.fn(),
   zadd: vi.fn(),
   expire: vi.fn(),
   mget: vi.fn(),
@@ -37,6 +40,10 @@ vi.mock('~/utils/redis.server', () => ({
   getRedisClient: () => mockRedis,
 }));
 
+vi.mock('~/utils/rateLimit.server', () => ({
+  checkRateLimit: vi.fn().mockResolvedValue({ allowed: true, retryAfter: 0 }),
+}));
+
 // Mock rate limiter to always allow
 vi.mock('~/utils/chesserGuesser/rateLimit.server', () => ({
   rateLimitMiddleware: vi.fn().mockResolvedValue(null),
@@ -44,7 +51,12 @@ vi.mock('~/utils/chesserGuesser/rateLimit.server', () => ({
 
 describe('Submit Score API', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2024, 0, 15, 12));
+    mockRedis.incr.mockResolvedValue(1);
+    vi.mocked(checkRateLimit).mockResolvedValue({ allowed: true, retryAfter: 0 });
+    vi.mocked(rateLimitMiddleware).mockResolvedValue(null);
     // Default: SET NX succeeds (no duplicate)
     mockRedis.set.mockResolvedValue('OK');
     // Default: mget returns all nulls (no existing puzzle submissions)
@@ -52,6 +64,7 @@ describe('Submit Score API', () => {
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
@@ -76,9 +89,8 @@ describe('Submit Score API', () => {
 
     it('should accept valid submission', async () => {
       // Mock: puzzle cache, then completed count
-      mockRedis.get
-        .mockResolvedValueOnce(mockDailyPuzzles) // daily puzzle cache
-        .mockResolvedValueOnce('0'); // completed = 0
+      mockRedis.get.mockResolvedValueOnce(mockDailyPuzzles);
+      mockRedis.incr.mockResolvedValueOnce(1);
 
       // Mock mget for 4 puzzle submissions (current submission stored, others null)
       mockRedis.mget.mockResolvedValueOnce([JSON.stringify({ score: 20 }), null, null, null]);
@@ -142,9 +154,8 @@ describe('Submit Score API', () => {
         mockRedis.set.mockClear();
         mockRedis.mget.mockClear();
         mockRedis.set.mockResolvedValue('OK');
-        mockRedis.get
-          .mockResolvedValueOnce(mockDailyPuzzles) // daily puzzle cache
-          .mockResolvedValueOnce('0'); // completed
+        mockRedis.get.mockResolvedValueOnce(mockDailyPuzzles);
+        mockRedis.incr.mockResolvedValueOnce(1);
         mockRedis.mget.mockResolvedValue([null, null, null, null]);
 
         const response = await action(
@@ -183,9 +194,8 @@ describe('Submit Score API', () => {
         mockRedis.set.mockClear();
         mockRedis.mget.mockClear();
         mockRedis.set.mockResolvedValue('OK');
-        mockRedis.get
-          .mockResolvedValueOnce(mockDailyPuzzles) // daily puzzle cache
-          .mockResolvedValueOnce('0'); // completed
+        mockRedis.get.mockResolvedValueOnce(mockDailyPuzzles);
+        mockRedis.incr.mockResolvedValueOnce(1);
         mockRedis.mget.mockResolvedValue([null, null, null, null]);
 
         const response = await action(
@@ -211,9 +221,8 @@ describe('Submit Score API', () => {
         mockRedis.set.mockClear();
         mockRedis.mget.mockClear();
         mockRedis.set.mockResolvedValue('OK');
-        mockRedis.get
-          .mockResolvedValueOnce(mockDailyPuzzles) // daily puzzle cache (puzzle 0 eval = 120)
-          .mockResolvedValueOnce('0'); // completed
+        mockRedis.get.mockResolvedValueOnce(mockDailyPuzzles);
+        mockRedis.incr.mockResolvedValueOnce(1);
         mockRedis.mget.mockResolvedValue([null, null, null, null]);
 
         const response = await action(
@@ -227,9 +236,8 @@ describe('Submit Score API', () => {
 
     it('should update total score correctly', async () => {
       // First submission (puzzle 0)
-      mockRedis.get
-        .mockResolvedValueOnce(mockDailyPuzzles) // daily puzzle cache
-        .mockResolvedValueOnce('0'); // completed = 0
+      mockRedis.get.mockResolvedValueOnce(mockDailyPuzzles);
+      mockRedis.incr.mockResolvedValueOnce(1);
       mockRedis.mget.mockResolvedValueOnce([null, null, null, null]);
 
       const response1 = await action(
@@ -245,9 +253,8 @@ describe('Submit Score API', () => {
       mockRedis.set.mockClear();
       mockRedis.mget.mockClear();
       mockRedis.set.mockResolvedValue('OK');
-      mockRedis.get
-        .mockResolvedValueOnce(mockDailyPuzzles) // daily puzzle cache
-        .mockResolvedValueOnce('1'); // completed = 1
+      mockRedis.get.mockResolvedValueOnce(mockDailyPuzzles);
+      mockRedis.incr.mockResolvedValueOnce(2);
       mockRedis.mget.mockResolvedValueOnce([JSON.stringify({ score: firstScore }), null, null, null]);
 
       const response2 = await action(
@@ -260,9 +267,8 @@ describe('Submit Score API', () => {
 
     it('should update leaderboard', async () => {
       const mockScore = 95;
-      mockRedis.get
-        .mockResolvedValueOnce(mockDailyPuzzles) // daily puzzle cache
-        .mockResolvedValueOnce('3'); // completed = 3 (this will be the 4th puzzle)
+      mockRedis.get.mockResolvedValueOnce(mockDailyPuzzles);
+      mockRedis.incr.mockResolvedValueOnce(4);
       mockRedis.mget.mockResolvedValueOnce([
         JSON.stringify({ score: mockScore }), // puzzle 0
         JSON.stringify({ score: mockScore }), // puzzle 1
@@ -284,9 +290,8 @@ describe('Submit Score API', () => {
 
     it('should set TTL on all stored data', async () => {
       const mockScore = 95;
-      mockRedis.get
-        .mockResolvedValueOnce(mockDailyPuzzles) // daily puzzle cache
-        .mockResolvedValueOnce('3'); // completed = 3 (this will be the 4th puzzle)
+      mockRedis.get.mockResolvedValueOnce(mockDailyPuzzles);
+      mockRedis.incr.mockResolvedValueOnce(4);
       mockRedis.mget.mockResolvedValueOnce([
         JSON.stringify({ score: mockScore }),
         JSON.stringify({ score: mockScore }),
@@ -316,9 +321,8 @@ describe('Submit Score API', () => {
     });
 
     it('should track puzzles completed', async () => {
-      mockRedis.get
-        .mockResolvedValueOnce(mockDailyPuzzles) // daily puzzle cache
-        .mockResolvedValueOnce('0'); // completed = 0
+      mockRedis.get.mockResolvedValueOnce(mockDailyPuzzles);
+      mockRedis.incr.mockResolvedValueOnce(1);
       mockRedis.mget.mockResolvedValueOnce([null, null, null, null]);
 
       const response = await action(createActionArgs('/api/chesserGuesser/submit', createRequestBody(validSubmission)));
@@ -327,17 +331,13 @@ describe('Submit Score API', () => {
       expect(result.puzzlesCompleted).toBe(1);
 
       // Verify it was stored
-      expect(mockRedis.setex).toHaveBeenCalledWith(
-        `chesserGuesser:completed:2024-01-15:testuser123`,
-        expect.any(Number),
-        '1',
-      );
+      expect(mockRedis.incr).toHaveBeenCalledWith('chesserGuesser:completed:2024-01-15:testuser123');
+      expect(mockRedis.expire).toHaveBeenCalledWith('chesserGuesser:completed:2024-01-15:testuser123', 604800);
     });
 
     it('should store submission data with timestamp', async () => {
-      mockRedis.get
-        .mockResolvedValueOnce(mockDailyPuzzles) // daily puzzle cache
-        .mockResolvedValueOnce('0'); // completed = 0
+      mockRedis.get.mockResolvedValueOnce(mockDailyPuzzles);
+      mockRedis.incr.mockResolvedValueOnce(1);
       mockRedis.mget.mockResolvedValueOnce([null, null, null, null]);
 
       const beforeTimestamp = Date.now();
@@ -399,9 +399,8 @@ describe('Submit Score API', () => {
         ],
         seed: 20240115,
       });
-      mockRedis.get
-        .mockResolvedValueOnce(zeroPuzzles) // daily puzzle cache
-        .mockResolvedValueOnce('0'); // completed = 0
+      mockRedis.get.mockResolvedValueOnce(zeroPuzzles);
+      mockRedis.incr.mockResolvedValueOnce(1);
       mockRedis.mget.mockResolvedValueOnce([null, null, null, null]);
 
       const response = await action(
@@ -434,9 +433,8 @@ describe('Submit Score API', () => {
         mockRedis.set.mockClear();
         mockRedis.mget.mockClear();
         mockRedis.set.mockResolvedValue('OK');
-        mockRedis.get
-          .mockResolvedValueOnce(mockDailyPuzzles) // daily puzzle cache
-          .mockResolvedValueOnce('0'); // completed = 0
+        mockRedis.get.mockResolvedValueOnce(mockDailyPuzzles);
+        mockRedis.incr.mockResolvedValueOnce(1);
         mockRedis.mget.mockResolvedValue([null, null, null, null]);
 
         const response = await action(

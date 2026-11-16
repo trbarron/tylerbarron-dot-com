@@ -7,9 +7,12 @@ on:
   pull_request:
   workflow_dispatch:
 
+# A newer push replaces a PR's run, but a deploy always finishes: cancelling one
+# between publishing assets and updating the Lambda leaves production
+# half-deployed.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
 
 permissions:
   contents: read
@@ -18,6 +21,8 @@ permissions:
 # never run against semantic-release's automated release commit.
 env:
   HUSKY: 0
+  # The tylerbarron.com distribution (docs/deployment.md).
+  CLOUDFRONT_DISTRIBUTION_ID: E1TUWNZL0WZZ6J
 
 defaults:
   run:
@@ -155,7 +160,7 @@ jobs:
       # every package the SSR bundle imports is installed there. A miss 500s
       # for bots and curl only, so no browser test would catch it.
       - name: 🏗 Build the Lambda
-        run: npm run compile:mdx && npm run build && npm run build:arc:server && npm run build:arc:deps
+        run: npm run build && npm run build:arc:server && npm run build:arc:deps
 
       - name: λ Check the Lambda installs what it imports
         run: npm run check:lambda-deps
@@ -185,11 +190,10 @@ jobs:
     # Only master deploys. PRs run the checks above and stop here, so a PR
     # can never publish assets or overwrite production.
     if: github.ref == 'refs/heads/master'
-    # semantic-release pushes the version bump commit, tag, and GitHub release.
+    # semantic-release pushes the version bump commit and tag; the step after it
+    # creates the GitHub Release.
     permissions:
       contents: write
-      issues: write
-      pull-requests: write
 
     steps:
       - name: ⬇️ Checkout repo
@@ -210,39 +214,20 @@ jobs:
       - name: 📥 Install deps
         run: npm ci
 
-      # Analyze commits since the last release; if a release is warranted, bump
-      # package.json on disk, commit/tag (with [skip ci] so it
-      # doesn't re-trigger this workflow), and publish a GitHub Release. The bumped
-      # package.json is then read by the build below so the footer shows the new
-      # version. A no-op when no release-worthy commits exist.
-      - name: 🔖 Release (semantic-release)
+      # Determine the footer version without modifying files, committing or tagging.
+      - name: 🔎 Plan release version
+        id: version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release
+        run: node scripts/plan-release.mjs
 
-      # Create the GitHub Release for the tag semantic-release just pushed.
-      # Kept out of semantic-release (and non-blocking) on purpose: this is the
-      # only release step that runs after the tag exists but before the deploy,
-      # so a flaky GitHub API response here used to abort the deploy and leave
-      # a tagged-but-undeployed state (run 27287187104, GitHub outage 2026-06-10).
-      # Idempotent: skips when HEAD isn't a fresh release or the Release exists.
-      - name: 🏷 GitHub Release (non-blocking)
-        continue-on-error: true
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          TAG=$(git tag --points-at HEAD | head -n1)
-          if [ -n "$TAG" ] && ! gh release view "$TAG" --json id >/dev/null 2>&1; then
-            git log -1 --format=%b | gh release create "$TAG" --title "$TAG" --verify-tag --notes-file -
-          fi
-
-      # Single source of truth: the same npm scripts used locally. Compiles MDX
-      # (image src's rewritten to VITE_CDN_URL), builds client + SSR bundles
-      # against the CDN base, bundles the Lambda handler, and installs the
-      # Lambda's prod-only deps in server/.
+      # Single source of truth: the same npm scripts used locally. Builds the
+      # client + SSR bundles (blog posts included) against the CDN base, bundles
+      # the Lambda handler, and installs the Lambda's prod-only deps in server/.
       - name: 🏗 Build
         env:
           NODE_ENV: production
+          APP_VERSION: ${{ steps.version.outputs.version }}
           VITE_CDN_URL: ${{ secrets.VITE_CDN_URL }}
         run: npm run build:arc
 
@@ -257,28 +242,26 @@ jobs:
           AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
           AWS_BUCKET_NAME: ${{ secrets.AWS_BUCKET_NAME }}
         run: |
-          # Content-hashed assets are immutable; --delete prunes stale builds.
+          # Content-hashed assets are immutable. No --delete: the Lambda still
+          # in production, cached HTML, and tabs already open all point at the
+          # previous build's files until well after this deploy. Old builds are
+          # pruned by age once the new Lambda is live (last step).
           aws s3 sync build/client/assets/ "s3://$AWS_BUCKET_NAME/assets/" \
-            --delete \
             --cache-control "public,max-age=31536000,immutable"
           # Fonts have fixed names: skip --delete, shorter TTL.
           [ -d build/client/fonts ] && aws s3 sync build/client/fonts/ "s3://$AWS_BUCKET_NAME/fonts/" \
             --cache-control "public,max-age=86400" || true
-          # Blog/post images referenced as /images/* in MDX (rewritten to the CDN).
-          # og/manifest.json is a local build artifact for check-og-images.mjs,
-          # not a web asset — and it mutates, so it must not be cached immutable.
-          # models/, pizza/ and og/projects/ are excluded here and synced
-          # separately below: all are replaced in place (a new trophy.glb, a
-          # fresh pizza scrape, a re-rendered project card) under fixed
-          # filenames, so they can't carry the immutable header the rest of
-          # /images/* uses.
+          # All project and post images come from public/images. Fixed filenames
+          # can be replaced, so ordinary images revalidate after one day.
+          # Local manifests are not web assets; replaceable models, pizza data
+          # and project cards retain their shorter TTL in the syncs below.
           aws s3 sync public/images/ "s3://$AWS_BUCKET_NAME/images/" \
             --exclude "*.db" \
             --exclude "og/manifest.json" \
             --exclude "og/projects/*" \
             --exclude "models/*" \
             --exclude "pizza/*" \
-            --cache-control "public,max-age=31536000,immutable"
+            --cache-control "public,max-age=86400"
           # Replaceable 3D models: 1-hour TTL so overwriting a .glb propagates.
           [ -d public/images/models ] && aws s3 sync public/images/models/ "s3://$AWS_BUCKET_NAME/images/models/" \
             --cache-control "public,max-age=3600" || true
@@ -315,3 +298,54 @@ jobs:
           # GA_TRACKING_ID is NOT set here: arc deploy doesn't pass process env
           # to the Lambda — production reads it from @env in app.arc.
           VITE_CDN_URL: ${{ secrets.VITE_CDN_URL }}
+
+      # Fail before tagging or cleanup if bot SSR, Redis or the deployed version is broken.
+      - name: 🩺 Check live site as a bot
+        env:
+          APP_VERSION: ${{ steps.version.outputs.version }}
+        run: node scripts/check-live-site.mjs
+
+      # Only a successfully built, deployed and checked version may get a tag.
+      - name: 🔖 Release (semantic-release)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APP_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          npx semantic-release
+          # A skipped release (for example, master advancing during deployment)
+          # must not silently leave package.json behind the deployed footer.
+          test "$(node -p 'JSON.parse(require("fs").readFileSync("package.json", "utf8")).version')" = "$APP_VERSION"
+
+      # A GitHub API outage must not turn a successful deployment into a failure.
+      # Idempotent: skips when HEAD isn't a fresh release or the Release exists.
+      - name: 🏷 GitHub Release (non-blocking)
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG=$(git tag --points-at HEAD | head -n1)
+          if [ -n "$TAG" ] && ! gh release view "$TAG" --json id >/dev/null 2>&1; then
+            git log -1 --format=%b | gh release create "$TAG" --title "$TAG" --verify-tag --notes-file -
+          fi
+
+      # Cached HTML (routes that export `headers` from ~/utils/cache) would
+      # otherwise keep serving the previous build for up to its s-maxage. Not
+      # fatal if it fails: old pages still work, since their assets are kept.
+      - name: 🧹 Invalidate cached pages
+        continue-on-error: true
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+        run: aws cloudfront create-invalidation --distribution-id "$CLOUDFRONT_DISTRIBUTION_ID" --paths '/*'
+
+      # Remove hashed assets that no build has shipped for 30 days. Runs last,
+      # and never touches a file the build just deployed.
+      - name: 🧹 Prune old assets
+        continue-on-error: true
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+          AWS_BUCKET_NAME: ${{ secrets.AWS_BUCKET_NAME }}
+        run: node scripts/prune-old-assets.mjs

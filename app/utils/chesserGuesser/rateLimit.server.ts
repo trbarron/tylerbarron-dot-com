@@ -2,6 +2,7 @@
 // Prevents abuse and ensures fair play
 
 import { getRedisClient } from '../redis.server';
+import { clientIp as getClientIP } from '../rateLimit.server';
 
 /**
  * Rate limit configuration
@@ -35,34 +36,6 @@ export interface RateLimitResult {
   remaining: number;
   resetAt: number; // Unix timestamp when limit resets
   retryAfter?: number; // Seconds to wait before retrying (if not allowed)
-}
-
-/**
- * Get client IP from request
- */
-function getClientIP(request: Request): string {
-  // Check common proxy headers
-  const headers = request.headers;
-  const forwardedFor = headers.get('x-forwarded-for');
-  const realIP = headers.get('x-real-ip');
-  const cfConnectingIP = headers.get('cf-connecting-ip'); // Cloudflare
-
-  // Use first IP from X-Forwarded-For
-  if (forwardedFor) {
-    const ips = forwardedFor.split(',').map((ip) => ip.trim());
-    return ips[0];
-  }
-
-  if (realIP) {
-    return realIP;
-  }
-
-  if (cfConnectingIP) {
-    return cfConnectingIP;
-  }
-
-  // Fallback
-  return 'unknown';
 }
 
 /**

@@ -7,7 +7,11 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { createActionArgs } from '../setup';
 import type { GameState } from '~/utils/multipleChoiceChess/gameState.server';
 
-const store = vi.hoisted(() => ({ getGame: vi.fn(), applyMove: vi.fn() }));
+const store = vi.hoisted(() => ({
+  getGame: vi.fn(),
+  applyMove: vi.fn(),
+  normalizeGameId: (id: unknown) => (typeof id === 'string' ? id.toLowerCase().trim() : null),
+}));
 vi.mock('~/utils/multipleChoiceChess/gameState.server', () => store);
 
 import { action } from '~/routes/api/multipleChoiceChess/move';
@@ -52,7 +56,7 @@ const move = (body: Record<string, unknown>) =>
 
 beforeEach(() => {
   store.getGame.mockReset().mockResolvedValue(base);
-  store.applyMove.mockReset().mockResolvedValue(undefined);
+  store.applyMove.mockReset().mockResolvedValue(true);
   vi.spyOn(console, 'error').mockImplementation(() => {});
 });
 
@@ -62,6 +66,7 @@ describe('POST /api/multipleChoiceChess/move', () => {
     expect(res.status).toBe(200);
     expect(store.applyMove).toHaveBeenCalledWith(
       'abc123',
+      base.fen,
       expect.objectContaining({
         turn: 'black',
         move: 'e2e4',
@@ -76,9 +81,9 @@ describe('POST /api/multipleChoiceChess/move', () => {
   });
 
   it('refuses a move out of turn, from a stranger, illegal, or in a finished game', async () => {
-    expect((await move({ player_id: 'b1', move: 'e7e5', rank: 1 })).status).toBe(409);
+    expect((await move({ player_id: 'b1', move: 'e7e5', rank: 1, choices: ['e7e5'] })).status).toBe(409);
     expect((await move({ player_id: 'zz', move: 'e2e4', rank: 1 })).status).toBe(403);
-    expect((await move({ player_id: 'w1', move: 'e2e5', rank: 1 })).status).toBe(400);
+    expect((await move({ player_id: 'w1', move: 'e2e5', rank: 1, choices: ['e2e5'] })).status).toBe(400);
     store.getGame.mockResolvedValue({ ...base, status: 'complete' });
     expect((await move({ player_id: 'w1', move: 'e2e4', rank: 1 })).status).toBe(409);
     expect(store.applyMove).not.toHaveBeenCalled();
@@ -97,11 +102,30 @@ describe('POST /api/multipleChoiceChess/move', () => {
       fen: 'rnbqkbnr/pppp1ppp/8/4p3/6P1/5P2/PPPPP2P/RNBQKBNR b KQkq - 0 2',
       turn: 'black',
     });
-    const res = await move({ player_id: 'b1', move: 'd8h4', rank: 1 });
+    const res = await move({ player_id: 'b1', move: 'd8h4', rank: 1, choices: ['d8h4', 'a7a6'] });
     expect(await res.json()).toEqual({ ok: true, status: 'complete', result: 'black', result_reason: 'checkmate' });
     expect(store.applyMove).toHaveBeenCalledWith(
       'abc123',
+      expect.any(String),
       expect.objectContaining({ blackScore: 4, status: 'complete' }),
     );
+  });
+
+  it('refuses a move that was not among the choices, or a made-up rank', async () => {
+    expect((await move({ player_id: 'w1', move: 'a2a3', rank: 1 })).status).toBe(400);
+    expect((await move({ player_id: 'w1', move: 'e2e4', rank: 3 })).status).toBe(400);
+    expect((await move({ player_id: 'w1', move: 'e2e4', rank: 1, choices: 'e2e4' })).status).toBe(400);
+    expect(store.applyMove).not.toHaveBeenCalled();
+  });
+
+  it('409s when the game moved on before the move was saved', async () => {
+    store.applyMove.mockResolvedValue(false);
+    expect((await move({ player_id: 'w1', move: 'e2e4', rank: 1 })).status).toBe(409);
+  });
+
+  it('writes to the same lower-case key it read from', async () => {
+    await move({ game_id: ' ABC123 ', player_id: 'w1', move: 'e2e4', rank: 1 });
+    expect(store.getGame).toHaveBeenCalledWith('abc123');
+    expect(store.applyMove).toHaveBeenCalledWith('abc123', expect.any(String), expect.anything());
   });
 });

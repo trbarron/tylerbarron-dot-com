@@ -1,32 +1,17 @@
-import type { LoaderFunctionArgs } from 'react-router';
 import { isRedisAvailable } from '~/utils/redis.server';
 
-export async function loader({ request }: LoaderFunctionArgs) {
-  const host = request.headers.get('X-Forwarded-Host') ?? request.headers.get('host');
-  // API Gateway/CloudFront only serve HTTPS, so a hardcoded http:// self-fetch
-  // always fails in production. Trust the forwarded proto; fall back by host.
-  const proto =
-    request.headers.get('X-Forwarded-Proto') ??
-    (host?.startsWith('localhost') || host?.startsWith('127.') ? 'http' : 'https');
-
+// Answering at all shows the Lambda is up and routing; the ping shows it can
+// reach Redis. It used to also fetch its own homepage at a URL built from the
+// request's Host headers, which let a caller aim that request anywhere and
+// doubled the cost of every call.
+export async function loader() {
   try {
-    const url = new URL('/', `${proto}://${host}`);
-    // if we can connect to the database and make a simple query
-    // and make a HEAD request to ourselves, then we're good.
-    const [redisReady] = await Promise.all([
-      isRedisAvailable(),
-      fetch(url.toString(), { method: 'HEAD' }).then((r) => {
-        if (!r.ok) return Promise.reject(r);
-      }),
-    ]);
-
-    if (!redisReady) {
-      return new Response('Redis NOT READY', { status: 503 });
+    if (!(await isRedisAvailable())) {
+      return new Response('Redis NOT READY', { status: 503, headers: { 'Cache-Control': 'no-store' } });
     }
-
-    return new Response('OK');
+    return new Response('OK', { headers: { 'Cache-Control': 'no-store' } });
   } catch (error: unknown) {
     console.error('healthcheck ❌', { error });
-    return new Response('ERROR', { status: 500 });
+    return new Response('ERROR', { status: 500, headers: { 'Cache-Control': 'no-store' } });
   }
 }

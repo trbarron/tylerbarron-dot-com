@@ -12,7 +12,9 @@ Because the engine runs locally in the browser, no server-side computation is ne
 
 ## How it runs
 
-The chess engine runs entirely client-side via WebAssembly. Game state is stored in the existing Redis instance and accessed through React Router resource routes — no separate game server is needed. The design is entirely trusting: the server relays and stores what clients submit without validating move choices against engine output.
+The chess engine runs entirely client-side via WebAssembly. Game state is stored in the existing Redis instance and accessed through React Router resource routes — no separate game server is needed. The server trusts each client's engine: it stores the rank a client reports without checking it against an engine of its own. It does check everything else: that the move is legal, is one of the choices sent with it, and comes from the player whose turn it is.
+
+A player id is a secret. It is the only thing `move`, `resign` and `claimWin` check, so the `state` endpoint returns a public view of the game with both ids removed and a `you` field (`"white"`, `"black"` or `null`) in their place. Joining and moving are each one atomic Redis script, so two joins can't both take a seat and a move sent twice applies once.
 
 ---
 

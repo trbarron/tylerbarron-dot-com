@@ -118,3 +118,6 @@ export default function CatTrackerBlog() {
     </div>
   );
 }
+
+// Same HTML for everyone until the next deploy, so CloudFront may serve it.
+export { cachedPageHeaders as headers } from '~/utils/cache';

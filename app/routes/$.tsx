@@ -48,8 +48,7 @@ export default function NotFound() {
           <div className="border-b-4 border-black px-8 py-6">
             <p className="font-neo mb-3 text-xl font-black tracking-tight text-black uppercase">Page Not Found</p>
             <p className="font-neo text-base leading-relaxed font-medium text-black">
-              Whatever you were looking for isn&apos;t here. It may have moved, been deleted, or never existed in the
-              wasteland.
+              Whatever you were looking for isn&apos;t here
             </p>
           </div>
 

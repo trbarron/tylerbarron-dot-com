@@ -1,9 +1,8 @@
 // Fast-fail validation for Camel Up Cup bot submissions.
 //
-// This is a UX courtesy, not the security boundary: the tournament Lambda
-// re-validates with a real Python AST walk (Camel_Up_Cup_2K18
-// lambda/sandbox.py) before executing anything. Keep ALLOWED_IMPORTS in sync
-// with that file.
+// The site queues and emails submitted code without executing it. These fast
+// checks help contributors catch mistakes; the separate local tournament
+// runner must independently validate and isolate any code it executes.
 
 export const MAX_BOT_FILE_BYTES = 64 * 1024;
 

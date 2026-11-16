@@ -15,6 +15,7 @@ const mockRedis = {
   get: vi.fn(),
   set: vi.fn(),
   setex: vi.fn(),
+  incr: vi.fn(),
   zadd: vi.fn(),
   expire: vi.fn(),
   zrange: vi.fn(),
@@ -28,6 +29,10 @@ const mockRedis = {
 
 vi.mock('~/utils/redis.server', () => ({
   getRedisClient: () => mockRedis,
+}));
+
+vi.mock('~/utils/rateLimit.server', () => ({
+  checkRateLimit: vi.fn().mockResolvedValue({ allowed: true, retryAfter: 0 }),
 }));
 
 // Mock rate limiter to always allow
@@ -53,6 +58,10 @@ describe('Daily Mode Integration Tests', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockRedis.get.mockReset();
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(2024, 0, 15, 12));
+    mockRedis.incr.mockReset().mockResolvedValue(1);
     // Default: SET NX succeeds (no duplicate)
     mockRedis.set.mockResolvedValue('OK');
     // Default: mget returns all nulls
@@ -60,6 +69,7 @@ describe('Daily Mode Integration Tests', () => {
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
@@ -90,9 +100,8 @@ describe('Daily Mode Integration Tests', () => {
         mockRedis.set.mockResolvedValue('OK');
 
         // Mock: daily puzzle cache, then completed count
-        mockRedis.get
-          .mockResolvedValueOnce(mockDailyPuzzles) // daily puzzle cache
-          .mockResolvedValueOnce(String(i)); // Completed count
+        mockRedis.get.mockResolvedValueOnce(mockDailyPuzzles);
+        mockRedis.incr.mockResolvedValueOnce(i + 1);
 
         // Mock mget for 4 puzzle submissions
         const mgetResults = Array(4).fill(null);
@@ -162,7 +171,8 @@ describe('Daily Mode Integration Tests', () => {
         mockRedis.mget.mockClear();
         mockRedis.set.mockResolvedValue('OK');
 
-        mockRedis.get.mockResolvedValueOnce(mockDailyPuzzles).mockResolvedValueOnce(String(i));
+        mockRedis.get.mockResolvedValueOnce(mockDailyPuzzles);
+        mockRedis.incr.mockResolvedValueOnce(i + 1);
 
         const mgetResults = Array(4).fill(null);
         for (let j = 0; j < i; j++) {
@@ -219,7 +229,8 @@ describe('Daily Mode Integration Tests', () => {
           mockRedis.mget.mockClear();
           mockRedis.set.mockResolvedValue('OK');
 
-          mockRedis.get.mockResolvedValueOnce(mockDailyPuzzles).mockResolvedValueOnce(String(i));
+          mockRedis.get.mockResolvedValueOnce(mockDailyPuzzles);
+          mockRedis.incr.mockResolvedValueOnce(i + 1);
 
           const mgetResults = Array(4).fill(null);
           for (let j = 0; j < i; j++) {
@@ -274,6 +285,7 @@ describe('Daily Mode Integration Tests', () => {
       const dates = ['2024-01-15', '2024-01-16'];
 
       for (const date of dates) {
+        vi.setSystemTime(new Date(`${date}T12:00:00`));
         // Different puzzles for different dates
         mockRedis.get.mockClear();
         mockRedis.get.mockResolvedValue(null);
@@ -287,9 +299,8 @@ describe('Daily Mode Integration Tests', () => {
         mockRedis.set.mockClear();
         mockRedis.mget.mockClear();
         mockRedis.set.mockResolvedValue('OK');
-        mockRedis.get
-          .mockResolvedValueOnce(mockDailyPuzzles) // daily puzzle cache
-          .mockResolvedValueOnce('0'); // completed = 0
+        mockRedis.get.mockResolvedValueOnce(mockDailyPuzzles); // daily puzzle cache;
+        mockRedis.incr.mockResolvedValueOnce(1);
         mockRedis.mget.mockResolvedValueOnce([null, null, null, null]);
 
         const submitResponse = await submitAction(
@@ -353,7 +364,8 @@ describe('Daily Mode Integration Tests', () => {
 
     it('should prevent duplicate submissions', async () => {
       // First submission succeeds
-      mockRedis.get.mockResolvedValueOnce(mockDailyPuzzles).mockResolvedValueOnce('0');
+      mockRedis.get.mockResolvedValueOnce(mockDailyPuzzles);
+      mockRedis.incr.mockResolvedValueOnce(1);
       mockRedis.mget.mockResolvedValueOnce([null, null, null, null]);
 
       const response1 = await submitAction(
@@ -403,7 +415,8 @@ describe('Daily Mode Integration Tests', () => {
         mockRedis.mget.mockClear();
         mockRedis.set.mockResolvedValue('OK');
 
-        mockRedis.get.mockResolvedValueOnce(mockDailyPuzzles).mockResolvedValueOnce(String(i));
+        mockRedis.get.mockResolvedValueOnce(mockDailyPuzzles);
+        mockRedis.incr.mockResolvedValueOnce(i + 1);
 
         // Build mget results: previously submitted puzzles + current as stored + rest null
         const mgetResults = Array(4).fill(null);
@@ -438,7 +451,8 @@ describe('Daily Mode Integration Tests', () => {
 
     it('should update leaderboard after each submission', async () => {
       const mockScore = 95;
-      mockRedis.get.mockResolvedValueOnce(mockDailyPuzzles).mockResolvedValueOnce('3'); // completed = 3 (this will be the 4th)
+      mockRedis.get.mockResolvedValueOnce(mockDailyPuzzles);
+      mockRedis.incr.mockResolvedValueOnce(4);
       mockRedis.mget.mockResolvedValueOnce([
         JSON.stringify({ score: mockScore }),
         JSON.stringify({ score: mockScore }),
@@ -471,7 +485,8 @@ describe('Daily Mode Integration Tests', () => {
   describe('TTL Management', () => {
     it('should set 7-day TTL on all stored data', async () => {
       const mockScore = 95;
-      mockRedis.get.mockResolvedValueOnce(mockDailyPuzzles).mockResolvedValueOnce('3'); // completed = 3 (4th puzzle)
+      mockRedis.get.mockResolvedValueOnce(mockDailyPuzzles);
+      mockRedis.incr.mockResolvedValueOnce(4);
       mockRedis.mget.mockResolvedValueOnce([
         JSON.stringify({ score: mockScore }),
         JSON.stringify({ score: mockScore }),

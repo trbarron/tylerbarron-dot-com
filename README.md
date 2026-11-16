@@ -47,16 +47,12 @@ Images live in an S3 bucket served same-origin through CloudFront (`https://tyle
 
 **To add new images:**
 
-1. Place them in `app/images/`.
-2. Run the upload script:
-   ```bash
-   npm run deploy:images
-   ```
-3. Use them in your code:
-   ```ts
-   import { getImageUrl } from "~/utils/cdn";
-   const myImage = getImageUrl("Folder/image.jpg");
-   ```
+1. Place project images in `public/images/<Project>/` (post images go in `public/images/posts/<slug>/`).
+2. Reference project images with `getImageUrl("Folder/image.jpg")` from `~/utils/cdn`, or use `/images/...` in MDX.
+3. Commit the files. The normal deploy uploads them automatically; no manual upload is needed.
+
+Keep directory and filename case exact: S3 paths are case-sensitive. Ordinary images
+use a one-day cache; models, pizza data and project share cards retain a one-hour cache.
 
 ### Getting Started
 

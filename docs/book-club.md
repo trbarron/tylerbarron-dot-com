@@ -1,0 +1,86 @@
+# Book club voting (shadow launch)
+
+Open `/book-club` directly to create a poll. It is intentionally absent from the
+homepage, navigation, sitemap and feed. The pages and API send `noindex` and
+`no-store`; book-club page loads omit analytics. This is unlisted, not an
+invitation-only authentication system: anyone who knows the creation URL can use it.
+
+## Host flow
+
+Enter a poll name and 3–30 distinct books, one per line (author text is optional).
+Set each voter's upvote and downvote allowances (0–30 each; at least one in total).
+Defaults are two upvotes and one downvote. Enable “Allow multiple votes per book”
+to let a voter spend several votes of the same kind on one book.
+Creating fixes the list and settings and opens the host dashboard. Copy the voter invite link
+for the club. Save the separate **private host link** to manage the vote from a
+second browser or device. Its token is in the URL fragment, consumed into local
+storage and removed from the address bar. Do not share it with voters.
+
+The dashboard refreshes every five seconds while visible. It shows joined names,
+which ballots are locked, without running vote totals. It does not show each
+person's choices. The host can close voting permanently, including while some
+people are still choosing; the confirmation shows any pending votes. The close
+button is outside a panel; a closed-status panel appears after closing. Only submitted ballots count. Closing reveals totals to everyone with the invite link. Tied scores stay
+tied; their display order follows the original list.
+
+The host can vote too by opening the ordinary invite link and entering their name.
+
+## Voter flow
+
+Open the invite and enter a recognizable name (maximum 40 characters). Names are
+unique within a poll after normalization and case folding. Use an initial if two
+people have the same name. This is an honor-system club tool, with no accounts or
+identity verification. A different browser cannot reclaim someone else's name.
+
+Use up to the configured allowance in each column. Without the multiple-vote
+toggle, each book accepts at most one vote. With it, add/remove controls adjust
+the count. Each book has one signed score between an up arrow and a down arrow.
+The opposite arrow removes an existing vote and refunds its allowance before
+spending a vote in the other direction. A book never holds both kinds of vote.
+The ballot header shows votes remaining.
+
+Arrows keep their normal appearance when an allowance is exhausted. Unavailable
+actions are marked aria-disabled and guarded; undo remains available. Voters can lock in partial or empty ballots. Choices can be changed
+until confirmation; a submitted ballot is final. Each upvote adds
+one point and each downvote subtracts one. Draft choices stay in React state;
+refreshing an unsubmitted ballot clears the draft. The local browser retains the
+voter token so a refresh or return visit restores the joined name and final ballot.
+Keep using the same browser; clearing storage loses that session.
+
+## Storage and limits
+
+A poll uses one Redis key, `bookClub:poll:<random-id>`, with a fixed 30-day TTL from
+creation. Joining, voting, reading and closing never extend it. At expiry the
+list, voter names and ballots disappear together. Host/voter tokens are random
+256-bit credentials; Redis stores only their SHA-256 hashes. Responses never
+include tokens. Public reads show the list and open/closed state; only the host
+sees participant status. Neither hosts nor voters see totals while voting is open.
+Closed polls expose aggregate totals. Existing polls without vote settings keep
+the original two-up/one-down rules. Stored single-downvote ballots and old-client
+submissions remain readable; new ballots store both sides as arrays, including
+repeated book IDs when allowed. Lua stores the ballot JSON as text to preserve
+empty arrays without cjson converting them into objects.
+
+Redis Lua makes joins, lock-in and closing atomic. Limits: 100 voters per poll,
+10 creations per address/hour and 120 writes per action/address/hour. Requests
+are size-limited and shape-validated before quota checks; book membership and
+state are checked atomically before poll writes. Redis outages return
+a retryable error, without a fallback store or a false success message.
+
+## Verification
+
+`TEST_REDIS_URL=redis://127.0.0.1:16380 npm test` exercises the actual Lua scripts:
+concurrent joins and submissions, duplicate names, finality, role separation,
+invalid ballots, configured allowances, repeated-vote scoring, partial/empty ballots,
+legacy ballots, closure and expiry that cannot resurrect a poll. The URL must
+be local; tests refuse a remote Redis and delete only their own created poll keys.
+
+Run the usual lint, typecheck, format, design, production build, Lambda dependency
+and OG checks. Screenshots for this new route can use:
+
+```bash
+npm run pr-screenshots -- --route /book-club --allow-missing-before
+```
+
+The opt-in flag accepts the expected production 404 as the before image. It does
+not allow an after-page failure or relax existing-route checks.

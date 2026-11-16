@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Link, useLoaderData, useRevalidator } from 'react-router';
+import { useCallback, useRef, useState } from 'react';
+import { Link, useLoaderData } from 'react-router';
 import type { LoaderFunctionArgs } from 'react-router';
 
 import { Navbar } from '../components/Navbar.js';
@@ -7,8 +7,8 @@ import Footer from '../components/Footer.js';
 import Giscus from '~/components/Giscus';
 import TrophyModel from '~/components/TrophyModel';
 import { buildMeta } from '~/utils/seo';
-import { activeTournamentId, fetchLeaderboard, fetchStatus } from '~/utils/camelUpCup/tournament.server';
-import type { Leaderboard, LeaderboardBot, SubmissionStatus } from '~/utils/camelUpCup/types';
+import { fetchLeaderboard } from '~/utils/camelUpCup/tournament.server';
+import type { Leaderboard, LeaderboardBot } from '~/utils/camelUpCup/types';
 import Button from '~/components/Button';
 import { TextField } from '~/components/Field';
 import Notice from '~/components/Notice';
@@ -16,20 +16,14 @@ import Notice from '~/components/Notice';
 export function meta() {
   return buildMeta({
     title: 'Camel Up Cup',
-    description:
-      'The living Camel Up Cup: upload a Python bot, it plays a tournament against the field, and the leaderboard updates.',
+    description: 'The living Camel Up Cup: upload a Python bot and it joins the next tournament against the field.',
     path: '/camel-up-cup',
   });
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const [board, activeId] = await Promise.all([fetchLeaderboard(request), activeTournamentId()]);
-  const active = activeId ? await fetchStatus(request, activeId) : null;
-  return { board, active };
+  return { board: await fetchLeaderboard(request) };
 }
-
-const POLL_INTERVAL_MS = 5000;
-const TERMINAL_PHASES = new Set(['complete', 'rejected', 'error']);
 
 type SortKey = 'elo' | 'submitted' | 'wins' | 'games' | 'winPct' | 'avgCoins' | 'maxMoveMs';
 type SortDir = 'asc' | 'desc';
@@ -314,58 +308,7 @@ function ChampionShowcase({ board }: { board: Leaderboard }) {
   );
 }
 
-function StatusPanel({ status }: { status: SubmissionStatus }) {
-  const pct = status.totalGames && status.gamesDone ? Math.round((100 * status.gamesDone) / status.totalGames) : 0;
-
-  if (status.phase === 'rejected') {
-    return (
-      <Notice title={`${status.botName ?? 'Your bot'} was rejected.`} className="mx-4 mt-4 lg:mx-auto lg:w-11/12">
-        {status.reason}
-      </Notice>
-    );
-  }
-  if (status.phase === 'error') {
-    return (
-      <Notice title="Something broke while running the tournament." className="mx-4 mt-4 lg:mx-auto lg:w-11/12">
-        {status.reason}
-      </Notice>
-    );
-  }
-  if (status.phase === 'complete') {
-    return (
-      <Notice
-        tone="info"
-        title={`${status.botName} is in! ${status.rank ? `Finished rank #${status.rank}.` : ''}`}
-        className="mx-4 mt-4 lg:mx-auto lg:w-11/12"
-      >
-        The leaderboard above reflects the new standings.
-      </Notice>
-    );
-  }
-  return (
-    <div className="mx-4 mt-4 border border-black bg-black p-4 text-sm text-white lg:mx-auto lg:w-11/12">
-      <div className="font-bold text-white">
-        {status.phase === 'running' ? (
-          <>
-            Tournament running — <span className="font-mono">{status.botName ?? 'your bot'}</span> — {status.gamesDone}/
-            {status.totalGames} games
-          </>
-        ) : (
-          `${status.botName ?? 'Submission'}: ${status.phase}…`
-        )}
-      </div>
-      <div className="mt-2 h-2 w-full bg-gray-700">
-        {/* eslint-disable-next-line react/forbid-dom-props -- width is runtime tournament progress */}
-        <div className="h-2 bg-white transition-all" style={{ width: `${pct}%` }} />
-      </div>
-      <div className="mt-1 text-xs text-gray-300">
-        A full run takes about four hours — you can close this page and check back.
-      </div>
-    </div>
-  );
-}
-
-function UploadForm({ onSubmitted }: { onSubmitted: (id: string) => void }) {
+function UploadForm({ onSubmitted }: { onSubmitted: (botName: string) => void }) {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
@@ -385,7 +328,7 @@ function UploadForm({ onSubmitted }: { onSubmitted: (id: string) => void }) {
         return;
       }
       formRef.current?.reset();
-      onSubmitted(data.id);
+      onSubmitted(data.botName);
     } catch {
       setError('Submission failed — check your connection and try again.');
     } finally {
@@ -419,33 +362,9 @@ function UploadForm({ onSubmitted }: { onSubmitted: (id: string) => void }) {
 }
 
 const CamelUpCupLeaderboard = () => {
-  const { board, active } = useLoaderData<typeof loader>();
-  const revalidator = useRevalidator();
-  const [status, setStatus] = useState<SubmissionStatus | null>(active);
-  const [trackedId, setTrackedId] = useState<string | null>(active?.id ?? null);
-
-  const track = useCallback((id: string) => {
-    setTrackedId(id);
-    setStatus(null);
-  }, []);
-
-  useEffect(() => {
-    if (!trackedId || (status && TERMINAL_PHASES.has(status.phase))) return;
-    const timer = setInterval(async () => {
-      try {
-        const res = await fetch(`/api/camelUpCup/status?id=${trackedId}`);
-        if (!res.ok) return;
-        const next: SubmissionStatus = await res.json();
-        setStatus(next);
-        if (TERMINAL_PHASES.has(next.phase)) {
-          revalidator.revalidate();
-        }
-      } catch {
-        // transient poll failure — next tick retries
-      }
-    }, POLL_INTERVAL_MS);
-    return () => clearInterval(timer);
-  }, [trackedId, status, revalidator]);
+  const { board } = useLoaderData<typeof loader>();
+  // The bot just entered from this page, if any.
+  const [entered, setEntered] = useState<string | null>(null);
 
   return (
     <div className="relative z-10 flex min-h-screen flex-col bg-black bg-fixed">
@@ -463,8 +382,8 @@ const CamelUpCupLeaderboard = () => {
                     The <Link to="/camel-up-cup/2018">original 2018 bring-your-own-bot tournament</Link> never really
                     ended.
                     <br />
-                    Write a Python bot that plays Camel Up, upload it below, and it'll play a batch of games against
-                    every bot on this board.
+                    Write a Python bot that plays Camel Up, upload it below, and it'll play in the next tournament
+                    against every bot on this board.
                   </p>
                 </div>
               </section>
@@ -477,7 +396,7 @@ const CamelUpCupLeaderboard = () => {
                   {board ? (
                     <LeaderboardTable board={board} />
                   ) : (
-                    <p>No tournament results yet — be the first to kick one off by submitting a bot.</p>
+                    <p>No tournament results yet — be the first to submit a bot.</p>
                   )}
                 </div>
               </section>
@@ -496,22 +415,13 @@ const CamelUpCupLeaderboard = () => {
                     disqualified, crashing moves become dice rolls. Grab the engine and full rules from{' '}
                     <a href="https://github.com/trbarron/Camel_Up_Cup_2K18">the GitHub repo</a> to test locally first.
                   </p>
-                  {status && TERMINAL_PHASES.has(status.phase) ? (
-                    <>
-                      <StatusPanel status={status} />
-                      <UploadForm onSubmitted={track} />
-                    </>
-                  ) : trackedId ? (
-                    status ? (
-                      <StatusPanel status={status} />
-                    ) : (
-                      <p className="mt-4 text-sm text-gray-600">
-                        Submission received — waiting for the tournament to pick it up…
-                      </p>
-                    )
-                  ) : (
-                    <UploadForm onSubmitted={track} />
+                  {entered && (
+                    <Notice tone="info" title={`${entered} is entered.`} className="mx-4 mt-4 lg:mx-auto lg:w-11/12">
+                      Tyler runs the tournaments by hand and has been emailed. Your bot will be on the board after the
+                      next run, so check back in a few days.
+                    </Notice>
                   )}
+                  <UploadForm onSubmitted={setEntered} />
                 </div>
               </section>
             </div>

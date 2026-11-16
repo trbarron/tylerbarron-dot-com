@@ -9,7 +9,6 @@ app/utils/runescapeRascals/walked-routes.json
 
 # Generated
 package-lock.json
-app/posts/compiled/
 build/
 public/assets/
 public/build/

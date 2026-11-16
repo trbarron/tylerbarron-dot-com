@@ -8,6 +8,7 @@
 
 /** Project scopes: scope -> what it covers. */
 export const PROJECTS = {
+  'book-club': 'Book club voting (/book-club), unlisted',
   rascals: 'Runescape Rascals (/runescape-rascals), the agent party dashboard',
   maia: 'Marginal Maia Mentor (/marginal-maia-mentor), Maia Drills',
   pizza: 'Pizza Rating and the pizza map (/pizza-rating)',

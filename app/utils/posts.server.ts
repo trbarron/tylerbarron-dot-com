@@ -1,22 +1,15 @@
 /**
- * Server-side blog post access.
+ * Server-side blog post listings.
  *
- * Production: posts are compiled to JSON at build time (`npm run compile:mdx`)
- * into `app/posts/compiled/` and bundled into the SSR build via `import.meta.glob`.
- * No S3 round-trip, no `@aws-sdk/client-s3` at runtime. Image `src`s inside the
- * compiled code are already rewritten to the CDN by the compile step.
- *
- * Development: posts are compiled on the fly from `posts/*.mdx` for instant
- * editing feedback. `import.meta.env.DEV` is a compile-time constant, so this
- * branch (and `mdx-bundler`) is dead-code-eliminated from the production build.
+ * Everything here reads `virtual:posts-index`: each post's frontmatter,
+ * gathered at build time (scripts/lib/vite-posts.mjs). No post body is loaded
+ * to list, link or describe a post; the bodies are separate modules that only
+ * the blog route imports, one at a time (app/utils/postModules.ts).
  */
 
-type Frontmatter = { title: string; date: string; type?: string; subtitle?: string } & Record<string, unknown>;
+import postsIndex from 'virtual:posts-index';
 
-export interface CompiledPost {
-  code: string;
-  frontmatter: Frontmatter;
-}
+export type Frontmatter = { title: string; date: string; type?: string; subtitle?: string } & Record<string, unknown>;
 
 export interface PostMeta {
   slug: string;
@@ -28,18 +21,7 @@ export interface PostMeta {
   unlisted: boolean;
 }
 
-// Eagerly bundle every pre-compiled post. Empty in dev (dir may not exist),
-// which is fine because the DEV branches below never read from it.
-const COMPILED = import.meta.glob<CompiledPost>('../posts/compiled/*.json', {
-  eager: true,
-  import: 'default',
-});
-
-const BY_SLUG: Record<string, CompiledPost> = {};
-for (const [filePath, post] of Object.entries(COMPILED)) {
-  const slug = filePath.split('/').pop()!.replace('.json', '');
-  BY_SLUG[slug] = post;
-}
+const BY_SLUG = postsIndex as Record<string, Frontmatter>;
 
 function toMeta(slug: string, frontmatter: Frontmatter): PostMeta {
   return {
@@ -52,30 +34,9 @@ function toMeta(slug: string, frontmatter: Frontmatter): PostMeta {
   };
 }
 
-/** Load a single compiled post by slug, or `null` if it doesn't exist. */
-export async function getPost(slug: string): Promise<CompiledPost | null> {
-  if (import.meta.env.DEV) {
-    const [{ processMdx }, fs, path] = await Promise.all([
-      import('./mdx.server'),
-      import('node:fs/promises'),
-      import('node:path'),
-    ]);
-    try {
-      const source = await fs.readFile(path.join(process.cwd(), 'posts', `${slug}.mdx`), 'utf-8');
-      const { code, frontmatter } = await processMdx(source);
-      // Mirror the compile step's per-post OG card injection (compile-mdx.mjs).
-      const ogPath = path.join(process.cwd(), 'public', 'images', 'og', `${slug}.png`);
-      const hasOgImage = await fs.access(ogPath).then(
-        () => true,
-        () => false,
-      );
-      if (hasOgImage) frontmatter.ogImage = `/images/og/${slug}.png`;
-      return { code, frontmatter: frontmatter as Frontmatter };
-    } catch {
-      return null;
-    }
-  }
-  return BY_SLUG[slug] ?? null;
+/** A post's frontmatter by slug, or `null` if there is no such post. */
+export async function getPostFrontmatter(slug: string): Promise<Frontmatter | null> {
+  return Object.hasOwn(BY_SLUG, slug) ? BY_SLUG[slug] : null;
 }
 
 /**
@@ -83,28 +44,7 @@ export async function getPost(slug: string): Promise<CompiledPost | null> {
  * (homepage, feed, sitemap, prev/next) unless `includeUnlisted` is set.
  */
 export async function getAllPostMeta({ includeUnlisted = false } = {}): Promise<PostMeta[]> {
-  let metas: PostMeta[];
-
-  if (import.meta.env.DEV) {
-    const [{ processMdx }, fs, path] = await Promise.all([
-      import('./mdx.server'),
-      import('node:fs/promises'),
-      import('node:path'),
-    ]);
-    const postsDir = path.join(process.cwd(), 'posts');
-    const files = (await fs.readdir(postsDir)).filter((f) => f.endsWith('.mdx'));
-    metas = await Promise.all(
-      files.map(async (filename) => {
-        const source = await fs.readFile(path.join(postsDir, filename), 'utf-8');
-        const { frontmatter } = await processMdx(source);
-        return toMeta(filename.replace('.mdx', ''), frontmatter as Frontmatter);
-      }),
-    );
-  } else {
-    metas = Object.entries(BY_SLUG).map(([slug, { frontmatter }]) => toMeta(slug, frontmatter));
-  }
-
+  let metas = Object.entries(BY_SLUG).map(([slug, frontmatter]) => toMeta(slug, frontmatter));
   if (!includeUnlisted) metas = metas.filter((m) => !m.unlisted);
-
   return metas.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
