@@ -1,6 +1,6 @@
 // Runescape Rascals: four LLM agents with D&D character sheets playing a RuneScape-style
-// world together. Unlisted (no homepage link, not in the sitemap, noindex). The data is
-// published to Redis by the orchestrator in the runscape-local project; this page only reads.
+// world together. The data is published to Redis by the orchestrator in the runscape-local
+// project; this page only reads.
 
 import { useState } from 'react';
 import { useLoaderData } from 'react-router';
@@ -28,7 +28,6 @@ export function meta() {
     title: 'Runescape Rascals',
     description: 'Four AI agents playing a RuneScape-style world together.',
     path: '/runescape-rascals',
-    noIndex: true,
   });
 }
 
