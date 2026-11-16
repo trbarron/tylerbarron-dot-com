@@ -170,6 +170,3 @@ export interface Snapshot {
   party: { costPerHour: number; cacheHitRate: number; councils: number; councilsAgreed: number };
   spend: { usd: number; budgetUsd: number; calls: number; model: string };
 }
-
-/** Bot names allowed in the screenshot route (the party is fixed). */
-export const BOT_NAMES = ['bram', 'wren', 'mike', 'trish'] as const;

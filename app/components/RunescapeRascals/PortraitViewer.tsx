@@ -16,19 +16,21 @@ const staticUrl = (b: Bot, kind: 'head' | 'body') =>
 
 /** A larger head and body that turn through every stored view: drag or use the arrow keys. */
 export default function PortraitViewer({ bot, assetBase, onClose }: PortraitViewerProps) {
-  const views = bot.portraitVersion && bot.portraitAngles && bot.portraitAngles > 1 ? bot.portraitAngles : 1;
+  const views =
+    bot.portraitVersion && assetBase && bot.portraitAngles && bot.portraitAngles > 1 ? bot.portraitAngles : 1;
   const [angle, setAngle] = useState(0);
   const drag = useRef<{ x: number; from: number } | null>(null);
   const turn = (to: number) => setAngle(((Math.round(to) % views) + views) % views);
 
   // Every view is fetched once, up front, so turning never waits on the network.
   useEffect(() => {
-    if (views < 2) return;
+    if (views < 2 || !assetBase) return;
     for (const kind of ['head', 'body'] as const)
       for (let a = 0; a < views; a++) new Image().src = portraitUrl(bot, kind, a, assetBase);
   }, [bot, views, assetBase]);
 
-  const src = (kind: 'head' | 'body') => (views > 1 ? portraitUrl(bot, kind, angle, assetBase) : staticUrl(bot, kind));
+  const src = (kind: 'head' | 'body') =>
+    views > 1 && assetBase ? portraitUrl(bot, kind, angle, assetBase) : staticUrl(bot, kind);
 
   return (
     <div

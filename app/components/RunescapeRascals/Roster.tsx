@@ -15,7 +15,7 @@ function Portrait({ bot, kind, assetBase }: { bot: Bot; kind: 'head' | 'body'; a
   const [failed, setFailed] = useState(false);
   const [hidden, setHidden] = useState(false);
   const fallback = `/images/runescape-rascals/portraits/${bot.name.toLowerCase()}-${kind}.png`;
-  const live = !!bot.portraitVersion && !failed;
+  const live = !!bot.portraitVersion && !!assetBase && !failed;
   return (
     <img
       src={live ? portraitUrl(bot, kind, 0, assetBase) : fallback}
@@ -77,7 +77,7 @@ export default function Roster({ bots, now, assetBase }: RosterProps) {
                 onClick={() => setScreen((s) => (s === b.name ? null : b.name))}
                 className={`group relative mx-auto block w-full max-w-60 overflow-hidden lg:max-w-none ${imageButton}`}
               >
-                {b.shotAt ? (
+                {b.shotAt && assetBase ? (
                   <img
                     src={shotUrl(b, assetBase)}
                     alt=""
@@ -118,7 +118,7 @@ export default function Roster({ bots, now, assetBase }: RosterProps) {
                 Close screen
               </button>
             </figcaption>
-            {shown.shotAt && (
+            {shown.shotAt && assetBase && (
               <img
                 src={shotUrl(shown, assetBase)}
                 alt={`In-game view from ${shown.name}`}
