@@ -22,10 +22,10 @@ it('roster thumbnails use both current bucket portraits instead of unavailable R
     '/images/rascals-live/portraits/bram/body-0-current-look.png',
   ]);
 });
-it('older publishers still use Redis portrait endpoints', () => {
+it('without a bucket asset base the roster falls back to bundled portraits', () => {
   expect(portraits(renderToStaticMarkup(<Roster bots={[bot]} now={0} />))).toEqual([
-    '/api/runescapeRascals/portrait/bram/head?v=current-look',
-    '/api/runescapeRascals/portrait/bram/body?v=current-look',
+    '/images/runescape-rascals/portraits/bram-head.png',
+    '/images/runescape-rascals/portraits/bram-body.png',
   ]);
 });
 it('an absent appearance version keeps bundled portraits available', () => {
