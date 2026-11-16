@@ -42,6 +42,7 @@ describe('cached pages', () => {
       'multipleChoiceChess._index.tsx',
       'set.tsx',
       'theRiddler.tsx',
+      'writing.tsx',
     ]);
   });
 

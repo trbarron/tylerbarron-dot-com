@@ -1,25 +1,9 @@
 import { SITE_URL } from '~/utils/seo';
+import { PROJECT_PATHS } from '~/utils/projects';
 
-// Indexable static routes. Live-game and legacy-redirect URLs are
-// intentionally excluded.
-const STATIC_PATHS = [
-  '/',
-  '/blunder-watch',
-  '/bouldering-tracker',
-  '/camel-up-cup',
-  '/camel-up-cup/2018',
-  '/cat-tracker',
-  '/cat-tracker/blog',
-  '/chesser-guesser',
-  '/collaborative-checkmate',
-  '/generative-art',
-  '/marginal-maia-mentor',
-  '/multiple-choice-chess',
-  '/pizza-rating',
-  '/set',
-  '/SSBM',
-  '/the-riddler',
-];
+// Indexable static routes: the homepage, the post index, every project page,
+// and project sub-pages. Live-game and legacy-redirect URLs are intentionally excluded.
+const STATIC_PATHS = ['/', '/writing', ...PROJECT_PATHS, '/camel-up-cup/2018', '/cat-tracker/blog'];
 
 function isoDate(value: string): string | null {
   const date = new Date(value);

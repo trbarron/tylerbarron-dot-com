@@ -1,7 +1,10 @@
-import { useEffect, useState } from 'react';
+import { Fragment, type ReactNode } from 'react';
 import Footer from '~/components/Footer';
 import { Link, useLoaderData } from 'react-router';
 import { buildMeta } from '~/utils/seo';
+import { buttonClass } from '~/components/Button';
+import { FEATURED_PROJECTS, PROJECT_CATEGORIES, PROJECTS, isExternal, type Project } from '~/utils/projects';
+import { PostRows, latestPosts, pad2, type PostListItem } from '~/components/PostList';
 
 export function meta() {
   return [
@@ -19,266 +22,119 @@ export function meta() {
   ];
 }
 
-interface Post {
-  slug: string;
-  title: string;
-  date: string;
+interface Post extends PostListItem {
   type?: string;
-  subtitle?: string;
 }
 
 export async function loader(): Promise<{ posts: Post[] }> {
   const { getAllPostMeta } = await import('~/utils/posts.server');
-  return { posts: await getAllPostMeta() };
+  const posts = await getAllPostMeta();
+  return { posts: posts.map(({ slug, title, date, type }) => ({ slug, title, date, type })) };
 }
 
-interface ProjectLink {
-  to: string;
-  title: string;
-  description: string;
+/** Posts shown on the homepage; the rest are on /writing. */
+const LATEST_POSTS = 5;
+
+const BY_CATEGORY = PROJECT_CATEGORIES.map((c) => ({
+  ...c,
+  projects: PROJECTS.filter((p) => p.category === c.id),
+}));
+
+/** A site path renders a router link; an external project a plain anchor. */
+function ProjectAnchor({ url, className, children }: { url: string; className: string; children: ReactNode }) {
+  if (isExternal(url)) {
+    return (
+      <a href={url} className={className}>
+        {children}
+      </a>
+    );
+  }
+  return (
+    <Link to={url} className={className}>
+      {children}
+    </Link>
+  );
 }
 
-type CategoryId = 'chess' | 'puzzles' | 'games' | 'vision' | 'gadgets';
-
-const CATEGORIES: { id: CategoryId; label: string }[] = [
-  { id: 'chess', label: 'CHESS' },
-  { id: 'puzzles', label: 'PUZZLES & DATA' },
-  { id: 'games', label: 'GAMES' },
-  { id: 'vision', label: 'COMPUTER VISION' },
-  { id: 'gadgets', label: 'GADGETS & TOYS' },
-];
-
-// Route / slug → category. Slugs use the final URL segment.
-const CATEGORY_BY_KEY: Record<string, CategoryId> = {
-  // chess
-  'chesser-guesser': 'chess',
-  'blunder-watch': 'chess',
-  'collaborative-checkmate': 'chess',
-  'multiple-choice-chess': 'chess',
-  'marginal-maia-mentor': 'chess',
-  // puzzles & data
-  'the-riddler': 'puzzles',
-  'camel-up-cup': 'puzzles',
-  'pizza-rating': 'puzzles',
-  // games
-  'spheroid-zero': 'games',
-  planomancer: 'games',
-  SSBM: 'games',
-  stardewLLMDialog: 'games',
-  // computer vision
-  set: 'vision',
-  'bouldering-tracker': 'vision',
-  'cat-tracker': 'vision',
-  // gadgets & toys
-  vestaboardController: 'gadgets',
-  smartCyclingFanController: 'gadgets',
-  'generative-art': 'gadgets',
-  'youtube-speed-sense': 'gadgets',
-};
-
-function categoryOf(to: string): CategoryId | null {
-  // Match by final URL segment or known external-link keyword.
-  if (to.includes('spheroid-zero')) return 'games';
-  if (to.includes('youtube-speed-sense') || to.includes('efgmcojhefjjdpdnnmclekblhpaiaedo')) return 'gadgets';
-  const lastSeg = to.replace(/\/$/, '').split('/').pop() ?? '';
-  return CATEGORY_BY_KEY[lastSeg] ?? null;
-}
-
-const staticLinks: ProjectLink[] = [
-  { to: '/the-riddler', title: "FiveThirtyEight's The Riddler", description: 'Math puzzles and problems' },
-  { to: '/camel-up-cup', title: 'Camel Up Cup', description: '"Bring your own board game playing bot" competition' },
-  { to: '/chesser-guesser', title: 'Chesser Guesser', description: 'Can you tell who is winning the chess game?' },
-  { to: '/blunder-watch', title: 'Blunder Watch', description: 'Spot the blunders as a chess game plays out' },
-  { to: '/collaborative-checkmate', title: 'Collaborative Checkmate', description: 'Play chess with your friends' },
-  {
-    to: '/multiple-choice-chess',
-    title: 'Multiple Choice Chess',
-    description: 'Pick the best move from four engine-generated options',
-  },
-  {
-    to: '/marginal-maia-mentor',
-    title: 'Marginal Maia Mentor',
-    description: 'Flashcards from the moves a slightly stronger you would have played',
-  },
-  { to: '/pizza-rating', title: 'National Pizza Ratings', description: "Using Domino's to find the best pizza" },
-  { to: '/cat-tracker', title: 'Cat Work Tracker', description: "Measuring the cat's time in the office" },
-  {
-    to: 'https://trbarron.itch.io/spheroid-zero',
-    title: 'Spheroid Zero',
-    description: 'A Godot game, a game jam submission',
-  },
-  { to: '/set', title: 'Set', description: 'Using computer vision to play a board game' },
-  {
-    to: '/bouldering-tracker',
-    title: 'Bouldering Tracker',
-    description: 'Using computer vision to track climbing style',
-  },
-  { to: '/SSBM', title: 'Super Smash Bros. Melee Mods', description: 'Collection of hardware and software mods' },
-  { to: '/generative-art', title: 'Generative Art', description: 'Dive into plotters and generative art' },
-  {
-    to: 'https://chromewebstore.google.com/detail/youtube-speed-sense/efgmcojhefjjdpdnnmclekblhpaiaedo',
-    title: 'YouTube Speed Sense',
-    description: 'Adjust video playback speed based on categories',
-  },
-];
-
-const LS_KEY = 'bw.homepage.cats';
-
-function pad2(n: number) {
-  return n.toString().padStart(2, '0');
-}
-
-function ProjectCard({ to, title, description }: ProjectLink) {
+function ProjectCard({ url, title, description }: Project) {
   return (
     // design-allow: shadow — a hard, offset, unblurred shadow: the "lift" DESIGN.md allows on interactive cards.
     <div className="border-4 border-black bg-white/90 backdrop-blur-sm transition-transform duration-150 ease-out motion-reduce:transition-none [@media(hover:hover)]:hover:-translate-x-[3px] [@media(hover:hover)]:hover:-translate-y-[3px] [@media(hover:hover)]:hover:shadow-[6px_6px_0_0_#111]">
-      <Link to={to} className="block h-full p-6 no-underline hover:no-underline">
-        <div className="font-neo text-xl font-bold tracking-wide text-black">{title.toUpperCase()}</div>
+      <ProjectAnchor url={url} className="block h-full p-5 no-underline hover:no-underline">
+        <div className="font-neo text-lg font-bold tracking-wide text-black uppercase">{title}</div>
         <div className="font-neo mt-2 text-sm font-medium text-black opacity-75">{description}</div>
-      </Link>
+      </ProjectAnchor>
     </div>
   );
 }
 
-interface CategorySectionProps {
-  id: CategoryId;
-  label: string;
-  projects: ProjectLink[];
-  open: boolean;
-  onToggle: () => void;
-}
-
-function CategorySection({ id, label, projects, open, onToggle }: CategorySectionProps) {
-  if (projects.length === 0) return null;
-  const bodyId = `cat-body-${id}`;
+function ProjectRow({ url, title, description }: Project) {
   return (
-    <div className="mb-8 w-full">
-      <button
-        type="button"
-        onClick={onToggle}
-        aria-expanded={open}
-        aria-controls={bodyId}
-        className="flex w-full cursor-pointer items-center gap-4 border-0 bg-transparent px-0 py-3 text-left hover:bg-transparent hover:text-black"
+    <li className="border-b border-black/10 last:border-b-0">
+      <ProjectAnchor
+        url={url}
+        className="group grid grid-cols-[1fr_24px] items-center gap-5 px-3 py-3 no-underline transition-all duration-150 hover:no-underline motion-reduce:transition-none [@media(hover:hover)]:hover:bg-black [@media(hover:hover)]:hover:pl-6"
       >
-        <span aria-hidden="true" className="inline-block h-1 w-12 bg-black" />
-        <span className="font-neo text-lg font-semibold tracking-wide text-black uppercase">{label}</span>
-        <svg
-          aria-hidden="true"
-          width="14"
-          height="14"
-          viewBox="0 0 14 14"
-          className={`ml-auto text-black transition-transform duration-200 motion-reduce:transition-none ${open ? 'rotate-180' : ''}`}
-        >
-          <path d="M2 5 L7 10 L12 5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" />
-        </svg>
-      </button>
-      <div
-        id={bodyId}
-        aria-hidden={!open}
-        className={`relative grid transition-[grid-template-rows] duration-[250ms] ease-out motion-reduce:transition-none ${open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}
-      >
-        <div className="overflow-hidden">
-          <div className="grid grid-cols-1 gap-6 pt-6 pr-2 pb-3 pl-1 md:grid-cols-2">
-            {projects.map((p) => (
-              <ProjectCard key={p.to} {...p} />
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
+        <span className="flex flex-col gap-1 md:grid md:grid-cols-[17rem_1fr] md:items-baseline md:gap-5">
+          <span className="font-neo text-base font-black tracking-tight text-black md:text-lg [@media(hover:hover)]:group-hover:text-white">
+            {title}
+          </span>
+          <span className="font-neo text-sm text-neutral-600 [@media(hover:hover)]:group-hover:text-white/80">
+            {description}
+          </span>
+        </span>
+        <span aria-hidden="true" className="text-right text-black/40 [@media(hover:hover)]:group-hover:text-white">
+          {isExternal(url) ? '↗' : '→'}
+        </span>
+      </ProjectAnchor>
+    </li>
   );
 }
 
-function formatPostDate(iso: string) {
-  return new Date(iso)
-    .toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      timeZone: 'UTC',
-    })
-    .toUpperCase();
+const indexLink = 'inline-block py-2 text-black no-underline hover:underline';
+
+/** One line under the hero: every section with its count, each a jump link. */
+function SectionIndex({ writingCount }: { writingCount: number }) {
+  return (
+    <nav aria-label="Sections" className="border-b-4 border-black bg-white px-4 py-2">
+      <p className="mx-auto max-w-5xl text-center font-mono text-xs leading-relaxed text-neutral-500 uppercase md:text-sm">
+        <Link to="#projects" className={`${indexLink} font-bold`}>
+          Projects
+        </Link>{' '}
+        {pad2(PROJECTS.length)} —{' '}
+        {BY_CATEGORY.map((c, i) => (
+          <Fragment key={c.id}>
+            <span className="whitespace-nowrap">
+              <Link to={`#projects-${c.id}`} className={indexLink}>
+                {c.short}
+              </Link>{' '}
+              {pad2(c.projects.length)}
+              {i < BY_CATEGORY.length - 1 ? ' ·' : ''}
+            </span>{' '}
+          </Fragment>
+        ))}
+        —{' '}
+        <span className="whitespace-nowrap">
+          <Link to="#writing" className={`${indexLink} font-bold`}>
+            Writing
+          </Link>{' '}
+          {pad2(writingCount)}
+        </span>
+      </p>
+    </nav>
+  );
 }
 
-function groupPostsByYear(posts: Post[]) {
-  const groups = new Map<number, Post[]>();
-  for (const p of posts) {
-    const year = new Date(p.date).getUTCFullYear();
-    if (!groups.has(year)) groups.set(year, []);
-    groups.get(year)!.push(p);
-  }
-  return Array.from(groups.entries())
-    .map(([year, items]) => ({
-      year,
-      items: items.slice().sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
-    }))
-    .sort((a, b) => b.year - a.year);
-}
+const sectionHeading =
+  'font-neo mb-12 inline-block scroll-mt-8 border-b-8 border-black bg-white px-4 pb-2 text-4xl font-extrabold tracking-tighter text-black uppercase lg:text-5xl';
 
 export default function Index() {
   const { posts } = useLoaderData<typeof loader>();
-
-  const projectPosts: ProjectLink[] = posts
-    .filter((post: Post) => post.type === 'project')
-    .map((post: Post) => ({
-      to: `/blog/${post.slug}`,
-      title: post.title,
-      description: post.subtitle || formatPostDate(post.date),
-    }));
-
-  const allProjects: ProjectLink[] = [...staticLinks, ...projectPosts];
-
-  const byCategory: Record<CategoryId, ProjectLink[]> = {
-    chess: [],
-    puzzles: [],
-    games: [],
-    vision: [],
-    gadgets: [],
-  };
-  for (const p of allProjects) {
-    const cat = categoryOf(p.to);
-    if (cat) byCategory[cat].push(p);
-  }
-
-  const [openMap, setOpenMap] = useState<Record<CategoryId, boolean>>({
-    chess: true,
-    puzzles: true,
-    games: true,
-    vision: true,
-    gadgets: true,
-  });
-
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(LS_KEY);
-      if (!raw) return;
-      const parsed = JSON.parse(raw);
-      if (parsed && typeof parsed === 'object') {
-        setOpenMap((prev) => ({ ...prev, ...parsed }));
-      }
-    } catch {
-      // ignore corrupt state
-    }
-  }, []);
-
-  const toggle = (id: CategoryId) => {
-    setOpenMap((prev) => {
-      const next = { ...prev, [id]: !prev[id] };
-      try {
-        localStorage.setItem(LS_KEY, JSON.stringify(next));
-      } catch {
-        /* noop */
-      }
-      return next;
-    });
-  };
-
-  const writingPosts = posts.filter((post: Post) => post.type !== 'project');
-  const writingByYear = groupPostsByYear(writingPosts);
+  const writingPosts = posts.filter((post) => post.type !== 'project');
 
   return (
     <main className="font-neo relative z-10 min-h-screen">
-      <section className="top-0 z-10 flex w-full items-center justify-center border-b-4 border-black bg-white/95 py-20 backdrop-blur-sm">
+      <section className="top-0 z-10 flex w-full items-center justify-center bg-white/95 py-20 backdrop-blur-sm">
         <div className="px-4 text-center">
           <h1 className="font-neo text-5xl font-extrabold tracking-tighter text-black md:text-7xl xl:text-8xl">
             BARRON WASTELAND
@@ -288,6 +144,9 @@ export default function Index() {
           </p>
         </div>
       </section>
+      <div className="border-t-4 border-black">
+        <SectionIndex writingCount={writingPosts.length} />
+      </div>
 
       <section className="relative flex w-full items-center justify-center py-20">
         {/* Vertical white runner behind the projects/writing column so the links read clearly over the dichroic background. */}
@@ -296,65 +155,54 @@ export default function Index() {
           className="pointer-events-none absolute top-0 bottom-0 left-1/2 z-0 w-[min(100%,1024px)] -translate-x-1/2 bg-white"
         />
         <div className="relative z-10 flex w-full max-w-5xl flex-col items-center">
-          <h2 className="font-neo mb-12 inline-block border-b-8 border-black bg-white px-4 pb-2 text-4xl font-extrabold tracking-tighter text-black uppercase lg:text-5xl">
+          <h2 id="projects" className={sectionHeading}>
             PROJECTS
           </h2>
 
           <div className="w-full px-8">
-            {CATEGORIES.map((c) => (
-              <CategorySection
-                key={c.id}
-                id={c.id}
-                label={c.label}
-                projects={byCategory[c.id]}
-                open={openMap[c.id]}
-                onToggle={() => toggle(c.id)}
-              />
-            ))}
+            <div className="grid grid-cols-1 gap-4 pr-2 pb-3 pl-1 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
+              {FEATURED_PROJECTS.map((p) => (
+                <ProjectCard key={p.url} {...p} />
+              ))}
+            </div>
+
+            <div className="mt-12 space-y-10">
+              {BY_CATEGORY.map((c) => (
+                <div key={c.id} id={`projects-${c.id}`} className="scroll-mt-8">
+                  <div className="flex items-baseline border-b-[2.5px] border-black pb-2">
+                    <h3 className="font-neo text-2xl font-black tracking-tight text-black uppercase md:text-3xl">
+                      {c.label}
+                    </h3>
+                    <span className="ml-auto font-mono text-[11px] text-neutral-500 uppercase">
+                      {pad2(c.projects.length)} {c.projects.length === 1 ? 'PROJECT' : 'PROJECTS'}
+                    </span>
+                  </div>
+                  <ul className="bg-white/90 backdrop-blur-sm">
+                    {c.projects.map((p) => (
+                      <ProjectRow key={p.url} {...p} />
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
           </div>
 
           <div className="mt-16 w-full px-8">
             <hr className="border-0 border-t-[3px] border-black" />
           </div>
 
-          <h2 className="font-neo mt-16 mb-12 inline-block border-b-8 border-black bg-white px-4 pb-2 text-4xl font-extrabold tracking-tighter text-black uppercase lg:text-5xl">
+          <h2 id="writing" className={`${sectionHeading} mt-16`}>
             WRITING
           </h2>
 
-          <div className="w-full space-y-12 px-8">
-            {writingByYear.map(({ year, items }) => (
-              <div key={year}>
-                <div className="flex items-baseline border-b-[2.5px] border-black pb-2">
-                  <span className="font-neo text-2xl font-black tracking-tight text-black md:text-3xl">{year}</span>
-                  <span className="ml-auto font-mono text-[11px] text-neutral-500 uppercase">
-                    {pad2(items.length)} {items.length === 1 ? 'POST' : 'POSTS'}
-                  </span>
-                </div>
-                <ul className="bg-white/90 backdrop-blur-sm">
-                  {items.map((post) => (
-                    <li key={post.slug} className="border-b border-black/10 last:border-b-0">
-                      <Link
-                        to={`/blog/${post.slug}`}
-                        className="group grid grid-cols-[110px_1fr_24px] items-center gap-5 px-3 py-3 no-underline transition-all duration-150 hover:no-underline motion-reduce:transition-none md:grid-cols-[140px_1fr_24px] [@media(hover:hover)]:hover:bg-black [@media(hover:hover)]:hover:pl-6"
-                      >
-                        <span className="font-mono text-xs text-neutral-500 uppercase [@media(hover:hover)]:group-hover:text-white/80">
-                          {formatPostDate(post.date)}
-                        </span>
-                        <span className="font-neo text-base font-black tracking-tight text-black md:text-lg [@media(hover:hover)]:group-hover:text-white">
-                          {post.title}
-                        </span>
-                        <span
-                          aria-hidden="true"
-                          className="text-right text-black/40 [@media(hover:hover)]:group-hover:text-white"
-                        >
-                          →
-                        </span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+          <div className="w-full px-8">
+            <div className="border-t-[2.5px] border-black">
+              <PostRows posts={latestPosts(writingPosts, LATEST_POSTS)} />
+            </div>
+            <Link to="/writing" className={buttonClass({ className: 'mt-4 w-full no-underline hover:no-underline' })}>
+              All {writingPosts.length} posts
+              <span aria-hidden="true">→</span>
+            </Link>
           </div>
         </div>
       </section>
