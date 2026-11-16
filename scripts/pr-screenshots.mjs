@@ -13,6 +13,8 @@
  * PR) and linked from a PR comment that later runs update in place. Needs a public repo and
  * `gh` logged in; with no open PR for the branch, it only saves the files.
  *
+ *   --mask       extra volatile-region selector; repeat for multiple regions
+ *   --no-masks   include volatile values for debugging
  *   --scenario   named multi-page fixture suite (book-club); captures all states
  *   --route      page path (default /)
  *   --prod       production origin (default https://tylerbarron.com)
@@ -51,6 +53,7 @@ import {
   revealFocus,
   openControl,
   captureScenarios,
+  captureMasks,
   scenarioStorageState,
   prepareScenario,
 } from './lib/pr-screenshots.mjs';
@@ -159,6 +162,7 @@ try {
           viewport: { width, height: 900 },
           storageState: scenarioStorageState(capture, origin),
         });
+        const masks = captureMasks(page, config, argv, capture);
         const errors = [];
         page.on('pageerror', (error) => errors.push(error.message));
         await prepareScenario(page, capture, errors);
@@ -182,6 +186,7 @@ try {
         if (errors.length) throw new Error(`${name} page errors: ${errors.join('; ')}`);
         const base = `${name}-${captureLabel(capture, width)}`;
         await page.screenshot({
+          ...masks,
           path: path.join(out, `${base}.png`),
           fullPage: true,
           animations: 'disabled',
@@ -194,7 +199,12 @@ try {
           if (await el.count()) {
             await revealFocus(el);
             await readyForCapture(page);
-            await el.screenshot({ path: path.join(out, `${base}-focus.png`), animations: 'disabled', caret: 'hide' });
+            await el.screenshot({
+              ...masks,
+              path: path.join(out, `${base}-focus.png`),
+              animations: 'disabled',
+              caret: 'hide',
+            });
             written.push(`${base}-focus.png`);
           }
         }
@@ -208,7 +218,7 @@ try {
             if (!box) continue;
             const [fx, fy] = at.split(',').map(Number);
             await page.mouse.move(box.x + box.width * fx, box.y + box.height * fy);
-            await el.screenshot({ path: path.join(out, `${base}-hover-${k + 1}.png`) });
+            await el.screenshot({ ...masks, path: path.join(out, `${base}-hover-${k + 1}.png`) });
             written.push(`${base}-hover-${k + 1}.png`);
             await page.mouse.move(0, 0);
           }
@@ -219,13 +229,14 @@ try {
             await openControl(target);
             await readyForCapture(page);
             await page.screenshot({
+              ...masks,
               path: path.join(out, `${base}-open.png`),
               fullPage: true,
               animations: 'disabled',
               caret: 'hide',
             });
             written.push(`${base}-open.png`);
-            await target.locator('xpath=..').screenshot({ path: path.join(out, `${base}-open-panel.png`) });
+            await target.locator('xpath=..').screenshot({ ...masks, path: path.join(out, `${base}-open-panel.png`) });
             written.push(`${base}-open-panel.png`);
           }
         }
