@@ -49,6 +49,25 @@ export function differenceRegions(before, after, { threshold = 24, padding = 24,
   });
 }
 
+/** Keep all changed areas, but limit the number of comparisons a reviewer must scan. */
+export function selectComparisonRegions(regions, { maxComparisons = 3, mergeGap = 48 } = {}) {
+  const union = (a, b) => ({
+    left: Math.min(a.left, b.left),
+    top: Math.min(a.top, b.top),
+    width: Math.max(a.left + a.width, b.left + b.width) - Math.min(a.left, b.left),
+    height: Math.max(a.top + a.height, b.top + b.height) - Math.min(a.top, b.top),
+  });
+  const merged = [];
+  for (const region of [...regions].sort((a, b) => a.top - b.top)) {
+    const previous = merged.at(-1);
+    if (previous && region.top <= previous.top + previous.height + mergeGap) {
+      merged[merged.length - 1] = union(previous, region);
+    } else merged.push({ ...region });
+  }
+  // Widespread changes become one overview, never a truncated selection that hides edits.
+  return merged.length > maxComparisons ? [merged.reduce(union)] : merged;
+}
+
 /** Both sides use identical coordinates; white space represents an absent/deleted area. */
 export async function writeDifferenceCrops(out, label) {
   const read = async (name) => {
@@ -61,7 +80,8 @@ export async function writeDifferenceCrops(out, label) {
   };
   const before = await read('before');
   const after = await read('after');
-  const regions = differenceRegions(before, after);
+  const detected = differenceRegions(before, after);
+  const regions = selectComparisonRegions(detected);
   const files = [];
   for (const [index, region] of regions.entries()) {
     for (const [name, image] of [
@@ -86,6 +106,9 @@ export async function writeDifferenceCrops(out, label) {
       files.push(file);
     }
   }
-  fs.writeFileSync(path.join(out, `changes-${label}.json`), JSON.stringify(regions, null, 2));
+  fs.writeFileSync(
+    path.join(out, `changes-${label}.json`),
+    JSON.stringify({ detected, comparisons: regions }, null, 2),
+  );
   return files;
 }
