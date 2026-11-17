@@ -12,7 +12,6 @@ import { usePolling } from '~/hooks/usePolling';
 import { buildMeta } from '~/utils/seo';
 import { readSnapshot } from '~/utils/runescapeRascals/snapshot.server';
 import type { Snapshot } from '~/utils/runescapeRascals/types';
-import Highlights from '~/components/RunescapeRascals/Highlights';
 import Roster from '~/components/RunescapeRascals/Roster';
 import MissionPanel from '~/components/RunescapeRascals/MissionPanel';
 import { NumbersTable, SkillsTable, StoresTable } from '~/components/RunescapeRascals/Tables';
@@ -86,7 +85,6 @@ export default function RunescapeRascals() {
           </Notice>
         ) : (
           <>
-            <Highlights snapshot={snapshot} />
             {!live && (
               <p className="m-0 font-mono text-xs">
                 Last activity · {new Date(snapshot.generatedAt).toISOString().slice(0, 10)}

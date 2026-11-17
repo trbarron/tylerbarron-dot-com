@@ -11,8 +11,15 @@ it('reads the permanent archive after all live keys expire', async () => {
   const saved = { generatedAt: 123, bots: [], log: [], history: [] };
   redis.get.mockResolvedValue(null);
   redis.getBuffer.mockResolvedValue(gzipSync(JSON.stringify(saved)));
-  expect(await readSnapshot()).toEqual(saved);
+  expect(await readSnapshot()).toEqual({ ...saved, assetBase: '/images/rascals-live' });
   expect(redis.getBuffer).toHaveBeenCalledWith('runescapeRascals:archive');
+});
+
+it('keeps an archived asset base the publisher recorded', async () => {
+  const saved = { generatedAt: 123, bots: [], log: [], history: [], assetBase: '/images/elsewhere' };
+  redis.get.mockResolvedValue(null);
+  redis.getBuffer.mockResolvedValue(gzipSync(JSON.stringify(saved)));
+  expect((await readSnapshot())?.assetBase).toBe('/images/elsewhere');
 });
 
 it('prefers a live publication over the archive', async () => {
