@@ -12,6 +12,7 @@ import { usePolling } from '~/hooks/usePolling';
 import { buildMeta } from '~/utils/seo';
 import { readSnapshot } from '~/utils/runescapeRascals/snapshot.server';
 import type { Snapshot } from '~/utils/runescapeRascals/types';
+import Highlights from '~/components/RunescapeRascals/Highlights';
 import Roster from '~/components/RunescapeRascals/Roster';
 import MissionPanel from '~/components/RunescapeRascals/MissionPanel';
 import { NumbersTable, SkillsTable, StoresTable } from '~/components/RunescapeRascals/Tables';
@@ -33,10 +34,10 @@ export function meta() {
 
 export async function loader() {
   try {
-    return { snapshot: await readSnapshot() };
+    return { snapshot: await readSnapshot(), loadedAt: Date.now() };
   } catch (error) {
     console.error('Error loading Runescape Rascals:', error);
-    return { snapshot: null };
+    return { snapshot: null, loadedAt: Date.now() };
   }
 }
 
@@ -48,7 +49,7 @@ const STALE_MS = 2 * 60 * 1000;
 export default function RunescapeRascals() {
   const initial = useLoaderData<typeof loader>();
   const [snapshot, setSnapshot] = useState<Snapshot | null>(initial.snapshot);
-  const { now, mounted } = useNow(snapshot?.generatedAt ?? 0);
+  const { now, mounted } = useNow(initial.loadedAt);
 
   usePolling(async () => {
     const res = await fetch('/api/runescapeRascals/snapshot');
@@ -81,12 +82,18 @@ export default function RunescapeRascals() {
 
         {!snapshot ? (
           <Notice tone="info" title="The party is offline">
-            Nothing has been published in the last week. Check back later.
+            No saved activity is available.
           </Notice>
         ) : (
           <>
+            <Highlights snapshot={snapshot} />
+            {!live && (
+              <p className="m-0 font-mono text-xs">
+                Last activity · {new Date(snapshot.generatedAt).toISOString().slice(0, 10)}
+              </p>
+            )}
             <MissionPanel mission={snapshot.teamGoal} plan={snapshot.plan} now={now} />
-            <Roster bots={snapshot.bots} now={now} assetBase={snapshot.assetBase} />
+            <Roster bots={snapshot.bots} now={live ? now : snapshot.generatedAt} assetBase={snapshot.assetBase} />
 
             <Panel title="Total level over time">
               <LevelChart
@@ -110,8 +117,8 @@ export default function RunescapeRascals() {
                 <DecisionLog log={snapshot.log} names={names} mounted={mounted} />
               </Panel>
               <Panel
-                title="Where they are"
-                subtitle="Last 10 minutes of movement, over every road the party has walked"
+                title={live ? 'Where they are' : 'Last known locations'}
+                subtitle="Recorded movement, over every road the party has walked"
                 className="flex h-full min-w-0 flex-col"
               >
                 <div className="flex flex-1 items-center p-2">

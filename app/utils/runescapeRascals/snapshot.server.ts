@@ -69,12 +69,15 @@ async function readLegacySnapshot(): Promise<Snapshot | null> {
   return raw ? (JSON.parse(raw) as Snapshot) : null;
 }
 
-/** The latest snapshot, or null if the party has not published in the last week. */
+/** The latest live publication, falling back to the preserved public dashboard. */
 export async function readSnapshot(): Promise<Snapshot | null> {
   const fastRaw = await getRedisClient().get(FAST_KEY);
   const fast = fastRaw ? (JSON.parse(fastRaw) as FastLane) : null;
   const names = Object.keys(SECTIONS) as SectionName[];
   const values = fast ? await Promise.all(names.map(readSection)) : [];
   const parts = Object.fromEntries(names.flatMap((n, i) => (values[i] ? [[n, values[i]]] : []))) as Parts;
-  return assembleSnapshot(fast, parts) ?? readLegacySnapshot();
+  const current = assembleSnapshot(fast, parts) ?? (await readLegacySnapshot());
+  if (current) return current;
+  const archive = await getRedisClient().getBuffer('runescapeRascals:archive');
+  return archive ? (JSON.parse(gunzipSync(archive).toString()) as Snapshot) : null;
 }
