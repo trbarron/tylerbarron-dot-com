@@ -3,7 +3,11 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import sharp from 'sharp';
-import { differenceRegions, writeDifferenceCrops } from '../../scripts/lib/screenshot-diff.mjs';
+import {
+  differenceRegions,
+  selectComparisonRegions,
+  writeDifferenceCrops,
+} from '../../scripts/lib/screenshot-diff.mjs';
 
 const image = (width = 100, height = 2000) => ({ width, height, data: Buffer.alloc(width * height * 4, 255) });
 const mark = (img: ReturnType<typeof image>, x: number, y: number, value = 0) => {
@@ -59,5 +63,27 @@ describe('automatic screenshot difference crops', () => {
     } finally {
       fs.rmSync(out, { recursive: true, force: true });
     }
+  });
+});
+
+describe('comparison selection', () => {
+  const region = (top: number, left = 0) => ({ top, left, width: 50, height: 100 });
+  it('keeps identical pages empty and preserves up to three distant edits', () => {
+    expect(selectComparisonRegions([])).toEqual([]);
+    const regions = [region(0), region(500), region(1000)];
+    expect(selectComparisonRegions(regions)).toEqual(regions);
+  });
+  it('merges nearby crops with horizontal and vertical context intact', () => {
+    expect(selectComparisonRegions([region(140, 30), region(0)])).toEqual([
+      { top: 0, left: 0, width: 80, height: 240 },
+    ]);
+  });
+  it('includes every distant change in one overview when the cap is exceeded', () => {
+    expect(selectComparisonRegions([region(0), region(500), region(1000), region(1500, 40)])).toEqual([
+      { top: 0, left: 0, width: 90, height: 1600 },
+    ]);
+  });
+  it('rejoins long layout shifts rather than showing many consecutive slices', () => {
+    expect(selectComparisonRegions(differenceRegions(image(100, 500), image(100, 5000)))).toHaveLength(1);
   });
 });

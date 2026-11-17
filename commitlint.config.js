@@ -33,6 +33,7 @@ export const SHARED = {
   og: 'OG share cards and their generator',
   release: 'semantic-release commits (written by the release bot)',
   deps: 'dependency updates',
+  misc: 'developer tooling and scripts that serve no single project (PR screenshots, CI helpers)',
 };
 
 export default {
