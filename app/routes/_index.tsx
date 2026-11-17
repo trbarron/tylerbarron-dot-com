@@ -173,9 +173,6 @@ export default function Index() {
                     <h3 className="font-neo text-2xl font-black tracking-tight text-black uppercase md:text-3xl">
                       {c.label}
                     </h3>
-                    <span className="ml-auto font-mono text-[11px] text-neutral-500 uppercase">
-                      {pad2(c.projects.length)} {c.projects.length === 1 ? 'PROJECT' : 'PROJECTS'}
-                    </span>
                   </div>
                   <ul className="bg-white/90 backdrop-blur-sm">
                     {c.projects.map((p) => (
