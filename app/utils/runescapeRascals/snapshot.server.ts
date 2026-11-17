@@ -11,6 +11,12 @@ const SNAPSHOT_KEY = 'runescapeRascals:snapshot';
 const FAST_KEY = `${SNAPSHOT_KEY}:fast`;
 
 /**
+ * Where the publisher uploads portraits and screenshots. A saved public snapshot omits it, but the
+ * bucket keeps the last upload of each, so the archive still points there.
+ */
+const ARCHIVE_ASSET_BASE = '/images/rascals-live';
+
+/**
  * The publisher writes the snapshot in pieces to keep the Redis network allowance in check:
  * `snapshot:fast` (JSON; positions, actions and the liveness stamp, every 15 seconds) and gzipped
  * sections that change slowly. A server instance reuses each section for `reuseMs`, about half the
@@ -79,5 +85,7 @@ export async function readSnapshot(): Promise<Snapshot | null> {
   const current = assembleSnapshot(fast, parts) ?? (await readLegacySnapshot());
   if (current) return current;
   const archive = await getRedisClient().getBuffer('runescapeRascals:archive');
-  return archive ? (JSON.parse(gunzipSync(archive).toString()) as Snapshot) : null;
+  if (!archive) return null;
+  const saved = JSON.parse(gunzipSync(archive).toString()) as Snapshot;
+  return { ...saved, assetBase: saved.assetBase ?? ARCHIVE_ASSET_BASE };
 }
