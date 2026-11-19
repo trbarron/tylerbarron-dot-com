@@ -1,9 +1,11 @@
 import { useState } from 'react';
+import { data, useLoaderData } from 'react-router';
 import { buttonClass } from '~/components/Button';
 import Footer from '~/components/Footer';
 import { Navbar } from '~/components/Navbar';
 import Panel from '~/components/Panel';
 import { buildMeta } from '~/utils/seo';
+import { listRecorderScores, playerKey } from '~/utils/vampireSurvivors/leaderboard.server';
 import snapshot from '~/utils/vampireSurvivors/snapshot.json';
 
 const title = 'Vampire Survivors Bot Lab';
@@ -19,14 +21,42 @@ function clock(seconds: number) {
   return `${Math.floor(whole / 60)}:${String(whole % 60).padStart(2, '0')}`;
 }
 
-const survivalSteps = [0, 4, 8, 12, 16];
-const killSteps = [0, 1000, 2000, 3000];
-const maxSeconds = Math.max(960, ...snapshot.scores.map((score) => score.time));
-const maxKills = Math.max(3000, ...snapshot.scores.map((score) => score.kills));
+type Score = (typeof snapshot.scores)[number];
 
-function ScorePlot() {
+export const headers = () => ({ 'Cache-Control': 'no-store' });
+
+export async function loader() {
+  const humans = new Map(
+    snapshot.scores.filter((score) => score.kind === 'human').map((score) => [playerKey(score.name), score]),
+  );
+  let leaderboardAvailable = true;
+  try {
+    for (const score of await listRecorderScores()) {
+      const key = playerKey(score.name);
+      const old = humans.get(key);
+      if (!old || score.time > old.time || (score.time === old.time && score.kills > old.kills)) {
+        humans.set(key, { ...score, kind: 'human', mode: 'Recorder · self-reported' });
+      }
+    }
+  } catch (error) {
+    leaderboardAvailable = false;
+    console.error('Vampire Survivors leaderboard read failed:', error);
+  }
+  const scores = [...snapshot.scores.filter((score) => score.kind === 'bot'), ...humans.values()].sort(
+    (a, b) => b.time - a.time || b.kills - a.kills,
+  );
+  return data({ scores, leaderboardAvailable }, { headers: headers() });
+}
+
+function ScorePlot({ scores }: { scores: Score[] }) {
   const [selected, select] = useState(0);
-  const score = snapshot.scores[selected];
+  const score = scores[selected] ?? scores[0];
+  const minutesPerTick = Math.ceil(Math.max(960, ...scores.map((entry) => entry.time)) / 240);
+  const killsPerTick = 1000 * Math.ceil(Math.max(3000, ...scores.map((entry) => entry.kills)) / 3000);
+  const survivalSteps = [0, 1, 2, 3, 4].map((tick) => tick * minutesPerTick);
+  const killSteps = [0, 1, 2, 3].map((tick) => tick * killsPerTick);
+  const maxSeconds = 240 * minutesPerTick;
+  const maxKills = 3 * killsPerTick;
   return (
     <div className="p-3 sm:p-5">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2 font-mono text-xs">
@@ -71,9 +101,9 @@ function ScorePlot() {
             {minutes}:00
           </span>
         ))}
-        {snapshot.scores.map((entry, index) => (
+        {scores.map((entry, index) => (
           <button
-            key={entry.name}
+            key={`${entry.kind}:${entry.name}`}
             type="button"
             aria-label={`${entry.name}, ${clock(entry.time)}, ${number.format(entry.kills)} kills`}
             aria-pressed={index === selected}
@@ -104,6 +134,7 @@ const cell = 'border-x-0 border-y border-gray-200 px-3 py-2 whitespace-nowrap ta
 const header = 'border-b-2 border-black bg-gray-100 text-left font-mono text-xs uppercase';
 
 export default function VampireSurvivors() {
+  const { scores, leaderboardAvailable } = useLoaderData<typeof loader>();
   return (
     <div className="relative z-10 flex min-h-screen flex-col">
       <Navbar />
@@ -131,9 +162,8 @@ export default function VampireSurvivors() {
           <details className="mt-3 text-sm">
             <summary className="w-fit cursor-pointer font-semibold">Local recorder setup</summary>
             <p className="mt-2 mb-0">
-              Run <code>bun run dashboard</code> from your local <code>vs-bot</code> checkout, then open the recorder.
-              Enter your name to save finished runs to your local leaderboard. The website leaderboard is updated
-              separately.
+              Run <code>bun run setup:local</code> from your <code>vs-bot</code> checkout the first time. In the
+              recorder, enter your name and select the option to publish your score to this leaderboard.
             </p>
           </details>
         </header>
@@ -142,7 +172,10 @@ export default function VampireSurvivors() {
           title="High scores"
           subtitle="Antonio · Mad Forest Normal · best run per player or bot · survival, then kills"
         >
-          <ScorePlot />
+          {!leaderboardAvailable && (
+            <p className="m-0 border-b px-4 py-2 text-sm">Live player scores are temporarily unavailable.</p>
+          )}
+          <ScorePlot scores={scores} />
           {/* Allow keyboard users to scroll the table on narrow screens. */}
           {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
           <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="High score table">
@@ -157,8 +190,8 @@ export default function VampireSurvivors() {
                 </tr>
               </thead>
               <tbody>
-                {snapshot.scores.map((score, index) => (
-                  <tr key={score.name} className="border-b border-gray-200 last:border-b-0">
+                {scores.map((score, index) => (
+                  <tr key={`${score.kind}:${score.name}`} className="border-b border-gray-200 last:border-b-0">
                     <td className={cell}>{index + 1}</td>
                     <th
                       className={`${cell} bg-white text-left font-semibold tracking-normal text-black normal-case`}
@@ -179,7 +212,7 @@ export default function VampireSurvivors() {
             </table>
           </div>
           <p className="m-0 border-t-2 border-black px-4 py-2 font-mono text-xs">
-            Updated {snapshot.updatedOn} · bot scores from the v0.2.4 demo at six frames per decision
+            Bot results through {snapshot.updatedOn} · bot scores from the v0.2.4 demo at six frames per decision
           </p>
         </Panel>
 
