@@ -118,6 +118,9 @@ export default function VampireSurvivors() {
             >
               Play the browser demo
             </a>
+            <a className={buttonClass({ size: 'sm' })} href="http://127.0.0.1:8766/">
+              Play with local recorder
+            </a>
             <a className="underline underline-offset-4" href="#replay">
               Watch the run
             </a>
@@ -125,6 +128,14 @@ export default function VampireSurvivors() {
               Compare bot policies
             </a>
           </div>
+          <details className="mt-3 text-sm">
+            <summary className="w-fit cursor-pointer font-semibold">Local recorder setup</summary>
+            <p className="mt-2 mb-0">
+              Run <code>bun run dashboard</code> from your local <code>vs-bot</code> checkout, then open the recorder.
+              Enter your name to save finished runs to your local leaderboard. The website leaderboard is updated
+              separately.
+            </p>
+          </details>
         </header>
 
         <Panel
