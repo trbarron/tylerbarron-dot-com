@@ -362,7 +362,20 @@ def render_rascals_card(card: dict, out: Path) -> None:
     print(f"Wrote {out} ({out.stat().st_size // 1024} KB)")
 
 
-THEMES = {"chess": render_chess_card, "rascals": render_rascals_card}
+def render_typography_card(card: dict, out: Path) -> None:
+    img, draw = new_card()
+    usable = WIDTH - 2 * MARGIN
+    title = card["title"].upper()
+    draw.text((MARGIN, MARGIN), "BARRON WASTELAND · GAMES", font=load_font(26), fill=WHITE)
+    draw.text((MARGIN, 232), title, font=fit_font(draw, title, usable, start=90), fill=WHITE)
+    draw.text((MARGIN, 347), card["tagline"], font=load_font(36), fill=WHITE)
+    draw.text((MARGIN, HEIGHT - MARGIN - 26), f"{URL}{card['path']}", font=load_font(26), fill=WHITE)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    img.save(out, "PNG", optimize=True)
+    print(f"Wrote {out} ({out.stat().st_size // 1024} KB)")
+
+
+THEMES = {"chess": render_chess_card, "rascals": render_rascals_card, "typography": render_typography_card}
 
 
 def render_project_cards() -> None:

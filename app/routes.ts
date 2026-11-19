@@ -29,6 +29,7 @@ export default [
   route('marginal-maia-mentor', 'routes/maiaDrills.tsx'),
   route('pizza-rating', 'routes/pizzaRating.tsx'),
   route('runescape-rascals', 'routes/runescapeRascals.tsx'),
+  route('vampire-survivors', 'routes/vampireSurvivors.tsx'),
   route('the-riddler', 'routes/theRiddler.tsx'),
   route('writing', 'routes/writing.tsx'),
 
