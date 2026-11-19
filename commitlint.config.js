@@ -10,6 +10,7 @@
 export const PROJECTS = {
   'book-club': 'Book club voting (/book-club), unlisted',
   rascals: 'Runescape Rascals (/runescape-rascals), the agent party dashboard',
+  'vampire-survivors': 'Vampire Survivors Bot Lab (/vampire-survivors)',
   maia: 'Marginal Maia Mentor (/marginal-maia-mentor), Maia Drills',
   pizza: 'Pizza Rating and the pizza map (/pizza-rating)',
   'chesser-guesser': 'Chesser Guesser (/chesser-guesser)',

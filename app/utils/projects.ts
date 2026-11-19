@@ -59,6 +59,12 @@ export const PROJECTS: Project[] = [
 
   // Games
   {
+    title: 'Vampire Survivors Bot Lab',
+    description: 'Compare bot and human scores and watch a run from the browser demo',
+    url: '/vampire-survivors',
+    category: 'games',
+  },
+  {
     title: 'Runescape Rascals',
     description: 'Four AI agents playing a RuneScape-style world together',
     url: '/runescape-rascals',

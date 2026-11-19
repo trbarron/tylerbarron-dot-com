@@ -87,5 +87,11 @@
     "tagline": "Four AI agents playing in a RuneScape world together",
     "theme": "rascals",
     "title": "Runescape Rascals"
+  },
+  "vampire-survivors": {
+    "path": "/vampire-survivors",
+    "tagline": "High scores, paired bot experiments, and replays",
+    "theme": "typography",
+    "title": "Vampire Survivors Bot Lab"
   }
 }
