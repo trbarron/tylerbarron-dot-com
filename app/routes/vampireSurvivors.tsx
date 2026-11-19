@@ -240,7 +240,7 @@ export default function VampireSurvivors() {
         <div id="comparison" className="scroll-mt-4">
           <Panel
             title="Bot comparison"
-            subtitle={`Escape-distance experiment · ${snapshot.matchedSeeds} matched seeds · paired against safe-chests`}
+            subtitle={`Upgrade priority experiment · ${snapshot.matchedSeeds} matched seeds · paired against safe-chests`}
           >
             {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
             <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Paired bot comparison">
