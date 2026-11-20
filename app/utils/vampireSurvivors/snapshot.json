@@ -309,6 +309,15 @@
       "kills": 2306
     },
     {
+      "name": "Josh",
+      "kind": "human",
+      "mode": "Self-reported",
+      "seed": null,
+      "time": 682,
+      "level": 13,
+      "kills": 1127
+    },
+    {
       "name": "route-swing-wand-axe",
       "kind": "bot",
       "mode": "Headless",
