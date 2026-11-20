@@ -1,7 +1,16 @@
 {
-  "updatedOn": "2026-11-19",
+  "updatedOn": "2026-11-20",
   "youtubeId": "Ml9jCvCpy1E",
   "scores": [
+    {
+      "name": "Tyler",
+      "kind": "human",
+      "mode": "Live recording",
+      "seed": 1658771697,
+      "time": 1225,
+      "level": 28,
+      "kills": 4432
+    },
     {
       "name": "route-swing-safe-chests",
       "kind": "bot",
@@ -10,6 +19,15 @@
       "time": 912,
       "level": 16,
       "kills": 2421
+    },
+    {
+      "name": "route-swing-focus-three",
+      "kind": "bot",
+      "mode": "Headless",
+      "seed": 82308,
+      "time": 911,
+      "level": 18,
+      "kills": 3085
     },
     {
       "name": "route-swing-strong-safe",
@@ -21,22 +39,76 @@
       "kills": 2614
     },
     {
-      "name": "route-swing-focus-three",
+      "name": "route-swing-xp-detour",
       "kind": "bot",
       "mode": "Headless",
-      "seed": 81602,
-      "time": 875,
+      "seed": 82307,
+      "time": 908,
       "level": 18,
-      "kills": 2623
+      "kills": 2729
+    },
+    {
+      "name": "route-swing-gem-return",
+      "kind": "bot",
+      "mode": "Headless",
+      "seed": 82705,
+      "time": 907,
+      "level": 18,
+      "kills": 3122
+    },
+    {
+      "name": "route-swing-wand-bible-spinach-five",
+      "kind": "bot",
+      "mode": "Headless",
+      "seed": 82802,
+      "time": 879,
+      "level": 20,
+      "kills": 3209
+    },
+    {
+      "name": "route-swing-wand-bible-spinach",
+      "kind": "bot",
+      "mode": "Headless",
+      "seed": 82802,
+      "time": 879,
+      "level": 20,
+      "kills": 3209
+    },
+    {
+      "name": "route-swing-rare-drops",
+      "kind": "bot",
+      "mode": "Headless",
+      "seed": 82312,
+      "time": 877,
+      "level": 19,
+      "kills": 2819
+    },
+    {
+      "name": "route-swing-wand-bible-laurel",
+      "kind": "bot",
+      "mode": "Headless",
+      "seed": 82806,
+      "time": 875,
+      "level": 17,
+      "kills": 2426
+    },
+    {
+      "name": "route-swing-knife-late",
+      "kind": "bot",
+      "mode": "Headless",
+      "seed": 82316,
+      "time": 874,
+      "level": 20,
+      "kills": 2884
     },
     {
       "name": "route-swing-wand-over-knife",
       "kind": "bot",
       "mode": "Headless",
-      "seed": 82207,
+      "seed": 82316,
       "time": 874,
-      "level": 17,
-      "kills": 2493
+      "level": 20,
+      "kills": 2884
     },
     {
       "name": "route-swing-whip-two",
@@ -48,13 +120,58 @@
       "kills": 2493
     },
     {
+      "name": "route-swing-safe-roast",
+      "kind": "bot",
+      "mode": "Headless",
+      "seed": 82312,
+      "time": 872,
+      "level": 18,
+      "kills": 2742
+    },
+    {
+      "name": "route-swing-bible-wand",
+      "kind": "bot",
+      "mode": "Headless",
+      "seed": 82801,
+      "time": 867,
+      "level": 18,
+      "kills": 2802
+    },
+    {
+      "name": "route-swing-wand-bible",
+      "kind": "bot",
+      "mode": "Headless",
+      "seed": 82801,
+      "time": 867,
+      "level": 18,
+      "kills": 2802
+    },
+    {
+      "name": "route-swing-wall-clear-exit",
+      "kind": "bot",
+      "mode": "Headless",
+      "seed": 82308,
+      "time": 858,
+      "level": 20,
+      "kills": 2884
+    },
+    {
+      "name": "route-swing-separated-strikes",
+      "kind": "bot",
+      "mode": "Headless",
+      "seed": 82307,
+      "time": 858,
+      "level": 23,
+      "kills": 2740
+    },
+    {
       "name": "route-swing-wall-aware",
       "kind": "bot",
       "mode": "Headless",
-      "seed": 82107,
-      "time": 856,
-      "level": 18,
-      "kills": 2734
+      "seed": 82301,
+      "time": 858,
+      "level": 20,
+      "kills": 2491
     },
     {
       "name": "route-swing-escape-wide",
@@ -66,49 +183,31 @@
       "kills": 2693
     },
     {
-      "name": "route-swing-xp-detour",
+      "name": "route-swing-max-three",
       "kind": "bot",
       "mode": "Headless",
-      "seed": 81207,
-      "time": 855,
-      "level": 19,
-      "kills": 2794
-    },
-    {
-      "name": "route-swing-separated-strikes",
-      "kind": "bot",
-      "mode": "Headless",
-      "seed": 82108,
-      "time": 855,
+      "seed": 82705,
+      "time": 856,
       "level": 17,
-      "kills": 2688
+      "kills": 2586
     },
     {
-      "name": "route-swing-safe-roast",
+      "name": "route-swing-wand-laurel",
       "kind": "bot",
       "mode": "Headless",
-      "seed": 82103,
+      "seed": 82404,
+      "time": 855,
+      "level": 15,
+      "kills": 2268
+    },
+    {
+      "name": "route-swing-wall-reduced",
+      "kind": "bot",
+      "mode": "Headless",
+      "seed": 82302,
       "time": 854,
-      "level": 18,
-      "kills": 2833
-    },
-    {
-      "name": "route-swing-rare-drops",
-      "kind": "bot",
-      "mode": "Headless",
-      "seed": 81304,
-      "time": 854,
-      "level": 20,
-      "kills": 2684
-    },
-    {
-      "name": "route-swing-knife-late",
-      "kind": "bot",
-      "mode": "Headless",
-      "seed": 82004,
-      "time": 853,
-      "level": 21,
-      "kills": 2985
+      "level": 17,
+      "kills": 2513
     },
     {
       "name": "route-swing-santa-water",
@@ -120,48 +219,166 @@
       "kills": 2878
     },
     {
-      "name": "Tyler",
-      "kind": "human",
-      "mode": "Self-reported",
-      "seed": 81101,
-      "time": 630,
+      "name": "route-swing-wand-knife",
+      "kind": "bot",
+      "mode": "Headless",
+      "seed": 82401,
+      "time": 849,
+      "level": 18,
+      "kills": 2593
+    },
+    {
+      "name": "route-swing-escape-linear",
+      "kind": "bot",
+      "mode": "Headless",
+      "seed": 81907,
+      "time": 847,
+      "level": 18,
+      "kills": 2536
+    },
+    {
+      "name": "route-swing-water-wand",
+      "kind": "bot",
+      "mode": "Headless",
+      "seed": 82401,
+      "time": 837,
+      "level": 20,
+      "kills": 3591
+    },
+    {
+      "name": "route-swing-escape-quadratic",
+      "kind": "bot",
+      "mode": "Headless",
+      "seed": 81907,
+      "time": 816,
+      "level": 18,
+      "kills": 2467
+    },
+    {
+      "name": "route-swing-safe-vacuum",
+      "kind": "bot",
+      "mode": "Headless",
+      "seed": 82705,
+      "time": 795,
       "level": 17,
-      "kills": 1653
+      "kills": 2383
+    },
+    {
+      "name": "route-swing-escape-12",
+      "kind": "bot",
+      "mode": "Headless",
+      "seed": 81707,
+      "time": 787,
+      "level": 16,
+      "kills": 1988
+    },
+    {
+      "name": "route-damage-2x",
+      "kind": "bot",
+      "mode": "Headless",
+      "seed": 81002,
+      "time": 787,
+      "level": 16,
+      "kills": 1911
+    },
+    {
+      "name": "route-damage-2x-emergency",
+      "kind": "bot",
+      "mode": "Headless",
+      "seed": 308,
+      "time": 784,
+      "level": 15,
+      "kills": 1673
+    },
+    {
+      "name": "route-swing-focus-two",
+      "kind": "bot",
+      "mode": "Headless",
+      "seed": 81608,
+      "time": 767,
+      "level": 18,
+      "kills": 2495
+    },
+    {
+      "name": "route-swing-wand-water",
+      "kind": "bot",
+      "mode": "Headless",
+      "seed": 82401,
+      "time": 739,
+      "level": 17,
+      "kills": 2306
+    },
+    {
+      "name": "route-swing-wand-axe",
+      "kind": "bot",
+      "mode": "Headless",
+      "seed": 82402,
+      "time": 671,
+      "level": 15,
+      "kills": 1528
+    },
+    {
+      "name": "kiter",
+      "kind": "bot",
+      "mode": "Headless",
+      "seed": 81103,
+      "time": 670,
+      "level": 3,
+      "kills": 146
+    },
+    {
+      "name": "planner-atk",
+      "kind": "bot",
+      "mode": "Headless",
+      "seed": 32,
+      "time": 666,
+      "level": 7,
+      "kills": 438
+    },
+    {
+      "name": "route-swing-wand-spinach",
+      "kind": "bot",
+      "mode": "Headless",
+      "seed": 82401,
+      "time": 665,
+      "level": 14,
+      "kills": 1561
+    },
+    {
+      "name": "route-damage-2x-four-segments",
+      "kind": "bot",
+      "mode": "Headless",
+      "seed": 81008,
+      "time": 664,
+      "level": 11,
+      "kills": 1121
+    },
+    {
+      "name": "route-fires",
+      "kind": "bot",
+      "mode": "Headless",
+      "seed": 31,
+      "time": 600,
+      "level": 8,
+      "kills": 582
+    },
+    {
+      "name": "route-damage-2x-one-segment",
+      "kind": "bot",
+      "mode": "Headless",
+      "seed": 81002,
+      "time": 481,
+      "level": 9,
+      "kills": 546
+    },
+    {
+      "name": "planner-route",
+      "kind": "bot",
+      "mode": "Headless",
+      "seed": 32,
+      "time": 326,
+      "level": 7,
+      "kills": 484
     }
-  ],
-  "benchmark": [
-    {
-      "bot": "route-swing-safe-chests",
-      "medianSurvival": 736.5,
-      "medianPairedSeconds": 0.0,
-      "medianXP": 1318.0,
-      "medianKills": 2218.0,
-      "wins": 0
-    },
-    {
-      "bot": "route-swing-wand-over-knife",
-      "medianSurvival": 745.0,
-      "medianPairedSeconds": 0.0,
-      "medianXP": 1425.5,
-      "medianKills": 2457.0,
-      "wins": 1
-    },
-    {
-      "bot": "route-swing-whip-two",
-      "medianSurvival": 752.0,
-      "medianPairedSeconds": 0.0,
-      "medianXP": 1488.5,
-      "medianKills": 2224.0,
-      "wins": 3
-    },
-    {
-      "bot": "route-swing-santa-water",
-      "medianSurvival": 727.0,
-      "medianPairedSeconds": 0.0,
-      "medianXP": 1269.0,
-      "medianKills": 2188.5,
-      "wins": 3
-    }
-  ],
-  "matchedSeeds": 8
+  ]
 }

@@ -141,113 +141,28 @@ export default function VampireSurvivors() {
       <main className="font-neo mx-auto flex w-full max-w-6xl flex-1 flex-col gap-4 p-4 text-black">
         <header className="border-4 border-black bg-white p-4 sm:p-6">
           <h1 className="m-0 text-3xl leading-none font-extrabold tracking-tight uppercase sm:text-5xl">{title}</h1>
-          <p className="mt-2 mb-4 text-sm">{description}</p>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 font-mono text-xs">
-            <a
-              className={buttonClass({ variant: 'primary', size: 'sm' })}
-              href="https://poncle.itch.io/vampire-survivors"
-            >
-              Play the browser demo
-            </a>
-            <a className={buttonClass({ size: 'sm' })} href="http://127.0.0.1:8766/">
-              Play with local recorder
-            </a>
-            <a className="underline underline-offset-4" href="#replay">
-              Watch the run
-            </a>
-            <a className="underline underline-offset-4" href="#comparison">
-              Compare bot policies
-            </a>
-          </div>
-          <details className="mt-3 text-sm">
-            <summary className="w-fit cursor-pointer font-semibold">Local recorder setup</summary>
-            <p className="mt-2 mb-0">
-              Run <code>bun run setup:local</code> from your <code>vs-bot</code> checkout the first time. In the
-              recorder, enter your name and select the option to publish your score to this leaderboard.
-            </p>
-          </details>
+          <a
+            className={`${buttonClass({ variant: 'primary', size: 'sm' })} mt-4`}
+            href="https://poncle.itch.io/vampire-survivors"
+          >
+            Play the browser demo
+          </a>
         </header>
 
-        <Panel
-          title="High scores"
-          subtitle="Antonio · Mad Forest Normal · best run per player or bot · survival, then kills"
-        >
+        <Panel title="High scores">
           {!leaderboardAvailable && (
             <p className="m-0 border-b px-4 py-2 text-sm">Live player scores are temporarily unavailable.</p>
           )}
           <ScorePlot scores={scores} />
-          {/* Allow keyboard users to scroll the table on narrow screens. */}
-          {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
-          <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="High score table">
-            <table className="w-full border-collapse border-0 text-sm">
-              <thead className={header}>
-                <tr>
-                  {['Rank', 'Player', 'Time', 'Kills', 'Level', 'Seed', 'Mode'].map((column) => (
-                    <th key={column} scope="col" className={cell}>
-                      {column}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {scores.map((score, index) => (
-                  <tr key={`${score.kind}:${score.name}`} className="border-b border-gray-200 last:border-b-0">
-                    <td className={cell}>{index + 1}</td>
-                    <th
-                      className={`${cell} bg-white text-left font-semibold tracking-normal text-black normal-case`}
-                      scope="row"
-                    >
-                      <span className="block max-w-28 [overflow-wrap:anywhere] whitespace-normal sm:max-w-none sm:whitespace-nowrap">
-                        {score.name}
-                      </span>
-                    </th>
-                    <td className={cell}>{clock(score.time)}</td>
-                    <td className={cell}>{number.format(score.kills)}</td>
-                    <td className={cell}>{score.level}</td>
-                    <td className={cell}>{score.seed}</td>
-                    <td className={cell}>{score.mode}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <p className="m-0 border-t-2 border-black px-4 py-2 font-mono text-xs">
-            Bot results through {snapshot.updatedOn} · bot scores from the v0.2.4 demo at six frames per decision
-          </p>
-        </Panel>
-
-        <div id="replay" className="scroll-mt-4">
-          <Panel title="Featured replay" subtitle="route-swing-safe-chests">
-            <iframe
-              className="block aspect-video w-full bg-black"
-              src={`https://www.youtube.com/embed/${snapshot.youtubeId}`}
-              title="Vampire Survivors replay by route-swing-safe-chests"
-              loading="lazy"
-              allow="encrypted-media; picture-in-picture; fullscreen"
-              allowFullScreen
-            />
-            <p className="m-0 px-4 py-2 text-sm">
-              <a
-                className="underline underline-offset-4"
-                href={`https://www.youtube.com/watch?v=${snapshot.youtubeId}`}
-              >
-                Watch on YouTube
-              </a>
-            </p>
-          </Panel>
-        </div>
-
-        <div id="comparison" className="scroll-mt-4">
-          <Panel
-            title="Bot comparison"
-            subtitle={`Upgrade priority experiment · ${snapshot.matchedSeeds} matched seeds · paired against safe-chests`}
-          >
+          <details className="border-t-2 border-black">
+            <summary className="cursor-pointer px-4 py-2 text-sm font-semibold">Runs</summary>
+            {/* Allow keyboard users to scroll the table on narrow screens. */}
             {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
-            <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Paired bot comparison">
+            <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="High score table">
               <table className="w-full border-collapse border-0 text-sm">
                 <thead className={header}>
                   <tr>
-                    {['Policy', 'Median time', 'Paired Δ', 'Wins', 'Median XP', 'Median kills'].map((column) => (
+                    {['Rank', 'Player', 'Time', 'Kills', 'Level', 'Seed', 'Mode'].map((column) => (
                       <th key={column} scope="col" className={cell}>
                         {column}
                       </th>
@@ -255,34 +170,40 @@ export default function VampireSurvivors() {
                   </tr>
                 </thead>
                 <tbody>
-                  {snapshot.benchmark.map((row, index) => (
-                    <tr key={row.bot} className="border-b border-gray-200 last:border-b-0">
+                  {scores.map((score, index) => (
+                    <tr key={`${score.kind}:${score.name}`} className="border-b border-gray-200 last:border-b-0">
+                      <td className={cell}>{index + 1}</td>
                       <th
                         className={`${cell} bg-white text-left font-semibold tracking-normal text-black normal-case`}
                         scope="row"
                       >
                         <span className="block max-w-28 [overflow-wrap:anywhere] whitespace-normal sm:max-w-none sm:whitespace-nowrap">
-                          {row.bot}
+                          {score.name}
                         </span>
                       </th>
-                      <td className={cell}>{clock(row.medianSurvival)}</td>
-                      <td className={cell}>
-                        {index ? `${row.medianPairedSeconds > 0 ? '+' : ''}${row.medianPairedSeconds} s` : 'Reference'}
-                      </td>
-                      <td className={cell}>{index ? `${row.wins}/${snapshot.matchedSeeds}` : '—'}</td>
-                      <td className={cell}>{number.format(row.medianXP)}</td>
-                      <td className={cell}>{number.format(row.medianKills)}</td>
+                      <td className={cell}>{clock(score.time)}</td>
+                      <td className={cell}>{number.format(score.kills)}</td>
+                      <td className={cell}>{score.level}</td>
+                      <td className={cell}>{score.seed}</td>
+                      <td className={cell}>{score.mode}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            <p className="m-0 border-t-2 border-black px-4 py-2 text-sm">
-              The paired delta is the median of each seed’s time difference. A win means the candidate survived longer
-              on that seed.
-            </p>
-          </Panel>
-        </div>
+          </details>
+        </Panel>
+
+        <Panel title="Bot run">
+          <iframe
+            className="block aspect-video w-full bg-black"
+            src={`https://www.youtube.com/embed/${snapshot.youtubeId}`}
+            title="Vampire Survivors bot run"
+            loading="lazy"
+            allow="encrypted-media; picture-in-picture; fullscreen"
+            allowFullScreen
+          />
+        </Panel>
       </main>
       <Footer />
     </div>
