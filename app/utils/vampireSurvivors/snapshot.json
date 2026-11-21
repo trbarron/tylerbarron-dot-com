@@ -1,5 +1,5 @@
 {
-  "updatedOn": "2026-11-20",
+  "updatedOn": "2026-11-21",
   "youtubeId": "Ml9jCvCpy1E",
   "scores": [
     {
@@ -55,6 +55,15 @@
       "time": 907,
       "level": 18,
       "kills": 3122
+    },
+    {
+      "name": "Josh",
+      "kind": "human",
+      "mode": "Self-reported",
+      "seed": null,
+      "time": 900,
+      "level": 23,
+      "kills": 3656
     },
     {
       "name": "route-swing-wand-bible-spinach-five",
@@ -307,15 +316,6 @@
       "time": 739,
       "level": 17,
       "kills": 2306
-    },
-    {
-      "name": "Josh",
-      "kind": "human",
-      "mode": "Self-reported",
-      "seed": null,
-      "time": 682,
-      "level": 13,
-      "kills": 1127
     },
     {
       "name": "route-swing-wand-axe",
