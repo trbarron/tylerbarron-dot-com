@@ -1,3 +1,4 @@
+import snapshot from './snapshot.json';
 import { getRedisClient } from '~/utils/redis.server';
 
 const ranksKey = '{vampire-survivors}:leaderboard:v1:ranks';
@@ -72,4 +73,27 @@ export async function listRecorderScores(): Promise<RecorderScore[]> {
     const score = parseRecorderScore(JSON.parse(entry));
     return score ? [score] : [];
   });
+}
+
+export async function readLeaderboard() {
+  const humans = new Map(
+    snapshot.scores.filter((score) => score.kind === 'human').map((score) => [playerKey(score.name), score]),
+  );
+  let leaderboardAvailable = true;
+  try {
+    for (const score of await listRecorderScores()) {
+      const key = playerKey(score.name);
+      const old = humans.get(key);
+      if (!old || score.time > old.time || (score.time === old.time && score.kills > old.kills)) {
+        humans.set(key, { ...score, kind: 'human', mode: 'Recorder · self-reported' });
+      }
+    }
+  } catch (error) {
+    leaderboardAvailable = false;
+    console.error('Vampire Survivors leaderboard read failed:', error);
+  }
+  const scores = [...snapshot.scores.filter((score) => score.kind === 'bot'), ...humans.values()].sort(
+    (a, b) => b.time - a.time || b.kills - a.kills,
+  );
+  return { scores, leaderboardAvailable };
 }

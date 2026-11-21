@@ -5,7 +5,7 @@ import Footer from '~/components/Footer';
 import { Navbar } from '~/components/Navbar';
 import Panel from '~/components/Panel';
 import { buildMeta } from '~/utils/seo';
-import { listRecorderScores, playerKey } from '~/utils/vampireSurvivors/leaderboard.server';
+import { readLeaderboard } from '~/utils/vampireSurvivors/leaderboard.server';
 import snapshot from '~/utils/vampireSurvivors/snapshot.json';
 
 const title = 'Vampire Survivors Bot Lab';
@@ -26,26 +26,7 @@ type Score = (typeof snapshot.scores)[number];
 export const headers = () => ({ 'Cache-Control': 'no-store' });
 
 export async function loader() {
-  const humans = new Map(
-    snapshot.scores.filter((score) => score.kind === 'human').map((score) => [playerKey(score.name), score]),
-  );
-  let leaderboardAvailable = true;
-  try {
-    for (const score of await listRecorderScores()) {
-      const key = playerKey(score.name);
-      const old = humans.get(key);
-      if (!old || score.time > old.time || (score.time === old.time && score.kills > old.kills)) {
-        humans.set(key, { ...score, kind: 'human', mode: 'Recorder · self-reported' });
-      }
-    }
-  } catch (error) {
-    leaderboardAvailable = false;
-    console.error('Vampire Survivors leaderboard read failed:', error);
-  }
-  const scores = [...snapshot.scores.filter((score) => score.kind === 'bot'), ...humans.values()].sort(
-    (a, b) => b.time - a.time || b.kills - a.kills,
-  );
-  return data({ scores, leaderboardAvailable }, { headers: headers() });
+  return data(await readLeaderboard(), { headers: headers() });
 }
 
 function ScorePlot({ scores }: { scores: Score[] }) {

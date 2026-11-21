@@ -1,11 +1,15 @@
 import type { ActionFunctionArgs } from 'react-router';
 import { checkRateLimit } from '~/utils/rateLimit.server';
-import { parseRecorderScore, saveRecorderScore } from '~/utils/vampireSurvivors/leaderboard.server';
+import { parseRecorderScore, readLeaderboard, saveRecorderScore } from '~/utils/vampireSurvivors/leaderboard.server';
+
+export async function loader() {
+  return Response.json(await readLeaderboard(), { headers: { 'Cache-Control': 'no-store' } });
+}
 
 export async function action({ request }: ActionFunctionArgs) {
   const headers = { 'Cache-Control': 'no-store' };
   if (request.method !== 'POST') {
-    return Response.json({ error: 'Use POST.' }, { status: 405, headers: { ...headers, Allow: 'POST' } });
+    return Response.json({ error: 'Use POST.' }, { status: 405, headers: { ...headers, Allow: 'GET, HEAD, POST' } });
   }
   if (request.headers.get('Content-Type')?.split(';')[0]?.trim() !== 'application/json') {
     return Response.json({ error: 'Use JSON.' }, { status: 415, headers });
