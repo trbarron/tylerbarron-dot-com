@@ -124,7 +124,7 @@ function ScorePlot({ scores }: { scores: Score[] }) {
       <p className="mt-6 mb-2 text-center font-mono text-xs">Survival time</p>
       <p className="m-0 border-2 border-black bg-gray-50 p-2 font-mono text-xs" aria-live="polite">
         {score.name} · {clock(score.time)} · {number.format(score.kills)} kills · level {score.level} · seed{' '}
-        {score.seed}
+        {score.seed ?? 'unknown'}
       </p>
     </div>
   );
@@ -184,7 +184,7 @@ export default function VampireSurvivors() {
                       <td className={cell}>{clock(score.time)}</td>
                       <td className={cell}>{number.format(score.kills)}</td>
                       <td className={cell}>{score.level}</td>
-                      <td className={cell}>{score.seed}</td>
+                      <td className={cell}>{score.seed ?? '—'}</td>
                       <td className={cell}>{score.mode}</td>
                     </tr>
                   ))}
