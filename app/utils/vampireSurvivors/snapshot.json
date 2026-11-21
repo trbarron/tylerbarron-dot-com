@@ -1,5 +1,5 @@
 {
-  "updatedOn": "2026-11-20",
+  "updatedOn": "2026-11-21",
   "youtubeId": "Ml9jCvCpy1E",
   "scores": [
     {
@@ -10,6 +10,15 @@
       "time": 1225,
       "level": 28,
       "kills": 4432
+    },
+    {
+      "name": "wbce-three-lane-r140-chest",
+      "kind": "bot",
+      "mode": "Headless",
+      "seed": 95045,
+      "time": 952,
+      "level": 16,
+      "kills": 2333
     },
     {
       "name": "route-swing-safe-chests",
