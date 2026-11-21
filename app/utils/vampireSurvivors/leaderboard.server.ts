@@ -6,7 +6,8 @@ const maxKills = 100_000;
 
 export type RecorderScore = {
   name: string;
-  seed: number;
+  /** Null when the run's seed is unknown, such as a score read from a results screen. */
+  seed: number | null;
   time: number;
   level: number;
   kills: number;
@@ -22,8 +23,14 @@ export function parseRecorderScore(value: unknown): RecorderScore | null {
   const name = typeof fields.name === 'string' ? fields.name.normalize('NFKC').trim() : '';
   if (!name || [...name].length > 32 || /\p{C}/u.test(name)) return null;
 
-  const { seed, time, level, kills } = fields;
-  if (!whole(seed, 1, 2147483646) || !whole(time, 1, 3600) || !whole(level, 1, 500) || !whole(kills, 0, maxKills)) {
+  const { time, level, kills } = fields;
+  const seed = fields.seed ?? null;
+  if (
+    (seed !== null && !whole(seed, 1, 2147483646)) ||
+    !whole(time, 1, 3600) ||
+    !whole(level, 1, 500) ||
+    !whole(kills, 0, maxKills)
+  ) {
     return null;
   }
   return { name, seed, time, level, kills };
