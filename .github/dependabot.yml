@@ -1,7 +1,10 @@
 version: 2
 updates:
+  # `/` covers only .github/workflows; the composite action pins its own.
   - package-ecosystem: github-actions
-    directory: /
+    directories:
+      - /
+      - /.github/actions/*
     schedule:
       interval: daily
 

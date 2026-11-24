@@ -85,7 +85,7 @@ These are useful improvements, not release blockers. Prefer making games and pos
 | [12](tasks/12-mcc-player-id-and-choices.md)   | Remove chess player secrets from URLs    | Ordinary link sharing and analytics should not expose a player's seat. No anti-cheating system.                     | Soon                 |
 | [09](tasks/09-deploy-oidc.md)                 | Replace long-lived deploy keys with OIDC | Protects the AWS account and its bill, rather than toy game scores. Current deploy works; schedule when convenient. | Soon                 |
 | [07](tasks/07-cost-guardrails.md)             | Check budget-alert delivery              | Existing throttle and USD 5 budget are enough for now; confirm the budget can reach the owner.                      | Small follow-up      |
-| [14](tasks/14-arc-static-duplicate-upload.md) | Check for duplicate image uploads        | Worth a short inspection alongside 13; change only if the waste is meaningful.                                      | With 13              |
+| [14](tasks/14-arc-static-duplicate-upload.md) | Check for duplicate image uploads        | Confirmed waste: 110 s of every deploy went to a bucket nothing reads. Upload skipped; see `../deployment.md`.     | Implemented; deploy verification pending |
 | [20](tasks/20-images-and-dead-code.md)        | Lazy-load below-the-fold images          | Small improvement for long posts; no image-conversion pipeline.                                                     | When touching images |
 
 ### Deliberately out of scope

@@ -12,7 +12,24 @@ they're served **same-origin through CloudFront**: the asset bucket is an origin
 `/images/*` behaviors (CachingOptimized, `Compress: True`). `VITE_CDN_URL` is
 `https://tylerbarron.com`, and CI syncs the bucket in the "Publish assets + images to
 CDN bucket" step. The `/assets/*`, `/fonts/*`, `/images/*` static fallback in
-`server.ts` only runs in the local `arc sandbox` (`ARC_ENV !== 'production'`).
+`server.ts` only runs in the local `arc sandbox` (`ARC_ENV !== 'production'`), and
+serves `build/client/`.
+
+Architect's own static bucket (`tbwebsiteremixproduction-staticbucket-cwaylfyux1aj`,
+reachable only through API Gateway's `GET /_static/{proxy+}` route) serves nothing:
+it is not a CloudFront origin and the app never requests `/_static`. Until 24 November
+2026 every deploy re-uploaded the whole client build and image tree to it, one file at
+a time: 110 of the 135 seconds `arc deploy` took. The 33 zero-byte chunks React Router
+emits for resource routes failed every time (`SignatureDoesNotMatch`: aws-lite signs
+empty bodies wrongly), and Architect logs those failures without failing the step.
+`app.arc` now points `@static folder` at a directory that does not exist, so `arc
+deploy` skips the upload ("@static folder … not found"). The section stays because
+removing `@static` makes CloudFormation try to delete the bucket, which fails while
+it holds objects. The bucket keeps its last upload; nothing reads it.
+
+`arc deploy` reads the Lambda's environment variables from SSM
+(`/tb-website-remix/production/*`). Never run `npx arc env` in CI: it prints every
+stored value, and this repository's Actions logs are public.
 
 CloudFront compresses on a delay: a freshly synced file serves **uncompressed** for the
 first several requests (even on `x-cache: Hit`) while the edge populates the brotli

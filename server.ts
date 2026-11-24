@@ -32,7 +32,6 @@ async function handlerFn(event: any, context: any) {
     };
   }
   try {
-    // In local dev, serve static files from public directory
     const path = event.rawPath || event.path || event.requestContext?.http?.path;
 
     // Serve static files in the local arc sandbox only.
@@ -42,8 +41,9 @@ async function handlerFn(event: any, context: any) {
       process.env.ARC_ENV !== 'production' &&
       (path?.startsWith('/assets/') || path?.startsWith('/fonts/') || path?.startsWith('/images/'))
     ) {
-      const publicDir = join(process.cwd(), '..', 'public');
-      const filePath = join(publicDir, path);
+      // The client build: hashed assets plus a copy of public/ (fonts, images).
+      const clientDir = join(process.cwd(), '..', 'build', 'client');
+      const filePath = join(clientDir, path);
 
       if (existsSync(filePath)) {
         const content = readFileSync(filePath);
