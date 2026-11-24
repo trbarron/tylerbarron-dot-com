@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { data, useLoaderData } from 'react-router';
+import { data, Link, useLoaderData } from 'react-router';
 import { buttonClass } from '~/components/Button';
 import Footer from '~/components/Footer';
 import { Navbar } from '~/components/Navbar';
@@ -128,6 +128,9 @@ export default function VampireSurvivors() {
           >
             Play the browser demo
           </a>
+          <Link className={`${buttonClass({ variant: 'secondary', size: 'sm' })} mt-4 ml-2`} to="/vampire-survivors/rl">
+            RL training
+          </Link>
         </header>
 
         <Panel title="High scores">
