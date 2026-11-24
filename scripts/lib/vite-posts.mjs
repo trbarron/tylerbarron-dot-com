@@ -13,12 +13,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import mdx from '@mdx-js/rollup';
-import rehypeImgSize from 'rehype-img-size';
+import { imageSizeFromFile } from 'image-size/fromFile';
 import rehypeKatex from 'rehype-katex';
 import rehypePrettyCode from 'rehype-pretty-code';
 import remarkFrontmatter from 'remark-frontmatter';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
+import { visit } from 'unist-util-visit';
 import { parse as parseYaml } from 'yaml';
 
 const root = path.resolve(import.meta.dirname, '..', '..');
@@ -26,6 +27,26 @@ const postsDir = path.join(root, 'posts');
 
 const VIRTUAL_ID = 'virtual:posts-index';
 const RESOLVED_ID = '\0' + VIRTUAL_ID;
+
+/** Add intrinsic dimensions for images served from public/. */
+function rehypeLocalImageDimensions() {
+  const publicDir = path.join(root, 'public');
+  return async (tree) => {
+    const images = [];
+    visit(tree, 'element', (node) => {
+      const src = node.properties.src;
+      if (node.tagName === 'img' && typeof src === 'string' && !/^(?:[a-z]+:)?\/\//.test(src)) {
+        images.push({ node, src });
+      }
+    });
+    await Promise.all(
+      images.map(async ({ node, src }) => {
+        const { width, height } = await imageSizeFromFile(path.join(publicDir, src));
+        Object.assign(node.properties, { width, height });
+      }),
+    );
+  };
+}
 
 /** The MDX compiler, with the plugins every post is written against. */
 export function mdxPosts() {
@@ -42,7 +63,7 @@ export function mdxPosts() {
         // (ASCII diagrams) are left untouched.
         [rehypePrettyCode, { theme: 'github-light', keepBackground: false }],
         // width/height on every <img>, read from public/, so images don't shift the page.
-        [rehypeImgSize, { dir: 'public' }],
+        rehypeLocalImageDimensions,
       ],
     }),
   };
