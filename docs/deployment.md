@@ -209,7 +209,16 @@ That file decides **which** packages ship, not which versions. `npm run build:ar
 (`scripts/install-lambda-deps.mjs`) installs each one at exactly the version in the root
 `package-lock.json`, so the Lambda runs what the build compiled against and the tests ran
 against, and a package listed there must also be in the root `package.json`.
-`check:lambda-deps` fails on a version mismatch as well as a missing package.
+`check:lambda-deps` fails on a version mismatch as well as a missing package; the
+deploy job runs it on the tree it ships.
+
+`arc deploy` runs with `--no-hydrate`. Architect's hydrate step deletes
+`server/node_modules` and reinstalls from `server/package.json`'s ranges with no
+lockfile, which silently undid the pinning: on 24 November 2026 the live Lambda had
+react-router 7.18.6 while the build and tests used 7.18.5. Without hydrate, the Lambda
+ships exactly what `build:arc:deps` installed, on the Linux x64 runner that matches the
+Lambda. The ranges in `server/package.json` are now only names; keep them in step with
+the root anyway, since a local `arc sandbox` still hydrates.
 
 No AWS SDK package ships. `app/utils/camelUpCup/tournament.server.ts` does use
 `@aws-sdk/client-sns` to email a Camel Up Cup submission, but Lambda's Node runtime
