@@ -3,10 +3,11 @@
 Operational gotchas for the Architect-deployed Lambda + CloudFront setup. Referenced
 from `CLAUDE.md`, which keeps only the rules you can violate without meaning to.
 
-## Lambda zip: SSR build + handler + prod node_modules (no client assets)
+## Lambda ZIP: handler and split SSR bundle
 
-The deployed Lambda (`server/`) contains the SSR build (`build/server/`, including one
-chunk per blog post) plus the esbuilt `index.mjs` and prod `node_modules`. Client assets, fonts, and blog images are **not** in the Lambda —
+The deployed Lambda contains `server/index.mjs` and `server/chunks/`. esbuild packages
+the handler, the Vite SSR build, and the dependencies that SSR uses. Blog post bodies
+remain separate chunks. Client assets, fonts, and blog images are **not** in the Lambda —
 they're served **same-origin through CloudFront**: the asset bucket is an origin on the
 `tylerbarron.com` distribution (E1TUWNZL0WZZ6J) with `/assets/*`, `/fonts/*`,
 `/images/*` behaviors (CachingOptimized, `Compress: True`). `VITE_CDN_URL` is
@@ -209,49 +210,22 @@ base64-encodes binary assets (~1.33× expansion), the practical raw-file limit i
 and an `apigw-requestid` header. The Stockfish WASM (7.3 MB) hit this — now offloaded to
 unpkg CDN; see `app/utils/chess/stockfish.ts`.
 
-## Lambda dependencies: two lists that must stay in sync
+## Lambda dependency resolution
 
-The Lambda installs `server/package.json` (a separate, hand-maintained list: the AWS
-preset, `@react-router/node`, `chess.js`, `ioredis`, `isbot`, `react`, `react-dom`,
-`react-router`) — ~17 MB installed, dominated by `react-dom` (7.9 MB) and `react-router`
-(5 MB).
+`npm run build:arc:server` bundles from the root install, so the deployed dependencies
+come from the same lockfile as the client build and tests. The Vite SSR build can emit
+bare npm imports. esbuild resolves those imports when it packages the Lambda and
+checks its output for unexpected external modules. The Lambda has no separate npm
+install. `arc deploy --no-hydrate` preserves the checked artifact.
 
-That file decides **which** packages ship, not which versions. `npm run build:arc:deps`
-(`scripts/install-lambda-deps.mjs`) installs each one at exactly the version in the root
-`package-lock.json`, so the Lambda runs what the build compiled against and the tests ran
-against, and a package listed there must also be in the root `package.json`.
-`check:lambda-deps` fails on a version mismatch as well as a missing package; the
-deploy job runs it on the tree it ships.
+`@aws-sdk/client-sns` is provided by Lambda’s Node runtime. Camel Up Cup imports it
+only when notifying about a submission. The 3D viewer and lightbox also remain
+external, with dynamic imports that only run in the browser.
 
-`arc deploy` runs with `--no-hydrate`. Architect's hydrate step deletes
-`server/node_modules` and reinstalls from `server/package.json`'s ranges with no
-lockfile, which silently undid the pinning: on 24 November 2026 the live Lambda had
-react-router 7.18.6 while the build and tests used 7.18.5. Without hydrate, the Lambda
-ships exactly what `build:arc:deps` installed, on the Linux x64 runner that matches the
-Lambda. The ranges in `server/package.json` are now only names; keep them in step with
-the root anyway, since a local `arc sandbox` still hydrates.
-
-No AWS SDK package ships. `app/utils/camelUpCup/tournament.server.ts` does use
-`@aws-sdk/client-sns` to email a Camel Up Cup submission, but Lambda's Node runtime
-includes the AWS SDK v3, so it resolves there; bundling the SDK (with `@smithy/*`)
-doubled the Lambda to 36 MB. It's imported dynamically inside `notifySubmission`, so only
-a submission loads it. Locally it resolves from the root devDependency. AWS recommends
-bundling the SDK so a runtime update can't change its version under you; for one
-`PublishCommand` that risk is small, and a failed email never loses a submission (the
-bot is already in Redis). Root membership tells you nothing about what ships; `server/package.json` is the
-authority.
-
-The Vite SSR build externalizes all npm deps, so anything an SSR-rendered module imports
-must either be in `server/package.json` or listed in `ssr.noExternal` in
-`vite.config.ts` (currently `chessground`, `d3-geo`, `d3-array`, `topojson-client` —
-bundled tree-shaken into `build/server`).
-
-Getting this wrong 500s those routes **for bots/curl only** (`onAllReady` path);
-browsers recover client-side via `onShellReady`, so the breakage hides from casual
-testing (2026-06-10 incident). CI's `lambda-deps` job assembles `server/` the way the
-deploy does and runs `scripts/check-lambda-deps.mjs`, which fails when a bare import in
-the bundle isn't installed in `server/node_modules`. The `verify-lambda-deps` skill
-covers the manual check: requesting a route as a bot.
+`npm run test:deploy` builds the Lambda and invokes the packaged handler with
+Googlebot requests. It copies the artifact outside the repository so runtime imports
+cannot fall back to the root install. Set `TEST_REDIS_URL` to a disposable local
+Redis server to also check the Redis health check and chess lobby.
 
 ## Stockfish in the Lambda: downloaded on first use, not shipped
 
