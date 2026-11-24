@@ -36,15 +36,8 @@ jobs:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v7
 
-      - name: ⎔ Setup node
-        uses: actions/setup-node@v7
-        with:
-          node-version: 24
-          cache: npm
-          cache-dependency-path: ./package-lock.json
-
-      - name: 📥 Install deps
-        run: npm ci
+      - name: ⎔ Setup node + deps
+        uses: ./.github/actions/setup
 
       - name: 🔬 Lint
         run: npm run lint
@@ -56,15 +49,8 @@ jobs:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v7
 
-      - name: ⎔ Setup node
-        uses: actions/setup-node@v7
-        with:
-          node-version: 24
-          cache: npm
-          cache-dependency-path: ./package-lock.json
-
-      - name: 📥 Install deps
-        run: npm ci
+      - name: ⎔ Setup node + deps
+        uses: ./.github/actions/setup
 
       # Fails on unformatted files; fix locally with npm run format.
       - name: ✨ Check formatting
@@ -77,15 +63,8 @@ jobs:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v7
 
-      - name: ⎔ Setup node
-        uses: actions/setup-node@v7
-        with:
-          node-version: 24
-          cache: npm
-          cache-dependency-path: ./package-lock.json
-
-      - name: 📥 Install deps
-        run: npm ci
+      - name: ⎔ Setup node + deps
+        uses: ./.github/actions/setup
 
       - name: 🔎 Type check
         run: npm run typecheck
@@ -106,15 +85,8 @@ jobs:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v7
 
-      - name: ⎔ Setup node
-        uses: actions/setup-node@v7
-        with:
-          node-version: 24
-          cache: npm
-          cache-dependency-path: ./package-lock.json
-
-      - name: 📥 Install deps
-        run: npm ci
+      - name: ⎔ Setup node + deps
+        uses: ./.github/actions/setup
 
       - name: 🧪 Run tests
         env:
@@ -146,21 +118,14 @@ jobs:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v7
 
-      - name: ⎔ Setup node
-        uses: actions/setup-node@v7
-        with:
-          node-version: 24
-          cache: npm
-          cache-dependency-path: ./package-lock.json
+      - name: ⎔ Setup node + deps
+        uses: ./.github/actions/setup
 
-      - name: 📥 Install deps
-        run: npm ci
-
-      # Assemble server/ as the deploy does (minus asset publishing), then check
-      # every package the SSR bundle imports is installed there. A miss 500s
-      # for bots and curl only, so no browser test would catch it.
+      # Assemble server/ as the deploy does, then check every package the SSR
+      # bundle imports is installed there. A miss 500s for bots and curl only,
+      # so no browser test would catch it.
       - name: 🏗 Build the Lambda
-        run: npm run build && npm run build:arc:server && npm run build:arc:deps
+        run: npm run build:arc
 
       - name: λ Check the Lambda installs what it imports
         run: npm run check:lambda-deps
@@ -203,16 +168,8 @@ jobs:
           # the last release tag.
           fetch-depth: 0
 
-      - name: ⎔ Setup node
-        uses: actions/setup-node@v7
-        with:
-          node-version: 24
-          architecture: x64
-          cache: npm
-          cache-dependency-path: ./package-lock.json
-
-      - name: 📥 Install deps
-        run: npm ci
+      - name: ⎔ Setup node + deps
+        uses: ./.github/actions/setup
 
       # Determine the footer version without modifying files, committing or tagging.
       - name: 🔎 Plan release version
@@ -286,9 +243,9 @@ jobs:
           du -sh server/node_modules/*/ | sort -rh | head -15
 
       - name: 🚀 Production Deploy
-        run: |
-          npm exec arc -- env --add --env production NODE_ENV production || true
-          npm exec arc -- deploy --production --prune --verbose --debug
+        # Env vars come from SSM (`npx arc env`, never in CI: it prints every
+        # stored secret, and Actions logs are public).
+        run: npm exec arc -- deploy --production --prune --verbose
         env:
           CI: true
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}

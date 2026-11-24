@@ -14,10 +14,13 @@ architecture x86_64
   method any
   src server
 
+# CloudFront serves /assets, /fonts and /images from the CDN bucket, which the
+# deploy workflow syncs. This folder does not exist, so arc deploy skips
+# uploading to Architect's own static bucket, which nothing reads. Keep the
+# section: removing @static makes CloudFormation try to delete that (non-empty)
+# bucket.
 @static
-fingerprint true
-folder public
-spa true
+folder arc-static-unused
 
 @env
 production

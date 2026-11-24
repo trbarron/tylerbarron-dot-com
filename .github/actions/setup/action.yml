@@ -1,0 +1,31 @@
+name: Set up Node and dependencies
+description: Node 24 plus npm ci, with the npm cache keyed on the lockfile's dependencies.
+
+runs:
+  using: composite
+  steps:
+    - name: ⎔ Setup node
+      uses: actions/setup-node@v7
+      with:
+        node-version: 24
+
+    # Hash the lockfile without its root "version" fields. semantic-release
+    # rewrites those on every release, so hashing the whole file (setup-node's
+    # `cache: npm`) missed the cache on every run after a deploy.
+    - name: 🔑 Dependency hash
+      id: deps
+      shell: bash
+      run: echo "hash=$(jq -c 'del(.version, .packages[""].version)' package-lock.json | sha256sum | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+
+    # After a dependency change, restore-keys falls back to the newest cache,
+    # which still holds nearly every tarball.
+    - name: 🗄 npm cache
+      uses: actions/cache@v6
+      with:
+        path: ~/.npm
+        key: npm-${{ runner.os }}-${{ steps.deps.outputs.hash }}
+        restore-keys: npm-${{ runner.os }}-
+
+    - name: 📥 Install deps
+      shell: bash
+      run: npm ci --prefer-offline --no-audit --no-fund
