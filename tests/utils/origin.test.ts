@@ -21,6 +21,19 @@ describe('origin verification', () => {
     }
   });
 
+  it('accepts any of several comma-separated secrets, for rotation', () => {
+    const rotating = { ARC_ENV: 'production', ORIGIN_VERIFY: 'new-secret-0123456789, old-secret-0123456789' };
+    expect(isTrustedOrigin({ 'x-origin-verify': 'new-secret-0123456789' }, rotating)).toBe(true);
+    expect(isTrustedOrigin({ 'x-origin-verify': 'old-secret-0123456789' }, rotating)).toBe(true);
+    for (const value of ['new-secret-0123456789, old-secret-0123456789', 'new-secret-0123456789,', 'other', ' ']) {
+      expect(isTrustedOrigin({ 'x-origin-verify': value }, rotating)).toBe(false);
+    }
+    for (const ORIGIN_VERIFY of [',', ' , ', '']) {
+      expect(isTrustedOrigin({ 'x-origin-verify': '' }, { ARC_ENV: 'production', ORIGIN_VERIFY })).toBe(false);
+      expect(isTrustedOrigin({ 'x-origin-verify': ',' }, { ARC_ENV: 'production', ORIGIN_VERIFY })).toBe(false);
+    }
+  });
+
   it('rejects differently cased duplicate headers', () => {
     expect(isTrustedOrigin({ 'x-origin-verify': env.ORIGIN_VERIFY, 'X-Origin-Verify': env.ORIGIN_VERIFY }, env)).toBe(
       false,
