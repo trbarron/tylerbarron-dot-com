@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { cp, mkdtemp, readdir, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { mock } from 'node:test';
 import { pathToFileURL } from 'node:url';
 
 const server = path.resolve(import.meta.dirname, '../server');
@@ -22,19 +23,36 @@ try {
   }
 
   const { handler } = await import(pathToFileURL(path.join(temp, 'index.mjs')).href);
-  const request = (rawPath, headers) =>
+  const request = (rawPath, headers, method = 'GET') =>
     handler(
       {
         version: '2.0',
         rawPath,
         rawQueryString: '',
         headers: { host: 'tylerbarron.com', 'user-agent': 'Googlebot/2.1', ...headers },
-        requestContext: { http: { method: 'GET' } },
+        requestContext: { http: { method } },
       },
       {},
     );
   const origin = { 'x-origin-verify': process.env.ORIGIN_VERIFY };
   assert.equal((await request('/')).statusCode, 403);
+  const errors = mock.method(console, 'error', () => {});
+  try {
+    const missingAction = await request(
+      '/missing-route',
+      {
+        ...origin,
+        origin: 'https://tylerbarron.com',
+        'x-forwarded-host': 'invalid host',
+      },
+      'POST',
+    );
+    assert.equal(missingAction.statusCode, 405);
+    assert.equal(errors.mock.callCount(), 0, 'Expected routing errors should not be logged as server failures');
+  } finally {
+    errors.mock.restore();
+  }
+  console.log('✓ Canonical request origin and quiet 405');
   const pages = ['/', '/blog/fastballMPHDifference', '/blog/triple-bypass', '/pizza-rating', '/camel-up-cup'];
   if (redis) pages.push('/multiple-choice-chess');
   for (const page of pages) {

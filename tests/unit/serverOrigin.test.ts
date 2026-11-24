@@ -24,15 +24,45 @@ describe('Lambda origin guard', () => {
     expect(serve).not.toHaveBeenCalled();
   });
 
-  it('passes an authorized request to the adapter unchanged', async () => {
+  it('uses the public hostname for an authorized production request', async () => {
     vi.stubEnv('ARC_ENV', 'production');
     vi.stubEnv('ORIGIN_VERIFY', 'test-secret');
     const event = {
       rawPath: '/healthcheck',
-      headers: { 'x-origin-verify': 'test-secret', 'x-site-viewer-ip': '203.0.113.7' },
+      rawQueryString: 'probe=1',
+      headers: {
+        Host: 'internal.example',
+        'x-forwarded-host': 'invalid host',
+        'X-Forwarded-Host': 'viewer.example',
+        'x-origin-verify': 'test-secret',
+        'x-site-viewer-ip': '203.0.113.7',
+      },
     };
     const context = {};
     expect(await handler(event, context)).toEqual({ statusCode: 200, body: 'rendered' });
+    expect(serve).toHaveBeenCalledWith(
+      {
+        ...event,
+        headers: { host: 'tylerbarron.com', 'x-origin-verify': 'test-secret', 'x-site-viewer-ip': '203.0.113.7' },
+      },
+      context,
+      {},
+    );
+  });
+
+  it('rejects an invalid production request target before routing', async () => {
+    vi.stubEnv('ARC_ENV', 'production');
+    vi.stubEnv('ORIGIN_VERIFY', 'test-secret');
+    const event = { rawPath: 'healthcheck', rawQueryString: '', headers: { 'x-origin-verify': 'test-secret' } };
+    expect(await handler(event, {})).toMatchObject({ statusCode: 400, headers: { 'Cache-Control': 'no-store' } });
+    expect(serve).not.toHaveBeenCalled();
+  });
+
+  it('preserves the staging hostname', async () => {
+    vi.stubEnv('ARC_ENV', 'staging');
+    const event = { rawPath: '/healthcheck', rawQueryString: '', headers: { host: 'staging.example' } };
+    const context = {};
+    expect(await handler(event, context)).toMatchObject({ statusCode: 200 });
     expect(serve).toHaveBeenCalledWith(event, context, {});
   });
 });
