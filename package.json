@@ -80,7 +80,7 @@
     "remark-frontmatter": "^5.0.0",
     "remark-gfm": "^4.0.1",
     "remark-math": "^6.0.0",
-    "semantic-release": "^25.0.9",
+    "semantic-release": "^26.0.1",
     "sharp": "^0.35.5",
     "shiki": "^4.6.0",
     "stockfish": "18.0.7",
