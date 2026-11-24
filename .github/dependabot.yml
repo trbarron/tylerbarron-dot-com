@@ -8,8 +8,7 @@ updates:
     schedule:
       interval: daily
 
-  # The Lambda takes its versions from this lockfile too (scripts/install-lambda-deps.mjs),
-  # so one update covers both.
+  # The Lambda bundles dependencies from this lockfile.
   - package-ecosystem: npm
     directory: /
     schedule:

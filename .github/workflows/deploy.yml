@@ -112,8 +112,14 @@ jobs:
         run: node scripts/check-design.mjs
 
   lambda-deps:
-    name: λ Lambda deps
+    name: λ Lambda bundle
     runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: --health-cmd "redis-cli ping" --health-interval 2s --health-timeout 2s --health-retries 15
     steps:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v7
@@ -121,14 +127,10 @@ jobs:
       - name: ⎔ Setup node + deps
         uses: ./.github/actions/setup
 
-      # Assemble server/ as the deploy does, then check every package the SSR
-      # bundle imports is installed there. A miss 500s for bots and curl only,
-      # so no browser test would catch it.
-      - name: 🏗 Build the Lambda
-        run: npm run build:arc
-
-      - name: λ Check the Lambda installs what it imports
-        run: npm run check:lambda-deps
+      - name: λ Build and smoke-test the Lambda
+        env:
+          TEST_REDIS_URL: redis://localhost:6379
+        run: npm run test:deploy
 
   og-cards:
     name: 🖼 OG cards
@@ -178,9 +180,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node scripts/plan-release.mjs
 
-      # Single source of truth: the same npm scripts used locally. Builds the
-      # client + SSR bundles (blog posts included) against the CDN base, bundles
-      # the Lambda handler, and installs the Lambda's prod-only deps in server/.
+      # Build client assets against the CDN base and package the Lambda.
       - name: 🏗 Build
         env:
           NODE_ENV: production
@@ -233,24 +233,13 @@ jobs:
             --exclude "manifest.json" \
             --cache-control "public,max-age=3600" || true
 
-      # The tree checked here is the tree that ships (arc deploy --no-hydrate).
-      - name: λ Check the Lambda installs what it imports
-        run: npm run check:lambda-deps
-
-      - name: 📊 Lambda bundle size
-        run: |
-          echo "=== Lambda bundle size breakdown ==="
-          du -sh server/build server/node_modules server/index.mjs
-          echo "--- total server/ ---"
-          du -sh server/
-          echo "--- top node_modules by size ---"
-          du -sh server/node_modules/*/ | sort -rh | head -15
+      - name: λ Smoke-test the production bundle
+        run: node scripts/check-lambda-bundle.mjs
 
       - name: 🚀 Production Deploy
         # Env vars come from SSM (`npx arc env`, never in CI: it prints every
-        # stored secret, and Actions logs are public). --no-hydrate ships
-        # server/node_modules as built and checked above; hydrate would delete
-        # it and reinstall from server/package.json's ranges, with no lockfile.
+        # stored secret, and Actions logs are public). --no-hydrate preserves
+        # the tested bundle without letting Architect install dependencies.
         run: npm exec arc -- deploy --production --prune --verbose --no-hydrate
         env:
           CI: true
