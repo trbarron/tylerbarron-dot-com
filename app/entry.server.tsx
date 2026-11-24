@@ -6,13 +6,24 @@
 
 import { PassThrough, Readable } from 'node:stream';
 
-import type { AppLoadContext, EntryContext } from 'react-router';
-import { ServerRouter } from 'react-router';
+import type { AppLoadContext, EntryContext, HandleErrorFunction } from 'react-router';
+import { isRouteErrorResponse, ServerRouter } from 'react-router';
 import { isbot } from 'isbot';
 import { renderToPipeableStream } from 'react-dom/server';
 import { contentSecurityPolicy } from '~/utils/csp.server';
 
 const ABORT_DELAY = 5_000;
+
+export const handleError: HandleErrorFunction = (error, { request }) => {
+  if (request.signal.aborted) return;
+  // React Router reports routing rejections such as missing actions here as well.
+  if (isRouteErrorResponse(error)) {
+    if (error.status >= 400 && error.status < 500) return;
+    console.error('error' in error && error.error ? error.error : error);
+    return;
+  }
+  console.error(error);
+};
 
 // Security headers for document responses. Static assets are served from the
 // CDN bucket and don't pass through here, but headers only matter on documents.
