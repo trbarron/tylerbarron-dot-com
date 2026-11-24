@@ -134,9 +134,20 @@ verification remain in audit task 06 until the new handler deploys.
 
 Private pre-change function, distribution and Lambda snapshots are in
 `/private/tmp/site-origin-guard-20261113` on the executing machine. They contain
-secrets and must never be committed. To rotate, first make the handler accept old and
-new secrets during propagation, then update CloudFront and wait for `Deployed`, then
-retire the old value. To undo enforcement, deploy the prior handler before removing
+secrets and must never be committed.
+
+To rotate, use the comma-separated list `isTrustedOrigin` accepts:
+
+1. Put `new,old` in the SSM parameter `/tb-website-remix/production/ORIGIN_VERIFY`
+   (`aws ssm put-parameter --overwrite --type SecureString`, not `npx arc env`, which
+   prints every value) and run a deploy.
+2. Change the API origin's `x-origin-verify` custom header on the distribution to the
+   new value (see "Changing CloudFront safely") and wait for `Deployed`.
+3. Put just the new value in SSM and deploy again.
+
+Never print the values in CI: the Actions logs are public. Until 24 November 2026
+every deploy ran `arc env`, which printed `ORIGIN_VERIFY`; the value set on 13
+November is public and must be replaced this way. To undo enforcement, deploy the prior handler before removing
 the CloudFront header or Lambda parameter. Never remove the secret first: production
 fails closed. The execute-api endpoint must stay enabled because it is CloudFront's
 origin; disabling it would also break the public site.
