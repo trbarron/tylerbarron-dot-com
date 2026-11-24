@@ -8,9 +8,8 @@
  * curl, while browsers recover client-side, so a browser test looks fine
  * (this shipped once, 2026-06-10). See the verify-lambda-deps skill.
  *
- * Run after the Lambda is assembled the way deploy does it:
- *   npm run build && npm run build:arc:server && npm run build:arc:deps
- * then this resolves every bare import in server/index.mjs and server/build/server
+ * Run after the Lambda is assembled the way deploy does it (`npm run build:arc`).
+ * It resolves every bare import in server/index.mjs and server/build/server
  * against server/node_modules, the tree the Lambda actually ships (transitive
  * deps included).
  *
@@ -57,10 +56,7 @@ function files(dir) {
 
 const bundle = [path.join(serverDir, 'index.mjs'), ...files(path.join(serverDir, 'build', 'server'))];
 if (!fs.existsSync(bundle[0]) || !fs.existsSync(modulesDir)) {
-  console.error(
-    '✗ No assembled Lambda in server/. Build it first:\n' +
-      '  npm run build && npm run build:arc:server && npm run build:arc:deps',
-  );
+  console.error('✗ No assembled Lambda in server/. Build it first:\n' + '  npm run build:arc');
   process.exit(1);
 }
 

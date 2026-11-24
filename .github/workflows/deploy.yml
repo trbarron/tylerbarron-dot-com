@@ -233,6 +233,10 @@ jobs:
             --exclude "manifest.json" \
             --cache-control "public,max-age=3600" || true
 
+      # The tree checked here is the tree that ships (arc deploy --no-hydrate).
+      - name: λ Check the Lambda installs what it imports
+        run: npm run check:lambda-deps
+
       - name: 📊 Lambda bundle size
         run: |
           echo "=== Lambda bundle size breakdown ==="
@@ -244,8 +248,10 @@ jobs:
 
       - name: 🚀 Production Deploy
         # Env vars come from SSM (`npx arc env`, never in CI: it prints every
-        # stored secret, and Actions logs are public).
-        run: npm exec arc -- deploy --production --prune --verbose
+        # stored secret, and Actions logs are public). --no-hydrate ships
+        # server/node_modules as built and checked above; hydrate would delete
+        # it and reinstall from server/package.json's ranges, with no lockfile.
+        run: npm exec arc -- deploy --production --prune --verbose --no-hydrate
         env:
           CI: true
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}

@@ -8,7 +8,9 @@
  * Lambda could run a react-router or react-dom other than the one the build
  * compiled against and the tests ran against. This installs each listed
  * package at exactly the version in package-lock.json instead. The packages
- * those depend on still resolve from their ranges.
+ * those depend on still resolve from their ranges. The deploy runs
+ * `arc deploy --no-hydrate`, so Architect ships this tree rather than
+ * reinstalling it from server/package.json's ranges.
  *
  *   node scripts/install-lambda-deps.mjs            install
  *   node scripts/install-lambda-deps.mjs --print    just print the pinned specs
