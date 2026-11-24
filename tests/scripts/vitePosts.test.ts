@@ -2,7 +2,21 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { describe, it, expect } from 'vitest';
-import { buildPostsIndex, readFrontmatter } from '../../scripts/lib/vite-posts.mjs';
+import { buildPostsIndex, mdxPosts, readFrontmatter } from '../../scripts/lib/vite-posts.mjs';
+
+describe('mdxPosts', () => {
+  it('adds dimensions to local Markdown images and leaves remote images alone', async () => {
+    const source = [
+      '![Local](/images/posts/fastballMPHDifference/bb_01_contact_pct.png)',
+      '',
+      '![Remote](https://example.com/image.png)',
+    ].join('\n');
+    const compiled = await mdxPosts().transform(source, 'image-test.mdx');
+
+    expect(compiled?.code).toMatch(/alt: "Local",\s*width: "1791",\s*height: "1128"/);
+    expect(compiled?.code).toMatch(/alt: "Remote"\s*}/);
+  });
+});
 
 describe('readFrontmatter', () => {
   it('reads the YAML block at the top of a post', () => {
