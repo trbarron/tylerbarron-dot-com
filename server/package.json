@@ -4,7 +4,7 @@
     "@ballatech/react-router7-preset-aws": "^1.0.1",
     "@react-router/node": "^7.18.5",
     "chess.js": "^1.0.0",
-    "ioredis": "^5.8.2",
+    "ioredis": "^6.1.0",
     "isbot": "^5.2.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
