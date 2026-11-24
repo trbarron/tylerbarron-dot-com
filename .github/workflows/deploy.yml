@@ -188,6 +188,9 @@ jobs:
           VITE_CDN_URL: ${{ secrets.VITE_CDN_URL }}
         run: npm run build:arc
 
+      - name: λ Smoke-test the production bundle
+        run: node scripts/check-lambda-bundle.mjs
+
       # The asset bucket is an origin on the tylerbarron.com CloudFront
       # distribution (/assets/*, /fonts/*, /images/* behaviors), so everything
       # the browser fetches is same-origin, compressed, and edge-cached. No
@@ -232,9 +235,6 @@ jobs:
           [ -d public/images/og/projects ] && aws s3 sync public/images/og/projects/ "s3://$AWS_BUCKET_NAME/images/og/projects/" \
             --exclude "manifest.json" \
             --cache-control "public,max-age=3600" || true
-
-      - name: λ Smoke-test the production bundle
-        run: node scripts/check-lambda-bundle.mjs
 
       - name: 🚀 Production Deploy
         # Env vars come from SSM (`npx arc env`, never in CI: it prints every
