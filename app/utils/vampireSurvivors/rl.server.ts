@@ -4,6 +4,7 @@ import { getRedisClient } from '~/utils/redis.server';
 // with RPUSH and trimmed, so they read oldest first.
 const prefix = '{vampire-survivors}:rl:mac:v1';
 export const rlKeys = {
+  studies: `${prefix}:studies`,
   status: `${prefix}:status`,
   updates: `${prefix}:updates`,
   evals: `${prefix}:evals`,
@@ -57,6 +58,7 @@ export type RlStatus = {
 export type RlEvent = { time: string; text: string };
 
 export type RlDashboard = {
+  studies: { id: string; title: string; time: string; summary: string }[];
   available: boolean;
   status: RlStatus | null;
   updates: RlUpdate[];
@@ -176,17 +178,25 @@ const present = <T>(value: T | null): value is T => value !== null;
 
 export async function readRlDashboard(): Promise<RlDashboard> {
   try {
-    const [status, updates, evals, events] = await getRedisClient()
+    const [status, updates, evals, events, studies] = await getRedisClient()
       .multi()
       .get(rlKeys.status)
       .lrange(rlKeys.updates, -600, -1)
       .lrange(rlKeys.evals, -200, -1)
       .lrange(rlKeys.events, -40, -1)
+      .hgetall(rlKeys.studies)
       .exec()
       .then((replies) => (replies ?? []).map(([error, value]) => (error ? null : value)));
     const list = (value: unknown) =>
       Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [];
     return {
+      studies: Object.entries(studies ?? {})
+        .flatMap(([id, raw]) => {
+          const row = typeof raw === 'string' ? parse(raw) : null;
+          if (!row || !text(row.title) || !time(row.time) || !text(row.summary)) return [];
+          return [{ id, title: text(row.title), time: time(row.time), summary: text(row.summary, 2000) }];
+        })
+        .sort((a, b) => Date.parse(b.time) - Date.parse(a.time)),
       available: true,
       status: parseStatus(typeof status === 'string' ? status : null),
       updates: list(updates).map(parseUpdate).filter(present),
@@ -195,6 +205,6 @@ export async function readRlDashboard(): Promise<RlDashboard> {
     };
   } catch (error) {
     console.error('Vampire Survivors RL dashboard read failed:', error);
-    return { available: false, status: null, updates: [], evals: [], events: [] };
+    return { studies: [], available: false, status: null, updates: [], evals: [], events: [] };
   }
 }

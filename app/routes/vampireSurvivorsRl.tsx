@@ -236,7 +236,7 @@ function Stat({ label, value }: { label: string; value: string }) {
 }
 
 export default function VampireSurvivorsRl() {
-  const { available, status, updates, evals, events, now: serverNow } = useLoaderData<typeof loader>();
+  const { studies, available, status, updates, evals, events, now: serverNow } = useLoaderData<typeof loader>();
   const revalidator = useRevalidator();
   const [now, setNow] = useState(serverNow);
   usePolling(async () => {
@@ -268,14 +268,22 @@ export default function VampireSurvivorsRl() {
           <h1 className="m-0 text-3xl leading-none font-extrabold tracking-tight uppercase sm:text-5xl">{title}</h1>
           <p className="m-0 mt-3 max-w-3xl text-sm sm:text-base">
             Every 4 seconds the policy picks which planner mode drives, and it can change level-up choices. Greedy play
-            is compared with the reference planner on the same 48 seeds.
+            is compared with the reference planner on matched game seeds.
           </p>
           <Link className={`${buttonClass({ variant: 'secondary', size: 'sm' })} mt-4`} to="/vampire-survivors">
             Bot Lab
           </Link>
         </header>
 
-        <Panel title="Status" aside={status && <span className="font-mono text-xs">{ago(status.time, now)}</span>}>
+        {studies.map((study) => (
+          <Panel key={study.id} title={study.title}>
+            <p className="m-0 p-4 text-sm whitespace-pre-line">{study.summary}</p>
+          </Panel>
+        ))}
+        <Panel
+          title="Original training run"
+          aside={status && <span className="font-mono text-xs">{ago(status.time, now)}</span>}
+        >
           {!available && (
             <p className="m-0 border-b-2 border-black px-4 py-2 text-sm">Training data is temporarily unavailable.</p>
           )}
