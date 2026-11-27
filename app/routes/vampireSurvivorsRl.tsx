@@ -275,6 +275,20 @@ export default function VampireSurvivorsRl() {
           </Link>
         </header>
 
+        <Panel title="Frozen policy confirmation" subtitle="48 fresh matched seeds · full games">
+          <div className="space-y-2 p-4 text-sm">
+            <p className="m-0">
+              The frozen full-game policy survived longer on 31 of 48 seeds. Its median paired gain was
+              17.5 seconds (95% bootstrap interval +1 to +69 seconds). It reached 15 minutes in 16 games,
+              compared with 8 for the planner. Only the planner reached 16 minutes, once. No run reached 17.
+            </p>
+            <p className="m-0">
+              Removing chest detours from the planner gained 6.5 seconds in median paired survival
+              (95% interval 0 to +33 seconds). Eight games reached 15 minutes.
+            </p>
+          </div>
+        </Panel>
+
         <Panel title="Full-game training pilot" subtitle="November 2026 · 96 matched seeds · 12 hours of training per arm">
           <div className="space-y-3 p-4 text-sm">
             <table className="w-full max-w-2xl text-left">
