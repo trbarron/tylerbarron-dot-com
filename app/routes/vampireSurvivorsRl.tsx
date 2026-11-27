@@ -236,7 +236,7 @@ function Stat({ label, value }: { label: string; value: string }) {
 }
 
 export default function VampireSurvivorsRl() {
-  const { available, status, updates, evals, events, now: serverNow } = useLoaderData<typeof loader>();
+  const { studies, available, status, updates, evals, events, now: serverNow } = useLoaderData<typeof loader>();
   const revalidator = useRevalidator();
   const [now, setNow] = useState(serverNow);
   usePolling(async () => {
@@ -275,59 +275,15 @@ export default function VampireSurvivorsRl() {
           </Link>
         </header>
 
-        <Panel title="Frozen policy confirmation" subtitle="48 fresh matched seeds · full games">
-          <div className="space-y-2 p-4 text-sm">
-            <p className="m-0">
-              The frozen full-game policy survived longer on 31 of 48 seeds. Its median paired gain was
-              17.5 seconds (95% bootstrap interval +1 to +69 seconds). It reached 15 minutes in 16 games,
-              compared with 8 for the planner. Only the planner reached 16 minutes, once. No run reached 17.
-            </p>
-            <p className="m-0">
-              Removing chest detours from the planner gained 6.5 seconds in median paired survival
-              (95% interval 0 to +33 seconds). Eight games reached 15 minutes.
-            </p>
-          </div>
-        </Panel>
-
-        <Panel title="Full-game training pilot" subtitle="November 2026 · 96 matched seeds · 12 hours of training per arm">
-          <div className="space-y-3 p-4 text-sm">
-            <table className="w-full max-w-2xl text-left">
-              <caption className="sr-only">Pilot survival by policy</caption>
-              <thead>
-                <tr className="border-b-2 border-black">
-                  <th scope="col">Policy</th>
-                  <th scope="col">Reached 15:00</th>
-                  <th scope="col">Reached 17:00</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  ['Reference planner', 15, 0],
-                  ['Starting checkpoint', 25, 0],
-                  ['Half late-game practice', 26, 0],
-                  ['Full-game training', 38, 0],
-                ].map(([label, reach15, reach17]) => (
-                  <tr key={label} className="border-b border-gray-200">
-                    <th scope="row" className="py-1 font-medium">{label}</th>
-                    <td className="font-mono">{reach15}/96</td>
-                    <td className="font-mono">{reach17}/96</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <p className="m-0">
-              The full-game checkpoint gained 20 seconds in median paired survival over the planner
-              (95% interval −7 to +44.5 seconds). Both training arms started from the same checkpoint.
-            </p>
-            <p className="m-0">
-              Across the 96 games, the full-game policy spent 63% of game time using wider enemy clearance
-              and 37% favoring braziers and Vacuums. It acquired Laurel in 63 games, compared with 14 for
-              the planner. Which choices contributed to survival is still open.
-            </p>
-          </div>
-        </Panel>
-
-        <Panel title="Original training run" aside={status && <span className="font-mono text-xs">{ago(status.time, now)}</span>}>
+        {studies.map((study) => (
+          <Panel key={study.id} title={study.title}>
+            <p className="m-0 p-4 text-sm whitespace-pre-line">{study.summary}</p>
+          </Panel>
+        ))}
+        <Panel
+          title="Original training run"
+          aside={status && <span className="font-mono text-xs">{ago(status.time, now)}</span>}
+        >
           {!available && (
             <p className="m-0 border-b-2 border-black px-4 py-2 text-sm">Training data is temporarily unavailable.</p>
           )}
