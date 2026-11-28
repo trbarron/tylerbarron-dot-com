@@ -75,7 +75,7 @@
     "Region": "us-east-1",
     "Configuration": {
       "AlarmName": "site-healthcheck",
-      "AlarmDescription": "External HTTPS /healthcheck must return OK. Alarm on two unhealthy or missing one-minute periods.",
+      "AlarmDescription": "External HTTPS /healthcheck must return HTTP 2xx or 3xx. Alarm on two unhealthy or missing one-minute periods.",
       "ActionsEnabled": true,
       "AlarmActions": ["arn:aws:sns:us-east-1:027237787789:site-runtime-alerts"],
       "Namespace": "AWS/Route53",
@@ -83,7 +83,7 @@
       "Dimensions": [
         {
           "Name": "HealthCheckId",
-          "Value": "9da1d67a-da64-5102-092f-938725853205"
+          "Value": "95a221d8-c0af-5102-0952-30f168a1b8c2"
         }
       ],
       "Statistic": "Minimum",

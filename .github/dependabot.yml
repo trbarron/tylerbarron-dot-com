@@ -49,3 +49,6 @@ updates:
         update-types: ['version-update:semver-major']
       # Pinned with SHA-256 hashes for the browser and the server (app/utils/chess/stockfish*.ts).
       - dependency-name: stockfish
+      # semantic-release 26 requires Node 26.13. The release job uses Node 24.
+      - dependency-name: semantic-release
+        versions: ['26.x']

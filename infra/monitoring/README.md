@@ -7,7 +7,7 @@ The recipient address is deliberately absent.
 - `runtime-alarms.json`: per-region CloudWatch `put-metric-alarm` configurations.
   Each `Configuration` is a CLI input object; `Region` selects the AWS endpoint.
 - `site-healthcheck.json`: Route 53 `HealthCheckConfig` for the existing external
-  HTTPS/string-match monitor. Do not run `create-health-check` again to edit it.
+  HTTPS status monitor. Do not run `create-health-check` again to edit it.
 - `topic-policies.json`: regional operational SNS topic policies, preserving owner
   access and granting publication only to the exact site alarm ARNs/source account.
 - `resources.json`: created health check ID and topic ARNs.
