@@ -15,6 +15,27 @@ const requestHandler = createRequestHandler({
   mode: mode,
 });
 
+// API Gateway decodes header bytes as UTF-8, but the adapter copies headers and
+// cookies into a Fetch `Headers`, which accepts only characters up to U+00FF.
+// One character above that (a non-Latin script in a user agent, or the U+FFFD
+// standing in for an invalid byte) made it throw before routing, so the request
+// failed as a 500. Hand such values over as their UTF-8 bytes instead, which is
+// how Node's own HTTP server presents them.
+function toByteString(value: unknown) {
+  return typeof value === 'string' && /[Ā-￿]/.test(value) ? Buffer.from(value, 'utf8').toString('latin1') : value;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function withByteStringHeaders(event: any) {
+  return {
+    ...event,
+    headers: Object.fromEntries(
+      Object.entries(event.headers ?? {}).map(([name, value]) => [name, toByteString(value)]),
+    ),
+    ...(Array.isArray(event.cookies) && { cookies: event.cookies.map(toByteString) }),
+  };
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function handlerFn(event: any, context: any) {
   if (!isTrustedOrigin(event.headers)) {
@@ -44,6 +65,8 @@ async function handlerFn(event: any, context: any) {
     );
     event = { ...event, headers: { ...headers, host: productionHost } };
   }
+
+  event = withByteStringHeaders(event);
 
   const path = event.rawPath || event.path || event.requestContext?.http?.path;
 
