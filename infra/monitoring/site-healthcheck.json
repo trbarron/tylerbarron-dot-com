@@ -1,9 +1,8 @@
 {
-  "Type": "HTTPS_STR_MATCH",
+  "Type": "HTTPS",
   "FullyQualifiedDomainName": "tylerbarron.com",
   "Port": 443,
   "ResourcePath": "/healthcheck",
-  "SearchString": "OK",
   "RequestInterval": 30,
   "FailureThreshold": 3,
   "EnableSNI": true,

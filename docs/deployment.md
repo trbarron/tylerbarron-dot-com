@@ -422,12 +422,10 @@ API-level series. Runtime count metrics treat missing data as `notBreaching` so 
 quiet site does not alert. The continuously sampled health metric treats missing
 data as `breaching`; two missing/unhealthy periods alert after startup.
 
-Route 53 health check `9da1d67a-da64-5102-092f-938725853205` sends HTTPS requests to
-`https://tylerbarron.com/healthcheck`, requires body string `OK`, enables SNI, and uses
+Route 53 health check `95a221d8-c0af-5102-0952-30f168a1b8c2` sends HTTPS requests to
+`https://tylerbarron.com/healthcheck`, accepts HTTP 2xx and 3xx responses, enables SNI, and uses
 30-second checks with failure threshold 3 in `us-west-2`, `us-east-1` and `eu-west-1`.
-Probes in all three regions returned 200 and found the required string. It is a
-standalone monitor; no DNS routing configuration was changed. All four alarms
-subsequently reached `OK`, including two healthy one-minute uptime datapoints.
+Probes in all three regions returned HTTP 200. This check monitors uptime independently of DNS routing.
 
 Regional SNS topics are named `site-runtime-alerts` in account `027237787789`, in
 `us-west-2` for runtime metrics and `us-east-1` for Route 53 health metrics. Their
