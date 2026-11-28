@@ -58,6 +58,32 @@ describe('Lambda origin guard', () => {
     expect(serve).not.toHaveBeenCalled();
   });
 
+  it('passes headers the Fetch API can hold when a client sends characters above U+00FF', async () => {
+    vi.stubEnv('ARC_ENV', 'production');
+    vi.stubEnv('ORIGIN_VERIFY', 'test-secret');
+    const userAgent = 'Mozilla/5.0 (Linux; Android 14; 小米 14) Mobile �';
+    const cookie = 'name=Zoë 🙂';
+    // What the adapter does with them, and what failed in production on 27 November.
+    expect(() => new Headers().append('user-agent', userAgent)).toThrow(TypeError);
+
+    const event = {
+      rawPath: '/',
+      rawQueryString: '',
+      headers: { 'x-origin-verify': 'test-secret', 'user-agent': userAgent, accept: 'text/html' },
+      cookies: [cookie, 'plain=1'],
+    };
+    expect(await handler(event, {})).toEqual({ statusCode: 200, body: 'rendered' });
+
+    const [forwarded] = serve.mock.calls[0] as unknown as [{ headers: Record<string, string>; cookies: string[] }];
+    const headers = new Headers();
+    for (const [name, value] of Object.entries(forwarded.headers)) headers.append(name, value);
+    headers.append('Cookie', forwarded.cookies.join('; '));
+
+    expect(Buffer.from(headers.get('user-agent')!, 'latin1').toString('utf8')).toBe(userAgent);
+    expect(Buffer.from(headers.get('cookie')!, 'latin1').toString('utf8')).toBe(`${cookie}; plain=1`);
+    expect(headers.get('accept')).toBe('text/html');
+  });
+
   it('preserves the staging hostname', async () => {
     vi.stubEnv('ARC_ENV', 'staging');
     const event = { rawPath: '/healthcheck', rawQueryString: '', headers: { host: 'staging.example' } };
