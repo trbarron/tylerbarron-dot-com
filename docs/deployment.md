@@ -160,6 +160,37 @@ the CloudFront header or Lambda parameter. Never remove the secret first: produc
 fails closed. The execute-api endpoint must stay enabled because it is CloudFront's
 origin; disabling it would also break the public site.
 
+## The viewer-request function: scanner probes answered at the edge
+
+`www-to-apex-redirect` (source `infra/cloudfront/viewer-request.js`) runs on the
+default behavior only. Besides stamping the viewer IP and the www redirect, it answers
+requests for software this site doesn't run with a plain 404 before they reach the
+Lambda: PHP, ASP.NET, JSP and ColdFusion file types, `.env`/`.sql`/`.bak`, `wp-*`,
+`cgi-bin`, `vendor`, `_next`, and any dotfile except `/.well-known/`. Vulnerability
+scanners sent roughly 1,000 of these a day, and each one cost a Lambda invocation to
+render the site's 404 page. A real route never matches: `tests/unit/cloudfrontViewer.test.ts`
+checks every route in `app/routes.ts`, every blog post, and their `.data` URLs. Any
+other miss still gets the site's own 404 page (and its `page_not_found` GA event).
+Adding a route with a file extension means checking it against the pattern.
+
+CI does not publish the function. Save the live code first, then load the new code
+into the DEVELOPMENT stage, test it there, and publish:
+
+```bash
+aws cloudfront get-function --name www-to-apex-redirect --stage LIVE <private-dir>/live.js
+ETAG=$(aws cloudfront describe-function --name www-to-apex-redirect --stage DEVELOPMENT --query ETag --output text)
+aws cloudfront update-function --name www-to-apex-redirect --if-match "$ETAG" \
+  --function-config '{"Comment":"Viewer IP, scanner 404s, www to apex","Runtime":"cloudfront-js-2.0"}' \
+  --function-code fileb://infra/cloudfront/viewer-request.js
+# test-function --stage DEVELOPMENT with a page, a probe and a www request, then:
+aws cloudfront publish-function --name www-to-apex-redirect --if-match <etag-from-update>
+```
+
+Publishing takes effect at the edge within a few minutes. To roll back, run
+`update-function` with the saved `live.js` and publish again. The effect shows in the
+HTTP API's daily `4xx` count (`ApiId=4qklz67ic3`), which counts only what still
+reaches the Lambda.
+
 ## Camel Up Cup: queued and emailed, never run here
 
 A submitted bot is stored in the Redis hash `camelup:pending` (at most 25 waiting) and
