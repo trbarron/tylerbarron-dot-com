@@ -1,14 +1,20 @@
 import { getRedisClient } from '~/utils/redis.server';
 
 // Written by the Mac training loop (vs-bot scripts/train/hrl_loop.py). Every value is JSON; lists are appended
-// with RPUSH and trimmed, so they read oldest first.
+// with RPUSH and trimmed, so they read oldest first. Each training run writes under its own prefix; the loop
+// names the run in progress in `active` ({ prefix, title }), and the page falls back to the original run.
 const prefix = '{vampire-survivors}:rl:mac:v1';
+const originalTitle = 'Original training run';
+const runKeys = (run: string) => ({
+  status: `${run}:status`,
+  updates: `${run}:updates`,
+  evals: `${run}:evals`,
+  events: `${run}:events`,
+});
 export const rlKeys = {
   studies: `${prefix}:studies`,
-  status: `${prefix}:status`,
-  updates: `${prefix}:updates`,
-  evals: `${prefix}:evals`,
-  events: `${prefix}:events`,
+  active: '{vampire-survivors}:rl:active',
+  ...runKeys(prefix),
 };
 
 export type RlEval = {
@@ -59,6 +65,7 @@ export type RlEvent = { time: string; text: string };
 
 export type RlDashboard = {
   studies: { id: string; title: string; time: string; summary: string }[];
+  runTitle: string;
   available: boolean;
   status: RlStatus | null;
   updates: RlUpdate[];
@@ -176,14 +183,25 @@ export function parseEvent(raw: string): RlEvent | null {
 
 const present = <T>(value: T | null): value is T => value !== null;
 
+/** The run named by the `active` key, if it names a valid run prefix. */
+export function parseActiveRun(raw: string | null): { prefix: string; title: string } | null {
+  const fields = parse(raw);
+  const run = text(fields?.prefix, 80);
+  const title = text(fields?.title, 80).trim();
+  return /^\{vampire-survivors\}:rl:[a-z0-9-]+:v\d+$/.test(run) && title ? { prefix: run, title } : null;
+}
+
 export async function readRlDashboard(): Promise<RlDashboard> {
   try {
-    const [status, updates, evals, events, studies] = await getRedisClient()
+    const redis = getRedisClient();
+    const active = parseActiveRun(await redis.get(rlKeys.active));
+    const keys = runKeys(active?.prefix ?? prefix);
+    const [status, updates, evals, events, studies] = await redis
       .multi()
-      .get(rlKeys.status)
-      .lrange(rlKeys.updates, -600, -1)
-      .lrange(rlKeys.evals, -200, -1)
-      .lrange(rlKeys.events, -40, -1)
+      .get(keys.status)
+      .lrange(keys.updates, -600, -1)
+      .lrange(keys.evals, -200, -1)
+      .lrange(keys.events, -40, -1)
       .hgetall(rlKeys.studies)
       .exec()
       .then((replies) => (replies ?? []).map(([error, value]) => (error ? null : value)));
@@ -197,6 +215,7 @@ export async function readRlDashboard(): Promise<RlDashboard> {
           return [{ id, title: text(row.title), time: time(row.time), summary: text(row.summary, 2000) }];
         })
         .sort((a, b) => Date.parse(b.time) - Date.parse(a.time)),
+      runTitle: active?.title ?? originalTitle,
       available: true,
       status: parseStatus(typeof status === 'string' ? status : null),
       updates: list(updates).map(parseUpdate).filter(present),
@@ -205,6 +224,6 @@ export async function readRlDashboard(): Promise<RlDashboard> {
     };
   } catch (error) {
     console.error('Vampire Survivors RL dashboard read failed:', error);
-    return { studies: [], available: false, status: null, updates: [], evals: [], events: [] };
+    return { studies: [], runTitle: originalTitle, available: false, status: null, updates: [], evals: [], events: [] };
   }
 }

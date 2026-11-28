@@ -236,7 +236,16 @@ function Stat({ label, value }: { label: string; value: string }) {
 }
 
 export default function VampireSurvivorsRl() {
-  const { studies, available, status, updates, evals, events, now: serverNow } = useLoaderData<typeof loader>();
+  const {
+    studies,
+    runTitle,
+    available,
+    status,
+    updates,
+    evals,
+    events,
+    now: serverNow,
+  } = useLoaderData<typeof loader>();
   const revalidator = useRevalidator();
   const [now, setNow] = useState(serverNow);
   usePolling(async () => {
@@ -280,10 +289,7 @@ export default function VampireSurvivorsRl() {
             <p className="m-0 p-4 text-sm whitespace-pre-line">{study.summary}</p>
           </Panel>
         ))}
-        <Panel
-          title="Original training run"
-          aside={status && <span className="font-mono text-xs">{ago(status.time, now)}</span>}
-        >
+        <Panel title={runTitle} aside={status && <span className="font-mono text-xs">{ago(status.time, now)}</span>}>
           {!available && (
             <p className="m-0 border-b-2 border-black px-4 py-2 text-sm">Training data is temporarily unavailable.</p>
           )}

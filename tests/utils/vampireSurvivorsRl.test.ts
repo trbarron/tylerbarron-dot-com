@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseEval, parseEvent, parseStatus, parseUpdate } from '~/utils/vampireSurvivors/rl.server';
+import { parseActiveRun, parseEval, parseEvent, parseStatus, parseUpdate } from '~/utils/vampireSurvivors/rl.server';
 
 describe('Vampire Survivors RL parsers', () => {
   it('reads a status report from the training loop', () => {
@@ -76,5 +76,23 @@ describe('Vampire Survivors RL parsers', () => {
       wins: 26,
       modeShare: null,
     });
+  });
+});
+
+describe('parseActiveRun', () => {
+  it('accepts a run prefix in the Vampire Survivors namespace with a title', () => {
+    expect(
+      parseActiveRun(
+        JSON.stringify({ prefix: '{vampire-survivors}:rl:full-p0196:v1', title: 'Training run from p0196' }),
+      ),
+    ).toEqual({ prefix: '{vampire-survivors}:rl:full-p0196:v1', title: 'Training run from p0196' });
+  });
+
+  it('rejects other keys, missing titles and malformed values', () => {
+    expect(parseActiveRun(null)).toBeNull();
+    expect(parseActiveRun('nope')).toBeNull();
+    expect(parseActiveRun(JSON.stringify({ prefix: 'sessions:admin', title: 'x' }))).toBeNull();
+    expect(parseActiveRun(JSON.stringify({ prefix: '{vampire-survivors}:rl:full-p0196:v1', title: ' ' }))).toBeNull();
+    expect(parseActiveRun(JSON.stringify({ prefix: '{vampire-survivors}:leaderboard:v1', title: 'x' }))).toBeNull();
   });
 });
